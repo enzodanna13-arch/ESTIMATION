@@ -230,28 +230,31 @@ export default function Report({
 
           <div className="valuation">
             <div className="cell">
-              <div className="lbl">Fourchette basse</div>
-              <div className="amt">{euro.format(report.fourchette_basse)}</div>
+              <div className="lbl">Prix moyen au m²</div>
+              <div className="amt">{int.format(report.prix_m2)} €</div>
             </div>
             <div className="cell center">
-              <div className="lbl">Valeur retenue</div>
-              <div className="amt">{euro.format(report.prix_estime)}</div>
+              <div className="lbl">Fourchette de valeur</div>
+              <div className="amt" style={{ fontSize: "21pt" }}>
+                {euro.format(report.fourchette_basse)} — {euro.format(report.fourchette_haute)}
+              </div>
             </div>
             <div className="cell">
-              <div className="lbl">Fourchette haute</div>
-              <div className="amt">{euro.format(report.fourchette_haute)}</div>
+              <div className="lbl">Prix de présentation</div>
+              <div className="amt">{euro.format(prixPresentation)}</div>
             </div>
           </div>
 
           <div className="kpi-row">
             <div className="kpi"><div className="k">Surface</div><div className="v">{surface} <small>m²</small></div></div>
-            <div className="kpi"><div className="k">Prix retenu / m²</div><div className="v">{int.format(report.prix_m2)} <small>€/m²</small></div></div>
+            <div className="kpi"><div className="k">Fourchette / m²</div><div className="v" style={{ fontSize: "12pt" }}>{surface > 0 ? `${int.format(Math.round(report.fourchette_basse / surface))} – ${int.format(Math.round(report.fourchette_haute / surface))}` : int.format(report.prix_m2)} <small>€/m²</small></div></div>
             <div className="kpi"><div className="k">DPE</div><div className="v">{input.dpe || "—"}</div></div>
             <div className="kpi"><div className="k">Délai de vente estimé</div><div className="v" style={{ fontSize: "11pt", lineHeight: 1.3 }}>{report.delai_vente_estime}</div></div>
           </div>
 
           <div className="callout">
-            <b>Prix de présentation conseillé : {euro.format(prixPresentation)}.</b>{" "}
+            <b>Fourchette de valeur : {euro.format(report.fourchette_basse)} à {euro.format(report.fourchette_haute)}.
+            Prix de présentation conseillé : {euro.format(prixPresentation)}.</b>{" "}
             Ce positionnement conserve une marge de négociation d&apos;environ {margeNego} % tout en
             restant cohérent avec les références de vente et la concurrence active du secteur.
             {input.prixSouhaiteVendeur ? (
@@ -383,8 +386,25 @@ export default function Report({
                   {competitors.map((a, i) => (
                     <tr key={i} className={isStale(a) ? "warn-row" : ""}>
                       <td>
-                        {a.titre}
-                        <span className="sub">{a.comparaison || a.source}</span>
+                        <div style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
+                          {a.url_photo && (
+                            /* eslint-disable-next-line @next/next/no-img-element */
+                            <img
+                              src={a.url_photo}
+                              alt=""
+                              style={{ width: 64, height: 48, objectFit: "cover", flexShrink: 0, border: "1px solid var(--line)" }}
+                              onError={(e) => { e.currentTarget.style.display = "none"; }}
+                            />
+                          )}
+                          <div>
+                            {a.url_annonce ? (
+                              <a href={a.url_annonce} target="_blank" rel="noreferrer" style={{ color: "inherit", textDecoration: "none" }}>{a.titre}</a>
+                            ) : (
+                              a.titre
+                            )}
+                            <span className="sub">{a.comparaison || a.source}</span>
+                          </div>
+                        </div>
                       </td>
                       <td className="r">{a.surface > 0 ? `${int.format(a.surface)} m²` : "—"}</td>
                       <td className="r">{a.prix > 0 ? <span className="money">{euro.format(a.prix)}</span> : "—"}</td>
@@ -527,7 +547,7 @@ export default function Report({
                 </div>
               ))}
               <div className="ar total">
-                <span><b>Valeur vénale retenue</b></span>
+                <span><b>Cœur de fourchette retenu</b></span>
                 <span className="money">{euro.format(report.prix_estime)}</span>
               </div>
             </div>

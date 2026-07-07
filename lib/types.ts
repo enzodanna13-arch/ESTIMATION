@@ -92,6 +92,8 @@ export interface PhotoAnalysis {
 
 export interface CompetitorAd {
   titre: string;
+  url_annonce: string;
+  url_photo: string;
   prix: number;
   surface: number;
   prix_m2: number;

@@ -54,6 +54,8 @@ const REPORT_SCHEMA = {
         type: "object",
         properties: {
           titre: { type: "string", description: "Ex : T3 65 m² rue Mercière" },
+          url_annonce: { type: "string", description: "URL de l'annonce si connue avec certitude, sinon chaîne vide. Ne JAMAIS inventer une URL." },
+          url_photo: { type: "string", description: "URL directe de la photo principale de l'annonce (og:image récupérée via web_fetch), sinon chaîne vide. Ne JAMAIS inventer une URL." },
           prix: { type: "number", description: "Prix affiché en euros (0 si inconnu)" },
           surface: { type: "number", description: "Surface en m² (0 si inconnue)" },
           prix_m2: { type: "number", description: "Prix au m² (0 si non calculable)" },
@@ -62,7 +64,7 @@ const REPORT_SCHEMA = {
           source: { type: "string", description: "Portail ou agence (SeLoger, Leboncoin, agence X…)" },
           comparaison: { type: "string", description: "Positionnement en 1 phrase vs le bien estimé" },
         },
-        required: ["titre", "prix", "surface", "prix_m2", "caracteristiques", "anciennete", "source", "comparaison"],
+        required: ["titre", "url_annonce", "url_photo", "prix", "surface", "prix_m2", "caracteristiques", "anciennete", "source", "comparaison"],
         additionalProperties: false,
       },
     },
@@ -138,6 +140,8 @@ Règles :
 - Analyse les photos fournies pour évaluer l'état réel, la luminosité, les prestations et la qualité perçue ; signale tout écart avec l'état déclaré.
 - Pour CHAQUE photo fournie (numérotées dans l'ordre : 1 = première), remplis une entrée de analyse_par_photo : identifie la pièce/vue, liste ses bons points et ses défauts visibles. Sois concret (« joints de carrelage noircis », « belle hauteur sous plafond ») — ces annotations apparaissent dans le dossier remis au vendeur.
 - Remplis annonces_concurrentes avec 4 à 8 annonces concrètes issues de ta recherche web : titre, prix, surface, prix/m², caractéristiques, fraîcheur de l'annonce si détectable, portail source, et une phrase de comparaison avec le bien estimé. Mets 0 pour un chiffre introuvable — n'invente jamais un prix.
+- Pour chaque annonce concurrente identifiée, essaie d'ouvrir la page de l'annonce avec web_fetch pour : (a) vérifier prix/surface/caractéristiques, (b) récupérer l'URL de la photo principale (balise og:image ou première image de galerie) dans url_photo et l'URL de la page dans url_annonce. Si la page est inaccessible ou la photo introuvable, mets une chaîne vide — n'invente JAMAIS une URL.
+- PRÉCISION DE LA FOURCHETTE : le résultat principal est la FOURCHETTE fourchette_basse → fourchette_haute, pas un prix unique. Resserre-la au maximum justifiable (écart de 5 à 8 % entre basse et haute quand les données concordent) en recoupant au moins deux baromètres de prix et les annonces relevées. prix_estime est le cœur de fourchette (sert aux calculs d'ajustements). Justifie les deux bornes dans positionnement_marche (ce qui tire vers la borne basse, ce qui permet la borne haute).
 - Applique des ajustements explicites (DPE, étage, extérieur, stationnement, travaux) et RESTITUE-LES dans le champ ajustements : base_mediane (médiane des références comparables) + lignes d'ajustement signées dont la somme aboutit exactement à prix_estime.
 - Rédige description_bien comme dans un avis de valeur d'agence haut de gamme : 2 paragraphes factuels et valorisants (distribution, expositions, prestations, état).
 - Fixe prix_presentation : le prix affiché conseillé (marge de négociation 2 à 4 % au-dessus de prix_estime), cohérent avec le positionnement sous la concurrence active.
@@ -262,7 +266,10 @@ export async function computeAiEstimate(
       max_tokens: 16000,
       thinking: { type: "adaptive" },
       system: SYSTEM_PROMPT,
-      tools: [{ type: "web_search_20260209", name: "web_search", max_uses: 8 }],
+      tools: [
+        { type: "web_search_20260209", name: "web_search", max_uses: 8 },
+        { type: "web_fetch_20260209", name: "web_fetch", max_uses: 6 },
+      ],
       output_config: { effort, format: { type: "json_schema", schema: REPORT_SCHEMA } },
       messages,
     });
