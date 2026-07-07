@@ -189,7 +189,9 @@ Règles :
 - Si le prix souhaité par le vendeur est renseigné, positionne-le par rapport à ton estimation et donne au commercial les arguments chiffrés pour recadrer si nécessaire.
 - Sois précis et chiffré : cite les prix au m² que tu utilises et d'où ils viennent.
 - L'indice de confiance reflète la quantité et la cohérence des données (DVF absent ou peu de comparables → confiance basse).
-- Réponds intégralement en français.`;
+- Réponds intégralement en français.
+
+FORMAT DE SORTIE (impératif) : réponds EXCLUSIVEMENT par un objet JSON valide — aucun texte avant ou après, aucune balise markdown — conforme exactement au schéma JSON fourni dans le message utilisateur (mêmes noms de champs, mêmes types, tous les champs requis présents).`;
 
 function fmtComparables(list: PropertyInput["concurrence"]): string {
   if (list.length === 0) return "(aucun renseigné)";
@@ -279,6 +281,10 @@ export async function computeAiEstimate(
     });
   }
   content.push({ type: "text", text: buildUserText(input, dvfSales) });
+  content.push({
+    type: "text",
+    text: "# SCHÉMA JSON DE LA RÉPONSE (respecte-le exactement)\n" + JSON.stringify(REPORT_SCHEMA),
+  });
 
   // Configuration "analyse maximale" par défaut : Opus 4.8 + effort high.
   // Pour réduire coût/latence : ESTIMATION_MODEL=claude-sonnet-5 et/ou
@@ -308,7 +314,7 @@ export async function computeAiEstimate(
         { type: "web_search_20260209", name: "web_search", max_uses: 8 },
         { type: "web_fetch_20260209", name: "web_fetch", max_uses: 6 },
       ],
-      output_config: { effort, format: { type: "json_schema", schema: REPORT_SCHEMA } },
+      output_config: { effort },
       messages,
     });
     message = await stream.finalMessage();
@@ -331,5 +337,75 @@ export async function computeAiEstimate(
     .map((b) => b.text)
     .join("");
 
-  return JSON.parse(text) as EstimationReport;
+  return normalizeReport(parseJsonLoose(text));
+}
+
+/** Extrait l'objet JSON de la réponse (tolère balises markdown et texte parasite). */
+function parseJsonLoose(text: string): Record<string, unknown> {
+  const cleaned = text.replace(/```json/gi, "").replace(/```/g, "");
+  const start = cleaned.indexOf("{");
+  const end = cleaned.lastIndexOf("}");
+  if (start < 0 || end <= start) throw new Error("Réponse IA sans objet JSON");
+  return JSON.parse(cleaned.slice(start, end + 1)) as Record<string, unknown>;
+}
+
+/** Complète les champs manquants pour garantir la forme attendue par l'interface. */
+function normalizeReport(r: Record<string, unknown>): EstimationReport {
+  const num = (v: unknown) => (typeof v === "number" && Number.isFinite(v) ? v : 0);
+  const str = (v: unknown) => (typeof v === "string" ? v : "");
+  const arr = <T>(v: unknown) => (Array.isArray(v) ? (v as T[]) : []);
+  const audit = (r.audit_concurrentiel ?? {}) as Record<string, unknown>;
+  const report: EstimationReport = {
+    prix_estime: num(r.prix_estime),
+    fourchette_basse: num(r.fourchette_basse),
+    fourchette_haute: num(r.fourchette_haute),
+    prix_m2: num(r.prix_m2),
+    prix_presentation: num(r.prix_presentation),
+    description_bien: str(r.description_bien),
+    indice_confiance: num(r.indice_confiance),
+    delai_vente_estime: str(r.delai_vente_estime),
+    positionnement_marche: str(r.positionnement_marche),
+    analyse_dvf: str(r.analyse_dvf),
+    analyse_concurrence: str(r.analyse_concurrence),
+    analyse_invendus: str(r.analyse_invendus),
+    analyse_photos: str(r.analyse_photos),
+    analyse_par_photo: arr(r.analyse_par_photo),
+    etat_notes: arr(r.etat_notes),
+    coefficient_etat: str(r.coefficient_etat),
+    impact_etat: num(r.impact_etat),
+    annonces_concurrentes: arr<EstimationReport["annonces_concurrentes"][number]>(r.annonces_concurrentes).map((a) => ({
+      titre: str(a?.titre),
+      url_annonce: str(a?.url_annonce),
+      url_photo: str(a?.url_photo),
+      prix: num(a?.prix),
+      surface: num(a?.surface),
+      prix_m2: num(a?.prix_m2),
+      caracteristiques: str(a?.caracteristiques),
+      anciennete: str(a?.anciennete),
+      source: str(a?.source),
+      comparaison: str(a?.comparaison),
+      positionnement: str(a?.positionnement),
+    })),
+    audit_concurrentiel: {
+      nb_annonces_analysees: num(audit.nb_annonces_analysees),
+      prix_m2_min: num(audit.prix_m2_min),
+      prix_m2_median: num(audit.prix_m2_median),
+      prix_m2_max: num(audit.prix_m2_max),
+      tension_marche: str(audit.tension_marche),
+      synthese: str(audit.synthese),
+    },
+    scenarios_prix: arr(r.scenarios_prix),
+    references_dvf: arr(r.references_dvf),
+    base_mediane: num(r.base_mediane),
+    ajustements: arr(r.ajustements),
+    etapes_commercialisation: arr(r.etapes_commercialisation),
+    points_forts: arr(r.points_forts),
+    points_faibles: arr(r.points_faibles),
+    strategie_commercialisation: str(r.strategie_commercialisation),
+    argumentaire_vendeur: str(r.argumentaire_vendeur),
+  };
+  if (report.prix_estime <= 0 || report.fourchette_basse <= 0) {
+    throw new Error("Réponse IA incomplète (prix manquants)");
+  }
+  return report;
 }
