@@ -182,7 +182,7 @@ function LoadingOverlay({ status }: { status: string }) {
           <div className="scan-bar relative h-full w-full rounded-full bg-copper" />
         </div>
         <p className="mt-4 text-xs text-slate-400">
-          {mm}:{ss} écoulées — comptez 2 à 4 minutes pour l&apos;analyse la plus poussée.
+          {mm}:{ss} écoulées — analyse en 2 phases (marché puis photos), comptez 3 à 6 minutes.
         </p>
       </div>
     </div>
@@ -247,40 +247,60 @@ export default function Home() {
     }
   };
 
+  // Appelle une phase de l'analyse et lit le flux NDJSON (statuts + résultat)
+  const streamPhase = async (payload: Record<string, unknown>): Promise<Record<string, unknown>> => {
+    const res = await fetch("/api/estimate", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok || !res.body) {
+      const body = await res.json().catch(() => null);
+      throw new Error(body?.error ?? `Erreur serveur (${res.status})`);
+    }
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = "";
+    let result: Record<string, unknown> | null = null;
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split("\n");
+      buffer = lines.pop() ?? "";
+      for (const line of lines) {
+        if (!line.trim()) continue;
+        const msg = JSON.parse(line);
+        if (msg.type === "status") setLoadingStatus(msg.label);
+        else if (msg.type === "result") result = msg.data as Record<string, unknown>;
+        else if (msg.type === "error") throw new Error(msg.error);
+      }
+    }
+    if (!result) throw new Error("Analyse interrompue avant la fin — réessayez.");
+    return result;
+  };
+
   const submit = async () => {
     setLoading(true);
     setLoadingStatus("");
     setError(null);
     try {
-      const res = await fetch("/api/estimate", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify(input),
+      // Phase 1 : ventes réelles DVF + audit concurrentiel web
+      const marchePhase = await streamPhase({ ...input, phase: "marche" });
+      // Phase 2 : analyse des photos + rédaction du dossier final
+      setLoadingStatus("Étude de marché terminée — analyse du bien et rédaction du dossier…");
+      const rapportPhase = await streamPhase({
+        ...input,
+        phase: "rapport",
+        marche: marchePhase.marche ?? null,
+        dvfSales: marchePhase.dvfSales ?? [],
       });
-      if (!res.ok || !res.body) {
-        const body = await res.json().catch(() => null);
-        throw new Error(body?.error ?? `Erreur serveur (${res.status})`);
-      }
-      const reader = res.body.getReader();
-      const decoder = new TextDecoder();
-      let buffer = "";
-      let finalResult: EstimateResponse | null = null;
-      for (;;) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        buffer += decoder.decode(value, { stream: true });
-        const lines = buffer.split("\n");
-        buffer = lines.pop() ?? "";
-        for (const line of lines) {
-          if (!line.trim()) continue;
-          const msg = JSON.parse(line);
-          if (msg.type === "status") setLoadingStatus(msg.label);
-          else if (msg.type === "result") finalResult = msg.data as EstimateResponse;
-          else if (msg.type === "error") throw new Error(msg.error);
-        }
-      }
-      if (!finalResult) throw new Error("Analyse interrompue avant la fin — réessayez.");
-      setResult(finalResult);
+      setResult({
+        report: rapportPhase.report,
+        dvfSales: rapportPhase.dvfSales,
+        dvfSource: rapportPhase.dvfSource,
+        engine: rapportPhase.engine,
+      } as unknown as EstimateResponse);
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erreur inattendue");

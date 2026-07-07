@@ -170,6 +170,16 @@ export interface EstimationReport {
   argumentaire_vendeur: string;
 }
 
+export interface MarketStudy {
+  analyse_dvf: string;
+  analyse_concurrence: string;
+  analyse_invendus: string;
+  annonces_concurrentes: CompetitorAd[];
+  audit_concurrentiel: AuditConcurrentiel;
+  references_dvf: ReferenceDvf[];
+  base_mediane: number;
+}
+
 export interface EstimateResponse {
   report: EstimationReport;
   dvfSales: DvfSale[];
