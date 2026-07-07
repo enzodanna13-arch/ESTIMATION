@@ -91,6 +91,8 @@ export function computeFallbackEstimate(
       input.photos.length > 0
         ? "Analyse visuelle non disponible en mode statistique (configurer ANTHROPIC_API_KEY pour l'analyse IA des photos)."
         : "Aucune photo fournie.",
+    analyse_par_photo: [],
+    annonces_concurrentes: [],
     points_forts: [],
     points_faibles: [],
     strategie_commercialisation:

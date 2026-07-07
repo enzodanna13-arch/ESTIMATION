@@ -74,5 +74,20 @@ body {
   }
   body {
     background: #fff;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
   }
+  .break-inside-avoid {
+    break-inside: avoid;
+  }
+  .shadow-sm,
+  .shadow-lg,
+  .shadow-md {
+    box-shadow: none !important;
+  }
+}
+
+@page {
+  size: A4;
+  margin: 12mm;
 }

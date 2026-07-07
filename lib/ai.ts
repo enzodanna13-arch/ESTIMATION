@@ -15,6 +15,40 @@ const REPORT_SCHEMA = {
     analyse_concurrence: { type: "string" },
     analyse_invendus: { type: "string" },
     analyse_photos: { type: "string" },
+    analyse_par_photo: {
+      type: "array",
+      description: "Analyse individuelle de chaque photo fournie, dans l'ordre",
+      items: {
+        type: "object",
+        properties: {
+          photo: { type: "integer", description: "Numéro de la photo (1 = première fournie)" },
+          titre: { type: "string", description: "Ce que montre la photo (ex : Séjour, Cuisine, Façade)" },
+          bons_points: { type: "array", items: { type: "string" } },
+          defauts: { type: "array", items: { type: "string" } },
+        },
+        required: ["photo", "titre", "bons_points", "defauts"],
+        additionalProperties: false,
+      },
+    },
+    annonces_concurrentes: {
+      type: "array",
+      description: "Annonces concurrentes trouvées via la recherche web (4 à 8)",
+      items: {
+        type: "object",
+        properties: {
+          titre: { type: "string", description: "Ex : T3 65 m² rue Mercière" },
+          prix: { type: "number", description: "Prix affiché en euros (0 si inconnu)" },
+          surface: { type: "number", description: "Surface en m² (0 si inconnue)" },
+          prix_m2: { type: "number", description: "Prix au m² (0 si non calculable)" },
+          caracteristiques: { type: "string", description: "Étage, état, extérieur, DPE… tel que trouvé" },
+          anciennete: { type: "string", description: "Fraîcheur de l'annonce si détectable (ex : « en ligne depuis 3 mois », « prix baissé », « récente »)" },
+          source: { type: "string", description: "Portail ou agence (SeLoger, Leboncoin, agence X…)" },
+          comparaison: { type: "string", description: "Positionnement en 1 phrase vs le bien estimé" },
+        },
+        required: ["titre", "prix", "surface", "prix_m2", "caracteristiques", "anciennete", "source", "comparaison"],
+        additionalProperties: false,
+      },
+    },
     points_forts: { type: "array", items: { type: "string" } },
     points_faibles: { type: "array", items: { type: "string" } },
     strategie_commercialisation: { type: "string" },
@@ -24,6 +58,7 @@ const REPORT_SCHEMA = {
     "prix_estime", "fourchette_basse", "fourchette_haute", "prix_m2",
     "indice_confiance", "delai_vente_estime", "positionnement_marche",
     "analyse_dvf", "analyse_concurrence", "analyse_invendus", "analyse_photos",
+    "analyse_par_photo", "annonces_concurrentes",
     "points_forts", "points_faibles", "strategie_commercialisation", "argumentaire_vendeur",
   ],
   additionalProperties: false,
@@ -45,6 +80,8 @@ Les biens éventuellement saisis manuellement par le commercial sont un COMPLÉM
 
 Règles :
 - Analyse les photos fournies pour évaluer l'état réel, la luminosité, les prestations et la qualité perçue ; signale tout écart avec l'état déclaré.
+- Pour CHAQUE photo fournie (numérotées dans l'ordre : 1 = première), remplis une entrée de analyse_par_photo : identifie la pièce/vue, liste ses bons points et ses défauts visibles. Sois concret (« joints de carrelage noircis », « belle hauteur sous plafond ») — ces annotations apparaissent dans le dossier remis au vendeur.
+- Remplis annonces_concurrentes avec 4 à 8 annonces concrètes issues de ta recherche web : titre, prix, surface, prix/m², caractéristiques, fraîcheur de l'annonce si détectable, portail source, et une phrase de comparaison avec le bien estimé. Mets 0 pour un chiffre introuvable — n'invente jamais un prix.
 - Applique des ajustements explicites (DPE, étage, extérieur, stationnement, travaux).
 - Si le prix souhaité par le vendeur est renseigné, positionne-le par rapport à ton estimation et donne au commercial les arguments chiffrés pour recadrer si nécessaire.
 - Sois précis et chiffré : cite les prix au m² que tu utilises et d'où ils viennent.

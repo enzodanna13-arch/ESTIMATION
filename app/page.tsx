@@ -212,7 +212,7 @@ export default function Home() {
 
       <main className="mx-auto max-w-5xl px-4 py-8">
         {result ? (
-          <Report result={result} sellerPrice={input.prixSouhaiteVendeur} onReset={() => { setResult(null); setStep(0); }} />
+          <Report result={result} input={input} onReset={() => { setResult(null); setStep(0); }} />
         ) : (
           <>
             {/* Barre d'étapes */}

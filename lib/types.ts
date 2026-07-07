@@ -67,6 +67,24 @@ export interface DvfSale {
   commune: string;
 }
 
+export interface PhotoAnalysis {
+  photo: number; // 1 = première photo fournie
+  titre: string;
+  bons_points: string[];
+  defauts: string[];
+}
+
+export interface CompetitorAd {
+  titre: string;
+  prix: number;
+  surface: number;
+  prix_m2: number;
+  caracteristiques: string;
+  anciennete: string;
+  source: string;
+  comparaison: string;
+}
+
 export interface EstimationReport {
   prix_estime: number;
   fourchette_basse: number;
@@ -79,6 +97,8 @@ export interface EstimationReport {
   analyse_concurrence: string;
   analyse_invendus: string;
   analyse_photos: string;
+  analyse_par_photo: PhotoAnalysis[];
+  annonces_concurrentes: CompetitorAd[];
   points_forts: string[];
   points_faibles: string[];
   strategie_commercialisation: string;
