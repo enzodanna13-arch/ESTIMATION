@@ -184,7 +184,7 @@ Règles :
 - Rédige description_bien comme dans un avis de valeur d'agence haut de gamme : 2 paragraphes factuels et valorisants (distribution, expositions, prestations, état).
 - Fixe prix_presentation : le prix affiché conseillé (marge de négociation 2 à 4 % au-dessus de prix_estime), cohérent avec le positionnement sous la concurrence active.
 - Si des photos sont fournies, note l'état par catégorie dans etat_notes (1 à 5 : État général, Luminosité, Cuisine, Salle de bain, Sols & murs, Extérieur si visible), synthétise dans coefficient_etat et chiffre impact_etat en euros signés. Sans photo : etat_notes vide, impact_etat 0, coefficient_etat basé sur l'état déclaré.
-- Sélectionne dans la liste DVF fournie les 4 à 6 références les plus comparables et restitue-les dans references_dvf (si la liste DVF est vide, restitue un tableau vide — n'invente JAMAIS une transaction).
+- Sélectionne dans la liste DVF fournie les 4 à 6 références les plus comparables et restitue-les dans references_dvf. La liste couvre la COMMUNE ENTIÈRE du code postal : privilégie les ventes du quartier si identifiables, mais ÉLARGIS toujours à l'ensemble du code postal pour garantir des références — dès que la liste n'est pas vide, references_dvf ne doit JAMAIS être vide (applique une pondération de localisation dans les ajustements si le comparable vient d'un autre secteur de la commune). Si la liste DVF est vide, restitue un tableau vide — n'invente JAMAIS une transaction.
 - Remplis etapes_commercialisation avec 4 à 5 actions concrètes (« Reportage professionnel — photos grand-angle… »).
 - Si le prix souhaité par le vendeur est renseigné, positionne-le par rapport à ton estimation et donne au commercial les arguments chiffrés pour recadrer si nécessaire.
 - Sois précis et chiffré : cite les prix au m² que tu utilises et d'où ils viennent.
@@ -244,7 +244,7 @@ ${input.commentaires ? `- Commentaires du commercial : ${input.commentaires}` : 
 
 # DONNÉES DE MARCHÉ
 
-## 1. Transactions DVF (ventes réelles actées, code postal ${input.codePostal})
+## 1. Transactions DVF (ventes réelles actées — COMMUNE ENTIÈRE du code postal ${input.codePostal})
 ${dvfBlock}
 
 ## 2. Concurrence saisie par le commercial (complément facultatif à ta recherche web)
