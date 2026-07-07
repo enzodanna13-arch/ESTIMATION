@@ -63,8 +63,38 @@ const REPORT_SCHEMA = {
           anciennete: { type: "string", description: "Fraîcheur de l'annonce si détectable (ex : « en ligne depuis 3 mois », « prix baissé », « récente »)" },
           source: { type: "string", description: "Portail ou agence (SeLoger, Leboncoin, agence X…)" },
           comparaison: { type: "string", description: "Positionnement en 1 phrase vs le bien estimé" },
+          positionnement: { type: "string", enum: ["supérieur", "équivalent", "inférieur"], description: "Niveau de prestations global vs le bien estimé" },
         },
-        required: ["titre", "url_annonce", "url_photo", "prix", "surface", "prix_m2", "caracteristiques", "anciennete", "source", "comparaison"],
+        required: ["titre", "url_annonce", "url_photo", "prix", "surface", "prix_m2", "caracteristiques", "anciennete", "source", "comparaison", "positionnement"],
+        additionalProperties: false,
+      },
+    },
+    audit_concurrentiel: {
+      type: "object",
+      description: "Synthèse chiffrée de l'audit du marché concurrent",
+      properties: {
+        nb_annonces_analysees: { type: "number", description: "Nombre total d'annonces examinées pendant la recherche (pas seulement celles restituées)" },
+        prix_m2_min: { type: "number", description: "€/m² le plus bas observé sur les comparables (0 si inconnu)" },
+        prix_m2_median: { type: "number", description: "€/m² médian observé (0 si inconnu)" },
+        prix_m2_max: { type: "number", description: "€/m² le plus haut observé (0 si inconnu)" },
+        tension_marche: { type: "string", description: "Lecture de la tension : ex « Offre abondante, rotation lente au-dessus de 3 300 €/m² »" },
+        synthese: { type: "string", description: "Conclusion de l'audit : où se situe la zone de prix gagnante et pourquoi" },
+      },
+      required: ["nb_annonces_analysees", "prix_m2_min", "prix_m2_median", "prix_m2_max", "tension_marche", "synthese"],
+      additionalProperties: false,
+    },
+    scenarios_prix: {
+      type: "array",
+      description: "Exactement 3 scénarios de positionnement prix, dans cet ordre : Vente rapide, Prix optimal, Prix plafond",
+      items: {
+        type: "object",
+        properties: {
+          strategie: { type: "string", enum: ["Vente rapide", "Prix optimal", "Prix plafond"] },
+          prix: { type: "number", description: "Prix affiché du scénario en euros" },
+          delai: { type: "string", description: "Délai de vente attendu, ex « 4 à 6 semaines »" },
+          commentaire: { type: "string", description: "Pour qui / quel risque / quel bénéfice, en 1-2 phrases" },
+        },
+        required: ["strategie", "prix", "delai", "commentaire"],
         additionalProperties: false,
       },
     },
@@ -115,7 +145,8 @@ const REPORT_SCHEMA = {
     "indice_confiance", "delai_vente_estime", "positionnement_marche",
     "analyse_dvf", "analyse_concurrence", "analyse_invendus", "analyse_photos",
     "analyse_par_photo", "etat_notes", "coefficient_etat", "impact_etat",
-    "annonces_concurrentes", "references_dvf", "base_mediane", "ajustements",
+    "annonces_concurrentes", "audit_concurrentiel", "scenarios_prix",
+    "references_dvf", "base_mediane", "ajustements",
     "etapes_commercialisation",
     "points_forts", "points_faibles", "strategie_commercialisation", "argumentaire_vendeur",
   ],
@@ -127,6 +158,13 @@ Tu produis des avis de valeur rigoureux en croisant trois sources, par ordre de 
 1. Les transactions DVF (prix de vente RÉELS actés) — la référence factuelle.
 2. Les biens actuellement en vente (concurrence) — des prix AFFICHÉS, donc à pondérer d'une marge de négociation (généralement 3 à 7 %).
 3. Les biens invendus depuis plus de 90 jours — ils révèlent le plafond de prix que le marché REFUSE : l'estimation doit impérativement rester sous ce niveau à prestations comparables.
+
+AUDIT CONCURRENTIEL (obligatoire, protocole complet) :
+Tu conduis un véritable audit de positionnement prix, comme un pricing analyst :
+1. RECENSEMENT — balaie le marché actif du secteur sous plusieurs angles et vise 8 à 12 annonces comparables examinées ; restitue les 6 à 8 plus pertinentes dans annonces_concurrentes, chacune classée « supérieur / équivalent / inférieur » vs le bien.
+2. CARTOGRAPHIE — calcule min / médiane / max des €/m² observés et qualifie la tension du marché (volume d'offre, vitesse de rotation, seuils où les annonces stagnent) dans audit_concurrentiel.
+3. ZONE GAGNANTE — détermine la zone de prix où le bien est OBJECTIVEMENT le meilleur choix de sa catégorie pour un acheteur (meilleures prestations au même prix, ou même prestations moins cher) ; explique-la dans audit_concurrentiel.synthese.
+4. SCÉNARIOS — restitue exactement 3 scénarios chiffrés dans scenarios_prix : « Vente rapide » (sous la zone, délai court), « Prix optimal » (= prix_presentation, le meilleur ratio prix/délai, positionné juste sous la concurrence équivalente), « Prix plafond » (haut de zone, à ne pas dépasser — au-delà le bien rejoint les invendus). Chaque scénario : prix, délai attendu, commentaire.
 
 ANALYSE AUTOMATIQUE DU MARCHÉ LOCAL (obligatoire, EXHAUSTIVE) :
 Mène l'analyse la plus poussée possible — multiplie les recherches web sous plusieurs angles (ville + quartier précis, type de bien + surface, baromètres de prix multiples, annonces récentes vs anciennes) avant d'estimer :

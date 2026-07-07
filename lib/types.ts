@@ -101,6 +101,23 @@ export interface CompetitorAd {
   anciennete: string;
   source: string;
   comparaison: string;
+  positionnement: string; // supérieur | équivalent | inférieur (vs le bien estimé)
+}
+
+export interface AuditConcurrentiel {
+  nb_annonces_analysees: number;
+  prix_m2_min: number;
+  prix_m2_median: number;
+  prix_m2_max: number;
+  tension_marche: string;
+  synthese: string;
+}
+
+export interface ScenarioPrix {
+  strategie: string; // Vente rapide | Prix optimal | Prix plafond
+  prix: number;
+  delai: string;
+  commentaire: string;
 }
 
 export interface EtatNote {
@@ -141,6 +158,8 @@ export interface EstimationReport {
   coefficient_etat: string;
   impact_etat: number;
   annonces_concurrentes: CompetitorAd[];
+  audit_concurrentiel: AuditConcurrentiel;
+  scenarios_prix: ScenarioPrix[];
   references_dvf: ReferenceDvf[];
   base_mediane: number;
   ajustements: Ajustement[];

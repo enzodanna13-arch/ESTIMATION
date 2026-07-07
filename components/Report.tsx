@@ -402,7 +402,10 @@ export default function Report({
                             ) : (
                               a.titre
                             )}
-                            <span className="sub">{a.comparaison || a.source}</span>
+                            <span className="sub">
+                              {a.positionnement ? `${a.positionnement.charAt(0).toUpperCase()}${a.positionnement.slice(1)} · ` : ""}
+                              {a.comparaison || a.source}
+                            </span>
                           </div>
                         </div>
                       </td>
@@ -434,7 +437,28 @@ export default function Report({
             </>
           )}
 
-          <div className="callout" style={{ marginTop: 16 }}>{report.analyse_invendus}</div>
+          {report.audit_concurrentiel.nb_annonces_analysees > 0 && (
+            <>
+              <div style={{ height: 18 }} />
+              <div className="eyebrow" style={{ color: "var(--ink-45)" }}>Audit du marché — chiffres clés</div>
+              <hr className="rule" style={{ margin: "8px 0 8px" }} />
+              <div className="kpi-row" style={{ marginBottom: 12 }}>
+                <div className="kpi"><div className="k">Annonces analysées</div><div className="v">{report.audit_concurrentiel.nb_annonces_analysees}</div></div>
+                <div className="kpi"><div className="k">€/m² plancher</div><div className="v" style={{ fontSize: "13pt" }}>{report.audit_concurrentiel.prix_m2_min > 0 ? int.format(report.audit_concurrentiel.prix_m2_min) : "—"}</div></div>
+                <div className="kpi"><div className="k">€/m² médian</div><div className="v" style={{ fontSize: "13pt" }}>{report.audit_concurrentiel.prix_m2_median > 0 ? int.format(report.audit_concurrentiel.prix_m2_median) : "—"}</div></div>
+                <div className="kpi"><div className="k">€/m² plafond</div><div className="v" style={{ fontSize: "13pt" }}>{report.audit_concurrentiel.prix_m2_max > 0 ? int.format(report.audit_concurrentiel.prix_m2_max) : "—"}</div></div>
+              </div>
+              {report.audit_concurrentiel.tension_marche && (
+                <p style={{ fontSize: "9.5pt", color: "var(--ink-70)" }}>
+                  <b style={{ color: "var(--ink)" }}>Tension du marché :</b> {report.audit_concurrentiel.tension_marche}
+                </p>
+              )}
+            </>
+          )}
+
+          <div className="callout" style={{ marginTop: 16 }}>
+            {report.audit_concurrentiel.synthese || report.analyse_invendus}
+          </div>
 
           <Foot left="Prix affichés — non actés · usage strictement indicatif" right={`Réf. ${refDossier}`} />
         </section>
@@ -562,21 +586,34 @@ export default function Report({
           <SectionTitle idx={secReco} title="Recommandations commerciales" />
           <div style={{ height: 20 }} />
 
-          <div className="reco-grid">
-            <div className="reco">
-              <div className="t">Prix de présentation</div>
-              <div className="big">{euro.format(prixPresentation)}</div>
-              <p>
-                Positionnement offrant une marge de négociation d&apos;environ {margeNego} % tout en
-                restant crédible face aux dernières ventes du secteur.
-              </p>
+          {report.scenarios_prix.length >= 3 ? (
+            <div className="reco-grid" style={{ gridTemplateColumns: "repeat(3, 1fr)" }}>
+              {report.scenarios_prix.slice(0, 3).map((sc, i) => (
+                <div key={i} className="reco" style={sc.strategie === "Prix optimal" ? { borderColor: "var(--gold)", borderWidth: 2 } : undefined}>
+                  <div className="t">{sc.strategie}{sc.strategie === "Prix optimal" ? " ★" : ""}</div>
+                  <div className="big" style={{ fontSize: "20pt" }}>{euro.format(sc.prix)}</div>
+                  <p style={{ marginBottom: 6 }}><b style={{ color: "var(--ink)" }}>Délai : {sc.delai}</b></p>
+                  <p>{sc.commentaire}</p>
+                </div>
+              ))}
             </div>
-            <div className="reco">
-              <div className="t">Délai estimé</div>
-              <div className="big" style={{ fontSize: "17pt" }}>{report.delai_vente_estime}</div>
-              <p>Sur la base des délais observés pour cette typologie au prix conseillé, hors saisonnalité défavorable.</p>
+          ) : (
+            <div className="reco-grid">
+              <div className="reco">
+                <div className="t">Prix de présentation</div>
+                <div className="big">{euro.format(prixPresentation)}</div>
+                <p>
+                  Positionnement offrant une marge de négociation d&apos;environ {margeNego} % tout en
+                  restant crédible face aux dernières ventes du secteur.
+                </p>
+              </div>
+              <div className="reco">
+                <div className="t">Délai estimé</div>
+                <div className="big" style={{ fontSize: "17pt" }}>{report.delai_vente_estime}</div>
+                <p>Sur la base des délais observés pour cette typologie au prix conseillé, hors saisonnalité défavorable.</p>
+              </div>
             </div>
-          </div>
+          )}
 
           {report.etapes_commercialisation.length > 0 && (
             <>
