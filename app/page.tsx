@@ -285,15 +285,22 @@ export default function Home() {
     setLoadingStatus("");
     setError(null);
     try {
-      // Phase 1 : ventes réelles DVF + audit concurrentiel web
-      const marchePhase = await streamPhase({ ...input, phase: "marche" });
+      // Phase 1 : ventes réelles DVF + audit concurrentiel web (sans les photos,
+      // inutiles à ce stade). Si elle échoue (audit trop long), on continue
+      // quand même : le dossier sera produit avec les seules données DVF.
+      let marche = null;
+      try {
+        const marchePhase = await streamPhase({ ...input, photos: [], phase: "marche" });
+        marche = marchePhase.marche ?? null;
+        setLoadingStatus("Étude de marché terminée — analyse du bien et rédaction du dossier…");
+      } catch {
+        setLoadingStatus("Audit web trop long — poursuite de l'estimation avec les données DVF…");
+      }
       // Phase 2 : analyse des photos + rédaction du dossier final
-      setLoadingStatus("Étude de marché terminée — analyse du bien et rédaction du dossier…");
       const rapportPhase = await streamPhase({
         ...input,
         phase: "rapport",
-        marche: marchePhase.marche ?? null,
-        dvfSales: marchePhase.dvfSales ?? [],
+        marche,
       });
       setResult({
         report: rapportPhase.report,

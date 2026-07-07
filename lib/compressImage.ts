@@ -4,12 +4,13 @@ import type { PhotoInput } from "./types";
 // avec 20 photos, chaque image doit rester ≈ 200 Ko pour que la requête
 // tienne sous la limite des fonctions serverless (~4,5 Mo).
 const STEPS: { dimension: number; quality: number }[] = [
-  { dimension: 1280, quality: 0.8 },
-  { dimension: 1280, quality: 0.65 },
-  { dimension: 1024, quality: 0.6 },
-  { dimension: 900, quality: 0.5 },
+  { dimension: 1280, quality: 0.75 },
+  { dimension: 1150, quality: 0.62 },
+  { dimension: 1000, quality: 0.55 },
+  { dimension: 880, quality: 0.48 },
+  { dimension: 800, quality: 0.42 },
 ];
-const TARGET_BASE64_CHARS = 270_000; // ≈ 200 Ko binaires
+const TARGET_BASE64_CHARS = 190_000; // ≈ 140 Ko binaires — 20 photos ≈ 3,8 Mo
 
 export async function compressImage(file: File): Promise<PhotoInput> {
   const bitmap = await createImageBitmap(file);

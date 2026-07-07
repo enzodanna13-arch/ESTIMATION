@@ -153,7 +153,7 @@ const JSON_RULE = `FORMAT DE SORTIE (impératif) : réponds EXCLUSIVEMENT par un
 const MARKET_SYSTEM = `Tu es un analyste pricing immobilier. Tu conduis un AUDIT CONCURRENTIEL complet du marché local pour préparer un avis de valeur.
 
 PROTOCOLE (obligatoire, exhaustif) :
-1. RECENSEMENT — balaie le marché actif sous plusieurs angles avec web_search (ville + quartier, type + surface, baromètres multiples, annonces récentes vs anciennes) : vise 8 à 12 annonces comparables examinées ; restitue les 6 à 8 plus pertinentes, chacune classée supérieur / équivalent / inférieur vs le bien.
+1. RECENSEMENT — balaie le marché actif sous plusieurs angles avec web_search (ville + quartier, type + surface, baromètres multiples, annonces récentes vs anciennes) : vise 6 à 10 annonces comparables examinées — sois EFFICACE : requêtes larges et bien choisies plutôt que nombreuses ; restitue les 6 à 8 plus pertinentes, chacune classée supérieur / équivalent / inférieur vs le bien.
 2. VÉRIFICATION — pour chaque annonce retenue, essaie d'ouvrir la page avec web_fetch pour vérifier prix/surface et récupérer l'URL de la photo principale (og:image) et de l'annonce. Champ vide si introuvable — n'invente JAMAIS une URL, un prix ou une annonce.
 3. CARTOGRAPHIE — min / médiane / max des €/m² observés, tension du marché (volume d'offre, vitesse de rotation, seuils où les annonces stagnent). Les annonces anciennes/re-publiées/baissées jouent le rôle d'invendus : elles révèlent le plafond que le marché refuse.
 4. ZONE GAGNANTE — détermine la zone de prix où le bien est objectivement le meilleur choix de sa catégorie et explique pourquoi dans audit_concurrentiel.synthese.
@@ -310,7 +310,7 @@ ${JSON.stringify(MARKET_SCHEMA)}`;
 
   let messages: Anthropic.MessageParam[] = [{ role: "user", content: text }];
   let message: Anthropic.Message;
-  const MAX_CONTINUATIONS = 5;
+  const MAX_CONTINUATIONS = 4;
   let continuations = 0;
   onProgress("Audit du marché : recherche des annonces concurrentes sur le web…");
   for (;;) {
@@ -320,8 +320,8 @@ ${JSON.stringify(MARKET_SCHEMA)}`;
       thinking: { type: "adaptive" },
       system: MARKET_SYSTEM,
       tools: [
-        { type: "web_search_20260209", name: "web_search", max_uses: 8 },
-        { type: "web_fetch_20260209", name: "web_fetch", max_uses: 6 },
+        { type: "web_search_20260209", name: "web_search", max_uses: 6 },
+        { type: "web_fetch_20260209", name: "web_fetch", max_uses: 4 },
       ],
       output_config: { effort },
       messages,
