@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import type { EstimateResponse, PropertyInput } from "@/lib/types";
 
 const euro = new Intl.NumberFormat("fr-FR", {
@@ -7,77 +8,59 @@ const euro = new Intl.NumberFormat("fr-FR", {
   currency: "EUR",
   maximumFractionDigits: 0,
 });
+const int = new Intl.NumberFormat("fr-FR", { maximumFractionDigits: 0 });
 
-const DPE_COLORS: Record<string, string> = {
-  A: "#1d9d51", B: "#52b153", C: "#a5c93b", D: "#f2e211", E: "#f0b418", F: "#e97f24", G: "#e3282a",
+const AGENCE = {
+  nom: process.env.NEXT_PUBLIC_AGENCE_NOM ?? "CENTURY 21",
+  sceau: process.env.NEXT_PUBLIC_AGENCE_SCEAU ?? "21",
+  enseigne: process.env.NEXT_PUBLIC_AGENCE_ENSEIGNE ?? "Icaza Immobilier",
+  adresse: process.env.NEXT_PUBLIC_AGENCE_ADRESSE ?? "32 avenue de la Paix, 13500 Martigues",
+  tel: process.env.NEXT_PUBLIC_AGENCE_TEL ?? "04 30 22 03 94",
+  site: process.env.NEXT_PUBLIC_AGENCE_SITE ?? "icazaimmobilier.com",
 };
 
-function ConfidenceGauge({ value }: { value: number }) {
-  const v = Math.max(0, Math.min(100, value));
-  const color = v >= 70 ? "#34d399" : v >= 40 ? "#fbbf24" : "#f87171";
-  const r = 34;
-  const c = 2 * Math.PI * r;
+function PageHead({ page }: { page: number }) {
   return (
-    <div className="relative h-24 w-24">
-      <svg viewBox="0 0 80 80" className="h-full w-full -rotate-90">
-        <circle cx="40" cy="40" r={r} fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="8" />
-        <circle
-          cx="40" cy="40" r={r} fill="none" stroke={color} strokeWidth="8" strokeLinecap="round"
-          strokeDasharray={c} strokeDashoffset={c * (1 - v / 100)}
-          style={{ transition: "stroke-dashoffset 1s ease" }}
-        />
-      </svg>
-      <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="text-xl font-bold text-white">{v}</span>
-        <span className="text-[10px] uppercase tracking-wide text-slate-300">confiance</span>
-      </div>
+    <div className="head">
+      <span className="c21">{AGENCE.nom}</span>
+      <span className="pg">Avis de valeur · {String(page).padStart(2, "0")}</span>
     </div>
   );
 }
 
-function RangeBar({ basse, estime, haute, vendeur }: { basse: number; estime: number; haute: number; vendeur: number | null }) {
-  const min = Math.min(basse, vendeur ?? basse) * 0.97;
-  const max = Math.max(haute, vendeur ?? haute) * 1.03;
-  const pos = (v: number) => `${((v - min) / (max - min)) * 100}%`;
+function SectionTitle({ idx, title }: { idx: string; title: string }) {
   return (
-    <div className="mt-6">
-      <div className="relative h-3 rounded-full bg-white/10">
-        <div
-          className="absolute h-3 rounded-full bg-emerald-400/50"
-          style={{ left: pos(basse), width: `calc(${pos(haute)} - ${pos(basse)})` }}
-        />
-        <div className="absolute -top-1 h-5 w-1.5 -translate-x-1/2 rounded bg-white" style={{ left: pos(estime) }} />
-        {vendeur !== null && (
-          <div className="absolute -top-1 h-5 w-1.5 -translate-x-1/2 rounded bg-red-400" style={{ left: pos(vendeur) }} />
-        )}
+    <>
+      <div className="section-title">
+        <span className="idx">{idx}</span>
+        <h2>{title}</h2>
       </div>
-      <div className="relative mt-2 h-8 text-[11px] text-slate-300">
-        <span className="absolute -translate-x-1/2" style={{ left: pos(basse) }}>{euro.format(basse)}</span>
-        <span className="absolute -translate-x-1/2 font-bold text-white" style={{ left: pos(estime) }}>{euro.format(estime)}</span>
-        <span className="absolute -translate-x-1/2" style={{ left: pos(haute) }}>{euro.format(haute)}</span>
-      </div>
-      {vendeur !== null && (
-        <p className="mt-1 text-xs text-slate-300">
-          <span className="mr-1.5 inline-block h-2 w-2 rounded-full bg-red-400" />
-          Prix vendeur : <strong className="text-white">{euro.format(vendeur)}</strong>{" "}
-          ({vendeur > estime ? "+" : ""}{(((vendeur - estime) / estime) * 100).toFixed(1)} % vs estimation)
-        </p>
-      )}
+      <hr className="rule-gold" />
+    </>
+  );
+}
+
+function Foot({ left, right }: { left: string; right: string }) {
+  return (
+    <div className="foot">
+      <span>{left}</span>
+      <span>{right}</span>
     </div>
   );
 }
 
-function Section({ icon, title, children, className = "" }: { icon: string; title: string; children: React.ReactNode; className?: string }) {
+function Dots({ note }: { note: number }) {
+  const n = Math.max(0, Math.min(5, Math.round(note)));
   return (
-    <section className={`break-inside-avoid rounded-2xl border border-slate-200 bg-white p-5 shadow-sm ${className}`}>
-      <h3 className="mb-2.5 flex items-center gap-2 text-sm font-bold text-navy">
-        <span aria-hidden>{icon}</span>
-        {title}
-      </h3>
-      <div className="whitespace-pre-wrap text-sm leading-relaxed text-slate-600">{children}</div>
-    </section>
+    <span className="dots">
+      {[1, 2, 3, 4, 5].map((i) => (
+        <i key={i} className={i <= n ? "on" : ""} />
+      ))}
+    </span>
   );
 }
+
+const ROMANS = ["I", "II", "III", "IV", "V", "VI", "VII"];
 
 export default function Report({
   result,
@@ -88,17 +71,98 @@ export default function Report({
   input: PropertyInput;
   onReset: () => void;
 }) {
-  const { report, dvfSales, engine } = result;
-  const sellerPrice = input.prixSouhaiteVendeur;
+  const { report, engine } = result;
   const today = new Date().toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });
+  const year = new Date().getFullYear();
+  const refDossier = useMemo(
+    () => `EST-${year}-${String(((report.prix_estime % 9973) + (input.surfaceHabitable ?? 0)) % 10000).padStart(4, "0")}`,
+    [year, report.prix_estime, input.surfaceHabitable],
+  );
+
+  const clientName = [input.clientCivilite, input.clientPrenom, input.clientNom].filter(Boolean).join(" ");
+  const typeLabel =
+    input.typeBien === "appartement" && input.nbPieces
+      ? `Appartement T${input.nbPieces}`
+      : input.typeBien.charAt(0).toUpperCase() + input.typeBien.slice(1) + (input.nbPieces ? ` ${input.nbPieces} pièces` : "");
+
+  const prixPresentation = report.prix_presentation > 0 ? report.prix_presentation : report.prix_estime;
+  const surface = input.surfaceHabitable ?? 0;
+  const margeNego = report.prix_estime > 0 ? (((prixPresentation - report.prix_estime) / report.prix_estime) * 100).toFixed(1) : "0";
+
   const photoAnalyses = report.analyse_par_photo.filter((pa) => input.photos[pa.photo - 1]);
-  const annotatedIndexes = new Set(photoAnalyses.map((pa) => pa.photo - 1));
-  const otherPhotos = input.photos.map((p, i) => ({ p, i })).filter(({ i }) => !annotatedIndexes.has(i));
+
+  // Concurrence : barre de positionnement en €/m²
   const competitors = report.annonces_concurrentes;
+  const compM2 = competitors.map((c) => c.prix_m2).filter((v) => v > 0);
+  const ourM2 = surface > 0 ? Math.round(prixPresentation / surface) : report.prix_m2;
+  const posMin = compM2.length ? Math.min(...compM2, ourM2) : 0;
+  const posMax = compM2.length ? Math.max(...compM2, ourM2) : 0;
+  const posPct = (v: number) =>
+    posMax > posMin ? `${Math.round(((v - posMin) / (posMax - posMin)) * 92 + 4)}%` : "50%";
+  const isStale = (a: (typeof competitors)[number]) =>
+    /invendu|ancien|baiss|mois|re-?publi/i.test(`${a.anciennete} ${a.comparaison}`);
+
+  // Références DVF + médiane
+  const refs = report.references_dvf;
+  const medPrix = refs.length
+    ? [...refs.map((r) => r.prix)].sort((a, b) => a - b)[Math.floor(refs.length / 2)]
+    : 0;
+  const medM2 = refs.length
+    ? [...refs.map((r) => r.prix_m2)].sort((a, b) => a - b)[Math.floor(refs.length / 2)]
+    : 0;
+
+  const tags = [
+    ...(input.exterieur.length ? input.exterieur : []),
+    input.vue && input.vue !== "Vis-à-vis important" ? `Vue ${input.vue.toLowerCase()}` : null,
+    input.ascenseur ? "Ascenseur" : null,
+    input.stationnement && input.stationnement !== "Aucun" ? input.stationnement : null,
+    ...(input.exposition.length ? [input.exposition.join("-")] : []),
+    input.cave ? "Cave" : null,
+    ...input.equipements.slice(0, 3),
+  ].filter(Boolean) as string[];
+
+  const specs: [string, string][] = (
+    [
+      ["Type", typeLabel],
+      ["Surface habitable", `${surface} m²`],
+      input.surfaceTerrain ? ["Terrain", `${input.surfaceTerrain} m²`] : null,
+      input.etage ? ["Étage / niveaux", input.etage + (input.ascenseur ? " (avec asc.)" : "")] : null,
+      input.anneeConstruction ? ["Année", input.anneeConstruction] : null,
+      input.nbChambres ? ["Chambres", String(input.nbChambres)] : null,
+      input.stationnement ? ["Stationnement", input.stationnement] : null,
+      input.dpe ? ["DPE / GES", `${input.dpe}${input.ges ? ` / ${input.ges}` : ""}`] : null,
+      input.chauffage ? ["Chauffage", input.chauffage] : null,
+      input.chargesCopro ? ["Charges copro", `${int.format(input.chargesCopro * 12)} € / an`] : null,
+      input.taxeFonciere ? ["Taxe foncière", `${int.format(input.taxeFonciere)} €`] : null,
+      input.etatGeneral ? ["État général", input.etatGeneral] : null,
+    ] as ([string, string] | null)[]
+  ).filter(Boolean) as [string, string][];
+
+  // Numérotation des sections (la page photos n'existe que s'il y a des photos)
+  const hasPhotoPage = photoAnalyses.length > 0;
+  let sec = 0;
+  const S = () => ROMANS[sec++];
+  const secSynthese = S();
+  const secBien = S();
+  const secVisuel = S();
+  const secPhotos = hasPhotoPage ? S() : "";
+  const secMethode = S();
+  const secReco = S();
+  let pageNo = 1;
+  const P = () => ++pageNo;
+  const pgSynthese = P();
+  const pgBien = P();
+  const pgVisuel = P();
+  const pgPhotos = hasPhotoPage ? P() : 0;
+  const pgMethode = P();
+  const pgReco = P();
+
+  const footLeft = `${AGENCE.nom} ${AGENCE.enseigne} — ${AGENCE.adresse} · ${AGENCE.tel}`;
 
   return (
-    <div className="rise-in space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-3 print:hidden">
+    <div>
+      {/* Barre d'actions (écran uniquement) */}
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3 print:hidden">
         <h2 className="text-2xl font-bold text-navy">Dossier d&apos;estimation</h2>
         <div className="flex items-center gap-2">
           <span
@@ -117,245 +181,431 @@ export default function Report({
         </div>
       </div>
 
-      {/* Page de garde du dossier */}
-      <div className="break-inside-avoid rounded-2xl bg-navy-deep p-6 text-white shadow-lg sm:p-8">
-        <div className="mb-5 flex flex-wrap items-center justify-between gap-3 border-b border-white/15 pb-4">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-copper text-base font-black">E</div>
-            <div>
-              <p className="text-sm font-bold leading-tight">Avis de valeur</p>
-              <p className="text-xs text-slate-300">Édité le {today}</p>
+      <div className="dossier">
+        {/* ============ COUVERTURE ============ */}
+        <section className="page cover">
+          <div className="frame" />
+          <div className="cover-top">
+            <div className="brand-seal">
+              <div className="seal-mark">{AGENCE.sceau}</div>
+              <div className="txt">
+                <span className="c21">{AGENCE.nom}</span>
+                <span className="sub">{AGENCE.enseigne} · {input.ville}</span>
+              </div>
+            </div>
+            <div className="cover-ref">Réf. dossier<br />{refDossier}</div>
+          </div>
+          <div className="cover-center">
+            <div className="eyebrow">Estimation confidentielle</div>
+            <div className="cover-title">Avis<br />de Valeur</div>
+            <div className="cover-addr">
+              {typeLabel} — {surface} m²
+              <span>
+                {input.quartier ? `${input.quartier} · ` : `${input.adresse} · `}
+                {input.codePostal} {input.ville}
+              </span>
             </div>
           </div>
-          <div className="text-right text-xs text-slate-300">
-            <p className="text-sm font-semibold text-white">{input.adresse}</p>
-            <p>{input.codePostal} {input.ville}{input.quartier ? ` — ${input.quartier}` : ""}</p>
+          <div className="cover-bottom">
+            <div>
+              <div className="lbl">Établi pour</div>
+              <div className="val">{clientName || "—"}</div>
+            </div>
+            <div>
+              <div className="lbl">Par</div>
+              <div className="val">{input.negociateur || AGENCE.enseigne}</div>
+            </div>
+            <div>
+              <div className="lbl">Date</div>
+              <div className="val">{today}</div>
+            </div>
           </div>
-        </div>
+        </section>
 
-        {(input.clientNom || input.negociateur) && (
-          <div className="mb-5 flex flex-wrap items-center justify-between gap-x-6 gap-y-2 rounded-xl bg-white/5 px-4 py-3 text-xs">
-            <div>
-              <p className="font-semibold uppercase tracking-wide text-copper">Dossier préparé pour</p>
-              <p className="mt-0.5 text-sm font-bold text-white">
-                {[input.clientCivilite, input.clientPrenom, input.clientNom].filter(Boolean).join(" ") || "—"}
-              </p>
-              <p className="text-slate-300">
-                {[input.clientTel, input.clientEmail].filter(Boolean).join(" · ")}
-              </p>
+        {/* ============ SYNTHÈSE ============ */}
+        <section className="page">
+          <PageHead page={pgSynthese} />
+          <SectionTitle idx={secSynthese} title="Synthèse de l'estimation" />
+          <p className="section-lead">{report.positionnement_marche}</p>
+
+          <div className="valuation">
+            <div className="cell">
+              <div className="lbl">Fourchette basse</div>
+              <div className="amt">{euro.format(report.fourchette_basse)}</div>
             </div>
-            <div className="text-right">
-              {input.horizonVente && (
-                <p className="text-slate-300">
-                  Projet de vente : <span className="font-semibold text-white">{input.horizonVente}</span>
-                </p>
-              )}
-              {input.negociateur && (
-                <p className="mt-0.5 text-slate-300">
-                  Votre conseiller : <span className="font-semibold text-white">{input.negociateur}</span>
-                </p>
-              )}
+            <div className="cell center">
+              <div className="lbl">Valeur retenue</div>
+              <div className="amt">{euro.format(report.prix_estime)}</div>
+            </div>
+            <div className="cell">
+              <div className="lbl">Fourchette haute</div>
+              <div className="amt">{euro.format(report.fourchette_haute)}</div>
             </div>
           </div>
+
+          <div className="kpi-row">
+            <div className="kpi"><div className="k">Surface</div><div className="v">{surface} <small>m²</small></div></div>
+            <div className="kpi"><div className="k">Prix retenu / m²</div><div className="v">{int.format(report.prix_m2)} <small>€/m²</small></div></div>
+            <div className="kpi"><div className="k">DPE</div><div className="v">{input.dpe || "—"}</div></div>
+            <div className="kpi"><div className="k">Délai de vente estimé</div><div className="v" style={{ fontSize: "11pt", lineHeight: 1.3 }}>{report.delai_vente_estime}</div></div>
+          </div>
+
+          <div className="callout">
+            <b>Prix de présentation conseillé : {euro.format(prixPresentation)}.</b>{" "}
+            Ce positionnement conserve une marge de négociation d&apos;environ {margeNego} % tout en
+            restant cohérent avec les références de vente et la concurrence active du secteur.
+            {input.prixSouhaiteVendeur ? (
+              <>
+                {" "}Prix envisagé par le vendeur : <b>{euro.format(input.prixSouhaiteVendeur)}</b>{" "}
+                ({input.prixSouhaiteVendeur > report.prix_estime ? "+" : ""}
+                {(((input.prixSouhaiteVendeur - report.prix_estime) / report.prix_estime) * 100).toFixed(1)} % vs valeur retenue).
+              </>
+            ) : null}
+          </div>
+
+          <Foot left={footLeft} right="Document confidentiel · sans valeur d'expertise judiciaire" />
+        </section>
+
+        {/* ============ LE BIEN ============ */}
+        <section className="page">
+          <PageHead page={pgBien} />
+          <SectionTitle idx={secBien} title="Le bien" />
+          <div style={{ height: 22 }} />
+          <div className="split">
+            <div className="prose">
+              <h3>Description</h3>
+              {report.description_bien ? (
+                <p>{report.description_bien}</p>
+              ) : (
+                <p>
+                  {typeLabel} de {surface} m² situé {input.adresse}, {input.codePostal} {input.ville}
+                  {input.quartier ? ` (${input.quartier})` : ""}.{" "}
+                  {input.etatGeneral ? `État général : ${input.etatGeneral.toLowerCase()}. ` : ""}
+                  {input.commentaires}
+                </p>
+              )}
+              <div className="tags">
+                {tags.map((t, i) => (
+                  <span key={i} className="tag">{t}</span>
+                ))}
+              </div>
+            </div>
+            <div>
+              <div className="specs">
+                {specs.map(([k, v]) => (
+                  <div key={k} className="row"><span className="k">{k}</span><span className="v">{v}</span></div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {(report.points_forts.length > 0 || report.points_faibles.length > 0) && (
+            <div className="pol">
+              <div className="box">
+                <h4>Points valorisants</h4>
+                <ul>
+                  {report.points_forts.map((p, i) => (
+                    <li key={i}>{p}</li>
+                  ))}
+                </ul>
+              </div>
+              <div className="box neg">
+                <h4>Points de vigilance</h4>
+                <ul>
+                  {report.points_faibles.map((p, i) => (
+                    <li key={i}>{p}</li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          )}
+
+          <Foot left={`${AGENCE.nom} ${AGENCE.enseigne}`} right={`Réf. ${refDossier}`} />
+        </section>
+
+        {/* ============ ANALYSE VISUELLE & CONCURRENCE ============ */}
+        <section className="page">
+          <PageHead page={pgVisuel} />
+          <SectionTitle idx={secVisuel} title="Analyse visuelle & concurrence" />
+          <p className="section-lead">
+            L&apos;état du bien est évalué à partir des photographies fournies, puis intégré aux
+            ajustements. Les biens concurrents affichés sur le marché — relevés automatiquement sur le
+            web — servent au positionnement commercial ; ils ne fondent jamais la valeur, établie par
+            les mutations réelles.
+          </p>
+
+          {report.etat_notes.length > 0 && (
+            <>
+              <div className="eyebrow" style={{ color: "var(--ink-45)" }}>État du bien — lecture des photographies</div>
+              <hr className="rule" style={{ margin: "8px 0 2px" }} />
+              <div className="cond">
+                {report.etat_notes.map((n, i) => (
+                  <div key={i} className="cr">
+                    <span className="lab">{n.categorie}</span>
+                    <Dots note={n.note} />
+                  </div>
+                ))}
+              </div>
+              <div className="cond-synth">
+                <span className="l">Coefficient d&apos;état retenu</span>
+                <span className="r">
+                  {report.coefficient_etat || "—"}
+                  {report.impact_etat !== 0
+                    ? ` · impact net ${report.impact_etat > 0 ? "+" : "−"} ${int.format(Math.abs(report.impact_etat))} €`
+                    : ""}
+                </span>
+              </div>
+              <p className="photo-note">
+                Analyse indicative issue des visuels transmis ; ne se substitue pas au constat sur place
+                effectué lors du rendez-vous d&apos;estimation.
+              </p>
+              <div style={{ height: 20 }} />
+            </>
+          )}
+
+          {competitors.length > 0 && (
+            <>
+              <div className="eyebrow" style={{ color: "var(--ink-45)" }}>
+                Concurrence directe — annonces vives équivalentes (prix affichés)
+              </div>
+              <hr className="rule" style={{ margin: "8px 0 4px" }} />
+              <table>
+                <thead>
+                  <tr>
+                    <th>Bien concurrent en vente</th>
+                    <th className="r">Surface</th>
+                    <th className="r">Prix affiché</th>
+                    <th className="r">€ / m²</th>
+                    <th className="r">Ancienneté</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {competitors.map((a, i) => (
+                    <tr key={i} className={isStale(a) ? "warn-row" : ""}>
+                      <td>
+                        {a.titre}
+                        <span className="sub">{a.comparaison || a.source}</span>
+                      </td>
+                      <td className="r">{a.surface > 0 ? `${int.format(a.surface)} m²` : "—"}</td>
+                      <td className="r">{a.prix > 0 ? <span className="money">{euro.format(a.prix)}</span> : "—"}</td>
+                      <td className="r">{a.prix_m2 > 0 ? int.format(a.prix_m2) : "—"}</td>
+                      <td className="r">{a.anciennete || "—"}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+
+              {compM2.length >= 2 && posMax > posMin && (
+                <div className="posbar">
+                  <div className="track">
+                    <div className="range" style={{ left: 0, right: 0 }} />
+                    <div className="mark" style={{ left: posPct(posMin) }} />
+                    <div className="ptag top" style={{ left: posPct(posMin) }}>{int.format(posMin)} €/m²</div>
+                    <div className="mark" style={{ left: posPct(posMax) }} />
+                    <div className="ptag top" style={{ left: posPct(posMax) }}>{int.format(posMax)} €/m²</div>
+                    <div className="mark us" style={{ left: posPct(ourM2) }} />
+                    <div className="ptag bot" style={{ left: posPct(ourM2) }}>
+                      Notre prix conseillé · {euro.format(prixPresentation)}
+                    </div>
+                  </div>
+                  <div className="ends"><span>Bas du marché affiché</span><span>Haut du marché affiché</span></div>
+                </div>
+              )}
+            </>
+          )}
+
+          <div className="callout" style={{ marginTop: 16 }}>{report.analyse_invendus}</div>
+
+          <Foot left="Prix affichés — non actés · usage strictement indicatif" right={`Réf. ${refDossier}`} />
+        </section>
+
+        {/* ============ LE BIEN EN IMAGES ============ */}
+        {hasPhotoPage && (
+          <section className="page">
+            <PageHead page={pgPhotos} />
+            <SectionTitle idx={secPhotos} title="Le bien en images" />
+            <p className="section-lead">{report.analyse_photos}</p>
+            <div className="photo-grid">
+              {photoAnalyses.slice(0, 6).map((pa) => {
+                const photo = input.photos[pa.photo - 1];
+                return (
+                  <div key={pa.photo} className="photo-card">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={`data:${photo.mediaType};base64,${photo.data}`} alt={pa.titre} />
+                    <div className="pc-body">
+                      <div className="pc-title">{pa.titre}</div>
+                      <ul>
+                        {pa.bons_points.slice(0, 3).map((b, i) => (
+                          <li key={`b${i}`} className="plus">{b}</li>
+                        ))}
+                        {pa.defauts.slice(0, 3).map((d, i) => (
+                          <li key={`d${i}`} className="moins">{d}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            <Foot left={`${AGENCE.nom} ${AGENCE.enseigne}`} right={`Réf. ${refDossier}`} />
+          </section>
         )}
 
-        <div className="mb-5 flex flex-wrap gap-2 text-xs">
-          {[
-            `${input.typeBien.charAt(0).toUpperCase()}${input.typeBien.slice(1)}`,
-            `${input.surfaceHabitable ?? "?"} m²`,
-            input.nbPieces ? `${input.nbPieces} pièces` : null,
-            input.nbChambres ? `${input.nbChambres} ch.` : null,
-            input.etage ? `Étage ${input.etage}` : null,
-            input.anneeConstruction ? `Constr. ${input.anneeConstruction}` : null,
-            ...(input.exterieur.length ? input.exterieur : []),
-            input.ascenseur ? "Ascenseur" : null,
-            input.cave ? "Cave" : null,
-            input.stationnement || null,
-          ]
-            .filter(Boolean)
-            .map((tag, i) => (
-              <span key={i} className="rounded-full border border-white/20 px-2.5 py-1 text-slate-200">{tag}</span>
-            ))}
-          {input.dpe && (
-            <span className="rounded-full px-2.5 py-1 font-bold text-white" style={{ background: DPE_COLORS[input.dpe] ?? "#64748b" }}>
-              DPE {input.dpe}
-            </span>
-          )}
-        </div>
+        {/* ============ MÉTHODOLOGIE & COMPARABLES ============ */}
+        <section className="page">
+          <PageHead page={pgMethode} />
+          <SectionTitle idx={secMethode} title="Méthodologie & comparables" />
+          <p className="section-lead">{report.analyse_dvf}</p>
 
-        <div className="flex flex-wrap items-start justify-between gap-6">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-widest text-copper">Prix de vente recommandé</p>
-            <p className="mt-1 text-4xl font-black tracking-tight sm:text-5xl">{euro.format(report.prix_estime)}</p>
-            <div className="mt-3 flex flex-wrap gap-x-6 gap-y-1 text-sm text-slate-300">
-              <span>{euro.format(report.prix_m2)} / m²</span>
-              <span>⏱ Délai de vente estimé : <strong className="text-white">{report.delai_vente_estime}</strong></span>
+          <div className="method">
+            <div className="step">
+              <div className="n">01</div>
+              <h4>Sélection DVF</h4>
+              <p>Ventes réelles actées de biens comparables (typologie, surface, secteur) issues des données publiques DVF.</p>
+            </div>
+            <div className="step">
+              <div className="n">02</div>
+              <h4>Ajustement</h4>
+              <p>Corrections pour surface, étage, extérieur, énergie et vue, complétées par le coefficient d&apos;état issu des photos.</p>
+            </div>
+            <div className="step">
+              <div className="n">03</div>
+              <h4>Positionnement</h4>
+              <p>Confrontation à la concurrence active et aux invendus +90 jours, à titre indicatif, jamais comme fondement de la valeur.</p>
             </div>
           </div>
-          <ConfidenceGauge value={report.indice_confiance} />
-        </div>
-        <RangeBar
-          basse={report.fourchette_basse}
-          estime={report.prix_estime}
-          haute={report.fourchette_haute}
-          vendeur={sellerPrice}
-        />
-      </div>
 
-      <Section icon="🎯" title="Positionnement stratégique">{report.positionnement_marche}</Section>
-
-      {/* Analyse photo par photo */}
-      {(photoAnalyses.length > 0 || otherPhotos.length > 0) && (
-        <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-          <h3 className="mb-4 flex items-center gap-2 text-sm font-bold text-navy">
-            <span aria-hidden>📷</span> Le bien en images — bons points & défauts
-          </h3>
-          {report.analyse_photos && (
-            <p className="mb-4 whitespace-pre-wrap text-sm leading-relaxed text-slate-600">{report.analyse_photos}</p>
-          )}
-          <div className="grid gap-4 sm:grid-cols-2">
-            {photoAnalyses.map((pa) => {
-              const photo = input.photos[pa.photo - 1];
-              return (
-                <div key={pa.photo} className="break-inside-avoid overflow-hidden rounded-xl border border-slate-200">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={`data:${photo.mediaType};base64,${photo.data}`}
-                    alt={pa.titre}
-                    className="h-44 w-full object-cover"
-                  />
-                  <div className="p-3.5">
-                    <p className="mb-2 text-sm font-bold text-navy">{pa.titre}</p>
-                    <ul className="space-y-1 text-xs">
-                      {pa.bons_points.map((b, i) => (
-                        <li key={`b${i}`} className="flex gap-1.5 text-emerald-700">
-                          <span className="mt-px font-bold">✚</span>{b}
-                        </li>
-                      ))}
-                      {pa.defauts.map((d, i) => (
-                        <li key={`d${i}`} className="flex gap-1.5 text-red-600">
-                          <span className="mt-px font-bold">−</span>{d}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-              );
-            })}
-            {otherPhotos.map(({ p, i }) => (
-              <div key={`o${i}`} className="overflow-hidden rounded-xl border border-slate-200">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={`data:${p.mediaType};base64,${p.data}`} alt={p.name} className="h-44 w-full object-cover" />
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
-
-      <div className="grid gap-4 md:grid-cols-3">
-        <Section icon="🏛️" title="Ventes réelles (DVF)">{report.analyse_dvf}</Section>
-        <Section icon="🔎" title="Concurrence en vente">{report.analyse_concurrence}</Section>
-        <Section icon="⏳" title="Invendus +90 jours">{report.analyse_invendus}</Section>
-      </div>
-
-      {/* Annonces concurrentes trouvées par l'IA */}
-      {competitors.length > 0 && (
-        <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-          <h3 className="mb-1 flex items-center gap-2 text-sm font-bold text-navy">
-            <span aria-hidden>🏘️</span> Annonces concurrentes sur le marché
-          </h3>
-          <p className="mb-4 text-xs text-slate-400">
-            Relevées automatiquement sur le web au moment de l&apos;estimation — la vitrine face à laquelle le bien sera comparé.
-          </p>
-          <div className="grid gap-3 sm:grid-cols-2">
-            {competitors.map((ad, i) => (
-              <div key={i} className="break-inside-avoid rounded-xl border border-slate-200 bg-slate-50 p-4">
-                <div className="mb-1.5 flex items-start justify-between gap-2">
-                  <p className="text-sm font-bold text-navy">{ad.titre}</p>
-                  {ad.anciennete && (
-                    <span className="shrink-0 rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold text-amber-700">
-                      {ad.anciennete}
-                    </span>
-                  )}
-                </div>
-                <div className="mb-2 flex flex-wrap items-baseline gap-x-3 gap-y-0.5">
-                  {ad.prix > 0 && <span className="text-lg font-black text-navy">{euro.format(ad.prix)}</span>}
-                  {ad.surface > 0 && <span className="text-xs text-slate-500">{ad.surface} m²</span>}
-                  {ad.prix_m2 > 0 && <span className="text-xs font-semibold text-copper">{euro.format(ad.prix_m2)}/m²</span>}
-                </div>
-                {ad.caracteristiques && <p className="text-xs text-slate-600">{ad.caracteristiques}</p>}
-                {ad.comparaison && <p className="mt-1.5 text-xs italic text-slate-500">→ {ad.comparaison}</p>}
-                {ad.source && <p className="mt-1.5 text-[10px] uppercase tracking-wide text-slate-400">Source : {ad.source}</p>}
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {(report.points_forts.length > 0 || report.points_faibles.length > 0) && (
-        <div className="grid gap-4 md:grid-cols-2">
-          <section className="break-inside-avoid rounded-2xl border border-emerald-200 bg-emerald-50 p-5">
-            <h3 className="mb-2.5 text-sm font-bold text-emerald-800">✚ Points forts</h3>
-            <ul className="space-y-1.5 text-sm text-emerald-900">
-              {report.points_forts.map((p, i) => (
-                <li key={i} className="flex gap-2"><span className="text-emerald-500">•</span>{p}</li>
-              ))}
-            </ul>
-          </section>
-          <section className="break-inside-avoid rounded-2xl border border-red-200 bg-red-50 p-5">
-            <h3 className="mb-2.5 text-sm font-bold text-red-800">− Points faibles</h3>
-            <ul className="space-y-1.5 text-sm text-red-900">
-              {report.points_faibles.map((p, i) => (
-                <li key={i} className="flex gap-2"><span className="text-red-400">•</span>{p}</li>
-              ))}
-            </ul>
-          </section>
-        </div>
-      )}
-
-      <Section icon="🧭" title="Stratégie de commercialisation">{report.strategie_commercialisation}</Section>
-      <Section icon="💬" title="Argumentaire vendeur (prêt à l'emploi)" className="border-copper/40 bg-copper-soft/30">
-        {report.argumentaire_vendeur}
-      </Section>
-
-      {dvfSales.length > 0 && (
-        <details className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm print:hidden">
-          <summary className="cursor-pointer text-sm font-bold text-navy">
-            Détail des {dvfSales.length} transactions DVF utilisées
-          </summary>
-          <div className="mt-3 overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead>
-                <tr className="border-b border-slate-200 text-slate-400">
-                  <th className="py-2 pr-4 font-semibold">Date</th>
-                  <th className="py-2 pr-4 font-semibold">Type</th>
-                  <th className="py-2 pr-4 font-semibold">Surface</th>
-                  <th className="py-2 pr-4 font-semibold">Prix</th>
-                  <th className="py-2 pr-4 font-semibold">€/m²</th>
-                  <th className="py-2 font-semibold">Commune</th>
-                </tr>
-              </thead>
-              <tbody>
-                {dvfSales.map((s, i) => (
-                  <tr key={i} className="border-b border-slate-100 text-slate-600">
-                    <td className="py-1.5 pr-4">{s.date}</td>
-                    <td className="py-1.5 pr-4">{s.typeLocal}</td>
-                    <td className="py-1.5 pr-4">{s.surface ?? "—"} m²</td>
-                    <td className="py-1.5 pr-4">{euro.format(s.valeurFonciere)}</td>
-                    <td className="py-1.5 pr-4">{s.prixM2 ? euro.format(s.prixM2) : "—"}</td>
-                    <td className="py-1.5">{s.commune}</td>
+          {refs.length > 0 && (
+            <>
+              <div style={{ height: 26 }} />
+              <div className="eyebrow" style={{ color: "var(--ink-45)" }}>Références de vente retenues — source DVF</div>
+              <hr className="rule" style={{ margin: "8px 0 4px" }} />
+              <table>
+                <thead>
+                  <tr>
+                    <th>Bien comparable</th>
+                    <th className="r">Surface</th>
+                    <th className="r">Date</th>
+                    <th className="r">Prix acté</th>
+                    <th className="r">€ / m²</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </details>
-      )}
+                </thead>
+                <tbody>
+                  {refs.map((r, i) => (
+                    <tr key={i}>
+                      <td>{r.localisation}<span className="sub">{r.detail}</span></td>
+                      <td className="r">{int.format(r.surface)} m²</td>
+                      <td className="r">{r.date}</td>
+                      <td className="r"><span className="money">{euro.format(r.prix)}</span></td>
+                      <td className="r">{int.format(r.prix_m2)}</td>
+                    </tr>
+                  ))}
+                  <tr className="median-row">
+                    <td>Médiane des références</td>
+                    <td className="r">—</td>
+                    <td className="r">—</td>
+                    <td className="r"><span className="money">{euro.format(medPrix)}</span></td>
+                    <td className="r">{int.format(medM2)}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </>
+          )}
 
-      <p className="hidden pt-2 text-center text-[10px] text-slate-400 print:block">
-        Dossier d&apos;estimation édité le {today} — {input.adresse}, {input.codePostal} {input.ville}. Estimation
-        indicative fondée sur les données DVF, le marché actif et l&apos;analyse IA ; ne remplace pas un avis de valeur signé.
-      </p>
+          {report.ajustements.length > 0 && report.base_mediane > 0 && (
+            <div className="adjust">
+              <div className="ar">
+                <span>Base médiane comparables ({surface} m²)</span>
+                <span className="money">{euro.format(report.base_mediane)}</span>
+              </div>
+              {report.ajustements.map((a, i) => (
+                <div key={i} className="ar">
+                  <span>{a.libelle}</span>
+                  <span className={a.montant >= 0 ? "plus" : "minus"}>
+                    {a.montant >= 0 ? "+" : "−"} {int.format(Math.abs(a.montant))} €
+                  </span>
+                </div>
+              ))}
+              <div className="ar total">
+                <span><b>Valeur vénale retenue</b></span>
+                <span className="money">{euro.format(report.prix_estime)}</span>
+              </div>
+            </div>
+          )}
+
+          <Foot left="Références DVF — données publiques Etalab, dernier millésime disponible" right={`Réf. ${refDossier}`} />
+        </section>
+
+        {/* ============ RECOMMANDATIONS ============ */}
+        <section className="page">
+          <PageHead page={pgReco} />
+          <SectionTitle idx={secReco} title="Recommandations commerciales" />
+          <div style={{ height: 20 }} />
+
+          <div className="reco-grid">
+            <div className="reco">
+              <div className="t">Prix de présentation</div>
+              <div className="big">{euro.format(prixPresentation)}</div>
+              <p>
+                Positionnement offrant une marge de négociation d&apos;environ {margeNego} % tout en
+                restant crédible face aux dernières ventes du secteur.
+              </p>
+            </div>
+            <div className="reco">
+              <div className="t">Délai estimé</div>
+              <div className="big" style={{ fontSize: "17pt" }}>{report.delai_vente_estime}</div>
+              <p>Sur la base des délais observés pour cette typologie au prix conseillé, hors saisonnalité défavorable.</p>
+            </div>
+          </div>
+
+          {report.etapes_commercialisation.length > 0 && (
+            <>
+              <div style={{ height: 22 }} />
+              <div className="eyebrow" style={{ color: "var(--ink-45)" }}>Stratégie de mise en marché</div>
+              <hr className="rule" style={{ margin: "8px 0 2px" }} />
+              <ul className="strategy">
+                {report.etapes_commercialisation.map((e, i) => {
+                  const [titre, ...reste] = e.split("—");
+                  return (
+                    <li key={i}>
+                      <b>{titre.trim()}</b>
+                      {reste.length ? ` — ${reste.join("—").trim()}` : ""}
+                    </li>
+                  );
+                })}
+              </ul>
+            </>
+          )}
+
+          <div className="callout" style={{ marginTop: 20 }}>
+            <b>Argumentaire :</b> {report.argumentaire_vendeur}
+          </div>
+
+          <div className="sign">
+            <div className="box">
+              <div className="lbl">Le négociateur</div>
+              <div className="name">{input.negociateur || "—"}</div>
+              <div className="role">{AGENCE.nom} {AGENCE.enseigne}</div>
+            </div>
+            <div className="box">
+              <div className="lbl">Bon pour accord — le vendeur</div>
+              <div className="name">&nbsp;</div>
+              <div className="role">Signature précédée de la mention « lu et approuvé »</div>
+            </div>
+          </div>
+
+          <div className="legal">
+            Le présent avis de valeur est établi à titre indicatif à la demande du propriétaire. Il ne
+            constitue ni une expertise au sens de la charte de l&apos;expertise en évaluation
+            immobilière, ni une garantie de prix de vente. La valeur exprimée reflète les conditions du
+            marché à la date d&apos;établissement et les éléments déclarés par le propriétaire, non
+            vérifiés contradictoirement. {AGENCE.nom} {AGENCE.enseigne} — {AGENCE.adresse} —{" "}
+            {AGENCE.tel} — {AGENCE.site}.
+          </div>
+
+          <Foot left={`${footLeft} · ${AGENCE.site}`} right={`Réf. ${refDossier} · ${today}`} />
+        </section>
+      </div>
     </div>
   );
 }

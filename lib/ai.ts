@@ -8,6 +8,8 @@ const REPORT_SCHEMA = {
     fourchette_basse: { type: "number" },
     fourchette_haute: { type: "number" },
     prix_m2: { type: "number", description: "Prix au m² retenu" },
+    prix_presentation: { type: "number", description: "Prix de présentation conseillé (prix affiché), avec marge de négociation de 2 à 4 % au-dessus du prix estimé" },
+    description_bien: { type: "string", description: "Description professionnelle et vendeuse du bien en 2 paragraphes (style avis de valeur d'agence)" },
     indice_confiance: { type: "number", description: "Confiance de 0 à 100 selon la qualité des données" },
     delai_vente_estime: { type: "string" },
     positionnement_marche: { type: "string", description: "Synthèse du positionnement prix vs marché" },
@@ -30,6 +32,21 @@ const REPORT_SCHEMA = {
         additionalProperties: false,
       },
     },
+    etat_notes: {
+      type: "array",
+      description: "Notation de l'état à partir des photos (1 à 5) — vide si aucune photo",
+      items: {
+        type: "object",
+        properties: {
+          categorie: { type: "string", description: "Ex : État général, Luminosité, Cuisine, Salle de bain, Sols & murs, Extérieur" },
+          note: { type: "number", description: "1 (à rénover) à 5 (excellent)" },
+        },
+        required: ["categorie", "note"],
+        additionalProperties: false,
+      },
+    },
+    coefficient_etat: { type: "string", description: "Synthèse de l'état retenu, ex : « Bon état d'usage »" },
+    impact_etat: { type: "number", description: "Impact net de l'état sur la valeur, en euros signés (ex : -6000)" },
     annonces_concurrentes: {
       type: "array",
       description: "Annonces concurrentes trouvées via la recherche web (4 à 8)",
@@ -49,6 +66,42 @@ const REPORT_SCHEMA = {
         additionalProperties: false,
       },
     },
+    references_dvf: {
+      type: "array",
+      description: "4 à 6 références DVF les plus comparables, choisies dans la liste fournie",
+      items: {
+        type: "object",
+        properties: {
+          localisation: { type: "string", description: "Commune / secteur" },
+          detail: { type: "string", description: "Ex : T4 · terrasse · étage élevé" },
+          surface: { type: "number" },
+          date: { type: "string", description: "MM/AAAA" },
+          prix: { type: "number", description: "Prix acté en euros" },
+          prix_m2: { type: "number" },
+        },
+        required: ["localisation", "detail", "surface", "date", "prix", "prix_m2"],
+        additionalProperties: false,
+      },
+    },
+    base_mediane: { type: "number", description: "Valeur de base issue de la médiane des références comparables, en euros (0 si non calculable)" },
+    ajustements: {
+      type: "array",
+      description: "Ajustements chiffrés appliqués à la base médiane pour aboutir au prix estimé (2 à 6 lignes)",
+      items: {
+        type: "object",
+        properties: {
+          libelle: { type: "string", description: "Ex : Terrasse 12 m² + vue dégagée" },
+          montant: { type: "number", description: "Montant signé en euros (ex : 9000 ou -6000)" },
+        },
+        required: ["libelle", "montant"],
+        additionalProperties: false,
+      },
+    },
+    etapes_commercialisation: {
+      type: "array",
+      description: "4 à 5 actions concrètes de mise en marché, format « Titre — détail »",
+      items: { type: "string" },
+    },
     points_forts: { type: "array", items: { type: "string" } },
     points_faibles: { type: "array", items: { type: "string" } },
     strategie_commercialisation: { type: "string" },
@@ -56,9 +109,12 @@ const REPORT_SCHEMA = {
   },
   required: [
     "prix_estime", "fourchette_basse", "fourchette_haute", "prix_m2",
+    "prix_presentation", "description_bien",
     "indice_confiance", "delai_vente_estime", "positionnement_marche",
     "analyse_dvf", "analyse_concurrence", "analyse_invendus", "analyse_photos",
-    "analyse_par_photo", "annonces_concurrentes",
+    "analyse_par_photo", "etat_notes", "coefficient_etat", "impact_etat",
+    "annonces_concurrentes", "references_dvf", "base_mediane", "ajustements",
+    "etapes_commercialisation",
     "points_forts", "points_faibles", "strategie_commercialisation", "argumentaire_vendeur",
   ],
   additionalProperties: false,
@@ -82,7 +138,12 @@ Règles :
 - Analyse les photos fournies pour évaluer l'état réel, la luminosité, les prestations et la qualité perçue ; signale tout écart avec l'état déclaré.
 - Pour CHAQUE photo fournie (numérotées dans l'ordre : 1 = première), remplis une entrée de analyse_par_photo : identifie la pièce/vue, liste ses bons points et ses défauts visibles. Sois concret (« joints de carrelage noircis », « belle hauteur sous plafond ») — ces annotations apparaissent dans le dossier remis au vendeur.
 - Remplis annonces_concurrentes avec 4 à 8 annonces concrètes issues de ta recherche web : titre, prix, surface, prix/m², caractéristiques, fraîcheur de l'annonce si détectable, portail source, et une phrase de comparaison avec le bien estimé. Mets 0 pour un chiffre introuvable — n'invente jamais un prix.
-- Applique des ajustements explicites (DPE, étage, extérieur, stationnement, travaux).
+- Applique des ajustements explicites (DPE, étage, extérieur, stationnement, travaux) et RESTITUE-LES dans le champ ajustements : base_mediane (médiane des références comparables) + lignes d'ajustement signées dont la somme aboutit exactement à prix_estime.
+- Rédige description_bien comme dans un avis de valeur d'agence haut de gamme : 2 paragraphes factuels et valorisants (distribution, expositions, prestations, état).
+- Fixe prix_presentation : le prix affiché conseillé (marge de négociation 2 à 4 % au-dessus de prix_estime), cohérent avec le positionnement sous la concurrence active.
+- Si des photos sont fournies, note l'état par catégorie dans etat_notes (1 à 5 : État général, Luminosité, Cuisine, Salle de bain, Sols & murs, Extérieur si visible), synthétise dans coefficient_etat et chiffre impact_etat en euros signés. Sans photo : etat_notes vide, impact_etat 0, coefficient_etat basé sur l'état déclaré.
+- Sélectionne dans la liste DVF fournie les 4 à 6 références les plus comparables et restitue-les dans references_dvf (si la liste DVF est vide, restitue un tableau vide — n'invente JAMAIS une transaction).
+- Remplis etapes_commercialisation avec 4 à 5 actions concrètes (« Reportage professionnel — photos grand-angle… »).
 - Si le prix souhaité par le vendeur est renseigné, positionne-le par rapport à ton estimation et donne au commercial les arguments chiffrés pour recadrer si nécessaire.
 - Sois précis et chiffré : cite les prix au m² que tu utilises et d'où ils viennent.
 - L'indice de confiance reflète la quantité et la cohérence des données (DVF absent ou peu de comparables → confiance basse).

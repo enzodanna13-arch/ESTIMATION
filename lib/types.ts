@@ -101,11 +101,32 @@ export interface CompetitorAd {
   comparaison: string;
 }
 
+export interface EtatNote {
+  categorie: string;
+  note: number; // 1 à 5
+}
+
+export interface Ajustement {
+  libelle: string;
+  montant: number; // signé, en euros
+}
+
+export interface ReferenceDvf {
+  localisation: string;
+  detail: string;
+  surface: number;
+  date: string;
+  prix: number;
+  prix_m2: number;
+}
+
 export interface EstimationReport {
   prix_estime: number;
   fourchette_basse: number;
   fourchette_haute: number;
   prix_m2: number;
+  prix_presentation: number;
+  description_bien: string;
   indice_confiance: number;
   delai_vente_estime: string;
   positionnement_marche: string;
@@ -114,7 +135,14 @@ export interface EstimationReport {
   analyse_invendus: string;
   analyse_photos: string;
   analyse_par_photo: PhotoAnalysis[];
+  etat_notes: EtatNote[];
+  coefficient_etat: string;
+  impact_etat: number;
   annonces_concurrentes: CompetitorAd[];
+  references_dvf: ReferenceDvf[];
+  base_mediane: number;
+  ajustements: Ajustement[];
+  etapes_commercialisation: string[];
   points_forts: string[];
   points_faibles: string[];
   strategie_commercialisation: string;

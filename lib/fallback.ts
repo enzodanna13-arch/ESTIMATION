@@ -91,8 +91,17 @@ export function computeFallbackEstimate(
       input.photos.length > 0
         ? "Analyse visuelle non disponible en mode statistique (configurer ANTHROPIC_API_KEY pour l'analyse IA des photos)."
         : "Aucune photo fournie.",
+    prix_presentation: prixEstime > 0 ? Math.round((prixEstime * 1.026) / 1000) * 1000 : 0,
+    description_bien: "",
     analyse_par_photo: [],
+    etat_notes: [],
+    coefficient_etat: input.etatGeneral || "",
+    impact_etat: 0,
     annonces_concurrentes: [],
+    references_dvf: [],
+    base_mediane: 0,
+    ajustements: [],
+    etapes_commercialisation: [],
     points_forts: [],
     points_faibles: [],
     strategie_commercialisation:
