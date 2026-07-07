@@ -168,6 +168,12 @@ export async function computeAiEstimate(
   }
   content.push({ type: "text", text: buildUserText(input, dvfSales) });
 
+  // Modèle et effort configurables : Sonnet 5 par défaut (≈ 60-75 % moins cher
+  // qu'Opus pour une qualité proche sur ce type d'analyse). Pour un dossier
+  // premium : ESTIMATION_MODEL=claude-opus-4-8 et ESTIMATION_EFFORT=high.
+  const model = process.env.ESTIMATION_MODEL ?? "claude-sonnet-5";
+  const effort = (process.env.ESTIMATION_EFFORT ?? "medium") as "low" | "medium" | "high";
+
   let messages: Anthropic.MessageParam[] = [{ role: "user", content }];
   let message: Anthropic.Message;
 
@@ -177,12 +183,12 @@ export async function computeAiEstimate(
   let continuations = 0;
   for (;;) {
     const stream = client.messages.stream({
-      model: "claude-opus-4-8",
+      model,
       max_tokens: 16000,
       thinking: { type: "adaptive" },
       system: SYSTEM_PROMPT,
-      tools: [{ type: "web_search_20260209", name: "web_search", max_uses: 8 }],
-      output_config: { format: { type: "json_schema", schema: REPORT_SCHEMA } },
+      tools: [{ type: "web_search_20260209", name: "web_search", max_uses: 6 }],
+      output_config: { effort, format: { type: "json_schema", schema: REPORT_SCHEMA } },
       messages,
     });
     message = await stream.finalMessage();
