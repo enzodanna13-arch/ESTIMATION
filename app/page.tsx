@@ -238,7 +238,7 @@ export default function Home() {
     setError(null);
     try {
       const compressed: PhotoInput[] = [];
-      for (const file of Array.from(files).slice(0, 8 - input.photos.length)) {
+      for (const file of Array.from(files).slice(0, 20 - input.photos.length)) {
         compressed.push(await compressImage(file));
       }
       set("photos", [...input.photos, ...compressed]);
@@ -517,7 +517,7 @@ export default function Home() {
                   <h2 className="mb-1 text-xl font-bold text-navy">Photos du bien</h2>
                   <p className="mb-6 text-sm text-slate-500">
                     L&apos;IA évalue l&apos;état réel, la luminosité et les prestations — et annote chaque
-                    photo (bons points / défauts) dans le dossier. Jusqu&apos;à 8 photos.
+                    photo (bons points / défauts) dans le dossier. Jusqu&apos;à 20 photos.
                   </p>
                   <label className="flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 py-10 transition hover:border-copper hover:bg-copper-soft/40">
                     <span className="mb-1 text-3xl">📷</span>

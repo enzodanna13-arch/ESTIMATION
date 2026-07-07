@@ -138,8 +138,12 @@ export default function Report({
     ] as ([string, string] | null)[]
   ).filter(Boolean) as [string, string][];
 
-  // Numérotation des sections (la page photos n'existe que s'il y a des photos)
-  const hasPhotoPage = photoAnalyses.length > 0;
+  // Découpage des fiches photo en pages de 6 (jusqu'à 20 photos)
+  const photoPages: (typeof photoAnalyses)[] = [];
+  for (let i = 0; i < photoAnalyses.length; i += 6) photoPages.push(photoAnalyses.slice(i, i + 6));
+
+  // Numérotation des sections (les pages photos n'existent que s'il y a des photos)
+  const hasPhotoPage = photoPages.length > 0;
   let sec = 0;
   const S = () => ROMANS[sec++];
   const secSynthese = S();
@@ -154,6 +158,7 @@ export default function Report({
   const pgBien = P();
   const pgVisuel = P();
   const pgPhotos = hasPhotoPage ? P() : 0;
+  for (let i = 1; i < photoPages.length; i++) P(); // pages photo supplémentaires
   const pgMethode = P();
   const pgReco = P();
 
@@ -463,14 +468,18 @@ export default function Report({
           <Foot left="Prix affichés — non actés · usage strictement indicatif" right={`Réf. ${refDossier}`} />
         </section>
 
-        {/* ============ LE BIEN EN IMAGES ============ */}
-        {hasPhotoPage && (
-          <section className="page">
-            <PageHead page={pgPhotos} />
-            <SectionTitle idx={secPhotos} title="Le bien en images" />
-            <p className="section-lead">{report.analyse_photos}</p>
+        {/* ============ LE BIEN EN IMAGES (6 fiches par page) ============ */}
+        {photoPages.map((chunk, pageIdx) => (
+          <section className="page" key={`photos-${pageIdx}`}>
+            <PageHead page={pgPhotos + pageIdx} />
+            <SectionTitle
+              idx={secPhotos}
+              title={pageIdx === 0 ? "Le bien en images" : "Le bien en images (suite)"}
+            />
+            {pageIdx === 0 && <p className="section-lead">{report.analyse_photos}</p>}
+            {pageIdx > 0 && <div style={{ height: 18 }} />}
             <div className="photo-grid">
-              {photoAnalyses.slice(0, 6).map((pa) => {
+              {chunk.map((pa) => {
                 const photo = input.photos[pa.photo - 1];
                 return (
                   <div key={pa.photo} className="photo-card">
@@ -493,7 +502,7 @@ export default function Report({
             </div>
             <Foot left={`${AGENCE.nom} ${AGENCE.enseigne}`} right={`Réf. ${refDossier}`} />
           </section>
-        )}
+        ))}
 
         {/* ============ MÉTHODOLOGIE & COMPARABLES ============ */}
         <section className="page">

@@ -274,7 +274,7 @@ export async function computeAiEstimate(
   const client = new Anthropic();
 
   const content: Anthropic.ContentBlockParam[] = [];
-  for (const photo of input.photos.slice(0, 8)) {
+  for (const photo of input.photos.slice(0, 20)) {
     content.push({
       type: "image",
       source: { type: "base64", media_type: photo.mediaType, data: photo.data },
