@@ -35,6 +35,14 @@ Tu produis des avis de valeur rigoureux en croisant trois sources, par ordre de 
 2. Les biens actuellement en vente (concurrence) — des prix AFFICHÉS, donc à pondérer d'une marge de négociation (généralement 3 à 7 %).
 3. Les biens invendus depuis plus de 90 jours — ils révèlent le plafond de prix que le marché REFUSE : l'estimation doit impérativement rester sous ce niveau à prestations comparables.
 
+ANALYSE AUTOMATIQUE DU MARCHÉ LOCAL (obligatoire) :
+Tu recherches TOI-MÊME le marché local avec l'outil web_search avant d'estimer :
+- Recherche les annonces de biens comparables actuellement en vente dans la ville/le secteur (portails immobiliers, agences locales) : relève prix affichés, surfaces, prix au m².
+- Repère les annonces manifestement anciennes ou re-publiées (mention d'ancienneté, baisse de prix, présence sur plusieurs portails) : elles jouent le rôle d'invendus et fixent le plafond de marché.
+- Recherche le prix moyen au m² du secteur (baromètres type MeilleursAgents/SeLoger) pour recouper.
+- Cite dans tes analyses les prix et sources que tu as trouvés (nom du portail/baromètre, sans URL).
+Les biens éventuellement saisis manuellement par le commercial sont un COMPLÉMENT à ta recherche, pas un substitut.
+
 Règles :
 - Analyse les photos fournies pour évaluer l'état réel, la luminosité, les prestations et la qualité perçue ; signale tout écart avec l'état déclaré.
 - Applique des ajustements explicites (DPE, étage, extérieur, stationnement, travaux).
@@ -91,13 +99,17 @@ ${input.commentaires ? `- Commentaires du commercial : ${input.commentaires}` : 
 ## 1. Transactions DVF (ventes réelles actées, code postal ${input.codePostal})
 ${dvfBlock}
 
-## 2. Concurrence actuellement en vente
+## 2. Concurrence saisie par le commercial (complément facultatif à ta recherche web)
 ${fmtComparables(input.concurrence)}
 
-## 3. Invendus (+90 jours de commercialisation)
+## 3. Invendus saisis par le commercial (complément facultatif à ta recherche web)
 ${fmtComparables(input.invendus)}
 
-Produis l'avis de valeur complet au format JSON demandé.`;
+# TA MISSION
+1. Recherche sur le web les biens comparables actuellement en vente à ${input.ville} (${input.codePostal})${input.quartier ? `, secteur ${input.quartier}` : ""} et le prix au m² du secteur.
+2. Repère les annonces qui traînent (anciennes, re-publiées, prix baissés) : elles fixent le plafond de marché.
+3. Croise avec les données DVF et les saisies du commercial ci-dessus.
+4. Produis l'avis de valeur complet au format JSON demandé.`;
 }
 
 /**
@@ -119,16 +131,31 @@ export async function computeAiEstimate(
   }
   content.push({ type: "text", text: buildUserText(input, dvfSales) });
 
-  const stream = client.messages.stream({
-    model: "claude-opus-4-8",
-    max_tokens: 16000,
-    thinking: { type: "adaptive" },
-    system: SYSTEM_PROMPT,
-    output_config: { format: { type: "json_schema", schema: REPORT_SCHEMA } },
-    messages: [{ role: "user", content }],
-  });
+  let messages: Anthropic.MessageParam[] = [{ role: "user", content }];
+  let message: Anthropic.Message;
 
-  const message = await stream.finalMessage();
+  // La recherche web est un outil serveur : l'API peut rendre la main avec
+  // stop_reason "pause_turn" au milieu de sa boucle — on relance pour continuer.
+  const MAX_CONTINUATIONS = 6;
+  let continuations = 0;
+  for (;;) {
+    const stream = client.messages.stream({
+      model: "claude-opus-4-8",
+      max_tokens: 16000,
+      thinking: { type: "adaptive" },
+      system: SYSTEM_PROMPT,
+      tools: [{ type: "web_search_20260209", name: "web_search", max_uses: 8 }],
+      output_config: { format: { type: "json_schema", schema: REPORT_SCHEMA } },
+      messages,
+    });
+    message = await stream.finalMessage();
+    if (message.stop_reason === "pause_turn" && continuations < MAX_CONTINUATIONS) {
+      continuations += 1;
+      messages = [...messages, { role: "assistant", content: message.content }];
+      continue;
+    }
+    break;
+  }
 
   if (message.stop_reason === "refusal") {
     throw new Error("Requête refusée par les garde-fous du modèle");

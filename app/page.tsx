@@ -292,26 +292,36 @@ export default function Home() {
             )}
           </Card>
 
-          <Card step={4} title="Marché local (saisie commercial)">
+          <Card step={4} title="Marché local — analysé automatiquement par l'IA">
             <div className="space-y-6">
-              <ComparablesEditor
-                title="Biens en vente actuellement (concurrence)"
-                hint="Biens comparables affichés sur les portails — la vitrine à laquelle votre bien sera comparé."
-                items={input.concurrence}
-                onChange={(items) => set("concurrence", items)}
-                showDays
-              />
-              <ComparablesEditor
-                title="Invendus (+90 jours de commercialisation)"
-                hint="Biens comparables qui ne se vendent pas : ils révèlent le prix que le marché refuse."
-                items={input.invendus}
-                onChange={(items) => set("invendus", items)}
-                showDays
-              />
-              <p className="text-xs text-slate-400">
-                Les transactions réelles DVF (data.gouv.fr) sont récupérées automatiquement à partir
-                du code postal.
+              <p className="rounded-lg border border-indigo-200 bg-indigo-50 p-3 text-sm text-indigo-800">
+                🤖 L&apos;IA recherche automatiquement sur le web les biens comparables en vente
+                (concurrence), les annonces qui traînent (invendus) et le prix au m² du secteur,
+                puis croise le tout avec les transactions réelles DVF récupérées via le code
+                postal. <strong>Vous n&apos;avez rien à saisir ici.</strong>
               </p>
+              <details>
+                <summary className="cursor-pointer text-sm font-medium text-slate-600">
+                  Compléter manuellement (facultatif) — biens que vous connaissez et que l&apos;IA
+                  pourrait manquer
+                </summary>
+                <div className="mt-4 space-y-6">
+                  <ComparablesEditor
+                    title="Biens en vente actuellement (concurrence)"
+                    hint="Biens comparables affichés sur les portails — complète la recherche automatique de l'IA."
+                    items={input.concurrence}
+                    onChange={(items) => set("concurrence", items)}
+                    showDays
+                  />
+                  <ComparablesEditor
+                    title="Invendus (+90 jours de commercialisation)"
+                    hint="Biens comparables qui ne se vendent pas : ils révèlent le prix que le marché refuse."
+                    items={input.invendus}
+                    onChange={(items) => set("invendus", items)}
+                    showDays
+                  />
+                </div>
+              </details>
             </div>
           </Card>
 

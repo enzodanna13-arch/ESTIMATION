@@ -5,10 +5,10 @@ Outil interne pour l'équipe commerciale : saisie complète d'un bien (caractér
 ## Les trois sources croisées
 
 1. **DVF (Demandes de Valeurs Foncières)** — les prix de vente **réels** actés, récupérés automatiquement depuis l'API publique à partir du code postal. C'est la référence factuelle.
-2. **Concurrence active** — les biens comparables actuellement en vente, saisis par le commercial (prix affichés, pondérés d'une marge de négociation).
-3. **Invendus +90 jours** — les biens qui ne se vendent pas : ils révèlent le **plafond de prix que le marché refuse**. L'estimation reste systématiquement sous ce niveau.
+2. **Concurrence active** — recherchée **automatiquement sur le web par l'IA** (annonces comparables, prix au m² du secteur), avec complément manuel facultatif par le commercial.
+3. **Invendus +90 jours** — repérés automatiquement par l'IA (annonces anciennes, re-publiées, prix baissés) : ils révèlent le **plafond de prix que le marché refuse**. L'estimation reste systématiquement sous ce niveau.
 
-L'IA (Claude, avec vision) analyse aussi les **photos** du bien : état réel, luminosité, prestations, écarts avec l'état déclaré.
+L'IA (Claude, avec vision + recherche web) analyse aussi les **photos** du bien : état réel, luminosité, prestations, écarts avec l'état déclaré.
 
 ## Le rapport généré
 
