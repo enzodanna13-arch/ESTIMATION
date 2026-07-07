@@ -256,8 +256,66 @@ body {
   .print\:hidden { display: none !important; }
   html, body { background: #fff !important; }
   body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-  .dossier .page { margin: 0; box-shadow: none; width: auto; min-height: 297mm; page-break-after: always; }
-  .dossier .page:last-child { page-break-after: auto; }
+
+  /* Neutraliser l'enveloppe applicative : son padding décale les feuilles
+     A4 et créait des pages blanches intercalaires */
+  main {
+    padding: 0 !important;
+    margin: 0 !important;
+    max-width: none !important;
+  }
+  header, footer { display: none !important; }
+
+  /* Chaque section commence sur une nouvelle feuille (break-before évite
+     les pages blanches que crée break-after quand le contenu déborde d'1 mm) */
+  .dossier .page {
+    margin: 0;
+    box-shadow: none;
+    width: auto;
+    min-height: 295mm; /* léger jeu pour absorber les arrondis de rendu */
+    break-after: auto;
+    page-break-after: auto;
+  }
+  .dossier .page + .page {
+    break-before: page;
+    page-break-before: always;
+  }
+  .dossier .page.cover {
+    height: 295mm;
+    min-height: 0;
+  }
+  .dossier .page:last-child {
+    break-after: avoid;
+    page-break-after: avoid;
+  }
+
+  /* Blocs insécables : jamais coupés entre deux feuilles */
+  .dossier .valuation,
+  .dossier .kpi-row,
+  .dossier .callout,
+  .dossier .adjust,
+  .dossier .reco,
+  .dossier .method,
+  .dossier .cond,
+  .dossier .cond-synth,
+  .dossier .posbar,
+  .dossier .photo-card,
+  .dossier .sign,
+  .dossier .legal,
+  .dossier .specs .row,
+  .dossier .strategy li,
+  .dossier tr {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+  .dossier thead { display: table-header-group; }
+
+  /* Si une section dépasse une feuille, le contenu continue proprement
+     sur la suivante ; le pied reste après le contenu */
+  .dossier .foot { margin-top: auto; padding-top: 14px; }
+
+  /* Liens : pas de soulignement ni d'URL imprimée */
+  .dossier a { text-decoration: none !important; color: inherit !important; }
 }
 
 @page {
