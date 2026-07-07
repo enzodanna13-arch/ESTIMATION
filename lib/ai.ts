@@ -103,7 +103,7 @@ function buildUserText(input: PropertyInput, dvfSales: DvfSale[]): string {
   const dvfBlock =
     dvfSales.length > 0
       ? dvfSales
-          .slice(0, 40)
+          .slice(0, 25)
           .map((s) => `- ${s.date} | ${s.typeLocal} | ${s.surface ?? "?"} m² | ${s.valeurFonciere} € | ${s.prixM2 ?? "?"} €/m² | ${s.commune}`)
           .join("\n")
       : "(données DVF indisponibles pour ce secteur — baisse l'indice de confiance en conséquence)";
@@ -156,6 +156,7 @@ ${fmtComparables(input.invendus)}
 export async function computeAiEstimate(
   input: PropertyInput,
   dvfSales: DvfSale[],
+  onProgress: (label: string) => void = () => {},
 ): Promise<EstimationReport> {
   const client = new Anthropic();
 
@@ -179,24 +180,31 @@ export async function computeAiEstimate(
 
   // La recherche web est un outil serveur : l'API peut rendre la main avec
   // stop_reason "pause_turn" au milieu de sa boucle — on relance pour continuer.
-  const MAX_CONTINUATIONS = 6;
+  const MAX_CONTINUATIONS = 4;
   let continuations = 0;
+  onProgress(
+    input.photos.length > 0
+      ? "Analyse des photos et recherche du marché local sur le web…"
+      : "Recherche du marché local sur le web (concurrence, invendus, prix au m²)…",
+  );
   for (;;) {
     const stream = client.messages.stream({
       model,
       max_tokens: 16000,
       thinking: { type: "adaptive" },
       system: SYSTEM_PROMPT,
-      tools: [{ type: "web_search_20260209", name: "web_search", max_uses: 6 }],
+      tools: [{ type: "web_search_20260209", name: "web_search", max_uses: 4 }],
       output_config: { effort, format: { type: "json_schema", schema: REPORT_SCHEMA } },
       messages,
     });
     message = await stream.finalMessage();
     if (message.stop_reason === "pause_turn" && continuations < MAX_CONTINUATIONS) {
       continuations += 1;
+      onProgress(`Croisement des sources de marché (passe ${continuations + 1})…`);
       messages = [...messages, { role: "assistant", content: message.content }];
       continue;
     }
+    onProgress("Rédaction de l'avis de valeur…");
     break;
   }
 

@@ -74,21 +74,14 @@ const DPE_COLORS: Record<string, string> = {
   A: "#1d9d51", B: "#52b153", C: "#a5c93b", D: "#f2e211", E: "#f0b418", F: "#e97f24", G: "#e3282a",
 };
 
-const LOADING_PHASES = [
-  "Récupération des ventes réelles (DVF)…",
-  "Recherche des biens en concurrence sur le web…",
-  "Détection des annonces invendues (+90 jours)…",
-  "Analyse des photos du bien…",
-  "Croisement des trois sources de marché…",
-  "Rédaction de l'avis de valeur…",
-];
-
-function LoadingOverlay() {
-  const [phase, setPhase] = useState(0);
+function LoadingOverlay({ status }: { status: string }) {
+  const [elapsed, setElapsed] = useState(0);
   useEffect(() => {
-    const id = setInterval(() => setPhase((p) => Math.min(p + 1, LOADING_PHASES.length - 1)), 9000);
+    const id = setInterval(() => setElapsed((e) => e + 1), 1000);
     return () => clearInterval(id);
   }, []);
+  const mm = Math.floor(elapsed / 60);
+  const ss = String(elapsed % 60).padStart(2, "0");
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-navy-deep/85 p-4 backdrop-blur-sm">
       <div className="rise-in w-full max-w-md rounded-2xl bg-white p-8 text-center shadow-2xl">
@@ -96,15 +89,12 @@ function LoadingOverlay() {
           IA
         </div>
         <h2 className="text-lg font-bold text-navy">Analyse en cours</h2>
-        <p className="mt-2 min-h-10 text-sm text-slate-600">{LOADING_PHASES[phase]}</p>
+        <p className="mt-2 min-h-10 text-sm text-slate-600">{status || "Préparation de l'analyse…"}</p>
         <div className="relative mt-5 h-2 overflow-hidden rounded-full bg-slate-200">
-          <div
-            className="scan-bar relative h-full rounded-full bg-copper transition-all duration-1000"
-            style={{ width: `${((phase + 1) / LOADING_PHASES.length) * 100}%` }}
-          />
+          <div className="scan-bar relative h-full w-full rounded-full bg-copper" />
         </div>
         <p className="mt-4 text-xs text-slate-400">
-          Recherche web + photos + DVF : l&apos;analyse complète peut prendre 1 à 3 minutes.
+          {mm}:{ss} écoulées — comptez 1 à 2 minutes pour une analyse complète.
         </p>
       </div>
     </div>
@@ -115,6 +105,7 @@ export default function Home() {
   const [input, setInput] = useState<PropertyInput>(initialInput);
   const [step, setStep] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [loadingStatus, setLoadingStatus] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<EstimateResponse | null>(null);
 
@@ -165,6 +156,7 @@ export default function Home() {
 
   const submit = async () => {
     setLoading(true);
+    setLoadingStatus("");
     setError(null);
     try {
       const res = await fetch("/api/estimate", {
@@ -172,11 +164,31 @@ export default function Home() {
         headers: { "content-type": "application/json" },
         body: JSON.stringify(input),
       });
-      if (!res.ok) {
+      if (!res.ok || !res.body) {
         const body = await res.json().catch(() => null);
         throw new Error(body?.error ?? `Erreur serveur (${res.status})`);
       }
-      setResult((await res.json()) as EstimateResponse);
+      // Flux NDJSON : statuts de progression, puis résultat final
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+      let finalResult: EstimateResponse | null = null;
+      for (;;) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split("\n");
+        buffer = lines.pop() ?? "";
+        for (const line of lines) {
+          if (!line.trim()) continue;
+          const msg = JSON.parse(line);
+          if (msg.type === "status") setLoadingStatus(msg.label);
+          else if (msg.type === "result") finalResult = msg.data as EstimateResponse;
+          else if (msg.type === "error") throw new Error(msg.error);
+        }
+      }
+      if (!finalResult) throw new Error("Analyse interrompue avant la fin — réessayez.");
+      setResult(finalResult);
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erreur inattendue");
@@ -187,7 +199,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen">
-      {loading && <LoadingOverlay />}
+      {loading && <LoadingOverlay status={loadingStatus} />}
 
       <header className="bg-navy-deep text-white print:hidden">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-5">
