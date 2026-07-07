@@ -133,6 +133,32 @@ export default function Report({
           </div>
         </div>
 
+        {(input.clientNom || input.negociateur) && (
+          <div className="mb-5 flex flex-wrap items-center justify-between gap-x-6 gap-y-2 rounded-xl bg-white/5 px-4 py-3 text-xs">
+            <div>
+              <p className="font-semibold uppercase tracking-wide text-copper">Dossier préparé pour</p>
+              <p className="mt-0.5 text-sm font-bold text-white">
+                {[input.clientCivilite, input.clientPrenom, input.clientNom].filter(Boolean).join(" ") || "—"}
+              </p>
+              <p className="text-slate-300">
+                {[input.clientTel, input.clientEmail].filter(Boolean).join(" · ")}
+              </p>
+            </div>
+            <div className="text-right">
+              {input.horizonVente && (
+                <p className="text-slate-300">
+                  Projet de vente : <span className="font-semibold text-white">{input.horizonVente}</span>
+                </p>
+              )}
+              {input.negociateur && (
+                <p className="mt-0.5 text-slate-300">
+                  Votre conseiller : <span className="font-semibold text-white">{input.negociateur}</span>
+                </p>
+              )}
+            </div>
+          </div>
+        )}
+
         <div className="mb-5 flex flex-wrap gap-2 text-xs">
           {[
             `${input.typeBien.charAt(0).toUpperCase()}${input.typeBien.slice(1)}`,

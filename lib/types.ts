@@ -12,6 +12,15 @@ export interface ComparableListing {
 }
 
 export interface PropertyInput {
+  // Client vendeur (repris dans le dossier)
+  clientCivilite: string;
+  clientNom: string;
+  clientPrenom: string;
+  clientTel: string;
+  clientEmail: string;
+  horizonVente: string;
+  negociateur: string;
+
   // Localisation
   adresse: string;
   codePostal: string;
@@ -33,14 +42,21 @@ export interface PropertyInput {
   dpe: string;
   ges: string;
   etatGeneral: string;
-  travauxAPrevoir: string;
+  travauxAPrevoir: string[];
   chauffage: string;
 
-  // Atouts
-  exposition: string;
+  // Atouts & environnement
+  exposition: string[];
   exterieur: string[];
   stationnement: string;
   cave: boolean;
+  vue: string;
+  environnement: string;
+  luminosite: string;
+  cuisine: string;
+  menuiseries: string;
+  mitoyennete: string;
+  equipements: string[];
 
   // Charges & fiscalité
   chargesCopro: number | null;

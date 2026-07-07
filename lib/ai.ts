@@ -110,6 +110,11 @@ function buildUserText(input: PropertyInput, dvfSales: DvfSale[]): string {
 
   return `# BIEN À ESTIMER
 
+## Vendeur & contexte commercial
+- Vendeur : ${[input.clientCivilite, input.clientPrenom, input.clientNom].filter(Boolean).join(" ") || "n.c."}
+- Horizon de vente : ${input.horizonVente || "n.c."}
+- Négociateur en charge : ${input.negociateur || "n.c."}
+
 ## Localisation
 Adresse : ${input.adresse}, ${input.codePostal} ${input.ville}${input.quartier ? ` — quartier : ${input.quartier}` : ""}
 
@@ -120,8 +125,11 @@ Adresse : ${input.adresse}, ${input.codePostal} ${input.ville}${input.quartier ?
 - Étage : ${input.etage || "n.c."} | Ascenseur : ${input.ascenseur ? "oui" : "non"}
 - Année de construction : ${input.anneeConstruction || "n.c."}
 - DPE : ${input.dpe || "n.c."} | GES : ${input.ges || "n.c."}
-- État général : ${input.etatGeneral || "n.c."}${input.travauxAPrevoir ? ` | Travaux à prévoir : ${input.travauxAPrevoir}` : ""}
-- Chauffage : ${input.chauffage || "n.c."} | Exposition : ${input.exposition || "n.c."}
+- État général : ${input.etatGeneral || "n.c."}${input.travauxAPrevoir.length ? ` | Travaux à prévoir : ${input.travauxAPrevoir.join(", ")}` : ""}
+- Chauffage : ${input.chauffage || "n.c."} | Exposition : ${input.exposition.length ? input.exposition.join(", ") : "n.c."}
+- Luminosité : ${input.luminosite || "n.c."} | Vue : ${input.vue || "n.c."} | Environnement : ${input.environnement || "n.c."}
+- Cuisine : ${input.cuisine || "n.c."} | Menuiseries : ${input.menuiseries || "n.c."}${input.mitoyennete ? ` | Mitoyenneté : ${input.mitoyennete}` : ""}
+- Équipements : ${input.equipements.length ? input.equipements.join(", ") : "aucun"}
 - Extérieur : ${input.exterieur.length ? input.exterieur.join(", ") : "aucun"}
 - Stationnement : ${input.stationnement || "aucun"} | Cave : ${input.cave ? "oui" : "non"}
 - Charges copro : ${input.chargesCopro ?? "n.c."} €/mois | Taxe foncière : ${input.taxeFonciere ?? "n.c."} €/an

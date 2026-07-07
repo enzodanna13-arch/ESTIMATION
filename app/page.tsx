@@ -7,6 +7,13 @@ import { compressImage } from "@/lib/compressImage";
 import type { EstimateResponse, PhotoInput, PropertyInput } from "@/lib/types";
 
 const initialInput: PropertyInput = {
+  clientCivilite: "",
+  clientNom: "",
+  clientPrenom: "",
+  clientTel: "",
+  clientEmail: "",
+  horizonVente: "",
+  negociateur: "",
   adresse: "",
   codePostal: "",
   ville: "",
@@ -23,12 +30,19 @@ const initialInput: PropertyInput = {
   dpe: "",
   ges: "",
   etatGeneral: "",
-  travauxAPrevoir: "",
+  travauxAPrevoir: [],
   chauffage: "",
-  exposition: "",
+  exposition: [],
   exterieur: [],
   stationnement: "",
   cave: false,
+  vue: "",
+  environnement: "",
+  luminosite: "",
+  cuisine: "",
+  menuiseries: "",
+  mitoyennete: "",
+  equipements: [],
   chargesCopro: null,
   taxeFonciere: null,
   prixSouhaiteVendeur: null,
@@ -51,6 +65,31 @@ function Field({ label, children, className = "" }: { label: string; children: R
   );
 }
 
+function Select({
+  label,
+  value,
+  onChange,
+  options,
+  className = "",
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  options: string[];
+  className?: string;
+}) {
+  return (
+    <Field label={label} className={className}>
+      <select className={inputCls} value={value} onChange={(e) => onChange(e.target.value)}>
+        <option value="">— Sélectionner —</option>
+        {options.map((o) => (
+          <option key={o} value={o}>{o}</option>
+        ))}
+      </select>
+    </Field>
+  );
+}
+
 function Chip({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
   return (
     <button
@@ -67,9 +106,58 @@ function Chip({ active, onClick, children }: { active: boolean; onClick: () => v
   );
 }
 
-const STEPS = ["Localisation", "Le bien", "Photos", "Marché", "Contexte"] as const;
+function ChipGroup({
+  label,
+  options,
+  values,
+  onChange,
+}: {
+  label: string;
+  options: string[];
+  values: string[];
+  onChange: (v: string[]) => void;
+}) {
+  return (
+    <div>
+      <span className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-500">{label}</span>
+      <div className="flex flex-wrap gap-2">
+        {options.map((opt) => (
+          <Chip
+            key={opt}
+            active={values.includes(opt)}
+            onClick={() => onChange(values.includes(opt) ? values.filter((v) => v !== opt) : [...values, opt])}
+          >
+            {opt}
+          </Chip>
+        ))}
+      </div>
+    </div>
+  );
+}
 
-const EXTERIEUR_OPTIONS = ["Balcon", "Terrasse", "Jardin", "Loggia", "Cour"];
+const STEPS = ["Client", "Localisation", "Le bien", "Photos", "Marché", "Contexte"] as const;
+
+const OPT = {
+  civilite: ["M.", "Mme", "M. et Mme", "Indivision", "Société"],
+  horizon: ["Dès que possible", "Moins de 3 mois", "3 à 6 mois", "6 à 12 mois", "Plus de 12 mois", "Simple curiosité"],
+  pieces: ["1", "2", "3", "4", "5", "6", "7", "8 et +"],
+  etage: ["Rez-de-chaussée", "Rez-de-jardin", "1er", "2e", "3e", "4e", "5e", "6e et +", "Dernier étage", "Plain-pied", "Sur 2 niveaux", "Sur 3 niveaux"],
+  annee: ["Avant 1900", "1900 - 1948", "1949 - 1974", "1975 - 1990", "1991 - 2005", "2006 - 2012", "Après 2012", "Neuf / VEFA"],
+  etat: ["Neuf", "Refait à neuf", "Bon état", "Rafraîchissement à prévoir", "Travaux importants", "À rénover entièrement"],
+  travaux: ["Peintures / rafraîchissement", "Cuisine", "Salle de bain", "Électricité", "Plomberie", "Menuiseries", "Isolation", "Toiture", "Façade", "Chauffage"],
+  chauffage: ["Gaz individuel", "Gaz collectif", "Électrique", "Pompe à chaleur", "Fioul", "Bois / poêle", "Réseau urbain", "Climatisation réversible"],
+  exposition: ["Nord", "Sud", "Est", "Ouest", "Traversant"],
+  luminosite: ["Très lumineux", "Lumineux", "Correcte", "Sombre"],
+  vue: ["Dégagée", "Sur jardin / verdure", "Sur rue", "Sur cour", "Vis-à-vis important", "Panoramique", "Vue mer / exception"],
+  environnement: ["Très calme", "Calme", "Animé", "Rue passante", "Nuisances (route, rail, aéroport)"],
+  cuisine: ["Indépendante équipée", "Ouverte équipée", "Américaine", "À équiper", "À créer"],
+  menuiseries: ["Double vitrage récent", "Double vitrage ancien", "Partiellement double vitrage", "Simple vitrage", "Triple vitrage"],
+  mitoyennete: ["Indépendante", "Mitoyenne 1 côté", "Mitoyenne 2 côtés"],
+  stationnement: ["Aucun", "Place extérieure", "Place couverte", "Garage", "Garage double", "Plusieurs stationnements"],
+  exterieur: ["Balcon", "Terrasse", "Jardin", "Loggia", "Cour"],
+  equipements: ["Climatisation", "Piscine", "Cheminée / poêle", "Volets roulants électriques", "Alarme", "Portail motorisé", "Panneaux solaires", "Fibre", "Interphone / visiophone", "Adapté PMR"],
+};
+
 const DPE_COLORS: Record<string, string> = {
   A: "#1d9d51", B: "#52b153", C: "#a5c93b", D: "#f2e211", E: "#f0b418", F: "#e97f24", G: "#e3282a",
 };
@@ -94,7 +182,7 @@ function LoadingOverlay({ status }: { status: string }) {
           <div className="scan-bar relative h-full w-full rounded-full bg-copper" />
         </div>
         <p className="mt-4 text-xs text-slate-400">
-          {mm}:{ss} écoulées — comptez 1 à 2 minutes pour une analyse complète.
+          {mm}:{ss} écoulées — comptez 2 à 4 minutes pour l&apos;analyse la plus poussée.
         </p>
       </div>
     </div>
@@ -113,12 +201,21 @@ export default function Home() {
     setInput((prev) => ({ ...prev, [key]: value }));
 
   const num = (v: string) => (v === "" ? null : +v);
+  const numFromLabel = (v: string) => (v === "" ? null : parseInt(v, 10));
 
   const stepValid = (s: number): boolean => {
-    if (s === 0) return input.adresse.trim() !== "" && /^\d{5}$/.test(input.codePostal) && input.ville.trim() !== "";
-    if (s === 1) return input.surfaceHabitable !== null && input.surfaceHabitable > 0;
+    if (s === 0) return input.clientNom.trim() !== "";
+    if (s === 1) return input.adresse.trim() !== "" && /^\d{5}$/.test(input.codePostal) && input.ville.trim() !== "";
+    if (s === 2) return input.surfaceHabitable !== null && input.surfaceHabitable > 0;
     return true;
   };
+
+  const stepError = (s: number): string =>
+    s === 0
+      ? "Renseignez au minimum le nom du client vendeur."
+      : s === 1
+        ? "Renseignez l'adresse, un code postal à 5 chiffres et la ville."
+        : "Renseignez la surface habitable.";
 
   const goTo = (target: number) => {
     if (target <= step || [...Array(target).keys()].every(stepValid)) {
@@ -130,11 +227,7 @@ export default function Home() {
 
   const next = () => {
     if (!stepValid(step)) {
-      setError(
-        step === 0
-          ? "Renseignez l'adresse, un code postal à 5 chiffres et la ville."
-          : "Renseignez la surface habitable.",
-      );
+      setError(stepError(step));
       return;
     }
     goTo(step + 1);
@@ -168,7 +261,6 @@ export default function Home() {
         const body = await res.json().catch(() => null);
         throw new Error(body?.error ?? `Erreur serveur (${res.status})`);
       }
-      // Flux NDJSON : statuts de progression, puis résultat final
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
       let buffer = "";
@@ -196,6 +288,8 @@ export default function Home() {
       setLoading(false);
     }
   };
+
+  const numLabel = (v: number | null) => (v === null ? "" : v >= 8 ? "8 et +" : String(v));
 
   return (
     <div className="min-h-screen">
@@ -227,16 +321,11 @@ export default function Home() {
           <Report result={result} input={input} onReset={() => { setResult(null); setStep(0); }} />
         ) : (
           <>
-            {/* Barre d'étapes */}
             <nav className="mb-8 print:hidden">
               <div className="flex items-center">
                 {STEPS.map((label, i) => (
                   <div key={label} className={`flex items-center ${i < STEPS.length - 1 ? "flex-1" : ""}`}>
-                    <button
-                      type="button"
-                      onClick={() => goTo(i)}
-                      className="group flex flex-col items-center gap-1.5"
-                    >
+                    <button type="button" onClick={() => goTo(i)} className="group flex flex-col items-center gap-1.5">
                       <span
                         className={`flex h-9 w-9 items-center justify-center rounded-full text-sm font-bold transition ${
                           i === step
@@ -257,7 +346,7 @@ export default function Home() {
                       </span>
                     </button>
                     {i < STEPS.length - 1 && (
-                      <div className={`mx-2 mb-5 h-0.5 flex-1 rounded sm:mb-5 ${i < step ? "bg-navy" : "bg-slate-300"}`} />
+                      <div className={`mx-2 mb-5 h-0.5 flex-1 rounded ${i < step ? "bg-navy" : "bg-slate-300"}`} />
                     )}
                   </div>
                 ))}
@@ -266,6 +355,34 @@ export default function Home() {
 
             <div key={step} className="rise-in rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
               {step === 0 && (
+                <>
+                  <h2 className="mb-1 text-xl font-bold text-navy">Le client vendeur</h2>
+                  <p className="mb-6 text-sm text-slate-500">
+                    Ces informations figurent sur la page de garde du dossier remis au client.
+                  </p>
+                  <div className="grid gap-4 sm:grid-cols-3">
+                    <Select label="Civilité" value={input.clientCivilite} onChange={(v) => set("clientCivilite", v)} options={OPT.civilite} />
+                    <Field label="Nom *">
+                      <input className={inputCls} value={input.clientNom} onChange={(e) => set("clientNom", e.target.value)} placeholder="Dupont" />
+                    </Field>
+                    <Field label="Prénom">
+                      <input className={inputCls} value={input.clientPrenom} onChange={(e) => set("clientPrenom", e.target.value)} placeholder="Marie" />
+                    </Field>
+                    <Field label="Téléphone">
+                      <input className={inputCls} inputMode="tel" value={input.clientTel} onChange={(e) => set("clientTel", e.target.value)} placeholder="06 12 34 56 78" />
+                    </Field>
+                    <Field label="Email">
+                      <input className={inputCls} inputMode="email" value={input.clientEmail} onChange={(e) => set("clientEmail", e.target.value)} placeholder="marie.dupont@mail.fr" />
+                    </Field>
+                    <Select label="Horizon de vente" value={input.horizonVente} onChange={(v) => set("horizonVente", v)} options={OPT.horizon} />
+                    <Field label="Négociateur en charge" className="sm:col-span-3">
+                      <input className={inputCls} value={input.negociateur} onChange={(e) => set("negociateur", e.target.value)} placeholder="Votre nom (affiché sur le dossier)" />
+                    </Field>
+                  </div>
+                </>
+              )}
+
+              {step === 1 && (
                 <>
                   <h2 className="mb-1 text-xl font-bold text-navy">Où se situe le bien ?</h2>
                   <p className="mb-6 text-sm text-slate-500">
@@ -289,11 +406,12 @@ export default function Home() {
                 </>
               )}
 
-              {step === 1 && (
+              {step === 2 && (
                 <>
                   <h2 className="mb-1 text-xl font-bold text-navy">Décrivez le bien</h2>
                   <p className="mb-6 text-sm text-slate-500">
-                    Plus la fiche est complète, plus l&apos;estimation est précise.
+                    Tout se sélectionne — seule la surface se saisit. Plus la fiche est complète, plus
+                    l&apos;estimation est précise.
                   </p>
                   <div className="mb-5 flex flex-wrap gap-2">
                     {(["appartement", "maison", "terrain", "immeuble", "local"] as const).map((t) => (
@@ -302,120 +420,104 @@ export default function Home() {
                       </Chip>
                     ))}
                   </div>
+
+                  <h3 className="mb-3 mt-6 text-xs font-bold uppercase tracking-widest text-copper">Dimensions</h3>
                   <div className="grid gap-4 sm:grid-cols-3">
                     <Field label="Surface habitable (m²) *">
-                      <input type="number" min={1} className={inputCls} value={input.surfaceHabitable ?? ""} onChange={(e) => set("surfaceHabitable", num(e.target.value))} />
+                      <input type="number" min={1} className={inputCls} value={input.surfaceHabitable ?? ""} onChange={(e) => set("surfaceHabitable", num(e.target.value))} placeholder="65" />
                     </Field>
                     <Field label="Surface terrain (m²)">
-                      <input type="number" className={inputCls} value={input.surfaceTerrain ?? ""} onChange={(e) => set("surfaceTerrain", num(e.target.value))} />
+                      <input type="number" className={inputCls} value={input.surfaceTerrain ?? ""} onChange={(e) => set("surfaceTerrain", num(e.target.value))} placeholder="—" />
                     </Field>
-                    <Field label="Année de construction">
-                      <input className={inputCls} value={input.anneeConstruction} onChange={(e) => set("anneeConstruction", e.target.value)} placeholder="1975" />
-                    </Field>
-                    <Field label="Pièces">
-                      <input type="number" className={inputCls} value={input.nbPieces ?? ""} onChange={(e) => set("nbPieces", num(e.target.value))} />
-                    </Field>
-                    <Field label="Chambres">
-                      <input type="number" className={inputCls} value={input.nbChambres ?? ""} onChange={(e) => set("nbChambres", num(e.target.value))} />
-                    </Field>
-                    <Field label="Salles de bain">
-                      <input type="number" className={inputCls} value={input.nbSallesDeBain ?? ""} onChange={(e) => set("nbSallesDeBain", num(e.target.value))} />
-                    </Field>
-                    <Field label="Étage">
-                      <input className={inputCls} value={input.etage} onChange={(e) => set("etage", e.target.value)} placeholder="3e / RDC" />
-                    </Field>
-                    <Field label="Chauffage">
-                      <input className={inputCls} value={input.chauffage} onChange={(e) => set("chauffage", e.target.value)} placeholder="Gaz individuel" />
-                    </Field>
-                    <Field label="Exposition">
-                      <input className={inputCls} value={input.exposition} onChange={(e) => set("exposition", e.target.value)} placeholder="Sud-Ouest, traversant" />
-                    </Field>
-                    <Field label="État général">
-                      <select className={inputCls} value={input.etatGeneral} onChange={(e) => set("etatGeneral", e.target.value)}>
-                        <option value="">—</option>
-                        <option>Neuf</option>
-                        <option>Refait à neuf</option>
-                        <option>Bon état</option>
-                        <option>Rafraîchissement à prévoir</option>
-                        <option>Travaux importants</option>
-                      </select>
-                    </Field>
-                    <Field label="Travaux à prévoir">
-                      <input className={inputCls} value={input.travauxAPrevoir} onChange={(e) => set("travauxAPrevoir", e.target.value)} placeholder="Électricité, toiture…" />
-                    </Field>
-                    <Field label="Stationnement">
-                      <input className={inputCls} value={input.stationnement} onChange={(e) => set("stationnement", e.target.value)} placeholder="Garage, place privée…" />
-                    </Field>
-                    <Field label="Charges copro (€/mois)">
-                      <input type="number" className={inputCls} value={input.chargesCopro ?? ""} onChange={(e) => set("chargesCopro", num(e.target.value))} />
-                    </Field>
-                    <Field label="Taxe foncière (€/an)">
-                      <input type="number" className={inputCls} value={input.taxeFonciere ?? ""} onChange={(e) => set("taxeFonciere", num(e.target.value))} />
-                    </Field>
+                    <Select label="Pièces" value={numLabel(input.nbPieces)} onChange={(v) => set("nbPieces", numFromLabel(v))} options={OPT.pieces} />
+                    <Select label="Chambres" value={numLabel(input.nbChambres)} onChange={(v) => set("nbChambres", numFromLabel(v))} options={OPT.pieces} />
+                    <Select label="Salles de bain / d'eau" value={numLabel(input.nbSallesDeBain)} onChange={(v) => set("nbSallesDeBain", numFromLabel(v))} options={OPT.pieces} />
+                    <Select label="Étage / niveaux" value={input.etage} onChange={(v) => set("etage", v)} options={OPT.etage} />
                   </div>
 
-                  <div className="mt-6 space-y-3">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className="mr-1 text-xs font-semibold uppercase tracking-wide text-slate-500">DPE</span>
-                      {["A", "B", "C", "D", "E", "F", "G"].map((l) => (
-                        <button
-                          key={l}
-                          type="button"
-                          onClick={() => set("dpe", input.dpe === l ? "" : l)}
-                          className={`h-9 w-9 rounded-lg text-sm font-bold text-white transition ${
-                            input.dpe === l ? "scale-110 ring-2 ring-navy ring-offset-2" : "opacity-60 hover:opacity-100"
-                          }`}
-                          style={{ background: DPE_COLORS[l] }}
-                        >
-                          {l}
-                        </button>
-                      ))}
-                      <span className="ml-4 mr-1 text-xs font-semibold uppercase tracking-wide text-slate-500">GES</span>
-                      {["A", "B", "C", "D", "E", "F", "G"].map((l) => (
-                        <button
-                          key={l}
-                          type="button"
-                          onClick={() => set("ges", input.ges === l ? "" : l)}
-                          className={`h-7 w-7 rounded-md text-xs font-bold transition ${
-                            input.ges === l
-                              ? "bg-navy text-white ring-2 ring-navy ring-offset-2"
-                              : "bg-slate-200 text-slate-600 hover:bg-slate-300"
-                          }`}
-                        >
-                          {l}
-                        </button>
-                      ))}
-                    </div>
+                  <h3 className="mb-3 mt-6 text-xs font-bold uppercase tracking-widest text-copper">Construction & état</h3>
+                  <div className="grid gap-4 sm:grid-cols-3">
+                    <Select label="Année de construction" value={input.anneeConstruction} onChange={(v) => set("anneeConstruction", v)} options={OPT.annee} />
+                    <Select label="État général" value={input.etatGeneral} onChange={(v) => set("etatGeneral", v)} options={OPT.etat} />
+                    <Select label="Chauffage" value={input.chauffage} onChange={(v) => set("chauffage", v)} options={OPT.chauffage} />
+                    <Select label="Menuiseries / vitrage" value={input.menuiseries} onChange={(v) => set("menuiseries", v)} options={OPT.menuiseries} />
+                    <Select label="Cuisine" value={input.cuisine} onChange={(v) => set("cuisine", v)} options={OPT.cuisine} />
+                    {input.typeBien === "maison" && (
+                      <Select label="Mitoyenneté" value={input.mitoyennete} onChange={(v) => set("mitoyennete", v)} options={OPT.mitoyennete} />
+                    )}
+                  </div>
+                  <div className="mt-4">
+                    <ChipGroup label="Travaux à prévoir" options={OPT.travaux} values={input.travauxAPrevoir} onChange={(v) => set("travauxAPrevoir", v)} />
+                  </div>
+
+                  <h3 className="mb-3 mt-6 text-xs font-bold uppercase tracking-widest text-copper">Diagnostics énergie</h3>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="mr-1 text-xs font-semibold uppercase tracking-wide text-slate-500">DPE</span>
+                    {["A", "B", "C", "D", "E", "F", "G"].map((l) => (
+                      <button
+                        key={l}
+                        type="button"
+                        onClick={() => set("dpe", input.dpe === l ? "" : l)}
+                        className={`h-9 w-9 rounded-lg text-sm font-bold text-white transition ${
+                          input.dpe === l ? "scale-110 ring-2 ring-navy ring-offset-2" : "opacity-60 hover:opacity-100"
+                        }`}
+                        style={{ background: DPE_COLORS[l] }}
+                      >
+                        {l}
+                      </button>
+                    ))}
+                    <span className="ml-4 mr-1 text-xs font-semibold uppercase tracking-wide text-slate-500">GES</span>
+                    {["A", "B", "C", "D", "E", "F", "G"].map((l) => (
+                      <button
+                        key={l}
+                        type="button"
+                        onClick={() => set("ges", input.ges === l ? "" : l)}
+                        className={`h-7 w-7 rounded-md text-xs font-bold transition ${
+                          input.ges === l
+                            ? "bg-navy text-white ring-2 ring-navy ring-offset-2"
+                            : "bg-slate-200 text-slate-600 hover:bg-slate-300"
+                        }`}
+                      >
+                        {l}
+                      </button>
+                    ))}
+                  </div>
+
+                  <h3 className="mb-3 mt-6 text-xs font-bold uppercase tracking-widest text-copper">Cadre de vie</h3>
+                  <div className="grid gap-4 sm:grid-cols-3">
+                    <Select label="Luminosité" value={input.luminosite} onChange={(v) => set("luminosite", v)} options={OPT.luminosite} />
+                    <Select label="Vue" value={input.vue} onChange={(v) => set("vue", v)} options={OPT.vue} />
+                    <Select label="Environnement sonore" value={input.environnement} onChange={(v) => set("environnement", v)} options={OPT.environnement} />
+                  </div>
+                  <div className="mt-4 space-y-4">
+                    <ChipGroup label="Exposition" options={OPT.exposition} values={input.exposition} onChange={(v) => set("exposition", v)} />
+                    <ChipGroup label="Extérieurs" options={OPT.exterieur} values={input.exterieur} onChange={(v) => set("exterieur", v)} />
+                    <ChipGroup label="Équipements & options" options={OPT.equipements} values={input.equipements} onChange={(v) => set("equipements", v)} />
                     <div className="flex flex-wrap gap-2">
-                      {EXTERIEUR_OPTIONS.map((opt) => (
-                        <Chip
-                          key={opt}
-                          active={input.exterieur.includes(opt)}
-                          onClick={() =>
-                            set(
-                              "exterieur",
-                              input.exterieur.includes(opt)
-                                ? input.exterieur.filter((o) => o !== opt)
-                                : [...input.exterieur, opt],
-                            )
-                          }
-                        >
-                          {opt}
-                        </Chip>
-                      ))}
                       <Chip active={input.ascenseur} onClick={() => set("ascenseur", !input.ascenseur)}>Ascenseur</Chip>
                       <Chip active={input.cave} onClick={() => set("cave", !input.cave)}>Cave</Chip>
                     </div>
                   </div>
+
+                  <h3 className="mb-3 mt-6 text-xs font-bold uppercase tracking-widest text-copper">Stationnement & charges</h3>
+                  <div className="grid gap-4 sm:grid-cols-3">
+                    <Select label="Stationnement" value={input.stationnement} onChange={(v) => set("stationnement", v)} options={OPT.stationnement} />
+                    <Field label="Charges copro (€/mois)">
+                      <input type="number" className={inputCls} value={input.chargesCopro ?? ""} onChange={(e) => set("chargesCopro", num(e.target.value))} placeholder="—" />
+                    </Field>
+                    <Field label="Taxe foncière (€/an)">
+                      <input type="number" className={inputCls} value={input.taxeFonciere ?? ""} onChange={(e) => set("taxeFonciere", num(e.target.value))} placeholder="—" />
+                    </Field>
+                  </div>
                 </>
               )}
 
-              {step === 2 && (
+              {step === 3 && (
                 <>
                   <h2 className="mb-1 text-xl font-bold text-navy">Photos du bien</h2>
                   <p className="mb-6 text-sm text-slate-500">
-                    L&apos;IA évalue l&apos;état réel, la luminosité et les prestations — et signale tout
-                    écart avec l&apos;état déclaré. Jusqu&apos;à 8 photos.
+                    L&apos;IA évalue l&apos;état réel, la luminosité et les prestations — et annote chaque
+                    photo (bons points / défauts) dans le dossier. Jusqu&apos;à 8 photos.
                   </p>
                   <label className="flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 py-10 transition hover:border-copper hover:bg-copper-soft/40">
                     <span className="mb-1 text-3xl">📷</span>
@@ -444,7 +546,7 @@ export default function Home() {
                 </>
               )}
 
-              {step === 3 && (
+              {step === 4 && (
                 <>
                   <h2 className="mb-1 text-xl font-bold text-navy">Marché local</h2>
                   <p className="mb-6 text-sm text-slate-500">Analysé automatiquement — rien à saisir.</p>
@@ -485,7 +587,7 @@ export default function Home() {
                 </>
               )}
 
-              {step === 4 && (
+              {step === 5 && (
                 <>
                   <h2 className="mb-1 text-xl font-bold text-navy">Contexte de vente</h2>
                   <p className="mb-6 text-sm text-slate-500">
@@ -499,12 +601,13 @@ export default function Home() {
                     <Field label="Contexte (mutation, succession, divorce…)">
                       <input className={inputCls} value={input.contexteVente} onChange={(e) => set("contexteVente", e.target.value)} />
                     </Field>
-                    <Field label="Commentaires du commercial" className="sm:col-span-2">
+                    <Field label="Commentaires du négociateur" className="sm:col-span-2">
                       <textarea rows={4} className={inputCls} value={input.commentaires} onChange={(e) => set("commentaires", e.target.value)} placeholder="Nuisances, copropriété, éléments non visibles sur les photos…" />
                     </Field>
                   </div>
                   <div className="mt-6 rounded-xl bg-slate-50 p-4 text-sm text-slate-600">
                     <span className="font-semibold text-navy">Récapitulatif :</span>{" "}
+                    {[input.clientCivilite, input.clientPrenom, input.clientNom].filter(Boolean).join(" ") || "client n.c."} —{" "}
                     {input.typeBien} {input.surfaceHabitable ?? "?"} m², {input.adresse || "adresse n.c."},{" "}
                     {input.codePostal} {input.ville} — {input.photos.length} photo{input.photos.length > 1 ? "s" : ""},{" "}
                     DPE {input.dpe || "n.c."}
