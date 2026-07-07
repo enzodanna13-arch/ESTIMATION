@@ -70,8 +70,8 @@ Tu produis des avis de valeur rigoureux en croisant trois sources, par ordre de 
 2. Les biens actuellement en vente (concurrence) — des prix AFFICHÉS, donc à pondérer d'une marge de négociation (généralement 3 à 7 %).
 3. Les biens invendus depuis plus de 90 jours — ils révèlent le plafond de prix que le marché REFUSE : l'estimation doit impérativement rester sous ce niveau à prestations comparables.
 
-ANALYSE AUTOMATIQUE DU MARCHÉ LOCAL (obligatoire) :
-Tu recherches TOI-MÊME le marché local avec l'outil web_search avant d'estimer :
+ANALYSE AUTOMATIQUE DU MARCHÉ LOCAL (obligatoire, EXHAUSTIVE) :
+Mène l'analyse la plus poussée possible — multiplie les recherches web sous plusieurs angles (ville + quartier précis, type de bien + surface, baromètres de prix multiples, annonces récentes vs anciennes) avant d'estimer :
 - Recherche les annonces de biens comparables actuellement en vente dans la ville/le secteur (portails immobiliers, agences locales) : relève prix affichés, surfaces, prix au m².
 - Repère les annonces manifestement anciennes ou re-publiées (mention d'ancienneté, baisse de prix, présence sur plusieurs portails) : elles jouent le rôle d'invendus et fixent le plafond de marché.
 - Recherche le prix moyen au m² du secteur (baromètres type MeilleursAgents/SeLoger) pour recouper.
@@ -103,7 +103,7 @@ function buildUserText(input: PropertyInput, dvfSales: DvfSale[]): string {
   const dvfBlock =
     dvfSales.length > 0
       ? dvfSales
-          .slice(0, 25)
+          .slice(0, 40)
           .map((s) => `- ${s.date} | ${s.typeLocal} | ${s.surface ?? "?"} m² | ${s.valeurFonciere} € | ${s.prixM2 ?? "?"} €/m² | ${s.commune}`)
           .join("\n")
       : "(données DVF indisponibles pour ce secteur — baisse l'indice de confiance en conséquence)";
@@ -169,18 +169,18 @@ export async function computeAiEstimate(
   }
   content.push({ type: "text", text: buildUserText(input, dvfSales) });
 
-  // Modèle et effort configurables : Sonnet 5 par défaut (≈ 60-75 % moins cher
-  // qu'Opus pour une qualité proche sur ce type d'analyse). Pour un dossier
-  // premium : ESTIMATION_MODEL=claude-opus-4-8 et ESTIMATION_EFFORT=high.
-  const model = process.env.ESTIMATION_MODEL ?? "claude-sonnet-5";
-  const effort = (process.env.ESTIMATION_EFFORT ?? "medium") as "low" | "medium" | "high";
+  // Configuration "analyse maximale" par défaut : Opus 4.8 + effort high.
+  // Pour réduire coût/latence : ESTIMATION_MODEL=claude-sonnet-5 et/ou
+  // ESTIMATION_EFFORT=medium (variables Vercel, sans redéploiement).
+  const model = process.env.ESTIMATION_MODEL ?? "claude-opus-4-8";
+  const effort = (process.env.ESTIMATION_EFFORT ?? "high") as "low" | "medium" | "high";
 
   let messages: Anthropic.MessageParam[] = [{ role: "user", content }];
   let message: Anthropic.Message;
 
   // La recherche web est un outil serveur : l'API peut rendre la main avec
   // stop_reason "pause_turn" au milieu de sa boucle — on relance pour continuer.
-  const MAX_CONTINUATIONS = 4;
+  const MAX_CONTINUATIONS = 6;
   let continuations = 0;
   onProgress(
     input.photos.length > 0
@@ -193,7 +193,7 @@ export async function computeAiEstimate(
       max_tokens: 16000,
       thinking: { type: "adaptive" },
       system: SYSTEM_PROMPT,
-      tools: [{ type: "web_search_20260209", name: "web_search", max_uses: 4 }],
+      tools: [{ type: "web_search_20260209", name: "web_search", max_uses: 8 }],
       output_config: { effort, format: { type: "json_schema", schema: REPORT_SCHEMA } },
       messages,
     });
