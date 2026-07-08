@@ -103,12 +103,12 @@ export async function POST(request: Request) {
             const diff = report.base_mediane - medRefs;
             const ajustements = [...report.ajustements];
             if (ajustements.length > 0) {
-              const i = ajustements.findIndex((a) => /transposition/i.test(a.libelle));
+              const i = ajustements.findIndex((a) => /transposition|surface/i.test(a.libelle));
               if (i >= 0) {
                 ajustements[i] = { ...ajustements[i], montant: ajustements[i].montant + diff };
               } else if (Math.abs(diff) >= 1000) {
                 ajustements.unshift({
-                  libelle: `Transposition à la surface du bien (${body.surfaceHabitable ?? "?"} m² vs références)`,
+                  libelle: `Surface du bien (${body.surfaceHabitable ?? "?"} m²) vs références`,
                   montant: diff,
                 });
               } else {

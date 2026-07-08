@@ -108,6 +108,13 @@ export default function Report({
   // toujours le même chiffre
   const refs = report.references_dvf;
   const medPrix = medianeReferences(refs);
+
+  // Ajustements regroupés : la médiane DVF est l'ancre, le prix évolue
+  // ensuite par plus-values (atouts) et décotes (défauts, conjoncture)
+  const plusValues = report.ajustements.filter((a) => a.montant >= 0);
+  const decotes = report.ajustements.filter((a) => a.montant < 0);
+  const totalPlus = plusValues.reduce((s, a) => s + a.montant, 0);
+  const totalDecotes = decotes.reduce((s, a) => s + a.montant, 0);
   const medM2 = refs.length
     ? [...refs.map((r) => r.prix_m2)].sort((a, b) => a - b)[Math.floor(refs.length / 2)]
     : 0;
@@ -621,8 +628,8 @@ export default function Report({
             </div>
             <div className="step">
               <div className="n">02</div>
-              <h4>Ajustement</h4>
-              <p>Corrections pour surface, étage, extérieur, énergie et vue, complétées par le coefficient d&apos;état issu des photos.</p>
+              <h4>Plus-values &amp; décotes</h4>
+              <p>La médiane DVF des références sert d&apos;ancre : chaque atout du bien ajoute une plus-value, chaque défaut ou facteur de conjoncture applique une décote.</p>
             </div>
             <div className="step">
               <div className="n">03</div>
@@ -677,24 +684,44 @@ export default function Report({
             <PageHead page={pgAjust} />
             <SectionTitle idx={secAjust} title="Du marché au prix retenu" />
             <p className="section-lead">
-              À partir de la base médiane des références comparables, chaque caractéristique propre du
-              bien — positive ou négative — est traduite en une correction chiffrée. La somme de ces
-              ajustements aboutit au cœur de fourchette retenu.
+              La médiane DVF des références comparables constitue l&apos;ancre de la valeur. À partir
+              de cette médiane, le prix évolue uniquement par les plus-values (atouts du bien) et les
+              décotes (défauts, conjoncture) : leur somme aboutit exactement au cœur de fourchette.
             </p>
 
             <div className="adjust">
               <div className="ar">
-                <span>Base médiane comparables ({surface} m²)</span>
+                <span><b>Médiane DVF de référence — ancre de valeur</b></span>
                 <span className="money">{euro.format(report.base_mediane)}</span>
               </div>
-              {report.ajustements.map((a, i) => (
-                <div key={i} className="ar">
-                  <span>{a.libelle}</span>
-                  <span className={a.montant >= 0 ? "plus" : "minus"}>
-                    {a.montant >= 0 ? "+" : "−"} {int.format(Math.abs(a.montant))} €
-                  </span>
-                </div>
-              ))}
+              {plusValues.length > 0 && (
+                <>
+                  <div className="ar group">
+                    <span>Plus-values — atouts du bien</span>
+                    <span className="plus">+ {int.format(totalPlus)} €</span>
+                  </div>
+                  {plusValues.map((a, i) => (
+                    <div key={`p${i}`} className="ar item">
+                      <span>{a.libelle}</span>
+                      <span className="plus">+ {int.format(a.montant)} €</span>
+                    </div>
+                  ))}
+                </>
+              )}
+              {decotes.length > 0 && (
+                <>
+                  <div className="ar group">
+                    <span>Décotes — défauts &amp; conjoncture</span>
+                    <span className="minus">− {int.format(Math.abs(totalDecotes))} €</span>
+                  </div>
+                  {decotes.map((a, i) => (
+                    <div key={`d${i}`} className="ar item">
+                      <span>{a.libelle}</span>
+                      <span className="minus">− {int.format(Math.abs(a.montant))} €</span>
+                    </div>
+                  ))}
+                </>
+              )}
               <div className="ar total">
                 <span><b>Cœur de fourchette retenu</b></span>
                 <span className="money">{euro.format(report.prix_estime)}</span>
@@ -703,9 +730,9 @@ export default function Report({
 
             <div className="callout" style={{ marginTop: 20 }}>
               <b>Fourchette de valeur : {euro.format(report.fourchette_basse)} à {euro.format(report.fourchette_haute)}.</b>{" "}
-              Le cœur de fourchette de {euro.format(report.prix_estime)} résulte des corrections
-              ci-dessus ; les bornes traduisent l&apos;incertitude résiduelle du marché
-              (indice de confiance : {report.indice_confiance}/100).
+              Le cœur de fourchette de {euro.format(report.prix_estime)} résulte de la médiane DVF
+              corrigée des plus-values et décotes ci-dessus ; les bornes traduisent
+              l&apos;incertitude résiduelle du marché (indice de confiance : {report.indice_confiance}/100).
             </div>
 
             <Foot left="Références DVF — données publiques Etalab, dernier millésime disponible" right={`Réf. ${refDossier}`} />

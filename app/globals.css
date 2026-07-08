@@ -199,6 +199,8 @@ body {
 .dossier .adjust .ar:last-child { border-bottom: 0; }
 .dossier .adjust .ar.total { background: var(--ink); color: var(--paper); }
 .dossier .adjust .ar.total .money { color: var(--gold); }
+.dossier .adjust .ar.group { background: var(--paper); font-size: 7.5pt; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-45); font-weight: 600; padding: 7px 16px 6px; }
+.dossier .adjust .ar.item span:first-child { padding-left: 12px; }
 .dossier .adjust .ar .plus { color: var(--ok); }
 .dossier .adjust .ar .minus { color: #9a5b3f; }
 

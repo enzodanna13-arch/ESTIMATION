@@ -40,9 +40,13 @@ export function buildDvfReferences(
     if (sameType.length >= 3) pool = sameType;
   }
   if (surface > 0) {
-    // Écarte les surfaces sans rapport (moins de la moitié / plus du double)
+    // Resserre sur des surfaces réellement comparables (±25 %) pour que la
+    // médiane des prix actés soit directement représentative du bien ;
+    // à défaut, écarte au moins les surfaces sans rapport (½× à 2×)
+    const tight = pool.filter((s) => (s.surface as number) >= surface * 0.75 && (s.surface as number) <= surface * 1.25);
     const close = pool.filter((s) => (s.surface as number) >= surface * 0.5 && (s.surface as number) <= surface * 2);
-    if (close.length >= 3) pool = close;
+    if (tight.length >= 3) pool = tight;
+    else if (close.length >= 3) pool = close;
   }
 
   const refs = [...pool]
