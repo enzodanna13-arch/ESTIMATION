@@ -1,4 +1,5 @@
 import Anthropic from "@anthropic-ai/sdk";
+import { buildDvfReferences } from "./references";
 import type {
   AuditConcurrentiel,
   CompetitorAd,
@@ -6,6 +7,7 @@ import type {
   EstimationReport,
   MarketStudy,
   PropertyInput,
+  ReferenceDvf,
 } from "./types";
 
 // L'analyse est découpée en 2 phases pour tenir dans le budget d'exécution
@@ -75,6 +77,24 @@ const MARKET_SCHEMA = {
 const FINAL_SCHEMA = {
   type: "object",
   properties: {
+    analyse_dvf: { type: "string", description: "Analyse des ventes réelles DVF fournies (2-4 phrases chiffrées)" },
+    references_dvf: {
+      type: "array",
+      description: "4 à 6 ventes choisies EXCLUSIVEMENT dans la liste DVF fournie — ne JAMAIS inventer une transaction. Ne doit JAMAIS être vide si la liste DVF ne l'est pas (reprends celles de l'étude de marché si elle en contient).",
+      items: {
+        type: "object",
+        properties: {
+          localisation: { type: "string" },
+          detail: { type: "string" },
+          surface: { type: "number" },
+          date: { type: "string", description: "MM/AAAA" },
+          prix: { type: "number" },
+          prix_m2: { type: "number" },
+        },
+        required: ["localisation", "detail", "surface", "date", "prix", "prix_m2"],
+      },
+    },
+    base_mediane: { type: "number", description: "Valeur médiane des références DVF ramenée à la surface du bien, en euros (0 si non calculable)" },
     prix_estime: { type: "number", description: "Cœur de fourchette en euros" },
     fourchette_basse: { type: "number" },
     fourchette_haute: { type: "number" },
@@ -140,6 +160,7 @@ const FINAL_SCHEMA = {
     argumentaire_vendeur: { type: "string" },
   },
   required: [
+    "analyse_dvf", "references_dvf", "base_mediane",
     "prix_estime", "fourchette_basse", "fourchette_haute", "prix_m2", "prix_presentation",
     "description_bien", "indice_confiance", "delai_vente_estime", "positionnement_marche",
     "analyse_photos", "analyse_par_photo", "etat_notes", "coefficient_etat", "impact_etat",
@@ -169,7 +190,8 @@ RÈGLES :
 - Analyse CHAQUE photo fournie (numérotées dans l'ordre : 1 = première) : pièce/vue identifiée, bons points, défauts visibles concrets — ces fiches figurent dans le dossier remis au vendeur. Note l'état par catégorie (etat_notes, 1 à 5) et chiffre impact_etat en euros signés. Signale tout écart avec l'état déclaré. Sans photo : analyse_par_photo et etat_notes vides, impact_etat 0.
 - FOURCHETTE D'ABORD : le résultat principal est fourchette_basse → fourchette_haute, resserrée au maximum justifiable (5 à 8 % d'écart quand les données concordent). prix_estime est le cœur de fourchette. Justifie les deux bornes dans positionnement_marche.
 - L'estimation reste SOUS le plafond révélé par les invendus de l'étude de marché, à prestations comparables. Les prix affichés de la concurrence se pondèrent d'une marge de négociation (3 à 7 %).
-- ajustements : pars de la base médiane DVF fournie (base_mediane) et détaille les lignes signées (localisation, étage, extérieur, énergie/DPE, état issu des photos, stationnement…) dont la somme aboutit exactement à prix_estime.
+- references_dvf : sélectionne 4 à 6 ventes réelles dans la liste DVF fournie (reprends celles de l'étude de marché si elle en contient) — dès que la liste DVF n'est pas vide, references_dvf ne doit JAMAIS être vide. Calcule base_mediane (médiane de ces références ramenée à la surface du bien) et rédige analyse_dvf.
+- ajustements : pars de base_mediane et détaille les lignes signées (localisation, étage, extérieur, énergie/DPE, état issu des photos, stationnement…) dont la somme aboutit exactement à prix_estime.
 - scenarios_prix : exactement 3 scénarios chiffrés — « Vente rapide » (sous la zone gagnante, délai court), « Prix optimal » (= prix_presentation, juste sous la concurrence équivalente, meilleur ratio prix/délai), « Prix plafond » (à ne pas dépasser sous peine de rejoindre les invendus).
 - Si le prix souhaité du vendeur est renseigné, positionne-le et fournis dans argumentaire_vendeur les arguments chiffrés prêts à l'emploi pour recadrer si nécessaire.
 - description_bien : 2 paragraphes factuels et valorisants, style avis de valeur d'agence.
@@ -311,7 +333,12 @@ ${JSON.stringify(MARKET_SCHEMA)}`;
   let messages: Anthropic.MessageParam[] = [{ role: "user", content: text }];
   let message: Anthropic.Message;
   const MAX_CONTINUATIONS = 4;
+  // Budget temps : la fonction serverless est tuée à 300 s — au-delà de ce
+  // seuil on force la conclusion (sans outils) plutôt que de tout perdre.
+  const DEADLINE_MS = 195_000;
+  const t0 = Date.now();
   let continuations = 0;
+  let wrapUp = false;
   onProgress("Audit du marché : recherche des annonces concurrentes sur le web…");
   for (;;) {
     const stream = client.messages.stream({
@@ -319,29 +346,66 @@ ${JSON.stringify(MARKET_SCHEMA)}`;
       max_tokens: 12000,
       thinking: { type: "adaptive" },
       system: MARKET_SYSTEM,
-      tools: [
-        { type: "web_search_20260209", name: "web_search", max_uses: 6 },
-        { type: "web_fetch_20260209", name: "web_fetch", max_uses: 4 },
-      ],
+      ...(wrapUp
+        ? {}
+        : {
+            tools: [
+              { type: "web_search_20260209" as const, name: "web_search" as const, max_uses: 6 },
+              { type: "web_fetch_20260209" as const, name: "web_fetch" as const, max_uses: 4 },
+            ],
+          }),
       output_config: { effort },
       messages,
     });
     message = await stream.finalMessage();
     if (message.stop_reason === "pause_turn" && continuations < MAX_CONTINUATIONS) {
       continuations += 1;
-      onProgress(`Audit du marché : croisement des sources (passe ${continuations + 1})…`);
       messages = [...messages, { role: "assistant", content: message.content }];
+      if (Date.now() - t0 > DEADLINE_MS && !wrapUp) {
+        // Trop long : dernière passe sans outils, conclusion immédiate
+        wrapUp = true;
+        onProgress("Audit du marché : synthèse des données collectées…");
+        messages = [
+          ...messages,
+          { role: "user", content: "Temps écoulé : arrête les recherches et réponds MAINTENANT, uniquement l'objet JSON final conforme au schéma, à partir des éléments déjà collectés." },
+        ];
+      } else {
+        onProgress(`Audit du marché : croisement des sources (passe ${continuations + 1})…`);
+      }
       continue;
     }
     break;
   }
   if (message.stop_reason === "refusal") throw new Error("Requête refusée par les garde-fous du modèle");
 
-  const text2 = message.content
-    .filter((b): b is Anthropic.TextBlock => b.type === "text")
-    .map((b) => b.text)
-    .join("");
-  return normalizeMarket(parseJsonLoose(text2));
+  const finalText = (msg: Anthropic.Message) =>
+    msg.content
+      .filter((b): b is Anthropic.TextBlock => b.type === "text")
+      .map((b) => b.text)
+      .join("");
+
+  try {
+    return normalizeMarket(parseJsonLoose(finalText(message)));
+  } catch {
+    // La réponse ne contient pas le JSON attendu : une relance de
+    // récupération (sans outils, donc rapide) plutôt que de perdre l'audit.
+    onProgress("Audit du marché : mise en forme des résultats…");
+    const retry = await client.messages
+      .stream({
+        model,
+        max_tokens: 12000,
+        thinking: { type: "adaptive" },
+        system: MARKET_SYSTEM,
+        output_config: { effort: "low" },
+        messages: [
+          ...messages,
+          { role: "assistant", content: message.content },
+          { role: "user", content: "Ta réponse précédente n'était pas un JSON exploitable. Réponds MAINTENANT uniquement l'objet JSON final conforme au schéma, à partir des éléments déjà collectés." },
+        ],
+      })
+      .finalMessage();
+    return normalizeMarket(parseJsonLoose(finalText(retry)));
+  }
 }
 
 /** Phase 2 — analyse des photos + rédaction du dossier final (sans outils). */
@@ -415,6 +479,18 @@ ${JSON.stringify(FINAL_SCHEMA)}`,
   };
   const m = marche ?? emptyMarket;
 
+  // Références DVF : priorité à l'étude de marché, sinon la sélection du
+  // rédacteur final, sinon la sélection déterministe — jamais de tableau
+  // vide tant que des ventes DVF existent.
+  const deterministic = buildDvfReferences(dvfSales, input);
+  const referencesDvf =
+    m.references_dvf.length > 0
+      ? m.references_dvf
+      : arr<ReferenceDvf>(r.references_dvf).length > 0
+        ? arr<ReferenceDvf>(r.references_dvf)
+        : deterministic.references;
+  const baseMediane = m.base_mediane || num(r.base_mediane) || deterministic.baseMediane;
+
   const report: EstimationReport = {
     prix_estime: num(r.prix_estime),
     fourchette_basse: num(r.fourchette_basse),
@@ -425,7 +501,7 @@ ${JSON.stringify(FINAL_SCHEMA)}`,
     indice_confiance: num(r.indice_confiance),
     delai_vente_estime: str(r.delai_vente_estime),
     positionnement_marche: str(r.positionnement_marche),
-    analyse_dvf: m.analyse_dvf,
+    analyse_dvf: m.analyse_dvf || str(r.analyse_dvf),
     analyse_concurrence: m.analyse_concurrence,
     analyse_invendus: m.analyse_invendus,
     analyse_photos: str(r.analyse_photos),
@@ -436,8 +512,8 @@ ${JSON.stringify(FINAL_SCHEMA)}`,
     annonces_concurrentes: m.annonces_concurrentes,
     audit_concurrentiel: m.audit_concurrentiel,
     scenarios_prix: arr(r.scenarios_prix),
-    references_dvf: m.references_dvf,
-    base_mediane: m.base_mediane,
+    references_dvf: referencesDvf,
+    base_mediane: baseMediane,
     ajustements: arr(r.ajustements),
     etapes_commercialisation: arr(r.etapes_commercialisation),
     points_forts: arr(r.points_forts),

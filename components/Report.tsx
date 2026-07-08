@@ -60,7 +60,7 @@ function Dots({ note }: { note: number }) {
   );
 }
 
-const ROMANS = ["I", "II", "III", "IV", "V", "VI", "VII"];
+const ROMANS = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX"];
 
 export default function Report({
   result,
@@ -138,28 +138,35 @@ export default function Report({
     ] as ([string, string] | null)[]
   ).filter(Boolean) as [string, string][];
 
-  // Découpage des fiches photo en pages de 6 (jusqu'à 20 photos)
+  // Découpage des fiches photo en pages de 4 (2 rangées de 2) : au-delà,
+  // la grille dépasse la hauteur A4 et déborde sur une page fantôme
   const photoPages: (typeof photoAnalyses)[] = [];
-  for (let i = 0; i < photoAnalyses.length; i += 6) photoPages.push(photoAnalyses.slice(i, i + 6));
+  for (let i = 0; i < photoAnalyses.length; i += 4) photoPages.push(photoAnalyses.slice(i, i + 4));
 
-  // Numérotation des sections (les pages photos n'existent que s'il y a des photos)
+  // Numérotation des sections — certaines pages sont conditionnelles
   const hasPhotoPage = photoPages.length > 0;
+  const hasVisuel = report.etat_notes.length > 0;
+  const hasAjust = report.ajustements.length > 0 && report.base_mediane > 0;
   let sec = 0;
   const S = () => ROMANS[sec++];
   const secSynthese = S();
   const secBien = S();
-  const secVisuel = S();
+  const secVisuel = hasVisuel ? S() : "";
+  const secConcur = S();
   const secPhotos = hasPhotoPage ? S() : "";
   const secMethode = S();
+  const secAjust = hasAjust ? S() : "";
   const secReco = S();
   let pageNo = 1;
   const P = () => ++pageNo;
   const pgSynthese = P();
   const pgBien = P();
-  const pgVisuel = P();
+  const pgVisuel = hasVisuel ? P() : 0;
+  const pgConcur = P();
   const pgPhotos = hasPhotoPage ? P() : 0;
   for (let i = 1; i < photoPages.length; i++) P(); // pages photo supplémentaires
   const pgMethode = P();
+  const pgAjust = hasAjust ? P() : 0;
   const pgReco = P();
 
   const footLeft = `${AGENCE.nom} ${AGENCE.enseigne} — ${AGENCE.adresse} · ${AGENCE.tel}`;
@@ -331,43 +338,68 @@ export default function Report({
           <Foot left={`${AGENCE.nom} ${AGENCE.enseigne}`} right={`Réf. ${refDossier}`} />
         </section>
 
-        {/* ============ ANALYSE VISUELLE & CONCURRENCE ============ */}
+        {/* ============ ANALYSE VISUELLE (état du bien) ============ */}
+        {hasVisuel && (
+          <section className="page">
+            <PageHead page={pgVisuel} />
+            <SectionTitle idx={secVisuel} title="Analyse visuelle du bien" />
+            <p className="section-lead">
+              L&apos;état du bien est évalué à partir des photographies fournies : chaque catégorie est
+              notée, puis traduite en un coefficient d&apos;état chiffré, intégré aux ajustements de
+              valeur de la section « Méthodologie &amp; comparables ».
+            </p>
+
+            <div className="eyebrow" style={{ color: "var(--ink-45)" }}>État du bien — lecture des photographies</div>
+            <hr className="rule" style={{ margin: "8px 0 2px" }} />
+            <div className="cond">
+              {report.etat_notes.map((n, i) => (
+                <div key={i} className="cr">
+                  <span className="lab">{n.categorie}</span>
+                  <Dots note={n.note} />
+                </div>
+              ))}
+            </div>
+            <div className="cond-synth">
+              <span className="l">Coefficient d&apos;état retenu</span>
+              <span className="r">
+                {report.coefficient_etat || "—"}
+                {report.impact_etat !== 0
+                  ? ` · impact net ${report.impact_etat > 0 ? "+" : "−"} ${int.format(Math.abs(report.impact_etat))} €`
+                  : ""}
+              </span>
+            </div>
+            <p className="photo-note">
+              Analyse indicative issue des visuels transmis ; ne se substitue pas au constat sur place
+              effectué lors du rendez-vous d&apos;estimation.
+            </p>
+
+            <Foot left={`${AGENCE.nom} ${AGENCE.enseigne}`} right={`Réf. ${refDossier}`} />
+          </section>
+        )}
+
+        {/* ============ CONCURRENCE & POSITIONNEMENT ============ */}
         <section className="page">
-          <PageHead page={pgVisuel} />
-          <SectionTitle idx={secVisuel} title="Analyse visuelle & concurrence" />
-          <p className="section-lead">
-            L&apos;état du bien est évalué à partir des photographies fournies, puis intégré aux
-            ajustements. Les biens concurrents affichés sur le marché — relevés automatiquement sur le
-            web — servent au positionnement commercial ; ils ne fondent jamais la valeur, établie par
-            les mutations réelles.
+          <PageHead page={pgConcur} />
+          <SectionTitle idx={secConcur} title="Concurrence & positionnement" />
+          <p className="section-lead" style={{ marginBottom: 12 }}>
+            Les biens concurrents affichés sur le marché — relevés automatiquement sur le web —
+            servent au positionnement commercial ; ils ne fondent jamais la valeur, établie par les
+            mutations réelles.
           </p>
 
-          {report.etat_notes.length > 0 && (
+          {competitors.length === 0 && (
             <>
-              <div className="eyebrow" style={{ color: "var(--ink-45)" }}>État du bien — lecture des photographies</div>
-              <hr className="rule" style={{ margin: "8px 0 2px" }} />
-              <div className="cond">
-                {report.etat_notes.map((n, i) => (
-                  <div key={i} className="cr">
-                    <span className="lab">{n.categorie}</span>
-                    <Dots note={n.note} />
-                  </div>
-                ))}
+              <div className="eyebrow" style={{ color: "var(--ink-45)" }}>
+                Concurrence directe — annonces vives équivalentes (prix affichés)
               </div>
-              <div className="cond-synth">
-                <span className="l">Coefficient d&apos;état retenu</span>
-                <span className="r">
-                  {report.coefficient_etat || "—"}
-                  {report.impact_etat !== 0
-                    ? ` · impact net ${report.impact_etat > 0 ? "+" : "−"} ${int.format(Math.abs(report.impact_etat))} €`
-                    : ""}
-                </span>
-              </div>
-              <p className="photo-note">
-                Analyse indicative issue des visuels transmis ; ne se substitue pas au constat sur place
-                effectué lors du rendez-vous d&apos;estimation.
+              <hr className="rule" style={{ margin: "8px 0 4px" }} />
+              <p style={{ fontSize: "9.5pt", color: "var(--ink-70)", margin: "10px 0 0" }}>
+                Le relevé automatique des annonces concurrentes n&apos;a pas abouti lors de cette
+                analyse. Le positionnement s&apos;appuie donc intégralement sur les ventes réelles
+                actées (DVF) présentées en section suivante — la base la plus fiable pour établir
+                la valeur. Un relevé de la concurrence active pourra être joint lors du
+                rendez-vous d&apos;estimation.
               </p>
-              <div style={{ height: 20 }} />
             </>
           )}
 
@@ -388,7 +420,7 @@ export default function Report({
                   </tr>
                 </thead>
                 <tbody>
-                  {competitors.map((a, i) => (
+                  {competitors.slice(0, 6).map((a, i) => (
                     <tr key={i} className={isStale(a) ? "warn-row" : ""}>
                       <td>
                         <div style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
@@ -397,7 +429,7 @@ export default function Report({
                             <img
                               src={a.url_photo}
                               alt=""
-                              style={{ width: 64, height: 48, objectFit: "cover", flexShrink: 0, border: "1px solid var(--line)" }}
+                              style={{ width: 56, height: 40, objectFit: "cover", flexShrink: 0, border: "1px solid var(--line)" }}
                               onError={(e) => { e.currentTarget.style.display = "none"; }}
                             />
                           )}
@@ -444,7 +476,7 @@ export default function Report({
 
           {report.audit_concurrentiel.nb_annonces_analysees > 0 && (
             <>
-              <div style={{ height: 18 }} />
+              <div style={{ height: 8 }} />
               <div className="eyebrow" style={{ color: "var(--ink-45)" }}>Audit du marché — chiffres clés</div>
               <hr className="rule" style={{ margin: "8px 0 8px" }} />
               <div className="kpi-row" style={{ marginBottom: 12 }}>
@@ -461,9 +493,11 @@ export default function Report({
             </>
           )}
 
-          <div className="callout" style={{ marginTop: 16 }}>
-            {report.audit_concurrentiel.synthese || report.analyse_invendus}
-          </div>
+          {(report.audit_concurrentiel.synthese || report.analyse_invendus) && (
+            <div className="callout" style={{ marginTop: 10 }}>
+              {report.audit_concurrentiel.synthese || report.analyse_invendus}
+            </div>
+          )}
 
           <Foot left="Prix affichés — non actés · usage strictement indicatif" right={`Réf. ${refDossier}`} />
         </section>
@@ -508,7 +542,10 @@ export default function Report({
         <section className="page">
           <PageHead page={pgMethode} />
           <SectionTitle idx={secMethode} title="Méthodologie & comparables" />
-          <p className="section-lead">{report.analyse_dvf}</p>
+          <p className="section-lead">
+            {report.analyse_dvf ||
+              "La valeur est établie à partir des ventes réelles actées (données publiques DVF) de biens comparables sur la commune, ajustées aux caractéristiques propres du bien."}
+          </p>
 
           <div className="method">
             <div className="step">
@@ -565,7 +602,20 @@ export default function Report({
             </>
           )}
 
-          {report.ajustements.length > 0 && report.base_mediane > 0 && (
+          <Foot left="Références DVF — données publiques Etalab, dernier millésime disponible" right={`Réf. ${refDossier}`} />
+        </section>
+
+        {/* ============ AJUSTEMENTS DE VALEUR ============ */}
+        {hasAjust && (
+          <section className="page">
+            <PageHead page={pgAjust} />
+            <SectionTitle idx={secAjust} title="Du marché au prix retenu" />
+            <p className="section-lead">
+              À partir de la base médiane des références comparables, chaque caractéristique propre du
+              bien — positive ou négative — est traduite en une correction chiffrée. La somme de ces
+              ajustements aboutit au cœur de fourchette retenu.
+            </p>
+
             <div className="adjust">
               <div className="ar">
                 <span>Base médiane comparables ({surface} m²)</span>
@@ -584,10 +634,17 @@ export default function Report({
                 <span className="money">{euro.format(report.prix_estime)}</span>
               </div>
             </div>
-          )}
 
-          <Foot left="Références DVF — données publiques Etalab, dernier millésime disponible" right={`Réf. ${refDossier}`} />
-        </section>
+            <div className="callout" style={{ marginTop: 20 }}>
+              <b>Fourchette de valeur : {euro.format(report.fourchette_basse)} à {euro.format(report.fourchette_haute)}.</b>{" "}
+              Le cœur de fourchette de {euro.format(report.prix_estime)} résulte des corrections
+              ci-dessus ; les bornes traduisent l&apos;incertitude résiduelle du marché
+              (indice de confiance : {report.indice_confiance}/100).
+            </div>
+
+            <Foot left="Références DVF — données publiques Etalab, dernier millésime disponible" right={`Réf. ${refDossier}`} />
+          </section>
+        )}
 
         {/* ============ RECOMMANDATIONS ============ */}
         <section className="page">

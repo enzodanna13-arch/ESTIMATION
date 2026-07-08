@@ -1,6 +1,7 @@
 import { computeFinalReport, computeMarketStudy } from "@/lib/ai";
 import { fetchDvfSales } from "@/lib/dvf";
 import { computeFallbackEstimate } from "@/lib/fallback";
+import { buildDvfReferences } from "@/lib/references";
 import type { DvfSale, MarketStudy, PropertyInput } from "@/lib/types";
 
 export const maxDuration = 300;
@@ -81,6 +82,16 @@ export async function POST(request: Request) {
               report = { ...report, ...marche };
               engine = "ia";
             }
+          }
+          // Filet de sécurité : le tableau des comparables DVF ne doit
+          // jamais être vide dès que des ventes existent
+          if (report.references_dvf.length === 0 && dvfSales.length > 0) {
+            const det = buildDvfReferences(dvfSales, body);
+            report = {
+              ...report,
+              references_dvf: det.references,
+              base_mediane: report.base_mediane > 0 ? report.base_mediane : det.baseMediane,
+            };
           }
           send({ type: "result", data: { phase: "rapport", report, dvfSales, dvfSource, engine } });
         }
