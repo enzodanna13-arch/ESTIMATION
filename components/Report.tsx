@@ -743,7 +743,24 @@ export default function Report({
         <section className="page">
           <PageHead page={pgReco} />
           <SectionTitle idx={secReco} title="Recommandations commerciales" />
-          <div style={{ height: 20 }} />
+          <div style={{ height: 14 }} />
+
+          {report.audit_concurrentiel.prix_m2_median > 0 && surface > 0 && (
+            <div className="callout" style={{ marginBottom: 18 }}>
+              <b>Positionnement concurrentiel :</b> médiane concurrentielle ≈{" "}
+              {euro.format(Math.round(report.audit_concurrentiel.prix_m2_median * surface))} pour{" "}
+              {surface} m² ({int.format(report.audit_concurrentiel.prix_m2_median)} €/m² affichés).
+              Prix de présentation retenu : <b>{euro.format(prixPresentation)}</b>, soit{" "}
+              {Math.abs(
+                ((prixPresentation - report.audit_concurrentiel.prix_m2_median * surface) /
+                  (report.audit_concurrentiel.prix_m2_median * surface)) *
+                  100,
+              ).toFixed(1)}{" "}
+              % {prixPresentation <= report.audit_concurrentiel.prix_m2_median * surface
+                ? "sous la médiane — le bien se présente comme le meilleur rapport qualité/prix de sa catégorie."
+                : "au-dessus de la médiane — positionnement justifié par les prestations supérieures du bien."}
+            </div>
+          )}
 
           {report.scenarios_prix.length >= 3 ? (
             <div className="reco-grid" style={{ gridTemplateColumns: "repeat(3, 1fr)" }}>
