@@ -60,7 +60,7 @@ function Dots({ note }: { note: number }) {
   );
 }
 
-const ROMANS = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX"];
+const ROMANS = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI"];
 
 export default function Report({
   result,
@@ -138,36 +138,57 @@ export default function Report({
     ] as ([string, string] | null)[]
   ).filter(Boolean) as [string, string][];
 
-  // Découpage des fiches photo en pages de 4 (2 rangées de 2) : au-delà,
-  // la grille dépasse la hauteur A4 et déborde sur une page fantôme
+  // Découpage des fiches photo : 4 max par page (au-delà la grille dépasse
+  // la hauteur A4), réparties équitablement pour éviter une dernière page
+  // quasi vide (13 photos → 4+3+3+3 plutôt que 4+4+4+1)
   const photoPages: (typeof photoAnalyses)[] = [];
-  for (let i = 0; i < photoAnalyses.length; i += 4) photoPages.push(photoAnalyses.slice(i, i + 4));
+  if (photoAnalyses.length > 0) {
+    const nPages = Math.ceil(photoAnalyses.length / 4);
+    const base = Math.floor(photoAnalyses.length / nPages);
+    let extra = photoAnalyses.length % nPages;
+    let cursor = 0;
+    for (let p = 0; p < nPages; p++) {
+      const size = base + (extra-- > 0 ? 1 : 0);
+      photoPages.push(photoAnalyses.slice(cursor, cursor + size));
+      cursor += size;
+    }
+  }
 
   // Numérotation des sections — certaines pages sont conditionnelles
   const hasPhotoPage = photoPages.length > 0;
   const hasVisuel = report.etat_notes.length > 0;
   const hasAjust = report.ajustements.length > 0 && report.base_mediane > 0;
+  const hasLecture = Boolean(
+    report.audit_concurrentiel.nb_annonces_analysees > 0 ||
+      report.audit_concurrentiel.synthese ||
+      report.analyse_concurrence ||
+      report.analyse_invendus,
+  );
   let sec = 0;
   const S = () => ROMANS[sec++];
   const secSynthese = S();
   const secBien = S();
   const secVisuel = hasVisuel ? S() : "";
   const secConcur = S();
+  const secLecture = hasLecture ? S() : "";
   const secPhotos = hasPhotoPage ? S() : "";
   const secMethode = S();
   const secAjust = hasAjust ? S() : "";
   const secReco = S();
+  const secSign = S();
   let pageNo = 1;
   const P = () => ++pageNo;
   const pgSynthese = P();
   const pgBien = P();
   const pgVisuel = hasVisuel ? P() : 0;
   const pgConcur = P();
+  const pgLecture = hasLecture ? P() : 0;
   const pgPhotos = hasPhotoPage ? P() : 0;
   for (let i = 1; i < photoPages.length; i++) P(); // pages photo supplémentaires
   const pgMethode = P();
   const pgAjust = hasAjust ? P() : 0;
   const pgReco = P();
+  const pgSign = P();
 
   const footLeft = `${AGENCE.nom} ${AGENCE.enseigne} — ${AGENCE.adresse} · ${AGENCE.tel}`;
 
@@ -373,6 +394,15 @@ export default function Report({
               effectué lors du rendez-vous d&apos;estimation.
             </p>
 
+            {report.analyse_photos && (
+              <>
+                <div style={{ height: 14 }} />
+                <div className="eyebrow" style={{ color: "var(--ink-45)" }}>Synthèse du reportage photo</div>
+                <hr className="rule" style={{ margin: "8px 0 6px" }} />
+                <p style={{ fontSize: "9.5pt", color: "var(--ink-70)" }}>{report.analyse_photos}</p>
+              </>
+            )}
+
             <Foot left={`${AGENCE.nom} ${AGENCE.enseigne}`} right={`Réf. ${refDossier}`} />
           </section>
         )}
@@ -474,33 +504,62 @@ export default function Report({
             </>
           )}
 
-          {report.audit_concurrentiel.nb_annonces_analysees > 0 && (
-            <>
-              <div style={{ height: 8 }} />
-              <div className="eyebrow" style={{ color: "var(--ink-45)" }}>Audit du marché — chiffres clés</div>
-              <hr className="rule" style={{ margin: "8px 0 8px" }} />
-              <div className="kpi-row" style={{ marginBottom: 12 }}>
-                <div className="kpi"><div className="k">Annonces analysées</div><div className="v">{report.audit_concurrentiel.nb_annonces_analysees}</div></div>
-                <div className="kpi"><div className="k">€/m² plancher</div><div className="v" style={{ fontSize: "13pt" }}>{report.audit_concurrentiel.prix_m2_min > 0 ? int.format(report.audit_concurrentiel.prix_m2_min) : "—"}</div></div>
-                <div className="kpi"><div className="k">€/m² médian</div><div className="v" style={{ fontSize: "13pt" }}>{report.audit_concurrentiel.prix_m2_median > 0 ? int.format(report.audit_concurrentiel.prix_m2_median) : "—"}</div></div>
-                <div className="kpi"><div className="k">€/m² plafond</div><div className="v" style={{ fontSize: "13pt" }}>{report.audit_concurrentiel.prix_m2_max > 0 ? int.format(report.audit_concurrentiel.prix_m2_max) : "—"}</div></div>
-              </div>
-              {report.audit_concurrentiel.tension_marche && (
-                <p style={{ fontSize: "9.5pt", color: "var(--ink-70)" }}>
-                  <b style={{ color: "var(--ink)" }}>Tension du marché :</b> {report.audit_concurrentiel.tension_marche}
-                </p>
-              )}
-            </>
-          )}
-
-          {(report.audit_concurrentiel.synthese || report.analyse_invendus) && (
-            <div className="callout" style={{ marginTop: 10 }}>
-              {report.audit_concurrentiel.synthese || report.analyse_invendus}
-            </div>
-          )}
-
           <Foot left="Prix affichés — non actés · usage strictement indicatif" right={`Réf. ${refDossier}`} />
         </section>
+
+        {/* ============ LECTURE DU MARCHÉ (audit chiffré) ============ */}
+        {hasLecture && (
+          <section className="page">
+            <PageHead page={pgLecture} />
+            <SectionTitle idx={secLecture} title="Lecture du marché" />
+            <p className="section-lead" style={{ marginBottom: 14 }}>
+              Synthèse chiffrée de l&apos;audit concurrentiel : niveaux de prix affichés, tension du
+              marché et enseignements des annonces qui stagnent, intégrés au positionnement retenu.
+            </p>
+
+            {report.audit_concurrentiel.nb_annonces_analysees > 0 && (
+              <>
+                <div className="eyebrow" style={{ color: "var(--ink-45)" }}>Audit du marché — chiffres clés</div>
+                <hr className="rule" style={{ margin: "8px 0 8px" }} />
+                <div className="kpi-row" style={{ marginBottom: 12 }}>
+                  <div className="kpi"><div className="k">Annonces analysées</div><div className="v">{report.audit_concurrentiel.nb_annonces_analysees}</div></div>
+                  <div className="kpi"><div className="k">€/m² plancher</div><div className="v" style={{ fontSize: "13pt" }}>{report.audit_concurrentiel.prix_m2_min > 0 ? int.format(report.audit_concurrentiel.prix_m2_min) : "—"}</div></div>
+                  <div className="kpi"><div className="k">€/m² médian</div><div className="v" style={{ fontSize: "13pt" }}>{report.audit_concurrentiel.prix_m2_median > 0 ? int.format(report.audit_concurrentiel.prix_m2_median) : "—"}</div></div>
+                  <div className="kpi"><div className="k">€/m² plafond</div><div className="v" style={{ fontSize: "13pt" }}>{report.audit_concurrentiel.prix_m2_max > 0 ? int.format(report.audit_concurrentiel.prix_m2_max) : "—"}</div></div>
+                </div>
+                {report.audit_concurrentiel.tension_marche && (
+                  <p style={{ fontSize: "9.5pt", color: "var(--ink-70)", marginBottom: 10 }}>
+                    <b style={{ color: "var(--ink)" }}>Tension du marché :</b> {report.audit_concurrentiel.tension_marche}
+                  </p>
+                )}
+              </>
+            )}
+
+            {report.analyse_concurrence && (
+              <>
+                <div className="eyebrow" style={{ color: "var(--ink-45)", marginTop: 6 }}>Concurrence active</div>
+                <hr className="rule" style={{ margin: "8px 0 6px" }} />
+                <p style={{ fontSize: "9.5pt", color: "var(--ink-70)", marginBottom: 10 }}>{report.analyse_concurrence}</p>
+              </>
+            )}
+
+            {report.analyse_invendus && (
+              <>
+                <div className="eyebrow" style={{ color: "var(--ink-45)", marginTop: 6 }}>Invendus & plafond de marché</div>
+                <hr className="rule" style={{ margin: "8px 0 6px" }} />
+                <p style={{ fontSize: "9.5pt", color: "var(--ink-70)", marginBottom: 10 }}>{report.analyse_invendus}</p>
+              </>
+            )}
+
+            {report.audit_concurrentiel.synthese && (
+              <div className="callout" style={{ marginTop: 8 }}>
+                <b>Zone de prix gagnante :</b> {report.audit_concurrentiel.synthese}
+              </div>
+            )}
+
+            <Foot left="Prix affichés — non actés · usage strictement indicatif" right={`Réf. ${refDossier}`} />
+          </section>
+        )}
 
         {/* ============ LE BIEN EN IMAGES (6 fiches par page) ============ */}
         {photoPages.map((chunk, pageIdx) => (
@@ -510,7 +569,13 @@ export default function Report({
               idx={secPhotos}
               title={pageIdx === 0 ? "Le bien en images" : "Le bien en images (suite)"}
             />
-            {pageIdx === 0 && <p className="section-lead">{report.analyse_photos}</p>}
+            {pageIdx === 0 && (
+              <p className="section-lead" style={{ marginBottom: 14 }}>
+                {hasVisuel
+                  ? "Chaque vue est analysée : atouts à valoriser et points de vigilance à anticiper pour la commercialisation."
+                  : report.analyse_photos}
+              </p>
+            )}
             {pageIdx > 0 && <div style={{ height: 18 }} />}
             <div className="photo-grid">
               {chunk.map((pa) => {
@@ -700,9 +765,23 @@ export default function Report({
             </>
           )}
 
-          <div className="callout" style={{ marginTop: 20 }}>
-            <b>Argumentaire :</b> {report.argumentaire_vendeur}
-          </div>
+          <Foot left={footLeft} right={`Réf. ${refDossier}`} />
+        </section>
+
+        {/* ============ ARGUMENTAIRE & BON POUR ACCORD ============ */}
+        <section className="page">
+          <PageHead page={pgSign} />
+          <SectionTitle idx={secSign} title="Argumentaire & accord" />
+          <p className="section-lead" style={{ marginBottom: 14 }}>
+            Les éléments chiffrés à présenter au vendeur pour valider le positionnement retenu, et
+            l&apos;accord sur la stratégie de commercialisation.
+          </p>
+
+          {report.argumentaire_vendeur && (
+            <div className="callout">
+              <b>Argumentaire :</b> {report.argumentaire_vendeur}
+            </div>
+          )}
 
           <div className="sign">
             <div className="box">
