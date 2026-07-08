@@ -37,8 +37,9 @@ const MARKET_SCHEMA = {
           source: { type: "string", description: "Portail ou agence" },
           comparaison: { type: "string", description: "1 phrase vs le bien estimé" },
           positionnement: { type: "string", enum: ["supérieur", "équivalent", "inférieur"] },
+          invendu: { type: "boolean", description: "true si l'annonce est un INVENDU : en ligne depuis plus de 90 jours, re-publiée ou baissée plusieurs fois" },
         },
-        required: ["titre", "url_annonce", "url_photo", "prix", "surface", "prix_m2", "caracteristiques", "anciennete", "source", "comparaison", "positionnement"],
+        required: ["titre", "url_annonce", "url_photo", "prix", "surface", "prix_m2", "caracteristiques", "anciennete", "source", "comparaison", "positionnement", "invendu"],
       },
     },
     audit_concurrentiel: {
@@ -182,11 +183,12 @@ const MARKET_SYSTEM = `Tu es un analyste pricing immobilier. Tu conduis un AUDIT
 PROTOCOLE (obligatoire, exhaustif) :
 1. RECENSEMENT — balaie le marché actif sous plusieurs angles avec web_search (ville + quartier, type + surface, baromètres multiples, annonces récentes vs anciennes) : vise 6 à 10 annonces comparables examinées — sois EFFICACE : requêtes larges et bien choisies plutôt que nombreuses ; restitue les 6 à 8 plus pertinentes, chacune classée supérieur / équivalent / inférieur vs le bien.
 2. VÉRIFICATION — pour chaque annonce retenue, essaie d'ouvrir la page avec web_fetch pour vérifier prix/surface et récupérer l'URL de la photo principale (og:image) et de l'annonce. Champ vide si introuvable — n'invente JAMAIS une URL, un prix ou une annonce.
-3. CARTOGRAPHIE — min / médiane / max des €/m² observés, tension du marché (volume d'offre, vitesse de rotation, seuils où les annonces stagnent). Les annonces anciennes/re-publiées/baissées jouent le rôle d'invendus : elles révèlent le plafond que le marché refuse.
-4. ZONE GAGNANTE — détermine la zone de prix où le bien est objectivement le meilleur choix de sa catégorie et explique pourquoi dans audit_concurrentiel.synthese. La médiane concurrentielle (prix_m2_median) est le repère de POSITIONNEMENT : recommande une zone qui ressort SOUS la médiane concurrentielle des biens équivalents.
-5. DVF — la liste fournie couvre la COMMUNE ENTIÈRE du code postal : sélectionne les 4 à 6 ventes réelles les plus comparables, en PRIVILÉGIANT les surfaces proches du bien (±25 %) pour que la médiane soit directement représentative (élargis si nécessaire — dès que la liste n'est pas vide, references_dvf ne doit JAMAIS être vide). base_mediane = la médiane des PRIX ACTÉS de ces références, telle quelle — ne la transpose NI au m² NI à la surface du bien : c'est l'ANCRE de valeur du dossier.
+3. INVENDUS — c'est TOI qui les identifies, JAMAIS le commercial : un INVENDU = une annonce en ligne depuis plus de 90 jours, re-publiée ou baissée plusieurs fois. Recherche-les activement (annonces anciennes des portails, mentions « baisse de prix », historique) et marque invendu=true sur ces annonces. analyse_invendus décrit TES constats chiffrés (prix, ancienneté, seuil de blocage) — n'écris JAMAIS qu'aucun invendu n'a été saisi ou renseigné : si tu n'en détectes aucun, dis que le marché ne présente pas de stock ancien détectable et ce que cela implique.
+4. CARTOGRAPHIE — min / médiane / max des €/m² observés, tension du marché (volume d'offre, vitesse de rotation, seuils où les annonces stagnent). Les invendus révèlent le plafond que le marché refuse.
+5. ZONE GAGNANTE — détermine la zone de prix où le bien est objectivement le meilleur choix de sa catégorie et explique pourquoi dans audit_concurrentiel.synthese. La médiane concurrentielle (prix_m2_median) est le repère de POSITIONNEMENT : recommande une zone qui ressort SOUS la médiane concurrentielle des biens équivalents.
+6. DVF — la liste fournie couvre la COMMUNE ENTIÈRE du code postal : sélectionne les 4 à 6 ventes réelles les plus comparables, en PRIVILÉGIANT les surfaces proches du bien (±25 %) pour que la médiane soit directement représentative (élargis si nécessaire — dès que la liste n'est pas vide, references_dvf ne doit JAMAIS être vide). base_mediane = la médiane des PRIX ACTÉS de ces références, telle quelle — ne la transpose NI au m² NI à la surface du bien : c'est l'ANCRE de valeur du dossier.
 
-6. CONJONCTURE — vérifie via web_search la tendance de prix récente du secteur (baromètres) et intègre-la à la cartographie et à la zone gagnante.
+7. CONJONCTURE — vérifie via web_search la tendance de prix récente du secteur (baromètres) et intègre-la à la cartographie et à la zone gagnante.
 
 ${CONJONCTURE_RULE}
 
@@ -218,7 +220,7 @@ ${CONJONCTURE_RULE}
 ${JSON_RULE}`;
 
 function fmtComparables(list: PropertyInput["concurrence"]): string {
-  if (list.length === 0) return "(aucun renseigné)";
+  if (list.length === 0) return "(rien de saisi — sans incidence : ton audit web fait foi, ne mentionne jamais cette absence dans le dossier)";
   return list
     .map((c) => {
       const pm2 = c.prix && c.surface ? ` soit ${Math.round(c.prix / c.surface)} €/m²` : "";
@@ -308,6 +310,7 @@ function normalizeMarket(r: Record<string, unknown>): MarketStudy {
       source: str(a?.source),
       comparaison: str(a?.comparaison),
       positionnement: str(a?.positionnement),
+      invendu: a?.invendu === true,
     })),
     audit_concurrentiel: {
       nb_annonces_analysees: num(audit.nb_annonces_analysees),
@@ -338,10 +341,10 @@ export async function computeMarketStudy(
 ## Transactions DVF (ventes réelles actées — COMMUNE ENTIÈRE du code postal ${input.codePostal})
 ${dvfBlock(dvfSales)}
 
-## Concurrence saisie par le commercial (complément facultatif à ta recherche web)
+## Concurrence déjà repérée par le négociateur (complément FACULTATIF — ta recherche web reste obligatoire)
 ${fmtComparables(input.concurrence)}
 
-## Invendus saisis par le commercial (complément facultatif à ta recherche web)
+## Invendus déjà repérés par le négociateur (complément FACULTATIF — c'est TOI qui identifies les invendus du marché : annonces +90 jours, re-publiées ou baissées)
 ${fmtComparables(input.invendus)}
 
 # SCHÉMA JSON DE LA RÉPONSE (respecte-le exactement)

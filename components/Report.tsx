@@ -101,7 +101,48 @@ export default function Report({
   const posPct = (v: number) =>
     posMax > posMin ? `${Math.round(((v - posMin) / (posMax - posMin)) * 92 + 4)}%` : "50%";
   const isStale = (a: (typeof competitors)[number]) =>
-    /invendu|ancien|baiss|mois|re-?publi/i.test(`${a.anciennete} ${a.comparaison}`);
+    a.invendu === true || /invendu|re-?publi|baiss|\+\s?90/i.test(`${a.anciennete} ${a.comparaison}`);
+  // Deux tableaux façon DVF : annonces vives d'un côté, invendus +90 jours de l'autre
+  const vives = competitors.filter((a) => !isStale(a));
+  const invendusAds = competitors.filter(isStale);
+  const medCompPrix = medianeReferences(vives.filter((a) => a.prix > 0));
+  const vivesM2 = vives.map((a) => a.prix_m2).filter((v) => v > 0).sort((a, b) => a - b);
+  const medCompM2 = vivesM2.length ? vivesM2[Math.floor(vivesM2.length / 2)] : 0;
+
+  // Ligne d'annonce concurrente — partagée entre le tableau des annonces
+  // vives et celui des invendus
+  const adRow = (a: (typeof competitors)[number], i: number, warn: boolean) => (
+    <tr key={i} className={warn ? "warn-row" : ""}>
+      <td>
+        <div style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
+          {a.url_photo && (
+            /* eslint-disable-next-line @next/next/no-img-element */
+            <img
+              src={a.url_photo}
+              alt=""
+              style={{ width: 56, height: 40, objectFit: "cover", flexShrink: 0, border: "1px solid var(--line)" }}
+              onError={(e) => { e.currentTarget.style.display = "none"; }}
+            />
+          )}
+          <div>
+            {a.url_annonce ? (
+              <a href={a.url_annonce} target="_blank" rel="noreferrer" style={{ color: "inherit", textDecoration: "none" }}>{a.titre}</a>
+            ) : (
+              a.titre
+            )}
+            <span className="sub">
+              {a.positionnement ? `${a.positionnement.charAt(0).toUpperCase()}${a.positionnement.slice(1)} · ` : ""}
+              {a.comparaison || a.source}
+            </span>
+          </div>
+        </div>
+      </td>
+      <td className="r">{a.surface > 0 ? `${int.format(a.surface)} m²` : "—"}</td>
+      <td className="r">{a.prix > 0 ? <span className="money">{euro.format(a.prix)}</span> : "—"}</td>
+      <td className="r">{a.prix_m2 > 0 ? int.format(a.prix_m2) : "—"}</td>
+      <td className="r">{a.anciennete || "—"}</td>
+    </tr>
+  );
 
   // Références DVF + médiane — même définition que la base des ajustements
   // (lib/references.ts) : les pages Comparables et Prix retenu affichent
@@ -443,55 +484,59 @@ export default function Report({
 
           {competitors.length > 0 && (
             <>
-              <div className="eyebrow" style={{ color: "var(--ink-45)" }}>
-                Concurrence directe — annonces vives équivalentes (prix affichés)
-              </div>
-              <hr className="rule" style={{ margin: "8px 0 4px" }} />
-              <table>
-                <thead>
-                  <tr>
-                    <th>Bien concurrent en vente</th>
-                    <th className="r">Surface</th>
-                    <th className="r">Prix affiché</th>
-                    <th className="r">€ / m²</th>
-                    <th className="r">Ancienneté</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {competitors.slice(0, 6).map((a, i) => (
-                    <tr key={i} className={isStale(a) ? "warn-row" : ""}>
-                      <td>
-                        <div style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
-                          {a.url_photo && (
-                            /* eslint-disable-next-line @next/next/no-img-element */
-                            <img
-                              src={a.url_photo}
-                              alt=""
-                              style={{ width: 56, height: 40, objectFit: "cover", flexShrink: 0, border: "1px solid var(--line)" }}
-                              onError={(e) => { e.currentTarget.style.display = "none"; }}
-                            />
-                          )}
-                          <div>
-                            {a.url_annonce ? (
-                              <a href={a.url_annonce} target="_blank" rel="noreferrer" style={{ color: "inherit", textDecoration: "none" }}>{a.titre}</a>
-                            ) : (
-                              a.titre
-                            )}
-                            <span className="sub">
-                              {a.positionnement ? `${a.positionnement.charAt(0).toUpperCase()}${a.positionnement.slice(1)} · ` : ""}
-                              {a.comparaison || a.source}
-                            </span>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="r">{a.surface > 0 ? `${int.format(a.surface)} m²` : "—"}</td>
-                      <td className="r">{a.prix > 0 ? <span className="money">{euro.format(a.prix)}</span> : "—"}</td>
-                      <td className="r">{a.prix_m2 > 0 ? int.format(a.prix_m2) : "—"}</td>
-                      <td className="r">{a.anciennete || "—"}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+              {vives.length > 0 && (
+                <>
+                  <div className="eyebrow" style={{ color: "var(--ink-45)" }}>
+                    Concurrence directe — annonces vives équivalentes (prix affichés)
+                  </div>
+                  <hr className="rule" style={{ margin: "8px 0 4px" }} />
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Bien concurrent en vente</th>
+                        <th className="r">Surface</th>
+                        <th className="r">Prix affiché</th>
+                        <th className="r">€ / m²</th>
+                        <th className="r">Ancienneté</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {vives.slice(0, 6).map((a, i) => adRow(a, i, false))}
+                      {(medCompPrix > 0 || medCompM2 > 0) && (
+                        <tr className="median-row">
+                          <td>Médiane concurrentielle — repère de positionnement</td>
+                          <td className="r">—</td>
+                          <td className="r">{medCompPrix > 0 ? <span className="money">{euro.format(medCompPrix)}</span> : "—"}</td>
+                          <td className="r">{medCompM2 > 0 ? int.format(medCompM2) : "—"}</td>
+                          <td className="r">—</td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </>
+              )}
+
+              {invendusAds.length > 0 && (
+                <>
+                  <div style={{ height: 14 }} />
+                  <div className="eyebrow" style={{ color: "var(--ink-45)" }}>
+                    Invendus +90 jours — le plafond que le marché refuse
+                  </div>
+                  <hr className="rule" style={{ margin: "8px 0 4px" }} />
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Bien en sur-commercialisation</th>
+                        <th className="r">Surface</th>
+                        <th className="r">Prix affiché</th>
+                        <th className="r">€ / m²</th>
+                        <th className="r">Ancienneté</th>
+                      </tr>
+                    </thead>
+                    <tbody>{invendusAds.slice(0, 4).map((a, i) => adRow(a, i, true))}</tbody>
+                  </table>
+                </>
+              )}
 
               {compM2.length >= 2 && posMax > posMin && (
                 <div className="posbar">

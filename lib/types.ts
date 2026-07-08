@@ -102,6 +102,7 @@ export interface CompetitorAd {
   source: string;
   comparaison: string;
   positionnement: string; // supérieur | équivalent | inférieur (vs le bien estimé)
+  invendu: boolean; // en ligne depuis +90 jours, re-publiée ou baissée plusieurs fois
 }
 
 export interface AuditConcurrentiel {
