@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import { medianeReferences } from "@/lib/references";
 import type { EstimateResponse, PropertyInput } from "@/lib/types";
 
 const euro = new Intl.NumberFormat("fr-FR", {
@@ -102,11 +103,11 @@ export default function Report({
   const isStale = (a: (typeof competitors)[number]) =>
     /invendu|ancien|baiss|mois|re-?publi/i.test(`${a.anciennete} ${a.comparaison}`);
 
-  // Références DVF + médiane
+  // Références DVF + médiane — même définition que la base des ajustements
+  // (lib/references.ts) : les pages Comparables et Prix retenu affichent
+  // toujours le même chiffre
   const refs = report.references_dvf;
-  const medPrix = refs.length
-    ? [...refs.map((r) => r.prix)].sort((a, b) => a - b)[Math.floor(refs.length / 2)]
-    : 0;
+  const medPrix = medianeReferences(refs);
   const medM2 = refs.length
     ? [...refs.map((r) => r.prix_m2)].sort((a, b) => a - b)[Math.floor(refs.length / 2)]
     : 0;

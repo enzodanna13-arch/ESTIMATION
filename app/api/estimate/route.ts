@@ -1,7 +1,7 @@
 import { computeFinalReport, computeMarketStudy } from "@/lib/ai";
 import { fetchDvfSales } from "@/lib/dvf";
 import { computeFallbackEstimate } from "@/lib/fallback";
-import { buildDvfReferences } from "@/lib/references";
+import { buildDvfReferences, medianeReferences } from "@/lib/references";
 import type { DvfSale, MarketStudy, PropertyInput } from "@/lib/types";
 
 export const maxDuration = 300;
@@ -92,6 +92,31 @@ export async function POST(request: Request) {
               references_dvf: det.references,
               base_mediane: report.base_mediane > 0 ? report.base_mediane : det.baseMediane,
             };
+          }
+          // Cohérence dossier : la base du calcul d'ajustements est TOUJOURS
+          // la médiane des prix actés du tableau des comparables. Si l'IA a
+          // utilisé une autre base (ex. médiane €/m² transposée à la surface),
+          // l'écart devient une ligne d'ajustement explicite — la somme du
+          // tableau reste exactement égale au cœur de fourchette.
+          const medRefs = medianeReferences(report.references_dvf);
+          if (medRefs > 0 && report.base_mediane !== medRefs) {
+            const diff = report.base_mediane - medRefs;
+            const ajustements = [...report.ajustements];
+            if (ajustements.length > 0) {
+              const i = ajustements.findIndex((a) => /transposition/i.test(a.libelle));
+              if (i >= 0) {
+                ajustements[i] = { ...ajustements[i], montant: ajustements[i].montant + diff };
+              } else if (Math.abs(diff) >= 1000) {
+                ajustements.unshift({
+                  libelle: `Transposition à la surface du bien (${body.surfaceHabitable ?? "?"} m² vs références)`,
+                  montant: diff,
+                });
+              } else {
+                // écart d'arrondi : absorbé par la première ligne existante
+                ajustements[0] = { ...ajustements[0], montant: ajustements[0].montant + diff };
+              }
+            }
+            report = { ...report, base_mediane: medRefs, ajustements };
           }
           send({ type: "result", data: { phase: "rapport", report, dvfSales, dvfSource, engine } });
         }

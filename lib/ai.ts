@@ -69,7 +69,7 @@ const MARKET_SCHEMA = {
         required: ["localisation", "detail", "surface", "date", "prix", "prix_m2"],
       },
     },
-    base_mediane: { type: "number", description: "Valeur de base médiane des références comparables ramenée à la surface du bien, en euros (0 si non calculable)" },
+    base_mediane: { type: "number", description: "MÉDIANE DES PRIX ACTÉS des references_dvf sélectionnées, en euros — le prix médian TEL QUEL, sans transposition au m² ni à la surface du bien (0 si non calculable)" },
   },
   required: ["analyse_dvf", "analyse_concurrence", "analyse_invendus", "annonces_concurrentes", "audit_concurrentiel", "references_dvf", "base_mediane"],
 } as const;
@@ -94,7 +94,7 @@ const FINAL_SCHEMA = {
         required: ["localisation", "detail", "surface", "date", "prix", "prix_m2"],
       },
     },
-    base_mediane: { type: "number", description: "Valeur médiane des références DVF ramenée à la surface du bien, en euros (0 si non calculable)" },
+    base_mediane: { type: "number", description: "MÉDIANE DES PRIX ACTÉS des references_dvf sélectionnées, en euros — le prix médian TEL QUEL, sans transposition au m² ni à la surface du bien (0 si non calculable)" },
     prix_estime: { type: "number", description: "Cœur de fourchette en euros" },
     fourchette_basse: { type: "number" },
     fourchette_haute: { type: "number" },
@@ -184,7 +184,7 @@ PROTOCOLE (obligatoire, exhaustif) :
 2. VÉRIFICATION — pour chaque annonce retenue, essaie d'ouvrir la page avec web_fetch pour vérifier prix/surface et récupérer l'URL de la photo principale (og:image) et de l'annonce. Champ vide si introuvable — n'invente JAMAIS une URL, un prix ou une annonce.
 3. CARTOGRAPHIE — min / médiane / max des €/m² observés, tension du marché (volume d'offre, vitesse de rotation, seuils où les annonces stagnent). Les annonces anciennes/re-publiées/baissées jouent le rôle d'invendus : elles révèlent le plafond que le marché refuse.
 4. ZONE GAGNANTE — détermine la zone de prix où le bien est objectivement le meilleur choix de sa catégorie et explique pourquoi dans audit_concurrentiel.synthese.
-5. DVF — la liste fournie couvre la COMMUNE ENTIÈRE du code postal : sélectionne les 4 à 6 ventes réelles les plus comparables (privilégie le quartier, élargis à la commune si besoin — dès que la liste n'est pas vide, references_dvf ne doit JAMAIS être vide). Calcule base_mediane : la valeur médiane de ces références ramenée à la surface du bien.
+5. DVF — la liste fournie couvre la COMMUNE ENTIÈRE du code postal : sélectionne les 4 à 6 ventes réelles les plus comparables (privilégie le quartier, élargis à la commune si besoin — dès que la liste n'est pas vide, references_dvf ne doit JAMAIS être vide). base_mediane = la médiane des PRIX ACTÉS de ces références, telle quelle — ne la transpose NI au m² NI à la surface du bien.
 
 6. CONJONCTURE — vérifie via web_search la tendance de prix récente du secteur (baromètres) et intègre-la à la cartographie et à la zone gagnante.
 
@@ -200,8 +200,8 @@ RÈGLES :
 - Analyse CHAQUE photo fournie (numérotées dans l'ordre : 1 = première) : pièce/vue identifiée, bons points, défauts visibles concrets — ces fiches figurent dans le dossier remis au vendeur. Note l'état par catégorie (etat_notes, 1 à 5) et chiffre impact_etat en euros signés. Signale tout écart avec l'état déclaré. Sans photo : analyse_par_photo et etat_notes vides, impact_etat 0.
 - FOURCHETTE D'ABORD : le résultat principal est fourchette_basse → fourchette_haute, resserrée au maximum justifiable (5 à 8 % d'écart quand les données concordent). prix_estime est le cœur de fourchette. Justifie les deux bornes dans positionnement_marche.
 - L'estimation reste SOUS le plafond révélé par les invendus de l'étude de marché, à prestations comparables. Les prix affichés de la concurrence se pondèrent d'une marge de négociation (3 à 7 %).
-- references_dvf : sélectionne 4 à 6 ventes réelles dans la liste DVF fournie (reprends celles de l'étude de marché si elle en contient) — dès que la liste DVF n'est pas vide, references_dvf ne doit JAMAIS être vide. Calcule base_mediane (médiane de ces références ramenée à la surface du bien) et rédige analyse_dvf.
-- ajustements : pars de base_mediane et détaille les lignes signées (localisation, étage, extérieur, énergie/DPE, état issu des photos, stationnement…) dont la somme aboutit exactement à prix_estime. Inclus OBLIGATOIREMENT une ligne négative « Conjoncture — marché baissier (taux, pouvoir d'achat) » chiffrant la correction conjoncturelle.
+- references_dvf : sélectionne 4 à 6 ventes réelles dans la liste DVF fournie (reprends celles de l'étude de marché si elle en contient) — dès que la liste DVF n'est pas vide, references_dvf ne doit JAMAIS être vide. base_mediane = la médiane des PRIX ACTÉS de ces références, telle quelle (le chiffre affiché sous le tableau des comparables du dossier) — ne la transpose NI au m² NI à la surface du bien. Rédige analyse_dvf.
+- ajustements : pars de base_mediane (médiane des prix actés) et détaille les lignes signées dont la somme aboutit exactement à prix_estime. Si la surface du bien diffère de celle des références, la PREMIÈRE ligne doit être « Transposition à la surface du bien (X m² vs références) » chiffrant cet écart, suivie des autres corrections (localisation, extérieur, énergie/DPE, état issu des photos, stationnement…). Inclus OBLIGATOIREMENT une ligne négative « Conjoncture — marché baissier (taux, pouvoir d'achat) » chiffrant la correction conjoncturelle.
 - scenarios_prix : exactement 3 scénarios chiffrés — « Vente rapide » (sous la zone gagnante, délai court), « Prix optimal » (= prix_presentation, juste sous la concurrence équivalente, meilleur ratio prix/délai), « Prix plafond » (à ne pas dépasser sous peine de rejoindre les invendus).
 - Si le prix souhaité du vendeur est renseigné, positionne-le et fournis dans argumentaire_vendeur les arguments chiffrés prêts à l'emploi pour recadrer si nécessaire.
 - description_bien : 2 paragraphes factuels et valorisants, style avis de valeur d'agence.

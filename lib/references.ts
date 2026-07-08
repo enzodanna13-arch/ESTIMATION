@@ -10,6 +10,18 @@ const TYPE_LOCAL: Partial<Record<PropertyInput["typeBien"], string>> = {
   appartement: "Appartement",
 };
 
+/**
+ * Médiane des PRIX ACTÉS des références retenues — la définition canonique,
+ * partagée entre le tableau des comparables (page Méthodologie) et la base
+ * du calcul d'ajustements (page Du marché au prix retenu) pour que les deux
+ * pages affichent exactement le même chiffre.
+ */
+export function medianeReferences(refs: Pick<ReferenceDvf, "prix">[]): number {
+  if (refs.length === 0) return 0;
+  const sorted = refs.map((r) => r.prix).sort((a, b) => a - b);
+  return sorted[Math.floor(sorted.length / 2)];
+}
+
 function fmtDate(iso: string): string {
   const [y, m] = iso.split("-");
   return m && y ? `${m}/${y}` : iso;
@@ -53,16 +65,8 @@ export function buildDvfReferences(
       prix_m2: s.prixM2 as number,
     }));
 
-  let baseMediane = 0;
-  if (refs.length > 0) {
-    const m2 = refs.map((r) => r.prix_m2).sort((a, b) => a - b);
-    const median =
-      m2.length % 2 === 1 ? m2[(m2.length - 1) / 2] : (m2[m2.length / 2 - 1] + m2[m2.length / 2]) / 2;
-    baseMediane =
-      surface > 0
-        ? Math.round((median * surface) / 1000) * 1000
-        : Math.round(refs.map((r) => r.prix).sort((a, b) => a - b)[Math.floor(refs.length / 2)] / 1000) * 1000;
-  }
-
-  return { references: refs, baseMediane };
+  // Base = médiane des prix actés des références (le chiffre affiché sous le
+  // tableau des comparables) — la transposition à la surface du bien est une
+  // ligne d'ajustement, pas un recalcul silencieux de la base.
+  return { references: refs, baseMediane: medianeReferences(refs) };
 }
