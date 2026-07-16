@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import ComparablesEditor from "@/components/ComparablesEditor";
 import Report from "@/components/Report";
-import { deleteEstimation, getEstimation, listEstimations, saveEstimation, type HistoryMeta } from "@/lib/history";
+import { deleteEstimation, getEstimation, listEstimations, type HistoryMeta } from "@/lib/history";
 import { compressImage } from "@/lib/compressImage";
 import type { EstimateResponse, PhotoInput, PropertyInput } from "@/lib/types";
 
@@ -331,25 +331,8 @@ export default function Home() {
       } as unknown as EstimateResponse;
       setResult(estimation);
       window.scrollTo({ top: 0, behavior: "smooth" });
-      // Historique local (IndexedDB) : consultable et téléchargeable
-      // depuis l'accueil — ne bloque jamais l'affichage du dossier
-      try {
-        const r = estimation.report;
-        await saveEstimation({
-          id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-          createdAt: Date.now(),
-          client: [input.clientCivilite, input.clientPrenom, input.clientNom].filter(Boolean).join(" ") || "Client non renseigné",
-          bien: `${input.typeBien.charAt(0).toUpperCase()}${input.typeBien.slice(1)}${input.nbPieces ? ` ${input.nbPieces} p.` : ""}${input.surfaceHabitable ? ` · ${input.surfaceHabitable} m²` : ""}`,
-          ville: `${input.codePostal} ${input.ville}`.trim(),
-          fourchetteBasse: r.fourchette_basse,
-          fourchetteHaute: r.fourchette_haute,
-          result: estimation,
-          input,
-        });
-        refreshHistory();
-      } catch {
-        /* quota ou navigation privée : l'historique est optionnel */
-      }
+      // La sauvegarde dans l'historique partagé est faite par le serveur
+      refreshHistory();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erreur inattendue");
     } finally {
@@ -732,7 +715,7 @@ export default function Home() {
                   <div>
                     <h2 className="text-lg font-bold text-navy">Historique des estimations</h2>
                     <p className="text-xs text-slate-500">
-                      Conservées sur cet ordinateur uniquement — consultez ou téléchargez le dossier PDF à tout moment.
+                      Partagé avec toute l'équipe — chaque négociateur peut consulter ou télécharger les dossiers.
                     </p>
                   </div>
                   <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">

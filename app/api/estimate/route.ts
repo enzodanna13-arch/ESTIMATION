@@ -2,6 +2,7 @@ import { computeFinalReport } from "@/lib/ai";
 import { fetchDvfSales } from "@/lib/dvf";
 import { computeFallbackEstimate } from "@/lib/fallback";
 import { buildDvfReferences, medianeReferences } from "@/lib/references";
+import { saveEstimationServer } from "@/lib/serverHistory";
 import type { PropertyInput } from "@/lib/types";
 
 export const maxDuration = 300;
@@ -88,6 +89,26 @@ export async function POST(request: Request) {
             }
           }
           report = { ...report, base_mediane: medRefs, ajustements };
+        }
+        // Historique PARTAGÉ de l'équipe (Vercel Blob) : sauvegarde
+        // automatique du dossier — un échec n'empêche jamais le résultat
+        try {
+          await saveEstimationServer({
+            id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+            createdAt: Date.now(),
+            client:
+              [body.clientCivilite, body.clientPrenom, body.clientNom].filter(Boolean).join(" ") ||
+              "Client non renseigné",
+            bien: `${body.typeBien.charAt(0).toUpperCase()}${body.typeBien.slice(1)}${body.nbPieces ? ` ${body.nbPieces} p.` : ""}${body.surfaceHabitable ? ` · ${body.surfaceHabitable} m²` : ""}`,
+            ville: `${body.codePostal} ${body.ville ?? ""}`.trim(),
+            negociateur: body.negociateur ?? "",
+            fourchetteBasse: report.fourchette_basse,
+            fourchetteHaute: report.fourchette_haute,
+            result: { report, dvfSales, dvfSource, engine },
+            input: body,
+          });
+        } catch (err) {
+          console.error("Sauvegarde de l'historique impossible :", err);
         }
         send({ type: "result", data: { phase: "rapport", report, dvfSales, dvfSource, engine } });
       } catch (err) {
