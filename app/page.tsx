@@ -161,7 +161,7 @@ const OPT = {
   mitoyennete: ["Indépendante", "Mitoyenne 1 côté", "Mitoyenne 2 côtés"],
   stationnement: ["Aucun", "Place extérieure", "Place couverte", "Garage", "Garage double", "Plusieurs stationnements"],
   exterieur: ["Balcon", "Terrasse", "Jardin", "Loggia", "Cour"],
-  dependance: ["Studio indépendant", "Garage indépendant", "Atelier", "Pool house", "Abri de jardin", "Grange", "Cabanon", "Bureau / local pro"],
+  dependance: ["Studio indépendant", "T2 indépendant", "T3 indépendant", "T4 indépendant", "Maison d'amis", "Garage indépendant", "Atelier", "Pool house", "Abri de jardin", "Grange", "Cabanon", "Bureau / local pro"],
   equipements: ["Climatisation", "Piscine", "Cheminée / poêle", "Volets roulants électriques", "Alarme", "Portail motorisé", "Panneaux solaires", "Fibre", "Interphone / visiophone", "Adapté PMR"],
 };
 
