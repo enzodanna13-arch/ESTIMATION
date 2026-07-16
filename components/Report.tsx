@@ -108,6 +108,10 @@ export default function Report({
   const vives = competitors.filter((a) => !isStale(a) && a.prix > 0);
   const invendusAds = competitors.filter((a) => isStale(a) && a.prix > 0);
   const medCompPrix = medianeReferences(vives);
+  // La page Concurrence n'apparaît que si le relevé est exploitable :
+  // au moins 2 annonces avec prix. Sinon elle est retirée du dossier
+  // (la concurrence reste prise en compte dans l'analyse de prix).
+  const hasConcur = vives.length >= 2;
   const vivesM2 = vives.map((a) => a.prix_m2).filter((v) => v > 0).sort((a, b) => a - b);
   const medCompM2 = vivesM2.length ? vivesM2[Math.floor(vivesM2.length / 2)] : 0;
 
@@ -221,7 +225,7 @@ export default function Report({
   const secSynthese = S();
   const secBien = S();
   const secVisuel = hasVisuel ? S() : "";
-  const secConcur = S();
+  const secConcur = hasConcur ? S() : "";
   const secLecture = hasLecture ? S() : "";
   const secPhotos = hasPhotoPage ? S() : "";
   const secMethode = S();
@@ -233,7 +237,7 @@ export default function Report({
   const pgSynthese = P();
   const pgBien = P();
   const pgVisuel = hasVisuel ? P() : 0;
-  const pgConcur = P();
+  const pgConcur = hasConcur ? P() : 0;
   const pgLecture = hasLecture ? P() : 0;
   const pgPhotos = hasPhotoPage ? P() : 0;
   for (let i = 1; i < photoPages.length; i++) P(); // pages photo supplémentaires
@@ -344,7 +348,7 @@ export default function Report({
             restant cohérent avec les références de vente et la concurrence active du secteur.
             {input.prixSouhaiteVendeur ? (
               <>
-                {" "}Prix envisagé par le vendeur : <b>{euro.format(input.prixSouhaiteVendeur)}</b>{" "}
+                {" "}Prix que vous envisagez : <b>{euro.format(input.prixSouhaiteVendeur)}</b>{" "}
                 ({input.prixSouhaiteVendeur > report.prix_estime ? "+" : ""}
                 {(((input.prixSouhaiteVendeur - report.prix_estime) / report.prix_estime) * 100).toFixed(1)} % vs valeur retenue).
               </>
@@ -417,11 +421,11 @@ export default function Report({
             <PageHead page={pgVisuel} />
             <SectionTitle idx={secVisuel} title="Analyse visuelle du bien" />
             <p className="section-lead">
-              Chaque photo du bien est examinée et notée par catégorie. Le résultat est ensuite
-              traduit en euros dans le calcul du prix.
+              Chaque photo de votre bien est examinée et notée par catégorie. Le résultat est
+              ensuite traduit en euros dans le calcul de votre prix.
             </p>
 
-            <div className="eyebrow" style={{ color: "var(--ink-45)" }}>État du bien — lecture des photographies</div>
+            <div className="eyebrow" style={{ color: "var(--ink-45)" }}>État de votre bien — lecture des photographies</div>
             <hr className="rule" style={{ margin: "8px 0 2px" }} />
             <div className="cond">
               {report.etat_notes.map((n, i) => (
@@ -458,32 +462,18 @@ export default function Report({
           </section>
         )}
 
-        {/* ============ CONCURRENCE & POSITIONNEMENT ============ */}
+        {/* ============ CONCURRENCE & POSITIONNEMENT (si ≥ 2 annonces exploitables) ============ */}
+        {hasConcur && (
         <section className="page">
           <PageHead page={pgConcur} />
           <SectionTitle idx={secConcur} title="Concurrence & positionnement" />
           <p className="section-lead" style={{ marginBottom: 12 }}>
-            Voici les biens comparables actuellement en vente, avec leur prix affiché. Ils montrent
-            où se situe la concurrence. La valeur du bien, elle, s&apos;appuie sur les ventes
-            réellement conclues (page « Méthodologie &amp; comparables »).
+            Voici les biens comparables au vôtre actuellement en vente, avec leur prix affiché. Ils
+            montrent où se situe votre concurrence. La valeur de votre bien, elle, s&apos;appuie sur
+            les ventes réellement conclues (page « Méthodologie &amp; comparables »).
           </p>
 
-          {competitors.length === 0 && (
-            <>
-              <div className="eyebrow" style={{ color: "var(--ink-45)" }}>
-                Concurrence directe — annonces vives équivalentes (prix affichés)
-              </div>
-              <hr className="rule" style={{ margin: "8px 0 4px" }} />
-              <p style={{ fontSize: "9.5pt", color: "var(--ink-70)", margin: "10px 0 0" }}>
-                Le relevé automatique des annonces en vente n&apos;a pas abouti pour cette analyse.
-                L&apos;estimation s&apos;appuie donc sur les ventes réellement conclues (DVF), la
-                base la plus fiable. Un relevé de la concurrence pourra être joint lors du
-                rendez-vous.
-              </p>
-            </>
-          )}
-
-          {competitors.length > 0 && (
+          {vives.length > 0 && (
             <>
               {vives.length > 0 && (
                 <>
@@ -538,6 +528,7 @@ export default function Report({
 
           <Foot left="Prix affichés — non actés · usage strictement indicatif" right={`Réf. ${refDossier}`} />
         </section>
+        )}
 
         {/* ============ LECTURE DU MARCHÉ (audit chiffré) ============ */}
         {hasLecture && (
@@ -545,8 +536,8 @@ export default function Report({
             <PageHead page={pgLecture} />
             <SectionTitle idx={secLecture} title="Lecture du marché" />
             <p className="section-lead" style={{ marginBottom: 14 }}>
-              Ce que montre le marché en chiffres : les prix affichés par la concurrence, la tension
-              du marché et les annonces qui ne trouvent pas preneur.
+              Ce que montre le marché autour de chez vous : les prix affichés par la concurrence,
+              la tension du marché et les annonces qui ne trouvent pas preneur.
             </p>
 
             {report.audit_concurrentiel.nb_annonces_analysees > 0 && (
@@ -577,7 +568,7 @@ export default function Report({
 
             {(report.analyse_invendus || invendusAds.length > 0) && (
               <>
-                <div className="eyebrow" style={{ color: "var(--ink-45)", marginTop: 6 }}>Invendus +90 jours — le prix que le marché refuse</div>
+                <div className="eyebrow" style={{ color: "var(--ink-45)", marginTop: 6 }}>Invendus +90 jours — le prix que le marché refuse (à éviter pour votre bien)</div>
                 <hr className="rule" style={{ margin: "8px 0 6px" }} />
                 {report.analyse_invendus && (
                   <p style={{ fontSize: "9.5pt", color: "var(--ink-70)", marginBottom: 10 }}>{report.analyse_invendus}</p>
@@ -620,7 +611,7 @@ export default function Report({
             {pageIdx === 0 && (
               <p className="section-lead" style={{ marginBottom: 14 }}>
                 {hasVisuel
-                  ? "Chaque vue est analysée : atouts à valoriser et points de vigilance à anticiper pour la commercialisation."
+                  ? "Chaque vue de votre bien est analysée : les atouts que nous mettrons en avant, et les points de vigilance à anticiper pour la vente."
                   : report.analyse_photos}
               </p>
             )}
@@ -657,24 +648,24 @@ export default function Report({
           <SectionTitle idx={secMethode} title="Méthodologie & comparables" />
           <p className="section-lead">
             {report.analyse_dvf ||
-              "La valeur est établie à partir des ventes réelles actées (données publiques DVF) de biens comparables sur la commune, ajustées aux caractéristiques propres du bien."}
+              "La valeur de votre bien est établie à partir des ventes réellement conclues (données publiques DVF) de biens comparables, ajustées à ses caractéristiques propres."}
           </p>
 
           <div className="method">
             <div className="step">
               <div className="n">01</div>
               <h4>Sélection DVF</h4>
-              <p>On part des ventes réellement conclues autour du bien (données publiques DVF) : même type, surface proche, au plus près de l&apos;adresse.</p>
+              <p>On part des ventes réellement conclues autour de chez vous (données publiques DVF) : même type de bien, surface proche, au plus près de votre adresse.</p>
             </div>
             <div className="step">
               <div className="n">02</div>
               <h4>Plus-values &amp; décotes</h4>
-              <p>Chaque atout du bien ajoute de la valeur, chaque défaut ou effet du marché en retire, à partir de la médiane de ces ventes.</p>
+              <p>Chaque atout de votre bien ajoute de la valeur, chaque défaut ou effet du marché en retire, à partir de la médiane de ces ventes.</p>
             </div>
             <div className="step">
               <div className="n">03</div>
               <h4>Positionnement</h4>
-              <p>Le prix conseillé est ensuite comparé aux biens en vente pour choisir le meilleur positionnement face à la concurrence.</p>
+              <p>Le prix conseillé est ensuite comparé aux biens en vente pour positionner votre bien au mieux face à la concurrence.</p>
             </div>
           </div>
 
@@ -724,8 +715,9 @@ export default function Report({
             <PageHead page={pgAjust} />
             <SectionTitle idx={secAjust} title="Du marché au prix retenu" />
             <p className="section-lead">
-              On part de la médiane des ventes comparables. On ajoute les atouts du bien, on retire
-              ses défauts et l&apos;effet du marché : le résultat est le cœur de la fourchette.
+              On part de la médiane des ventes comparables. On ajoute les atouts de votre bien, on
+              retire ses défauts et l&apos;effet du marché : le résultat est le cœur de votre
+              fourchette de valeur.
             </p>
 
             <div className="adjust">
@@ -796,8 +788,8 @@ export default function Report({
                   100,
               ).toFixed(1)}{" "}
               % {prixPresentation <= report.audit_concurrentiel.prix_m2_median * surface
-                ? "sous la médiane — le bien se présente comme le meilleur rapport qualité/prix de sa catégorie."
-                : "au-dessus de la médiane — positionnement justifié par les prestations supérieures du bien."}
+                ? "sous la médiane — votre bien se présente comme le meilleur rapport qualité/prix de sa catégorie."
+                : "au-dessus de la médiane — un positionnement justifié par les prestations supérieures de votre bien."}
             </div>
           )}
 
@@ -857,8 +849,8 @@ export default function Report({
           <PageHead page={pgSign} />
           <SectionTitle idx={secSign} title="Argumentaire & accord" />
           <p className="section-lead" style={{ marginBottom: 14 }}>
-            Les éléments chiffrés à présenter au vendeur pour valider le positionnement retenu, et
-            l&apos;accord sur la stratégie de commercialisation.
+            Les points clés à retenir sur la valeur de votre bien, et votre accord sur la
+            stratégie de commercialisation que nous vous proposons.
           </p>
 
           {report.argumentaire_vendeur && (() => {
@@ -877,7 +869,7 @@ export default function Report({
             }
             return (
               <>
-                <div className="eyebrow" style={{ color: "var(--ink-45)" }}>Les arguments clés du rendez-vous vendeur</div>
+                <div className="eyebrow" style={{ color: "var(--ink-45)" }}>Les points clés à retenir</div>
                 <hr className="rule" style={{ margin: "8px 0 2px" }} />
                 <ul className="strategy">
                   {items.map((item, i) => {
