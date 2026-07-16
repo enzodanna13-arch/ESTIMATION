@@ -22,6 +22,7 @@ export interface PropertyInput {
   negociateur: string;
   negociateurTel: string;
   negociateurEmail: string;
+  negociateurPhoto?: PhotoInput | null; // portrait affiché sur le dossier
 
   // Localisation
   adresse: string;

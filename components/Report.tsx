@@ -241,7 +241,16 @@ export default function Report({
               <div className="lbl">Établi pour</div>
               <div className="val">{clientName || "—"}</div>
             </div>
-            <div>
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              {input.negociateurPhoto && (
+                /* eslint-disable-next-line @next/next/no-img-element */
+                <img
+                  src={`data:${input.negociateurPhoto.mediaType};base64,${input.negociateurPhoto.data}`}
+                  alt=""
+                  style={{ width: "12mm", height: "12mm", borderRadius: "50%", objectFit: "cover", border: "1.5px solid rgba(180, 151, 91, 0.7)", flexShrink: 0 }}
+                />
+              )}
+              <div>
               <div className="lbl">Par</div>
               <div className="val">
                 {input.negociateur || AGENCE.enseigne}
@@ -250,6 +259,7 @@ export default function Report({
                     {[input.negociateurTel, input.negociateurEmail].filter(Boolean).join(" · ")}
                   </span>
                 )}
+              </div>
               </div>
             </div>
             <div>
@@ -682,6 +692,14 @@ export default function Report({
           <div className="sign">
             <div className="box">
               <div className="lbl">Le négociateur</div>
+              {input.negociateurPhoto && (
+                /* eslint-disable-next-line @next/next/no-img-element */
+                <img
+                  src={`data:${input.negociateurPhoto.mediaType};base64,${input.negociateurPhoto.data}`}
+                  alt=""
+                  style={{ width: "16mm", height: "16mm", borderRadius: "50%", objectFit: "cover", border: "1.5px solid var(--gold)", margin: "6px 0 4px" }}
+                />
+              )}
               <div className="name">{input.negociateur || "—"}</div>
               <div className="role">
                 {AGENCE.nom} {AGENCE.enseigne}

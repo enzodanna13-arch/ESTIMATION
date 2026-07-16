@@ -18,6 +18,7 @@ const initialInput: PropertyInput = {
   negociateur: "",
   negociateurTel: "",
   negociateurEmail: "",
+  negociateurPhoto: null,
   adresse: "",
   codePostal: "",
   ville: "",
@@ -463,6 +464,45 @@ export default function Home() {
                     </Field>
                     <Field label="Email du négociateur">
                       <input className={inputCls} inputMode="email" value={input.negociateurEmail} onChange={(e) => set("negociateurEmail", e.target.value)} placeholder="prenom.nom@century21.fr" />
+                    </Field>
+                    <Field label="Photo du négociateur (affichée sur le dossier)" className="sm:col-span-3">
+                      <div className="flex items-center gap-3">
+                        {input.negociateurPhoto ? (
+                          <>
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                              src={`data:${input.negociateurPhoto.mediaType};base64,${input.negociateurPhoto.data}`}
+                              alt="Photo du négociateur"
+                              className="h-14 w-14 rounded-full border-2 border-copper object-cover"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => set("negociateurPhoto", null)}
+                              className="rounded-lg border border-slate-300 px-3 py-1.5 text-xs text-slate-500 transition hover:bg-red-50 hover:text-red-600"
+                            >
+                              Retirer
+                            </button>
+                          </>
+                        ) : (
+                          <label className="cursor-pointer rounded-lg border border-dashed border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-500 transition hover:border-copper hover:text-copper">
+                            📷 Ajouter ma photo
+                            <input
+                              type="file"
+                              accept="image/*"
+                              className="hidden"
+                              onChange={async (e) => {
+                                const f = e.target.files?.[0];
+                                if (!f) return;
+                                try {
+                                  set("negociateurPhoto", await compressImage(f));
+                                } catch {
+                                  setError("Impossible de traiter la photo.");
+                                }
+                              }}
+                            />
+                          </label>
+                        )}
+                      </div>
                     </Field>
                   </div>
                 </>
