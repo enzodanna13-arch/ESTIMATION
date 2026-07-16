@@ -91,6 +91,14 @@ export async function POST(request: Request) {
           }
           report = { ...report, base_mediane: medRefs, ajustements };
         }
+        // Prix psychologiques : les prix affichés (présentation + scénarios)
+        // sont arrondis au millier INFÉRIEUR — jamais vers le haut
+        const floor1000 = (v: number) => (v > 0 ? Math.floor(v / 1000) * 1000 : v);
+        report = {
+          ...report,
+          prix_presentation: floor1000(report.prix_presentation),
+          scenarios_prix: report.scenarios_prix.map((s) => ({ ...s, prix: floor1000(s.prix) })),
+        };
         // Historique PARTAGÉ de l'équipe (Vercel Blob) : sauvegarde
         // automatique du dossier — un échec n'empêche jamais le résultat
         try {
