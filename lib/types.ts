@@ -20,6 +20,8 @@ export interface PropertyInput {
   clientEmail: string;
   horizonVente: string;
   negociateur: string;
+  negociateurTel: string;
+  negociateurEmail: string;
 
   // Localisation
   adresse: string;

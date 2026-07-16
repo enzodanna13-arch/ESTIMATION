@@ -15,6 +15,8 @@ const initialInput: PropertyInput = {
   clientEmail: "",
   horizonVente: "",
   negociateur: "",
+  negociateurTel: "",
+  negociateurEmail: "",
   adresse: "",
   codePostal: "",
   ville: "",
@@ -452,8 +454,14 @@ export default function Home() {
                       <input className={inputCls} inputMode="email" value={input.clientEmail} onChange={(e) => set("clientEmail", e.target.value)} placeholder="marie.dupont@mail.fr" />
                     </Field>
                     <Select label="Horizon de vente" value={input.horizonVente} onChange={(v) => set("horizonVente", v)} options={OPT.horizon} />
-                    <Field label="Négociateur en charge" className="sm:col-span-3">
+                    <Field label="Négociateur en charge">
                       <input className={inputCls} value={input.negociateur} onChange={(e) => set("negociateur", e.target.value)} placeholder="Votre nom (affiché sur le dossier)" />
+                    </Field>
+                    <Field label="Téléphone du négociateur">
+                      <input className={inputCls} inputMode="tel" value={input.negociateurTel} onChange={(e) => set("negociateurTel", e.target.value)} placeholder="06 12 34 56 78" />
+                    </Field>
+                    <Field label="Email du négociateur">
+                      <input className={inputCls} inputMode="email" value={input.negociateurEmail} onChange={(e) => set("negociateurEmail", e.target.value)} placeholder="prenom.nom@century21.fr" />
                     </Field>
                   </div>
                 </>

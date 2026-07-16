@@ -237,7 +237,14 @@ export default function Report({
             </div>
             <div>
               <div className="lbl">Par</div>
-              <div className="val">{input.negociateur || AGENCE.enseigne}</div>
+              <div className="val">
+                {input.negociateur || AGENCE.enseigne}
+                {(input.negociateurTel || input.negociateurEmail) && (
+                  <span style={{ display: "block", fontSize: "7.5pt", fontWeight: 400, color: "rgba(247, 244, 236, 0.62)", marginTop: 2 }}>
+                    {[input.negociateurTel, input.negociateurEmail].filter(Boolean).join(" · ")}
+                  </span>
+                )}
+              </div>
             </div>
             <div>
               <div className="lbl">Date</div>
@@ -670,7 +677,11 @@ export default function Report({
             <div className="box">
               <div className="lbl">Le négociateur</div>
               <div className="name">{input.negociateur || "—"}</div>
-              <div className="role">{AGENCE.nom} {AGENCE.enseigne}</div>
+              <div className="role">
+                {AGENCE.nom} {AGENCE.enseigne}
+                {(input.negociateurTel || input.negociateurEmail) &&
+                  ` · ${[input.negociateurTel, input.negociateurEmail].filter(Boolean).join(" · ")}`}
+              </div>
             </div>
             <div className="box">
               <div className="lbl">Bon pour accord — le vendeur</div>

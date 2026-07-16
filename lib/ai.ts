@@ -147,7 +147,7 @@ function buildPropertyText(input: PropertyInput): string {
 ## Vendeur & contexte commercial
 - Vendeur : ${[input.clientCivilite, input.clientPrenom, input.clientNom].filter(Boolean).join(" ") || "n.c."}
 - Horizon de vente : ${input.horizonVente || "n.c."}
-- Négociateur en charge : ${input.negociateur || "n.c."}
+- Négociateur en charge : ${input.negociateur || "n.c."}${input.negociateurTel ? ` — ${input.negociateurTel}` : ""}${input.negociateurEmail ? ` — ${input.negociateurEmail}` : ""}
 
 ## Localisation
 Adresse : ${input.adresse}, ${input.codePostal} ${input.ville}${input.quartier ? ` — quartier : ${input.quartier}` : ""}
