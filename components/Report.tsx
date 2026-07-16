@@ -16,7 +16,7 @@ const AGENCE = {
   sceau: process.env.NEXT_PUBLIC_AGENCE_SCEAU ?? "21",
   enseigne: process.env.NEXT_PUBLIC_AGENCE_ENSEIGNE ?? "Icaza Immobilier",
   adresse: process.env.NEXT_PUBLIC_AGENCE_ADRESSE ?? "32 avenue de la Paix, 13500 Martigues",
-  tel: process.env.NEXT_PUBLIC_AGENCE_TEL ?? "04 30 22 03 94",
+  tel: process.env.NEXT_PUBLIC_AGENCE_TEL ?? "04 42 42 80 85",
   site: process.env.NEXT_PUBLIC_AGENCE_SITE ?? "icazaimmobilier.com",
 };
 
