@@ -61,6 +61,10 @@ async function fetchOfficialDvf(insee: string, year: number, typeLocal: string):
   const iType = col("type_local");
   const iSurface = col("surface_reelle_bati");
   const iCommune = col("nom_commune");
+  const iNumero = col("adresse_numero");
+  const iVoie = col("adresse_nom_voie");
+  const iLat = col("latitude");
+  const iLon = col("longitude");
   if (iValeur < 0 || iDate < 0) return [];
 
   // Une mutation peut compter plusieurs lignes (dépendances, lots) :
@@ -80,6 +84,12 @@ async function fetchOfficialDvf(insee: string, year: number, typeLocal: string):
       prixM2: Math.round(valeur / surface),
       typeLocal: cells[iType],
       commune: cells[iCommune] ?? "",
+      adresse: [iNumero >= 0 ? cells[iNumero] : "", iVoie >= 0 ? cells[iVoie] : ""]
+        .filter(Boolean)
+        .join(" ")
+        .trim(),
+      lat: iLat >= 0 ? toNumber(cells[iLat]) : null,
+      lon: iLon >= 0 ? toNumber(cells[iLon]) : null,
       _surface: surface,
     };
     const key = cells[iId] || `${l}`;
@@ -126,12 +136,66 @@ async function fetchLegacyDvf(codePostal: string, typeLocal: string): Promise<Dv
   }
 }
 
+/** Géocodage de l'adresse du bien via la Base Adresse Nationale (gratuite). */
+async function geocodeAddress(
+  adresse: string,
+  codePostal: string,
+  ville: string,
+): Promise<{ lat: number; lon: number; voie: string; numero: string } | null> {
+  const q = [adresse, ville].filter(Boolean).join(" ").trim();
+  if (!q) return null;
+  const url = `https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(q)}&postcode=${codePostal}&limit=1`;
+  const res = await fetchWithTimeout(url, 6000);
+  if (!res) return null;
+  try {
+    const body = (await res.json()) as {
+      features?: { geometry?: { coordinates?: number[] }; properties?: { street?: string; name?: string; housenumber?: string } }[];
+    };
+    const f = body.features?.[0];
+    const [lon, lat] = f?.geometry?.coordinates ?? [];
+    if (typeof lat !== "number" || typeof lon !== "number") return null;
+    return {
+      lat,
+      lon,
+      voie: (f?.properties?.street ?? f?.properties?.name ?? "").toUpperCase(),
+      numero: f?.properties?.housenumber ?? "",
+    };
+  } catch {
+    return null;
+  }
+}
+
+const normVoie = (v: string) =>
+  v
+    .toUpperCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/\b(RUE|AVENUE|AV|BOULEVARD|BD|ALLEE|ALL|CHEMIN|CHE|IMPASSE|IMP|PLACE|PL|ROUTE|RTE)\b\.?/g, "")
+    .replace(/[^A-Z0-9]/g, "");
+
+function haversineM(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  const R = 6371000;
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLon = ((lon2 - lon1) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos((lat1 * Math.PI) / 180) * Math.cos((lat2 * Math.PI) / 180) * Math.sin(dLon / 2) ** 2;
+  return Math.round(2 * R * Math.asin(Math.sqrt(a)));
+}
+
 /**
  * Récupère les ventes réelles DVF sur TOUT le code postal (commune entière),
- * millésimes récents en priorité, pour garantir des comparables à chaque
- * estimation. Toute erreur renvoie une liste vide : l'estimation continue.
+ * millésimes récents en priorité. Si l'adresse du bien est fournie, chaque
+ * vente est enrichie de sa distance au bien et la liste est triée par
+ * proximité : même adresse (copropriété) d'abord pour un appartement,
+ * environs proches pour une maison. Toute erreur renvoie une liste vide.
  */
-export async function fetchDvfSales(codePostal: string, typeBien: string): Promise<DvfSale[]> {
+export async function fetchDvfSales(
+  codePostal: string,
+  typeBien: string,
+  adresse = "",
+  ville = "",
+): Promise<DvfSale[]> {
   if (!/^\d{5}$/.test(codePostal)) return [];
   const typeLocal =
     typeBien === "maison" ? "Maison" : typeBien === "appartement" ? "Appartement" : "";
@@ -139,7 +203,10 @@ export async function fetchDvfSales(codePostal: string, typeBien: string): Promi
   const currentYear = new Date().getFullYear();
   const sales: DvfSale[] = [];
 
-  const inseeCodes = await getInseeCodes(codePostal);
+  const [inseeCodes, geo] = await Promise.all([
+    getInseeCodes(codePostal),
+    geocodeAddress(adresse, codePostal, ville),
+  ]);
   if (inseeCodes.length > 0) {
     // Millésimes du plus récent au plus ancien, jusqu'à avoir assez de comparables
     for (const year of [currentYear, currentYear - 1, currentYear - 2, currentYear - 3]) {
@@ -153,7 +220,24 @@ export async function fetchDvfSales(codePostal: string, typeBien: string): Promi
     sales.push(...(await fetchLegacyDvf(codePostal, typeLocal)));
   }
 
-  sales.sort((a, b) => (a.date < b.date ? 1 : -1));
+  if (geo) {
+    const subjectVoie = normVoie(geo.voie);
+    for (const s of sales) {
+      s.distanceM = s.lat != null && s.lon != null ? haversineM(geo.lat, geo.lon, s.lat, s.lon) : null;
+      const saleVoie = s.adresse ? normVoie(s.adresse.replace(/^\d+\s*/, "")) : "";
+      const sameVoie = subjectVoie.length > 2 && saleVoie.includes(subjectVoie);
+      const saleNumero = s.adresse?.match(/^\d+/)?.[0] ?? "";
+      s.memeAdresse =
+        (sameVoie && geo.numero !== "" && saleNumero === geo.numero) ||
+        (s.distanceM != null && s.distanceM <= 25);
+    }
+    // Proximité d'abord (même adresse en tête), puis date récente
+    const rank = (s: DvfSale) =>
+      s.memeAdresse ? -1 : s.distanceM != null ? s.distanceM : Number.MAX_SAFE_INTEGER;
+    sales.sort((a, b) => rank(a) - rank(b) || (a.date < b.date ? 1 : -1));
+  } else {
+    sales.sort((a, b) => (a.date < b.date ? 1 : -1));
+  }
   return sales.slice(0, 60);
 }
 

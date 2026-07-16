@@ -44,7 +44,7 @@ export async function POST(request: Request) {
       try {
         if (phase === "marche") {
           send({ type: "status", label: "Récupération des ventes réelles (DVF)…" });
-          const dvfSales = await fetchDvfSales(body.codePostal, body.typeBien);
+          const dvfSales = await fetchDvfSales(body.codePostal, body.typeBien, body.adresse, body.ville);
           const dvfSource = dvfSales.length > 0 ? "api" : "indisponible";
 
           let marche: MarketStudy | null = null;
@@ -58,7 +58,7 @@ export async function POST(request: Request) {
           }
           send({ type: "result", data: { phase: "marche", marche, dvfSales, dvfSource } });
         } else {
-          const dvfSales = body.dvfSales ?? (await fetchDvfSales(body.codePostal, body.typeBien));
+          const dvfSales = body.dvfSales ?? (await fetchDvfSales(body.codePostal, body.typeBien, body.adresse, body.ville));
           const dvfSource = dvfSales.length > 0 ? "api" : "indisponible";
           const marche = body.marche ?? null;
 

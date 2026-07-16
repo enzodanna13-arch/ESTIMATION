@@ -81,6 +81,11 @@ export interface DvfSale {
   prixM2: number | null;
   typeLocal: string;
   commune: string;
+  adresse?: string; // numéro + voie (fichiers DVF géolocalisés)
+  lat?: number | null;
+  lon?: number | null;
+  distanceM?: number | null; // distance au bien estimé, si adresse géocodée
+  memeAdresse?: boolean; // même voie + numéro que le bien (même copropriété)
 }
 
 export interface PhotoAnalysis {

@@ -49,8 +49,20 @@ export function buildDvfReferences(
     else if (close.length >= 3) pool = close;
   }
 
+  // Proximité d'abord : même adresse (copropriété), puis rayon proche,
+  // puis surface la plus comparable, puis date récente
+  const proxBand = (s: (typeof pool)[number]) => {
+    if (s.memeAdresse) return 0;
+    if (s.distanceM == null) return 4;
+    if (s.distanceM <= 300) return 1;
+    if (s.distanceM <= 1000) return 2;
+    return 3;
+  };
   const refs = [...pool]
     .sort((a, b) => {
+      const pa = proxBand(a);
+      const pb = proxBand(b);
+      if (pa !== pb) return pa - pb;
       if (surface > 0) {
         const da = Math.abs((a.surface as number) - surface);
         const db = Math.abs((b.surface as number) - surface);
@@ -61,8 +73,14 @@ export function buildDvfReferences(
     .slice(0, 6)
     .sort((a, b) => b.date.localeCompare(a.date))
     .map((s) => ({
-      localisation: s.commune,
-      detail: `${s.typeLocal} · ${s.surface} m² — vente actée (DVF)`,
+      localisation: s.adresse ? `${s.adresse}, ${s.commune}` : s.commune,
+      detail: `${s.typeLocal} · ${s.surface} m² — vente actée (DVF)${
+        s.memeAdresse
+          ? " · même adresse"
+          : s.distanceM != null
+            ? ` · à ${s.distanceM < 1000 ? `${s.distanceM} m` : `${(s.distanceM / 1000).toFixed(1)} km`} du bien`
+            : ""
+      }`,
       surface: s.surface as number,
       date: fmtDate(s.date),
       prix: Math.round(s.valeurFonciere),
