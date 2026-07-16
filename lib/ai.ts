@@ -170,7 +170,7 @@ const FINAL_SCHEMA = {
 const JSON_RULE = `FORMAT DE SORTIE (impératif) : réponds EXCLUSIVEMENT par un objet JSON valide — aucun texte avant ou après, aucune balise markdown — conforme exactement au schéma JSON fourni dans le message utilisateur.`;
 
 const CONJONCTURE_RULE = `MARCHÉ BAISSIER (règle PRIORITAIRE) : le marché immobilier est actuellement en baisse — taux d'intérêt élevés, budget des acquéreurs en recul. Une vente conclue il y a un ou deux ans l'a donc été à un prix PLUS ÉLEVÉ que ce que le même bien vaudrait aujourd'hui. Conséquences obligatoires :
-- ACTUALISE les références selon leur ancienneté (l'âge de chaque vente est indiqué dans la liste) : barème indicatif d'environ -2 % par année écoulée depuis la vente, à moduler selon la dynamique visible dans les données.
+- ACTUALISE les références selon leur ancienneté (l'âge de chaque vente est indiqué dans la liste) : barème de -3 % PAR ANNÉE écoulée depuis la vente (au prorata des mois : une vente d'il y a 18 mois se déprécie d'environ -4,5 %), à moduler légèrement selon la dynamique visible dans les données.
 - traduis cette actualisation par une ligne de décote OBLIGATOIRE dans les ajustements : « Actualisation au marché actuel (ventes datées, marché en baisse) », chiffrée selon l'ancienneté moyenne des références retenues. Si toutes les références ont moins de 6 mois, la ligne peut être faible — mais elle figure et tu l'expliques.
 - INTERDICTION DE DOUBLE COMPTAGE : l'effet du marché baissier ne se décompte qu'une seule fois (cette ligne d'actualisation, rien d'autre).
 - sois réaliste sur les délais de vente : ils s'allongent en marché baissier.`;
