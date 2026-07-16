@@ -3,6 +3,7 @@ import { fetchDvfSales } from "@/lib/dvf";
 import { computeFallbackEstimate } from "@/lib/fallback";
 import { buildDvfReferences, medianeReferences } from "@/lib/references";
 import { saveEstimationServer } from "@/lib/serverHistory";
+import { surfaceHabitableTotale } from "@/lib/surfaces";
 import type { PropertyInput } from "@/lib/types";
 
 export const maxDuration = 300;
@@ -80,7 +81,7 @@ export async function POST(request: Request) {
               ajustements[i] = { ...ajustements[i], montant: ajustements[i].montant + diff };
             } else if (Math.abs(diff) >= 1000) {
               ajustements.unshift({
-                libelle: `Surface du bien (${body.surfaceHabitable ?? "?"} m²) vs références`,
+                libelle: `Surface du bien (${surfaceHabitableTotale(body) || "?"} m² habitables) vs références`,
                 montant: diff,
               });
             } else {
@@ -99,7 +100,7 @@ export async function POST(request: Request) {
             client:
               [body.clientCivilite, body.clientPrenom, body.clientNom].filter(Boolean).join(" ") ||
               "Client non renseigné",
-            bien: `${body.typeBien.charAt(0).toUpperCase()}${body.typeBien.slice(1)}${body.nbPieces ? ` ${body.nbPieces} p.` : ""}${body.surfaceHabitable ? ` · ${body.surfaceHabitable} m²` : ""}`,
+            bien: `${body.typeBien.charAt(0).toUpperCase()}${body.typeBien.slice(1)}${body.nbPieces ? ` ${body.nbPieces} p.` : ""}${surfaceHabitableTotale(body) > 0 ? ` · ${surfaceHabitableTotale(body)} m²` : ""}`,
             ville: `${body.codePostal} ${body.ville ?? ""}`.trim(),
             negociateur: body.negociateur ?? "",
             fourchetteBasse: report.fourchette_basse,

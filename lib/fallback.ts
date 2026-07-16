@@ -1,4 +1,5 @@
 import { medianPrixM2 } from "./dvf";
+import { surfaceHabitableTotale } from "./surfaces";
 import type { DvfSale, EstimationReport, PropertyInput } from "./types";
 
 function medianOf(values: number[]): number | null {
@@ -29,7 +30,7 @@ export function computeFallbackEstimate(
   input: PropertyInput,
   dvfSales: DvfSale[],
 ): EstimationReport {
-  const surface = input.surfaceHabitable ?? 0;
+  const surface = surfaceHabitableTotale(input);
 
   const dvfMedian = medianPrixM2(dvfSales);
   const concurrenceM2 = medianOf(

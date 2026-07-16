@@ -1,5 +1,6 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { buildDvfReferences } from "./references";
+import { surfaceDependancesHabitables, surfaceHabitableTotale } from "./surfaces";
 import type {
   DvfSale,
   EstimationReport,
@@ -157,7 +158,7 @@ Adresse : ${input.adresse}, ${input.codePostal} ${input.ville}${input.quartier ?
 
 ## Caractéristiques
 - Type : ${input.typeBien}
-- Surface habitable : ${input.surfaceHabitable ?? "?"} m²${input.surfaceTerrain ? ` | Terrain : ${input.surfaceTerrain} m²` : ""}
+- Surface habitable du logement principal : ${input.surfaceHabitable ?? "?"} m²${surfaceDependancesHabitables(input) > 0 ? ` | Dépendances habitables : ${surfaceDependancesHabitables(input)} m² | SURFACE HABITABLE TOTALE : ${surfaceHabitableTotale(input)} m² (c'est CETTE surface totale qui sert de base de comparaison avec les références)` : ""}${input.surfaceTerrain ? ` | Terrain : ${input.surfaceTerrain} m²` : ""}
 - Pièces : ${input.nbPieces ?? "?"} | Chambres : ${input.nbChambres ?? "?"} | Salles de bain : ${input.nbSallesDeBain ?? "?"}
 - Étage : ${input.etage || "n.c."} | Ascenseur : ${input.ascenseur ? "oui" : "non"}
 - Année de construction : ${input.anneeConstruction || "n.c."}

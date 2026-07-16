@@ -2,6 +2,7 @@
 
 import { useMemo } from "react";
 import { medianeReferences } from "@/lib/references";
+import { surfaceDependancesHabitables, surfaceHabitableTotale } from "@/lib/surfaces";
 import type { EstimateResponse, PropertyInput } from "@/lib/types";
 
 const euro = new Intl.NumberFormat("fr-FR", {
@@ -87,7 +88,10 @@ export default function Report({
       : input.typeBien.charAt(0).toUpperCase() + input.typeBien.slice(1) + (input.nbPieces ? ` ${input.nbPieces} pièces` : "");
 
   const prixPresentation = report.prix_presentation > 0 ? report.prix_presentation : report.prix_estime;
-  const surface = input.surfaceHabitable ?? 0;
+  // Surface habitable TOTALE affichée dans le dossier = logement principal
+  // + dépendances habitables (studio, T2/T3/T4, maison d'amis)
+  const surfaceDeps = surfaceDependancesHabitables(input);
+  const surface = surfaceHabitableTotale(input);
   const margeNego = report.prix_estime > 0 ? (((prixPresentation - report.prix_estime) / report.prix_estime) * 100).toFixed(1) : "0";
 
   const photoAnalyses = report.analyse_par_photo.filter((pa) => input.photos[pa.photo - 1]);
@@ -122,7 +126,9 @@ export default function Report({
   const specs: [string, string][] = (
     [
       ["Type", typeLabel],
-      ["Surface habitable", `${surface} m²`],
+      [surfaceDeps > 0 ? "Surface habitable totale" : "Surface habitable", `${surface} m²`],
+      surfaceDeps > 0 ? ["Dont logement principal", `${input.surfaceHabitable ?? 0} m²`] : null,
+      surfaceDeps > 0 ? ["Dont dépendances habitables", `${surfaceDeps} m²`] : null,
       input.surfaceTerrain ? ["Terrain", `${input.surfaceTerrain} m²`] : null,
       (input.dependances ?? []).length
         ? ["Dépendances", (input.dependances ?? []).map((d) => `${d.type}${d.surface ? ` ${d.surface} m²` : ""}`).join(", ")]

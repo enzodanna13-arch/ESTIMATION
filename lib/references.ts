@@ -1,3 +1,4 @@
+import { surfaceHabitableTotale } from "./surfaces";
 import type { DvfSale, PropertyInput, ReferenceDvf } from "./types";
 
 // Sélection déterministe de références DVF : garantit que le tableau des
@@ -29,9 +30,14 @@ function fmtDate(iso: string): string {
 
 export function buildDvfReferences(
   dvfSales: DvfSale[],
-  input: Pick<PropertyInput, "typeBien" | "surfaceHabitable">,
+  input: Pick<PropertyInput, "typeBien" | "surfaceHabitable"> & Partial<Pick<PropertyInput, "dependances">>,
 ): { references: ReferenceDvf[]; baseMediane: number } {
-  const surface = input.surfaceHabitable ?? 0;
+  // Surface de comparaison = habitable totale (logement principal
+  // + dépendances habitables)
+  const surface = surfaceHabitableTotale({
+    surfaceHabitable: input.surfaceHabitable,
+    dependances: input.dependances ?? [],
+  });
   const wantedType = TYPE_LOCAL[input.typeBien];
 
   let pool = dvfSales.filter((s) => s.surface && s.prixM2 && s.prixM2 > 300 && s.prixM2 < 25000);

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import ComparablesEditor from "@/components/ComparablesEditor";
 import Report from "@/components/Report";
 import { deleteEstimation, getEstimation, getHistoryKey, HistoryLockedError, listEstimations, setHistoryKey, type HistoryMeta } from "@/lib/history";
+import { surfaceDependancesHabitables, surfaceHabitableTotale } from "@/lib/surfaces";
 import { compressImage } from "@/lib/compressImage";
 import type { EstimateResponse, PhotoInput, PropertyInput } from "@/lib/types";
 
@@ -508,7 +509,7 @@ export default function Home() {
 
                   <h3 className="mb-3 mt-6 text-xs font-bold uppercase tracking-widest text-copper">Dimensions</h3>
                   <div className="grid gap-4 sm:grid-cols-3">
-                    <Field label="Surface habitable (m²) *">
+                    <Field label={input.typeBien === "maison" ? "Surface habitable du logement principal (m²) *" : "Surface habitable (m²) *"}>
                       <input type="number" min={1} className={inputCls} value={input.surfaceHabitable ?? ""} onChange={(e) => set("surfaceHabitable", num(e.target.value))} placeholder="65" />
                     </Field>
                     <Field label="Surface terrain (m²)">
@@ -639,8 +640,19 @@ export default function Home() {
                           onClick={() => set("dependances", [...input.dependances, { type: OPT.dependance[0], surface: null }])}
                           className="rounded-lg border border-dashed border-slate-300 px-4 py-2 text-sm font-semibold text-slate-500 transition hover:border-copper hover:text-copper"
                         >
-                          + Ajouter une dépendance (studio, garage, atelier…)
+                          + Ajouter une dépendance (studio, T2/T3/T4, garage…)
                         </button>
+                        {surfaceDependancesHabitables(input) > 0 && (
+                          <p className="rounded-lg bg-copper-soft/50 px-3 py-2 text-sm font-semibold text-navy">
+                            Surface habitable totale du dossier :{" "}
+                            {surfaceHabitableTotale(input)} m²{" "}
+                            <span className="font-normal text-slate-500">
+                              (logement principal {input.surfaceHabitable ?? 0} m² + dépendances
+                              habitables {surfaceDependancesHabitables(input)} m² — calcul
+                              automatique)
+                            </span>
+                          </p>
+                        )}
                       </div>
                     </>
                   )}
