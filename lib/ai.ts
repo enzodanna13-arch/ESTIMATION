@@ -11,67 +11,6 @@ import type {
 // réelles DVF (aucune annonce en ligne) : analyse des photos + rédaction
 // du dossier, sans outils web — rapide et fiable.
 
-const MARKET_SCHEMA = {
-  type: "object",
-  properties: {
-    analyse_dvf: { type: "string", description: "3 phrases simples maximum : ce que les ventes réelles montrent pour ce bien (fourchette €/m², références les plus proches)" },
-    analyse_concurrence: { type: "string", description: "2 à 3 phrases simples : prix affichés des biens comparables en vente (cite les chiffres et sources)" },
-    analyse_invendus: { type: "string", description: "2 à 3 phrases simples : les annonces qui ne se vendent pas et le prix que le marché refuse" },
-    annonces_concurrentes: {
-      type: "array",
-      description: "Les 6 à 8 annonces concurrentes les plus pertinentes",
-      items: {
-        type: "object",
-        properties: {
-          titre: { type: "string", description: "Titre court (8 mots maximum)" },
-          url_annonce: { type: "string", description: "URL réelle de l'annonce, sinon chaîne vide — ne JAMAIS inventer" },
-          url_photo: { type: "string", description: "URL de la photo principale (og:image via web_fetch), sinon chaîne vide — ne JAMAIS inventer" },
-          prix: { type: "number", description: "PRIX AFFICHÉ en euros — OBLIGATOIRE et > 0 : si le prix est introuvable, ÉCARTE l'annonce" },
-          surface: { type: "number", description: "0 si inconnue" },
-          prix_m2: { type: "number", description: "0 si non calculable" },
-          caracteristiques: { type: "string" },
-          anciennete: { type: "string", description: "Fraîcheur de l'annonce si détectable" },
-          source: { type: "string", description: "Portail ou agence" },
-          comparaison: { type: "string", description: "1 phrase courte (12 mots maximum) vs le bien estimé" },
-          positionnement: { type: "string", enum: ["supérieur", "équivalent", "inférieur"] },
-          invendu: { type: "boolean", description: "true si l'annonce est un INVENDU : en ligne depuis plus de 90 jours, re-publiée ou baissée plusieurs fois" },
-        },
-        required: ["titre", "url_annonce", "url_photo", "prix", "surface", "prix_m2", "caracteristiques", "anciennete", "source", "comparaison", "positionnement", "invendu"],
-      },
-    },
-    audit_concurrentiel: {
-      type: "object",
-      properties: {
-        nb_annonces_analysees: { type: "number" },
-        prix_m2_min: { type: "number", description: "Sur les annonces VIVES uniquement (invendus +90j exclus)" },
-        prix_m2_median: { type: "number", description: "Médiane des biens équivalents VIFS uniquement (invendus +90j exclus) — repère central de positionnement" },
-        prix_m2_max: { type: "number", description: "Sur les annonces VIVES uniquement (invendus +90j exclus)" },
-        tension_marche: { type: "string", description: "1 à 2 phrases simples" },
-        synthese: { type: "string", description: "2 à 3 phrases simples : la zone de prix gagnante et pourquoi" },
-      },
-      required: ["nb_annonces_analysees", "prix_m2_min", "prix_m2_median", "prix_m2_max", "tension_marche", "synthese"],
-    },
-    references_dvf: {
-      type: "array",
-      description: "4 à 6 références DVF choisies dans la liste fournie — ne JAMAIS inventer une transaction",
-      items: {
-        type: "object",
-        properties: {
-          localisation: { type: "string" },
-          detail: { type: "string" },
-          surface: { type: "number" },
-          date: { type: "string", description: "MM/AAAA" },
-          prix: { type: "number" },
-          prix_m2: { type: "number" },
-        },
-        required: ["localisation", "detail", "surface", "date", "prix", "prix_m2"],
-      },
-    },
-    base_mediane: { type: "number", description: "MÉDIANE DES PRIX ACTÉS des references_dvf sélectionnées, en euros — le prix médian TEL QUEL, sans transposition au m² ni à la surface du bien (0 si non calculable)" },
-  },
-  required: ["analyse_dvf", "analyse_concurrence", "analyse_invendus", "annonces_concurrentes", "audit_concurrentiel", "references_dvf", "base_mediane"],
-} as const;
-
 const FINAL_SCHEMA = {
   type: "object",
   properties: {
