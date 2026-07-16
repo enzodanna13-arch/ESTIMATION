@@ -115,6 +115,7 @@ export default function Report({
     input.stationnement && input.stationnement !== "Aucun" ? input.stationnement : null,
     ...(input.exposition.length ? [input.exposition.join("-")] : []),
     input.cave ? "Cave" : null,
+    ...(input.dependances ?? []).map((d) => d.type),
     ...input.equipements.slice(0, 3),
   ].filter(Boolean) as string[];
 
@@ -123,6 +124,9 @@ export default function Report({
       ["Type", typeLabel],
       ["Surface habitable", `${surface} m²`],
       input.surfaceTerrain ? ["Terrain", `${input.surfaceTerrain} m²`] : null,
+      (input.dependances ?? []).length
+        ? ["Dépendances", (input.dependances ?? []).map((d) => `${d.type}${d.surface ? ` ${d.surface} m²` : ""}`).join(", ")]
+        : null,
       input.etage ? ["Étage / niveaux", input.etage + (input.ascenseur ? " (avec asc.)" : "")] : null,
       input.anneeConstruction ? ["Année", input.anneeConstruction] : null,
       input.nbChambres ? ["Chambres", String(input.nbChambres)] : null,

@@ -58,6 +58,9 @@ export interface PropertyInput {
   mitoyennete: string;
   equipements: string[];
 
+  // Dépendances (maison) : type + surface
+  dependances: { type: string; surface: number | null }[];
+
   // Charges & fiscalité
   chargesCopro: number | null;
   taxeFonciere: number | null;

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import ComparablesEditor from "@/components/ComparablesEditor";
 import Report from "@/components/Report";
+import { deleteEstimation, getEstimation, listEstimations, saveEstimation, type HistoryMeta } from "@/lib/history";
 import { compressImage } from "@/lib/compressImage";
 import type { EstimateResponse, PhotoInput, PropertyInput } from "@/lib/types";
 
@@ -43,6 +44,7 @@ const initialInput: PropertyInput = {
   menuiseries: "",
   mitoyennete: "",
   equipements: [],
+  dependances: [],
   chargesCopro: null,
   taxeFonciere: null,
   prixSouhaiteVendeur: null,
@@ -52,6 +54,8 @@ const initialInput: PropertyInput = {
   invendus: [],
   photos: [],
 };
+
+const int = new Intl.NumberFormat("fr-FR", { maximumFractionDigits: 0 });
 
 const inputCls =
   "w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 transition focus:border-copper focus:outline-none focus:ring-2 focus:ring-copper/20";
@@ -155,6 +159,7 @@ const OPT = {
   mitoyennete: ["Indépendante", "Mitoyenne 1 côté", "Mitoyenne 2 côtés"],
   stationnement: ["Aucun", "Place extérieure", "Place couverte", "Garage", "Garage double", "Plusieurs stationnements"],
   exterieur: ["Balcon", "Terrasse", "Jardin", "Loggia", "Cour"],
+  dependance: ["Studio indépendant", "Garage indépendant", "Atelier", "Pool house", "Abri de jardin", "Grange", "Cabanon", "Bureau / local pro"],
   equipements: ["Climatisation", "Piscine", "Cheminée / poêle", "Volets roulants électriques", "Alarme", "Portail motorisé", "Panneaux solaires", "Fibre", "Interphone / visiophone", "Adapté PMR"],
 };
 
@@ -196,6 +201,36 @@ export default function Home() {
   const [loadingStatus, setLoadingStatus] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<EstimateResponse | null>(null);
+  const [history, setHistory] = useState<HistoryMeta[]>([]);
+  const [printOnOpen, setPrintOnOpen] = useState(false);
+
+  const refreshHistory = () => {
+    listEstimations().then(setHistory).catch(() => {});
+  };
+  useEffect(refreshHistory, []);
+  // Téléchargement direct depuis l'historique : ouvre le dossier puis
+  // déclenche l'impression PDF une fois la page rendue
+  useEffect(() => {
+    if (result && printOnOpen) {
+      setPrintOnOpen(false);
+      const t = setTimeout(() => window.print(), 900);
+      return () => clearTimeout(t);
+    }
+  }, [result, printOnOpen]);
+
+  const openEntry = async (id: string, print: boolean) => {
+    const full = await getEstimation(id).catch(() => null);
+    if (!full) return;
+    setInput(full.input);
+    setPrintOnOpen(print);
+    setResult(full.result);
+    window.scrollTo({ top: 0 });
+  };
+
+  const removeEntry = async (id: string) => {
+    await deleteEstimation(id).catch(() => {});
+    refreshHistory();
+  };
 
   const set = <K extends keyof PropertyInput>(key: K, value: PropertyInput[K]) =>
     setInput((prev) => ({ ...prev, [key]: value }));
@@ -288,13 +323,33 @@ export default function Home() {
       // Une seule phase : ventes réelles DVF autour de l'adresse du bien
       // + analyse des photos + rédaction du dossier
       const rapportPhase = await streamPhase({ ...input });
-      setResult({
+      const estimation = {
         report: rapportPhase.report,
         dvfSales: rapportPhase.dvfSales,
         dvfSource: rapportPhase.dvfSource,
         engine: rapportPhase.engine,
-      } as unknown as EstimateResponse);
+      } as unknown as EstimateResponse;
+      setResult(estimation);
       window.scrollTo({ top: 0, behavior: "smooth" });
+      // Historique local (IndexedDB) : consultable et téléchargeable
+      // depuis l'accueil — ne bloque jamais l'affichage du dossier
+      try {
+        const r = estimation.report;
+        await saveEstimation({
+          id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+          createdAt: Date.now(),
+          client: [input.clientCivilite, input.clientPrenom, input.clientNom].filter(Boolean).join(" ") || "Client non renseigné",
+          bien: `${input.typeBien.charAt(0).toUpperCase()}${input.typeBien.slice(1)}${input.nbPieces ? ` ${input.nbPieces} p.` : ""}${input.surfaceHabitable ? ` · ${input.surfaceHabitable} m²` : ""}`,
+          ville: `${input.codePostal} ${input.ville}`.trim(),
+          fourchetteBasse: r.fourchette_basse,
+          fourchetteHaute: r.fourchette_haute,
+          result: estimation,
+          input,
+        });
+        refreshHistory();
+      } catch {
+        /* quota ou navigation privée : l'historique est optionnel */
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erreur inattendue");
     } finally {
@@ -522,6 +577,56 @@ export default function Home() {
                       <input type="number" className={inputCls} value={input.taxeFonciere ?? ""} onChange={(e) => set("taxeFonciere", num(e.target.value))} placeholder="—" />
                     </Field>
                   </div>
+
+                  {input.typeBien === "maison" && (
+                    <>
+                      <h3 className="mb-3 mt-6 text-xs font-bold uppercase tracking-widest text-copper">Dépendances</h3>
+                      <div className="space-y-2">
+                        {input.dependances.map((d, i) => (
+                          <div key={i} className="flex flex-wrap items-center gap-2">
+                            <select
+                              className={`${inputCls} w-auto flex-1`}
+                              value={d.type}
+                              onChange={(e) => {
+                                const next = [...input.dependances];
+                                next[i] = { ...next[i], type: e.target.value };
+                                set("dependances", next);
+                              }}
+                            >
+                              {OPT.dependance.map((o) => (
+                                <option key={o}>{o}</option>
+                              ))}
+                            </select>
+                            <input
+                              type="number"
+                              className={`${inputCls} w-32`}
+                              placeholder="Surface m²"
+                              value={d.surface ?? ""}
+                              onChange={(e) => {
+                                const next = [...input.dependances];
+                                next[i] = { ...next[i], surface: num(e.target.value) };
+                                set("dependances", next);
+                              }}
+                            />
+                            <button
+                              type="button"
+                              onClick={() => set("dependances", input.dependances.filter((_, j) => j !== i))}
+                              className="rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-500 transition hover:bg-red-50 hover:text-red-600"
+                            >
+                              ✕
+                            </button>
+                          </div>
+                        ))}
+                        <button
+                          type="button"
+                          onClick={() => set("dependances", [...input.dependances, { type: OPT.dependance[0], surface: null }])}
+                          className="rounded-lg border border-dashed border-slate-300 px-4 py-2 text-sm font-semibold text-slate-500 transition hover:border-copper hover:text-copper"
+                        >
+                          + Ajouter une dépendance (studio, garage, atelier…)
+                        </button>
+                      </div>
+                    </>
+                  )}
                 </>
               )}
 
@@ -620,6 +725,68 @@ export default function Home() {
                 )}
               </div>
             </div>
+
+            {history.length > 0 && (
+              <section className="mt-8 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8 print:hidden">
+                <div className="mb-4 flex items-center justify-between">
+                  <div>
+                    <h2 className="text-lg font-bold text-navy">Historique des estimations</h2>
+                    <p className="text-xs text-slate-500">
+                      Conservées sur cet ordinateur uniquement — consultez ou téléchargez le dossier PDF à tout moment.
+                    </p>
+                  </div>
+                  <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
+                    {history.length} dossier{history.length > 1 ? "s" : ""}
+                  </span>
+                </div>
+                <ul className="divide-y divide-slate-100">
+                  {history.map((h) => (
+                    <li key={h.id} className="flex flex-wrap items-center gap-3 py-3">
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-sm font-semibold text-navy">
+                          {h.client} <span className="font-normal text-slate-400">·</span> {h.bien}
+                        </p>
+                        <p className="text-xs text-slate-500">
+                          {h.ville} — {new Date(h.createdAt).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })}
+                          {h.fourchetteBasse > 0 && (
+                            <>
+                              {" · "}
+                              <b className="text-copper">
+                                {int.format(h.fourchetteBasse)} € – {int.format(h.fourchetteHaute)} €
+                              </b>
+                            </>
+                          )}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => openEntry(h.id, false)}
+                          className="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-600 transition hover:bg-slate-100"
+                        >
+                          Consulter
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => openEntry(h.id, true)}
+                          className="rounded-lg bg-navy px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-navy-deep"
+                        >
+                          📄 Télécharger
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => removeEntry(h.id)}
+                          className="rounded-lg border border-slate-200 px-2.5 py-1.5 text-xs text-slate-400 transition hover:bg-red-50 hover:text-red-600"
+                          title="Supprimer de l'historique"
+                        >
+                          🗑
+                        </button>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
           </>
         )}
       </main>

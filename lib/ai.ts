@@ -166,6 +166,7 @@ Adresse : ${input.adresse}, ${input.codePostal} ${input.ville}${input.quartier ?
 - Équipements : ${input.equipements.length ? input.equipements.join(", ") : "aucun"}
 - Extérieur : ${input.exterieur.length ? input.exterieur.join(", ") : "aucun"}
 - Stationnement : ${input.stationnement || "aucun"} | Cave : ${input.cave ? "oui" : "non"}
+${(input.dependances ?? []).length ? `- Dépendances : ${(input.dependances ?? []).map((d) => `${d.type}${d.surface ? ` (${d.surface} m²)` : ""}`).join(", ")} — valorise-les dans les plus-values` : ""}
 - Charges copro : ${input.chargesCopro ?? "n.c."} €/mois | Taxe foncière : ${input.taxeFonciere ?? "n.c."} €/an
 
 ## Contexte de vente
