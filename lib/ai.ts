@@ -36,7 +36,7 @@ const FINAL_SCHEMA = {
     fourchette_basse: { type: "number" },
     fourchette_haute: { type: "number" },
     prix_m2: { type: "number" },
-    prix_presentation: { type: "number", description: "Prix affiché conseillé (= scénario Prix optimal)" },
+    prix_presentation: { type: "number", description: "Prix affiché conseillé (= scénario Prix optimal, à mi-chemin entre Vente rapide et Prix plafond)" },
     description_bien: { type: "string", description: "2 paragraphes professionnels et valorisants, adressés au client (« votre maison », « votre appartement »)" },
     indice_confiance: { type: "number", description: "0 à 100" },
     delai_vente_estime: { type: "string" },
@@ -69,7 +69,7 @@ const FINAL_SCHEMA = {
     impact_etat: { type: "number", description: "Impact de l'état en euros signés" },
     scenarios_prix: {
       type: "array",
-      description: "Exactement 3 : Vente rapide, Prix optimal, Prix plafond",
+      description: "Exactement 3, prix croissants : Vente rapide < Prix optimal (= prix_presentation, à mi-chemin) < Prix plafond (= fourchette_haute, le maximum réaliste)",
       items: {
         type: "object",
         properties: {
@@ -126,8 +126,11 @@ RÈGLES :
   1. RÉFÉRENCES → sélectionne 4 à 6 ventes réelles dans la liste DVF fournie, en appliquant la règle de PROXIMITÉ ci-dessous et des surfaces proches du bien (±25 %) — dès que la liste n'est pas vide, references_dvf ne doit JAMAIS être vide. Reporte l'adresse et la distance dans localisation/detail. Rédige analyse_dvf.
   2. BASE → base_mediane = la médiane des PRIX ACTÉS de ces références, telle quelle (le chiffre affiché sous le tableau des comparables du dossier) — ne la transpose NI au m² NI à la surface du bien.
   3. AJUSTEMENTS → liste les PLUS-VALUES (montants positifs : atouts réels — extérieur, DPE, état issu des photos, stationnement, annexes…) et les DÉCOTES (montants négatifs : défauts réels — nuisances, travaux…) dont la somme, depuis base_mediane, aboutit exactement à prix_estime. Chaque ligne est une caractéristique concrète, JAMAIS une correction technique abstraite. Si la surface du bien diffère sensiblement des références : une seule ligne « Surface supérieure/inférieure aux références (X m² vs Y m² médians) ». Ligne OBLIGATOIRE d'actualisation au marché actuel (voir règle prioritaire ci-dessous). GARDE-FOU : hors lignes de surface et d'actualisation, la somme des décotes ne doit pas excéder ~10 % de base_mediane, sauf défaut majeur objectif explicitement justifié — chaque facteur ne se décompte qu'UNE fois.
-  4. FOURCHETTE → fourchette_basse → fourchette_haute resserrée (5 à 8 % d'écart quand les données concordent), prix_estime au cœur. La borne haute ne dépasse la meilleure vente comparable ACTUALISÉE que si des atouts objectifs le justifient. Justifie les deux bornes dans positionnement_marche (ventes de référence, actualisation, atouts/défauts).
-- scenarios_prix : exactement 3 scénarios chiffrés — « Vente rapide » (sous la fourchette, délai court), « Prix optimal » (= prix_presentation, dans la fourchette, meilleur équilibre prix/délai), « Prix plafond » (borne à ne pas dépasser : au-delà, le bien resterait sans acheteur dans un marché en baisse).
+  4. FOURCHETTE RESSERRÉE → fourchette_basse → fourchette_haute avec un écart total de 4 à 6 % MAXIMUM, prix_estime au cœur. La borne HAUTE = le prix du scénario « Prix plafond » (voir ci-dessous) et ne dépasse jamais la meilleure vente comparable ACTUALISÉE. Justifie les deux bornes dans positionnement_marche (ventes de référence, actualisation, atouts/défauts).
+- scenarios_prix : exactement 3 scénarios chiffrés, prix STRICTEMENT CROISSANTS :
+  1. « Vente rapide » — sous la fourchette, pour vendre en quelques semaines.
+  2. « Prix optimal » (= prix_presentation) — à MI-CHEMIN entre Vente rapide et Prix plafond : le meilleur équilibre entre le prix obtenu et le délai de vente. C'est le prix de mise en marché conseillé.
+  3. « Prix plafond » — le prix affiché MAXIMUM raisonnable : ce que le marché peut encore accepter pour ce bien (= le haut de la fourchette, jamais au-dessus de la meilleure vente comparable actualisée). Ce n'est PAS un plafond théorique gonflé : c'est le haut RÉALISTE — l'ancien « prix optimal ambitieux ».
 - argumentaire_vendeur : 3 à 5 points clés chiffrés ADRESSÉS DIRECTEMENT AU CLIENT (« votre bien », « vous »), DIGESTES : un point par ligne (séparés par \\n), chacun au format « Titre court — explication en 1 à 2 phrases maximum ». Si le prix souhaité par le client est renseigné, l'un des points le positionne avec pédagogie face aux ventes réelles actualisées.
 - description_bien : 2 paragraphes factuels et valorisants, adressés au client.
 - indice_confiance : reflète la quantité, la proximité et la fraîcheur des ventes de référence (et les photos).
