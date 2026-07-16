@@ -135,7 +135,7 @@ function ChipGroup({
   );
 }
 
-const STEPS = ["Client", "Localisation", "Le bien", "Photos", "Marché", "Contexte"] as const;
+const STEPS = ["Client", "Localisation", "Le bien", "Photos", "Contexte"] as const;
 
 const OPT = {
   civilite: ["M.", "Mme", "M. et Mme", "Indivision", "Société"],
@@ -182,7 +182,7 @@ function LoadingOverlay({ status }: { status: string }) {
           <div className="scan-bar relative h-full w-full rounded-full bg-copper" />
         </div>
         <p className="mt-4 text-xs text-slate-400">
-          {mm}:{ss} écoulées — analyse en 2 phases (marché puis photos), comptez 3 à 6 minutes.
+          {mm}:{ss} écoulées — analyse des ventes réelles et des photos, comptez 1 à 3 minutes.
         </p>
       </div>
     </div>
@@ -285,23 +285,9 @@ export default function Home() {
     setLoadingStatus("");
     setError(null);
     try {
-      // Phase 1 : ventes réelles DVF + audit concurrentiel web (sans les photos,
-      // inutiles à ce stade). Si elle échoue (audit trop long), on continue
-      // quand même : le dossier sera produit avec les seules données DVF.
-      let marche = null;
-      try {
-        const marchePhase = await streamPhase({ ...input, photos: [], phase: "marche" });
-        marche = marchePhase.marche ?? null;
-        setLoadingStatus("Étude de marché terminée — analyse du bien et rédaction du dossier…");
-      } catch {
-        setLoadingStatus("Audit web trop long — poursuite de l'estimation avec les données DVF…");
-      }
-      // Phase 2 : analyse des photos + rédaction du dossier final
-      const rapportPhase = await streamPhase({
-        ...input,
-        phase: "rapport",
-        marche,
-      });
+      // Une seule phase : ventes réelles DVF autour de l'adresse du bien
+      // + analyse des photos + rédaction du dossier
+      const rapportPhase = await streamPhase({ ...input });
       setResult({
         report: rapportPhase.report,
         dvfSales: rapportPhase.dvfSales,
@@ -574,47 +560,6 @@ export default function Home() {
               )}
 
               {step === 4 && (
-                <>
-                  <h2 className="mb-1 text-xl font-bold text-navy">Marché local</h2>
-                  <p className="mb-6 text-sm text-slate-500">Analysé automatiquement — rien à saisir.</p>
-                  <div className="grid gap-3 sm:grid-cols-3">
-                    {[
-                      { icon: "🏛️", title: "Ventes réelles DVF", text: "Transactions actées récupérées via le code postal (data.gouv.fr)." },
-                      { icon: "🔎", title: "Concurrence en vente", text: "L'IA recherche sur le web les biens comparables actuellement affichés." },
-                      { icon: "⏳", title: "Invendus +90 jours", text: "Les annonces qui traînent fixent le plafond que le marché refuse." },
-                    ].map((c) => (
-                      <div key={c.title} className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-                        <div className="mb-2 text-2xl">{c.icon}</div>
-                        <h3 className="text-sm font-bold text-navy">{c.title}</h3>
-                        <p className="mt-1 text-xs leading-relaxed text-slate-500">{c.text}</p>
-                      </div>
-                    ))}
-                  </div>
-                  <details className="mt-6 rounded-xl border border-slate-200 p-4">
-                    <summary className="cursor-pointer text-sm font-semibold text-slate-600">
-                      Compléter manuellement (facultatif) — biens que l&apos;IA pourrait manquer
-                    </summary>
-                    <div className="mt-5 space-y-6">
-                      <ComparablesEditor
-                        title="Biens en vente actuellement (concurrence)"
-                        hint="Mandats confidentiels, biens hors portails…"
-                        items={input.concurrence}
-                        onChange={(items) => set("concurrence", items)}
-                        showDays
-                      />
-                      <ComparablesEditor
-                        title="Invendus (+90 jours de commercialisation)"
-                        hint="Biens comparables qui ne se vendent pas."
-                        items={input.invendus}
-                        onChange={(items) => set("invendus", items)}
-                        showDays
-                      />
-                    </div>
-                  </details>
-                </>
-              )}
-
-              {step === 5 && (
                 <>
                   <h2 className="mb-1 text-xl font-bold text-navy">Contexte de vente</h2>
                   <p className="mb-6 text-sm text-slate-500">

@@ -92,64 +92,6 @@ export default function Report({
 
   const photoAnalyses = report.analyse_par_photo.filter((pa) => input.photos[pa.photo - 1]);
 
-  // Concurrence : barre de positionnement en €/m²
-  const competitors = report.annonces_concurrentes;
-  const compM2 = competitors.map((c) => c.prix_m2).filter((v) => v > 0);
-  const ourM2 = surface > 0 ? Math.round(prixPresentation / surface) : report.prix_m2;
-  const posMin = compM2.length ? Math.min(...compM2, ourM2) : 0;
-  const posMax = compM2.length ? Math.max(...compM2, ourM2) : 0;
-  const posPct = (v: number) =>
-    posMax > posMin ? `${Math.round(((v - posMin) / (posMax - posMin)) * 92 + 4)}%` : "50%";
-  const isStale = (a: (typeof competitors)[number]) =>
-    a.invendu === true || /invendu|re-?publi|baiss|\+\s?90/i.test(`${a.anciennete} ${a.comparaison}`);
-  // Deux tableaux façon DVF : annonces vives d'un côté, invendus +90 jours de l'autre
-  // Une annonce sans prix affiché vérifié n'apporte rien au comparatif :
-  // elle est écartée de l'affichage
-  const vives = competitors.filter((a) => !isStale(a) && a.prix > 0);
-  const invendusAds = competitors.filter((a) => isStale(a) && a.prix > 0);
-  const medCompPrix = medianeReferences(vives);
-  // La page Concurrence n'apparaît que si le relevé est exploitable :
-  // au moins 2 annonces avec prix. Sinon elle est retirée du dossier
-  // (la concurrence reste prise en compte dans l'analyse de prix).
-  const hasConcur = vives.length >= 2;
-  const vivesM2 = vives.map((a) => a.prix_m2).filter((v) => v > 0).sort((a, b) => a - b);
-  const medCompM2 = vivesM2.length ? vivesM2[Math.floor(vivesM2.length / 2)] : 0;
-
-  // Ligne d'annonce concurrente — partagée entre le tableau des annonces
-  // vives et celui des invendus
-  const adRow = (a: (typeof competitors)[number], i: number, warn: boolean) => (
-    <tr key={i} className={warn ? "warn-row" : ""}>
-      <td>
-        <div style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
-          {a.url_photo && (
-            /* eslint-disable-next-line @next/next/no-img-element */
-            <img
-              src={a.url_photo}
-              alt=""
-              style={{ width: 56, height: 40, objectFit: "cover", flexShrink: 0, border: "1px solid var(--line)" }}
-              onError={(e) => { e.currentTarget.style.display = "none"; }}
-            />
-          )}
-          <div>
-            {a.url_annonce ? (
-              <a href={a.url_annonce} target="_blank" rel="noreferrer" style={{ color: "inherit", textDecoration: "none" }}>{a.titre}</a>
-            ) : (
-              a.titre
-            )}
-            <span className="sub">
-              {a.positionnement ? `${a.positionnement.charAt(0).toUpperCase()}${a.positionnement.slice(1)} · ` : ""}
-              {a.comparaison || a.source}
-            </span>
-          </div>
-        </div>
-      </td>
-      <td className="r">{a.surface > 0 ? `${int.format(a.surface)} m²` : "—"}</td>
-      <td className="r">{a.prix > 0 ? <span className="money">{euro.format(a.prix)}</span> : "—"}</td>
-      <td className="r">{a.prix_m2 > 0 ? int.format(a.prix_m2) : "—"}</td>
-      <td className="r">{a.anciennete || "—"}</td>
-    </tr>
-  );
-
   // Références DVF + médiane — même définition que la base des ajustements
   // (lib/references.ts) : les pages Comparables et Prix retenu affichent
   // toujours le même chiffre
@@ -213,20 +155,11 @@ export default function Report({
   const hasPhotoPage = photoPages.length > 0;
   const hasVisuel = report.etat_notes.length > 0;
   const hasAjust = report.ajustements.length > 0 && report.base_mediane > 0;
-  const hasLecture = Boolean(
-    report.audit_concurrentiel.nb_annonces_analysees > 0 ||
-      report.audit_concurrentiel.synthese ||
-      report.analyse_concurrence ||
-      report.analyse_invendus ||
-      invendusAds.length > 0,
-  );
   let sec = 0;
   const S = () => ROMANS[sec++];
   const secSynthese = S();
   const secBien = S();
   const secVisuel = hasVisuel ? S() : "";
-  const secConcur = hasConcur ? S() : "";
-  const secLecture = hasLecture ? S() : "";
   const secPhotos = hasPhotoPage ? S() : "";
   const secMethode = S();
   const secAjust = hasAjust ? S() : "";
@@ -237,8 +170,6 @@ export default function Report({
   const pgSynthese = P();
   const pgBien = P();
   const pgVisuel = hasVisuel ? P() : 0;
-  const pgConcur = hasConcur ? P() : 0;
-  const pgLecture = hasLecture ? P() : 0;
   const pgPhotos = hasPhotoPage ? P() : 0;
   for (let i = 1; i < photoPages.length; i++) P(); // pages photo supplémentaires
   const pgMethode = P();
@@ -462,144 +393,6 @@ export default function Report({
           </section>
         )}
 
-        {/* ============ CONCURRENCE & POSITIONNEMENT (si ≥ 2 annonces exploitables) ============ */}
-        {hasConcur && (
-        <section className="page">
-          <PageHead page={pgConcur} />
-          <SectionTitle idx={secConcur} title="Concurrence & positionnement" />
-          <p className="section-lead" style={{ marginBottom: 12 }}>
-            Voici les biens comparables au vôtre actuellement en vente, avec leur prix affiché. Ils
-            montrent où se situe votre concurrence. La valeur de votre bien, elle, s&apos;appuie sur
-            les ventes réellement conclues (page « Méthodologie &amp; comparables »).
-          </p>
-
-          {vives.length > 0 && (
-            <>
-              {vives.length > 0 && (
-                <>
-                  <div className="eyebrow" style={{ color: "var(--ink-45)" }}>
-                    Concurrence directe — annonces vives équivalentes (prix affichés)
-                  </div>
-                  <hr className="rule" style={{ margin: "8px 0 4px" }} />
-                  <table>
-                    <thead>
-                      <tr>
-                        <th>Bien concurrent en vente</th>
-                        <th className="r">Surface</th>
-                        <th className="r">Prix affiché</th>
-                        <th className="r">€ / m²</th>
-                        <th className="r">Ancienneté</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {vives.slice(0, 6).map((a, i) => adRow(a, i, false))}
-                      {(medCompPrix > 0 || medCompM2 > 0) && (
-                        <tr className="median-row">
-                          <td>Médiane concurrentielle — repère de positionnement</td>
-                          <td className="r">—</td>
-                          <td className="r">{medCompPrix > 0 ? <span className="money">{euro.format(medCompPrix)}</span> : "—"}</td>
-                          <td className="r">{medCompM2 > 0 ? int.format(medCompM2) : "—"}</td>
-                          <td className="r">—</td>
-                        </tr>
-                      )}
-                    </tbody>
-                  </table>
-                </>
-              )}
-
-              {compM2.length >= 2 && posMax > posMin && (
-                <div className="posbar">
-                  <div className="track">
-                    <div className="range" style={{ left: 0, right: 0 }} />
-                    <div className="mark" style={{ left: posPct(posMin) }} />
-                    <div className="ptag top" style={{ left: posPct(posMin) }}>{int.format(posMin)} €/m²</div>
-                    <div className="mark" style={{ left: posPct(posMax) }} />
-                    <div className="ptag top" style={{ left: posPct(posMax) }}>{int.format(posMax)} €/m²</div>
-                    <div className="mark us" style={{ left: posPct(ourM2) }} />
-                    <div className="ptag bot" style={{ left: posPct(ourM2) }}>
-                      Notre prix conseillé · {euro.format(prixPresentation)}
-                    </div>
-                  </div>
-                  <div className="ends"><span>Bas du marché affiché</span><span>Haut du marché affiché</span></div>
-                </div>
-              )}
-            </>
-          )}
-
-          <Foot left="Prix affichés — non actés · usage strictement indicatif" right={`Réf. ${refDossier}`} />
-        </section>
-        )}
-
-        {/* ============ LECTURE DU MARCHÉ (audit chiffré) ============ */}
-        {hasLecture && (
-          <section className="page">
-            <PageHead page={pgLecture} />
-            <SectionTitle idx={secLecture} title="Lecture du marché" />
-            <p className="section-lead" style={{ marginBottom: 14 }}>
-              Ce que montre le marché autour de chez vous : les prix affichés par la concurrence,
-              la tension du marché et les annonces qui ne trouvent pas preneur.
-            </p>
-
-            {report.audit_concurrentiel.nb_annonces_analysees > 0 && (
-              <>
-                <div className="eyebrow" style={{ color: "var(--ink-45)" }}>Audit du marché — chiffres clés</div>
-                <hr className="rule" style={{ margin: "8px 0 8px" }} />
-                <div className="kpi-row" style={{ marginBottom: 12 }}>
-                  <div className="kpi"><div className="k">Annonces analysées</div><div className="v">{report.audit_concurrentiel.nb_annonces_analysees}</div></div>
-                  <div className="kpi"><div className="k">€/m² plancher</div><div className="v" style={{ fontSize: "13pt" }}>{report.audit_concurrentiel.prix_m2_min > 0 ? int.format(report.audit_concurrentiel.prix_m2_min) : "—"}</div></div>
-                  <div className="kpi"><div className="k">€/m² médian</div><div className="v" style={{ fontSize: "13pt" }}>{report.audit_concurrentiel.prix_m2_median > 0 ? int.format(report.audit_concurrentiel.prix_m2_median) : "—"}</div></div>
-                  <div className="kpi"><div className="k">€/m² plafond</div><div className="v" style={{ fontSize: "13pt" }}>{report.audit_concurrentiel.prix_m2_max > 0 ? int.format(report.audit_concurrentiel.prix_m2_max) : "—"}</div></div>
-                </div>
-                {report.audit_concurrentiel.tension_marche && (
-                  <p style={{ fontSize: "9.5pt", color: "var(--ink-70)", marginBottom: 10 }}>
-                    <b style={{ color: "var(--ink)" }}>Tension du marché :</b> {report.audit_concurrentiel.tension_marche}
-                  </p>
-                )}
-              </>
-            )}
-
-            {report.analyse_concurrence && (
-              <>
-                <div className="eyebrow" style={{ color: "var(--ink-45)", marginTop: 6 }}>Concurrence active</div>
-                <hr className="rule" style={{ margin: "8px 0 6px" }} />
-                <p style={{ fontSize: "9.5pt", color: "var(--ink-70)", marginBottom: 10 }}>{report.analyse_concurrence}</p>
-              </>
-            )}
-
-            {(report.analyse_invendus || invendusAds.length > 0) && (
-              <>
-                <div className="eyebrow" style={{ color: "var(--ink-45)", marginTop: 6 }}>Invendus +90 jours — le prix que le marché refuse (à éviter pour votre bien)</div>
-                <hr className="rule" style={{ margin: "8px 0 6px" }} />
-                {report.analyse_invendus && (
-                  <p style={{ fontSize: "9.5pt", color: "var(--ink-70)", marginBottom: 10 }}>{report.analyse_invendus}</p>
-                )}
-                {invendusAds.length > 0 && (
-                  <table style={{ marginBottom: 10 }}>
-                    <thead>
-                      <tr>
-                        <th>Bien en vente depuis plus de 90 jours</th>
-                        <th className="r">Surface</th>
-                        <th className="r">Prix affiché</th>
-                        <th className="r">€ / m²</th>
-                        <th className="r">Ancienneté</th>
-                      </tr>
-                    </thead>
-                    <tbody>{invendusAds.slice(0, 3).map((a, i) => adRow(a, i, true))}</tbody>
-                  </table>
-                )}
-              </>
-            )}
-
-            {report.audit_concurrentiel.synthese && (
-              <div className="callout" style={{ marginTop: 8 }}>
-                <b>Zone de prix gagnante :</b> {report.audit_concurrentiel.synthese}
-              </div>
-            )}
-
-            <Foot left="Prix affichés — non actés · usage strictement indicatif" right={`Réf. ${refDossier}`} />
-          </section>
-        )}
-
         {/* ============ LE BIEN EN IMAGES (6 fiches par page) ============ */}
         {photoPages.map((chunk, pageIdx) => (
           <section className="page" key={`photos-${pageIdx}`}>
@@ -664,8 +457,8 @@ export default function Report({
             </div>
             <div className="step">
               <div className="n">03</div>
-              <h4>Positionnement</h4>
-              <p>Le prix conseillé est ensuite comparé aux biens en vente pour positionner votre bien au mieux face à la concurrence.</p>
+              <h4>Actualisation au marché</h4>
+              <p>Le marché est actuellement en baisse : les ventes des années passées sont ramenées au prix d&apos;aujourd&apos;hui avant de fixer votre fourchette.</p>
             </div>
           </div>
 
@@ -775,23 +568,6 @@ export default function Report({
           <PageHead page={pgReco} />
           <SectionTitle idx={secReco} title="Recommandations commerciales" />
           <div style={{ height: 14 }} />
-
-          {report.audit_concurrentiel.prix_m2_median > 0 && surface > 0 && (
-            <div className="callout" style={{ marginBottom: 18 }}>
-              <b>Positionnement concurrentiel :</b> médiane concurrentielle ≈{" "}
-              {euro.format(Math.round(report.audit_concurrentiel.prix_m2_median * surface))} pour{" "}
-              {surface} m² ({int.format(report.audit_concurrentiel.prix_m2_median)} €/m² affichés).
-              Prix de présentation retenu : <b>{euro.format(prixPresentation)}</b>, soit{" "}
-              {Math.abs(
-                ((prixPresentation - report.audit_concurrentiel.prix_m2_median * surface) /
-                  (report.audit_concurrentiel.prix_m2_median * surface)) *
-                  100,
-              ).toFixed(1)}{" "}
-              % {prixPresentation <= report.audit_concurrentiel.prix_m2_median * surface
-                ? "sous la médiane — votre bien se présente comme le meilleur rapport qualité/prix de sa catégorie."
-                : "au-dessus de la médiane — un positionnement justifié par les prestations supérieures de votre bien."}
-            </div>
-          )}
 
           {report.scenarios_prix.length >= 3 ? (
             <div className="reco-grid" style={{ gridTemplateColumns: "repeat(3, 1fr)" }}>
