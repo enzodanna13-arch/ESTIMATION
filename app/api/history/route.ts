@@ -1,8 +1,12 @@
+import { checkHistoryPassword } from "@/lib/historyAuth";
 import { listEstimationsServer } from "@/lib/serverHistory";
 
 export const dynamic = "force-dynamic";
 
-export async function GET() {
+export async function GET(request: Request) {
+  if (!checkHistoryPassword(request)) {
+    return Response.json({ error: "Mot de passe requis" }, { status: 401 });
+  }
   try {
     const entries = await listEstimationsServer();
     return Response.json({ entries });

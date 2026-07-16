@@ -1,8 +1,12 @@
+import { checkHistoryPassword } from "@/lib/historyAuth";
 import { deleteEstimationServer, getEstimationServer } from "@/lib/serverHistory";
 
 export const dynamic = "force-dynamic";
 
-export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
+export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
+  if (!checkHistoryPassword(request)) {
+    return Response.json({ error: "Mot de passe requis" }, { status: 401 });
+  }
   const { id } = await params;
   try {
     const entry = await getEstimationServer(id);
@@ -14,7 +18,10 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
   }
 }
 
-export async function DELETE(_req: Request, { params }: { params: Promise<{ id: string }> }) {
+export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
+  if (!checkHistoryPassword(request)) {
+    return Response.json({ error: "Mot de passe requis" }, { status: 401 });
+  }
   const { id } = await params;
   try {
     await deleteEstimationServer(id);
