@@ -358,6 +358,7 @@ export default function Home() {
         dvfSales: rapportPhase.dvfSales,
         dvfSource: rapportPhase.dvfSource,
         engine: rapportPhase.engine,
+        subject: rapportPhase.subject ?? null,
       } as unknown as EstimateResponse;
       setResult(estimation);
       window.scrollTo({ top: 0, behavior: "smooth" });

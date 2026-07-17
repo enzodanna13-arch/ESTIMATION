@@ -1,5 +1,5 @@
 import { computeFinalReport } from "@/lib/ai";
-import { fetchDvfSales } from "@/lib/dvf";
+import { fetchDvfContext } from "@/lib/dvf";
 import { computeFallbackEstimate } from "@/lib/fallback";
 import { buildDvfReferences, medianeReferences } from "@/lib/references";
 import { saveEstimationServer } from "@/lib/serverHistory";
@@ -37,7 +37,7 @@ export async function POST(request: Request) {
       const heartbeat = setInterval(() => send({ type: "ping" }), 8000);
       try {
         send({ type: "status", label: "Récupération des ventes réelles autour du bien (DVF)…" });
-        const dvfSales = await fetchDvfSales(body.codePostal, body.typeBien, body.adresse, body.ville);
+        const { sales: dvfSales, subject } = await fetchDvfContext(body.codePostal, body.typeBien, body.adresse, body.ville);
         const dvfSource = dvfSales.length > 0 ? "api" : "indisponible";
 
         let report = null;
@@ -120,13 +120,13 @@ export async function POST(request: Request) {
             negociateur: body.negociateur ?? "",
             fourchetteBasse: report.fourchette_basse,
             fourchetteHaute: report.fourchette_haute,
-            result: { report, dvfSales, dvfSource, engine },
+            result: { report, dvfSales, dvfSource, engine, subject },
             input: body,
           });
         } catch (err) {
           console.error("Sauvegarde de l'historique impossible :", err);
         }
-        send({ type: "result", data: { phase: "rapport", report, dvfSales, dvfSource, engine } });
+        send({ type: "result", data: { phase: "rapport", report, dvfSales, dvfSource, engine, subject } });
       } catch (err) {
         send({ type: "error", error: err instanceof Error ? err.message : "Erreur inattendue" });
       } finally {

@@ -168,6 +168,17 @@ export default function Report({
     }
   }
 
+  // Carte des ventes : le bien géocodé + les ventes DVF proches (lat/lon)
+  const subject = result.subject ?? null;
+  const mapSales = subject
+    ? result.dvfSales
+        .filter((s) => s.lat != null && s.lon != null && (s.distanceM ?? Infinity) <= 2500)
+        .slice(0, 12)
+    : [];
+  const isRefSale = (s: (typeof mapSales)[number]) =>
+    refs.some((r) => r.prix === s.valeurFonciere && r.surface === s.surface);
+  const hasCarte = Boolean(subject && mapSales.length >= 2);
+
   // Numérotation des sections — certaines pages sont conditionnelles
   const hasPhotoPage = photoPages.length > 0;
   const hasVisuel = report.etat_notes.length > 0;
@@ -179,6 +190,7 @@ export default function Report({
   const secVisuel = hasVisuel ? S() : "";
   const secPhotos = hasPhotoPage ? S() : "";
   const secMethode = S();
+  const secCarte = hasCarte ? S() : "";
   const secAjust = hasAjust ? S() : "";
   const secReco = S();
   const secSign = S();
@@ -190,6 +202,7 @@ export default function Report({
   const pgPhotos = hasPhotoPage ? P() : 0;
   for (let i = 1; i < photoPages.length; i++) P(); // pages photo supplémentaires
   const pgMethode = P();
+  const pgCarte = hasCarte ? P() : 0;
   const pgAjust = hasAjust ? P() : 0;
   const pgReco = P();
   const pgSign = P();
@@ -535,6 +548,108 @@ export default function Report({
 
           <Foot left="Références DVF — données publiques Etalab, dernier millésime disponible" right={`Réf. ${refDossier}`} />
         </section>
+
+        {/* ============ CARTE DES VENTES DE RÉFÉRENCE ============ */}
+        {hasCarte && subject && (() => {
+          const W = 700;
+          const H = 370;
+          const mPerDegLat = 110540;
+          const mPerDegLon = 111320 * Math.cos((subject.lat * Math.PI) / 180);
+          // Un point par bâtiment : les ventes d'une même adresse sont
+          // regroupées (libellé « n ventes · min–max k€ »)
+          const groups = new Map<string, { x: number; y: number; sales: typeof mapSales; ref: boolean }>();
+          for (const sale of mapSales) {
+            const x = ((sale.lon as number) - subject.lon) * mPerDegLon;
+            const y = -((sale.lat as number) - subject.lat) * mPerDegLat;
+            const key = `${Math.round(x / 25)}:${Math.round(y / 25)}`;
+            const g = groups.get(key);
+            if (g) {
+              g.sales.push(sale);
+              g.ref = g.ref || isRefSale(sale);
+            } else {
+              groups.set(key, { x, y, sales: [sale], ref: isRefSale(sale) });
+            }
+          }
+          const pts = [...groups.values()];
+          const extent = Math.max(150, ...pts.map((p) => Math.max(Math.abs(p.x), Math.abs(p.y)))) * 1.25;
+          const scale = (Math.min(W, H) / 2 - 42) / extent;
+          const cx = W / 2;
+          const cy = H / 2;
+          const rings = [250, 500, 1000, 2000].filter((r) => r * scale > 34 && r * scale < Math.min(W, H) / 2 - 6);
+          const fmtRing = (r: number) => (r < 1000 ? `${r} m` : `${r / 1000} km`);
+          return (
+            <section className="page">
+              <PageHead page={pgCarte} />
+              <SectionTitle idx={secCarte} title="Où se situent les ventes de référence" />
+              <p className="section-lead" style={{ marginBottom: 14 }}>
+                Votre bien est au centre de la carte. Chaque point est une vente réellement conclue
+                autour de chez vous, avec son prix : les points dorés sont les ventes retenues comme
+                références pour votre estimation.
+              </p>
+
+              <svg
+                viewBox={`0 0 ${W} ${H}`}
+                style={{ width: "100%", border: "1px solid var(--line)", background: "var(--paper-card)" }}
+              >
+                {rings.map((r) => (
+                  <g key={r}>
+                    <circle cx={cx} cy={cy} r={r * scale} fill="none" stroke="var(--line)" strokeDasharray="4 5" />
+                    <text x={cx + 6} y={cy - r * scale + 15} fontSize="11" fill="var(--ink-45)">
+                      {fmtRing(r)}
+                    </text>
+                  </g>
+                ))}
+                {pts.map((p, idx) => {
+                  const x = cx + p.x * scale;
+                  const y = cy + p.y * scale;
+                  const ref = p.ref;
+                  const right = x <= W - 130;
+                  const prix = p.sales.map((sa) => Math.round(sa.valeurFonciere / 1000)).sort((a, b) => a - b);
+                  const label =
+                    prix.length === 1
+                      ? `${prix[0]} k€`
+                      : `${prix.length} ventes · ${prix[0]}–${prix[prix.length - 1]} k€`;
+                  // Étiquettes réparties au-dessus / au-dessous pour limiter
+                  // les chevauchements dans les zones denses
+                  const dy = idx % 2 === 0 ? -12 : 20;
+                  return (
+                    <g key={idx}>
+                      <circle cx={x} cy={y} r={ref ? 7 : 4.5} fill={ref ? "var(--gold)" : "#b6ae9c"} stroke={ref ? "var(--ink)" : "none"} strokeWidth={ref ? 1.2 : 0} />
+                      <text
+                        x={right ? x + 10 : x - 10}
+                        y={y + dy / 2 + 4}
+                        fontSize={ref ? 12.5 : 11}
+                        fontWeight={ref ? 700 : 400}
+                        fill={ref ? "var(--ink)" : "var(--ink-45)"}
+                        textAnchor={right ? "start" : "end"}
+                        style={{ paintOrder: "stroke", stroke: "var(--paper-card)", strokeWidth: 3.5 }}
+                      >
+                        {label}
+                      </text>
+                    </g>
+                  );
+                })}
+                <circle cx={cx} cy={cy} r={10} fill="var(--gold-deep)" stroke="var(--paper)" strokeWidth={2.5} />
+                <circle cx={cx} cy={cy} r={3.2} fill="var(--paper)" />
+                <text x={cx} y={cy + 28} fontSize="13.5" fontWeight={700} fill="var(--ink)" textAnchor="middle" style={{ paintOrder: "stroke", stroke: "var(--paper-card)", strokeWidth: 3 }}>
+                  Votre bien
+                </text>
+              </svg>
+
+              <div style={{ display: "flex", gap: 22, marginTop: 12, fontSize: "9pt", color: "var(--ink-70)", flexWrap: "wrap" }}>
+                <span><span style={{ display: "inline-block", width: 12, height: 12, borderRadius: "50%", background: "var(--gold-deep)", verticalAlign: "-2px", marginRight: 6 }} />Votre bien (au centre)</span>
+                <span><span style={{ display: "inline-block", width: 12, height: 12, borderRadius: "50%", background: "var(--gold)", border: "1px solid var(--ink)", verticalAlign: "-2px", marginRight: 6 }} />Ventes retenues comme références</span>
+                <span><span style={{ display: "inline-block", width: 9, height: 9, borderRadius: "50%", background: "#b6ae9c", verticalAlign: "-1px", marginRight: 6 }} />Autres ventes proches</span>
+              </div>
+              <p className="photo-note" style={{ marginTop: 8 }}>
+                Positions issues des données publiques DVF géolocalisées (Etalab) et de la Base
+                Adresse Nationale ; distances à vol d&apos;oiseau autour de votre bien.
+              </p>
+
+              <Foot left="Ventes réelles actées — données publiques Etalab" right={`Réf. ${refDossier}`} />
+            </section>
+          );
+        })()}
 
         {/* ============ AJUSTEMENTS DE VALEUR ============ */}
         {hasAjust && (

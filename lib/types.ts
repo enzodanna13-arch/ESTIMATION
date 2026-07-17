@@ -197,4 +197,5 @@ export interface EstimateResponse {
   dvfSales: DvfSale[];
   dvfSource: "api" | "indisponible";
   engine: "ia" | "statistique";
+  subject?: { lat: number; lon: number } | null; // position géocodée du bien (carte)
 }

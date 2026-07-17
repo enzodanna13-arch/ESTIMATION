@@ -196,7 +196,17 @@ export async function fetchDvfSales(
   adresse = "",
   ville = "",
 ): Promise<DvfSale[]> {
-  if (!/^\d{5}$/.test(codePostal)) return [];
+  return (await fetchDvfContext(codePostal, typeBien, adresse, ville)).sales;
+}
+
+/** Ventes DVF + position géocodée du bien (pour la carte du dossier). */
+export async function fetchDvfContext(
+  codePostal: string,
+  typeBien: string,
+  adresse = "",
+  ville = "",
+): Promise<{ sales: DvfSale[]; subject: { lat: number; lon: number } | null }> {
+  if (!/^\d{5}$/.test(codePostal)) return { sales: [], subject: null };
   const typeLocal =
     typeBien === "maison" ? "Maison" : typeBien === "appartement" ? "Appartement" : "";
 
@@ -238,7 +248,7 @@ export async function fetchDvfSales(
   } else {
     sales.sort((a, b) => (a.date < b.date ? 1 : -1));
   }
-  return sales.slice(0, 60);
+  return { sales: sales.slice(0, 60), subject: geo ? { lat: geo.lat, lon: geo.lon } : null };
 }
 
 export function medianPrixM2(sales: DvfSale[]): number | null {
