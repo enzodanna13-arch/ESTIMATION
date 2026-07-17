@@ -596,16 +596,22 @@ export default function Report({
           <SectionTitle idx={secReco} title="Recommandations commerciales" />
           <div style={{ height: 14 }} />
 
-          {report.scenarios_prix.length >= 3 ? (
-            <div className="reco-grid" style={{ gridTemplateColumns: "repeat(3, 1fr)" }}>
-              {report.scenarios_prix.slice(0, 3).map((sc, i) => (
-                <div key={i} className="reco" style={sc.strategie === "Prix optimal" ? { borderColor: "var(--gold)", borderWidth: 2 } : undefined}>
-                  <div className="t">{sc.strategie}{sc.strategie === "Prix optimal" ? " ★" : ""}</div>
-                  <div className="big" style={{ fontSize: "20pt" }}>{euro.format(sc.prix)}</div>
-                  <p style={{ marginBottom: 6 }}><b style={{ color: "var(--ink)" }}>Délai : {sc.delai}</b></p>
-                  <p>{sc.commentaire}</p>
-                </div>
-              ))}
+          {report.scenarios_prix.filter((sc) => sc.strategie !== "Prix plafond").length >= 2 ? (
+            /* Le « Prix plafond » sert au calcul (borne haute de la fourchette)
+               mais n'apparaît pas dans le dossier : seuls Vente rapide et
+               Prix optimal sont présentés au client */
+            <div className="reco-grid" style={{ gridTemplateColumns: "repeat(2, 1fr)" }}>
+              {report.scenarios_prix
+                .filter((sc) => sc.strategie !== "Prix plafond")
+                .slice(0, 2)
+                .map((sc, i) => (
+                  <div key={i} className="reco" style={sc.strategie === "Prix optimal" ? { borderColor: "var(--gold)", borderWidth: 2 } : undefined}>
+                    <div className="t">{sc.strategie}{sc.strategie === "Prix optimal" ? " ★" : ""}</div>
+                    <div className="big" style={{ fontSize: "20pt" }}>{euro.format(sc.prix)}</div>
+                    <p style={{ marginBottom: 6 }}><b style={{ color: "var(--ink)" }}>Délai : {sc.delai}</b></p>
+                    <p>{sc.commentaire}</p>
+                  </div>
+                ))}
             </div>
           ) : (
             <div className="reco-grid">
