@@ -99,6 +99,13 @@ export async function POST(request: Request) {
           prix_presentation: floor1000(report.prix_presentation),
           scenarios_prix: report.scenarios_prix.map((s) => ({ ...s, prix: floor1000(s.prix) })),
         };
+        // Cohérence de la synthèse : la fourchette de valeur va du prix
+        // « Vente rapide » au « Prix optimal » (les deux scénarios présentés)
+        const scRapide = report.scenarios_prix.find((s) => s.strategie === "Vente rapide")?.prix ?? 0;
+        const scOptimal = report.scenarios_prix.find((s) => s.strategie === "Prix optimal")?.prix ?? 0;
+        if (scRapide > 0 && scOptimal > scRapide) {
+          report = { ...report, fourchette_basse: scRapide, fourchette_haute: scOptimal };
+        }
         // Historique PARTAGÉ de l'équipe (Vercel Blob) : sauvegarde
         // automatique du dossier — un échec n'empêche jamais le résultat
         try {

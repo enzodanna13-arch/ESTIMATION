@@ -88,6 +88,13 @@ export default function Report({
       : input.typeBien.charAt(0).toUpperCase() + input.typeBien.slice(1) + (input.nbPieces ? ` ${input.nbPieces} pièces` : "");
 
   const prixPresentation = report.prix_presentation > 0 ? report.prix_presentation : report.prix_estime;
+  // Fourchette de valeur du dossier = du prix « Vente rapide » au « Prix
+  // optimal » : la synthèse est ainsi parfaitement cohérente avec les deux
+  // scénarios présentés au client
+  const scRapide = report.scenarios_prix.find((sc) => sc.strategie === "Vente rapide")?.prix ?? 0;
+  const scOptimal = report.scenarios_prix.find((sc) => sc.strategie === "Prix optimal")?.prix ?? 0;
+  const fourchetteBasse = scRapide > 0 ? scRapide : report.fourchette_basse;
+  const fourchetteHaute = scOptimal > fourchetteBasse ? scOptimal : report.fourchette_haute;
   // Surface habitable TOTALE affichée dans le dossier = logement principal
   // + dépendances habitables (studio, T2/T3/T4, maison d'amis)
   const surfaceDeps = surfaceDependancesHabitables(input);
@@ -283,7 +290,7 @@ export default function Report({
             <div className="cell center">
               <div className="lbl">Fourchette de valeur</div>
               <div className="amt" style={{ fontSize: "21pt" }}>
-                {euro.format(report.fourchette_basse)} — {euro.format(report.fourchette_haute)}
+                {euro.format(fourchetteBasse)} — {euro.format(fourchetteHaute)}
               </div>
             </div>
             <div className="cell">
@@ -294,13 +301,13 @@ export default function Report({
 
           <div className="kpi-row">
             <div className="kpi"><div className="k">Surface</div><div className="v">{surface} <small>m²</small></div></div>
-            <div className="kpi"><div className="k">Fourchette / m²</div><div className="v" style={{ fontSize: "12pt" }}>{surface > 0 ? `${int.format(Math.round(report.fourchette_basse / surface))} – ${int.format(Math.round(report.fourchette_haute / surface))}` : int.format(report.prix_m2)} <small>€/m²</small></div></div>
+            <div className="kpi"><div className="k">Fourchette / m²</div><div className="v" style={{ fontSize: "12pt" }}>{surface > 0 ? `${int.format(Math.round(fourchetteBasse / surface))} – ${int.format(Math.round(fourchetteHaute / surface))}` : int.format(report.prix_m2)} <small>€/m²</small></div></div>
             <div className="kpi"><div className="k">DPE</div><div className="v">{input.dpe || "—"}</div></div>
             <div className="kpi"><div className="k">Délai de vente estimé</div><div className="v" style={{ fontSize: "11pt", lineHeight: 1.3 }}>{report.delai_vente_estime}</div></div>
           </div>
 
           <div className="callout">
-            <b>Fourchette de valeur : {euro.format(report.fourchette_basse)} à {euro.format(report.fourchette_haute)}.
+            <b>Fourchette de valeur : {euro.format(fourchetteBasse)} à {euro.format(fourchetteHaute)}.
             Prix de présentation conseillé : {euro.format(prixPresentation)}.</b>{" "}
             Ce positionnement conserve une marge de négociation d&apos;environ {margeNego} % tout en
             restant cohérent avec les références de vente et la concurrence active du secteur.
@@ -580,7 +587,7 @@ export default function Report({
             </div>
 
             <div className="callout" style={{ marginTop: 20 }}>
-              <b>Fourchette de valeur : {euro.format(report.fourchette_basse)} à {euro.format(report.fourchette_haute)}.</b>{" "}
+              <b>Fourchette de valeur : {euro.format(fourchetteBasse)} à {euro.format(fourchetteHaute)}.</b>{" "}
               Le cœur de fourchette de {euro.format(report.prix_estime)} résulte de la médiane DVF
               corrigée des plus-values et décotes ci-dessus ; les bornes traduisent
               l&apos;incertitude résiduelle du marché (indice de confiance : {report.indice_confiance}/100).
