@@ -195,7 +195,7 @@ const AUDIT_RULE = `MISSION : AUDIT DE COMMERCIALISATION. Le bien est DÉJÀ EN 
 - etapes_commercialisation = PLAN DE RELANCE concret : repositionnement du prix, re-shooting photo, réécriture de l'annonce, re-publication (retrouver la fraîcheur), élargissement de la diffusion, home staging…
 - argumentaire_vendeur = les points clés chiffrés pour faire accepter le repositionnement au client (ex. « à ce prix, votre bien est ignoré : N visites en M mois — au prix de relance, il revient dans la zone où les acheteurs cliquent »).
 - delai_vente_estime = délai estimé APRÈS repositionnement.
-- ANALYSE DE L'ANNONCE EN LIGNE (si une URL d'annonce est fournie) : OUVRE l'annonce avec web_fetch. Analyse le prix affiché, le titre et le texte (accroche, longueur, atouts mis en avant, clarté), la qualité, le nombre et l'ordre des photos, les mentions de baisse. Utilise web_search pour retrouver l'HISTORIQUE de l'annonce : ancienneté réelle, baisses de prix successives, re-publications (sites d'historique d'annonces, cache des portails). Renseigne :
+- ANALYSE DE L'ANNONCE EN LIGNE (si une URL d'annonce est fournie) : OUVRE l'annonce avec web_fetch. Si PLUSIEURS liens de la MÊME annonce sont fournis (multidiffusion), ouvre le premier accessible et sers-toi des autres pour croiser : écarts de prix entre portails, dates de publication différentes = matière première de l'audit. Analyse le prix affiché, le titre et le texte (accroche, longueur, atouts mis en avant, clarté), la qualité, le nombre et l'ordre des photos, les mentions de baisse. Utilise web_search pour retrouver l'HISTORIQUE de l'annonce : ancienneté réelle, baisses de prix successives, re-publications (sites d'historique d'annonces, cache des portails). Renseigne :
   · anciennete_annonce (ce que tu as détecté, avec la source) et baisses_annonce (chronologie des baisses détectées) — croise avec les informations saisies par le négociateur ;
   · analyse_annonce : 2 à 3 phrases simples, le verdict global sur l'annonce ;
   · recommandations_annonce : 4 à 8 recommandations CONCRÈTES, façon audit professionnel — chacune avec categorie (Prix, Titre & texte, Photos, Diffusion, Mise en valeur), constat (ce qui pèche aujourd'hui, factuel), recommandation (l'action précise à mener) et priorite (haute / moyenne / basse). Classe-les par priorité décroissante.
@@ -269,7 +269,7 @@ ${
 - Prix affiché actuel : ${input.prixAffiche ? `${input.prixAffiche} €` : "n.c."}
 - En vente depuis : ${input.moisEnVente ?? "?"} mois | Visites réalisées : ${input.nbVisites ?? "n.c."} | Offres reçues : ${input.nbOffres ?? "n.c."}
 - Baisses de prix déjà réalisées : ${input.baissesPrix || "aucune"}
-${input.urlAnnonce ? `- ANNONCE EN LIGNE À AUDITER : ${input.urlAnnonce}` : "- (aucun lien d'annonce fourni : audite à partir des informations saisies)"}`
+${auditUrls(input).length > 0 ? auditUrls(input).map((u, i) => `- ANNONCE EN LIGNE À AUDITER${auditUrls(input).length > 1 ? ` (diffusion ${i + 1}/${auditUrls(input).length} de la même annonce)` : ""} : ${u}`).join("\n") : "- (aucun lien d'annonce fourni : audite à partir des informations saisies)"}`
     : ""
 }${
   input.mission === "locatif"
@@ -387,6 +387,15 @@ const num = (v: unknown) => (typeof v === "number" && Number.isFinite(v) ? v : 0
 const str = (v: unknown) => (typeof v === "string" ? v : "");
 const arr = <T,>(v: unknown) => (Array.isArray(v) ? (v as T[]) : []);
 
+/** Tous les liens de l'annonce à auditer (principal + multidiffusion), dédoublonnés. */
+export function auditUrls(input: PropertyInput): string[] {
+  return [...new Set(
+    [input.urlAnnonce, ...(input.urlsAnnonce ?? [])]
+      .map((u) => (u ?? "").trim())
+      .filter((u) => /^https?:\/\/\S+/.test(u)),
+  )];
+}
+
 // ---------------------------------------------------------------------------
 // Audit de commercialisation : le négociateur ne saisit QUE le client et le
 // lien de l'annonce. Cette phase ouvre l'annonce et en extrait la fiche
@@ -431,24 +440,30 @@ const EXTRACT_SCHEMA = {
   required: ["codePostal", "ville", "typeBien", "surfaceHabitable", "prixAffiche"],
 } as const;
 
-/** Ouvre l'annonce en ligne et en extrait la fiche du bien (mission audit). */
+/** Ouvre l'annonce en ligne et en extrait la fiche du bien (mission audit).
+ *  Accepte plusieurs liens de la MÊME annonce (multidiffusion) : si un
+ *  portail bloque, le suivant prend le relais. */
 export async function extractListingFacts(
-  url: string,
+  urls: string[],
   onProgress: (label: string) => void = () => {},
 ): Promise<Record<string, unknown>> {
   const client = new Anthropic();
   const { model } = modelConfig();
   onProgress("Lecture de l'annonce en ligne : extraction de la fiche du bien…");
+  const liste = urls.map((u, i) => `${i + 1}. ${u}`).join("\n");
   let messages: Anthropic.MessageParam[] = [
     {
       role: "user",
-      content: `Ouvre cette annonce immobilière avec web_fetch et extrais la fiche EXACTE du bien : ${url}
+      content: `Voici ${urls.length > 1 ? "les liens de la MÊME annonce immobilière, diffusée sur plusieurs sites" : "le lien d'une annonce immobilière"} :
+${liste}
+
+Ouvre l'annonce avec web_fetch (commence par le lien 1 ; si un site bloque l'accès, passe au lien suivant) et extrais la fiche EXACTE du bien. ${urls.length > 1 ? "Si plusieurs versions sont accessibles, CROISE-les : elles se complètent (une version peut afficher le DPE ou l'adresse que l'autre masque), et un écart de prix entre elles est une information précieuse (annonce non mise à jour ou baisse en cours) — signale-le dans commentaires." : ""}
 
 RÈGLES :
 - N'invente RIEN : un champ absent de l'annonce reste vide ("", 0, false ou []).
 - codePostal est OBLIGATOIRE : s'il n'apparaît pas, déduis-le de la ville ou du quartier (web_search autorisé pour retrouver le code postal de la commune).
-- prixAffiche = le prix actuellement affiché par l'annonce, en euros.
-- Si l'annonce est inaccessible (page bloquée), réponds quand même avec ce que l'URL et une recherche web permettent d'établir (ville, type de bien…), champs inconnus vides.
+- prixAffiche = le prix actuellement affiché par l'annonce, en euros (le plus récent si les versions divergent).
+- Si TOUTES les versions sont inaccessibles (pages bloquées), réponds quand même avec ce que les URLs et une recherche web permettent d'établir (ville, type de bien…), champs inconnus vides.
 
 FORMAT : réponds EXCLUSIVEMENT par un objet JSON conforme à ce schéma :
 ${JSON.stringify(EXTRACT_SCHEMA)}`,
@@ -463,7 +478,7 @@ ${JSON.stringify(EXTRACT_SCHEMA)}`,
       system:
         "Tu extrais la fiche d'un bien immobilier depuis son annonce en ligne. Tu réponds exclusivement par un objet JSON valide conforme au schéma fourni, sans texte autour.",
       tools: [
-        { type: "web_fetch_20260209" as const, name: "web_fetch" as const, max_uses: 3 },
+        { type: "web_fetch_20260209" as const, name: "web_fetch" as const, max_uses: 5 },
         { type: "web_search_20260209" as const, name: "web_search" as const, max_uses: 3 },
       ],
       output_config: { effort: "medium" },
@@ -590,7 +605,7 @@ ${JSON.stringify(schemaFor(mission))}`,
 
   // L'audit d'une annonce en ligne réactive les outils web (uniquement
   // pour ce mode) : ouverture de l'annonce + recherche de son historique
-  const useWebTools = mission === "audit" && Boolean(input.urlAnnonce);
+  const useWebTools = mission === "audit" && auditUrls(input).length > 0;
   onProgress(
     useWebTools
       ? "Ouverture et analyse de l'annonce en ligne (historique, texte, photos)…"

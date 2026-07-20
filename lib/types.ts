@@ -79,7 +79,8 @@ export interface PropertyInput {
   nbVisites?: number | null;
   nbOffres?: number | null;
   baissesPrix?: string; // baisses de prix déjà réalisées
-  urlAnnonce?: string; // lien de l'annonce en ligne à auditer
+  urlAnnonce?: string; // lien principal de l'annonce en ligne à auditer
+  urlsAnnonce?: string[]; // liens supplémentaires de la MÊME annonce (multidiffusion)
 
   // Estimation locative
   meuble?: string; // "Vide" | "Meublé"

@@ -59,6 +59,7 @@ const initialInput: PropertyInput = {
   nbOffres: null,
   baissesPrix: "",
   urlAnnonce: "",
+  urlsAnnonce: [],
   meuble: "Vide",
   loyerSouhaite: null,
   loyerActuel: null,
@@ -812,21 +813,68 @@ export default function Home() {
                           : "Si le vendeur a un prix en tête, l'IA le positionnera face au marché et vous fournira l'argumentaire pour recadrer si besoin."}
                   </p>
 
-                  {input.mission === "audit" && (
-                    <div className="mb-4">
-                      <Field label="Lien de l'annonce en ligne à auditer *">
-                        <input className={inputCls} inputMode="url" value={input.urlAnnonce ?? ""} onChange={(e) => set("urlAnnonce", e.target.value)} placeholder="https://www.seloger.com/annonces/…" />
-                      </Field>
-                      <div className="mt-4 rounded-xl border border-copper/40 bg-copper-soft/40 p-4 text-sm text-slate-700">
-                        <span className="font-semibold text-navy">C&apos;est tout ce qu&apos;il faut.</span>{" "}
-                        L&apos;IA ouvre l&apos;annonce et fait le reste : fiche du bien (localisation,
-                        surface, pièces, DPE, prix affiché), historique de diffusion (ancienneté,
-                        baisses de prix), estimation de la valeur réelle sur les ventes DVF du
-                        secteur — la même base de calcul que l&apos;estimation classique — puis prix
-                        de relance et recommandations (prix, texte, photos, diffusion).
+                  {input.mission === "audit" && (() => {
+                    // Multidiffusion : la même annonce peut être fournie via
+                    // plusieurs liens (site de l'agence, SeLoger, Leboncoin…)
+                    // — si un portail bloque, l'IA ouvre le suivant
+                    const links = input.urlsAnnonce?.length ? input.urlsAnnonce : [input.urlAnnonce ?? ""];
+                    const setLinks = (nextLinks: string[]) =>
+                      setInput((prev) => ({
+                        ...prev,
+                        urlsAnnonce: nextLinks,
+                        urlAnnonce: nextLinks.find((u) => u.trim())?.trim() ?? "",
+                      }));
+                    return (
+                      <div className="mb-4">
+                        {links.map((u, i) => (
+                          <div key={i} className="mb-3 flex items-end gap-2">
+                            <Field
+                              label={i === 0 ? "Lien de l'annonce en ligne à auditer *" : `La même annonce sur un autre site (lien ${i + 1})`}
+                              className="flex-1"
+                            >
+                              <input
+                                className={inputCls}
+                                inputMode="url"
+                                value={u}
+                                onChange={(e) => setLinks(links.map((x, j) => (j === i ? e.target.value : x)))}
+                                placeholder={i === 0 ? "https://www.votre-agence.fr/annonce/… (site d'agence de préférence)" : "https://www.seloger.com/annonces/…"}
+                              />
+                            </Field>
+                            {i > 0 && (
+                              <button
+                                type="button"
+                                onClick={() => setLinks(links.filter((_, j) => j !== i))}
+                                className="mb-0.5 rounded-lg border border-slate-300 px-3 py-2.5 text-sm text-slate-500 transition hover:bg-slate-100"
+                                aria-label="Retirer ce lien"
+                              >
+                                ✕
+                              </button>
+                            )}
+                          </div>
+                        ))}
+                        {links.length < 4 && (
+                          <button
+                            type="button"
+                            onClick={() => setLinks([...links, ""])}
+                            className="rounded-lg border border-dashed border-copper px-4 py-2 text-sm font-semibold text-copper transition hover:bg-copper-soft/40"
+                          >
+                            + Ajouter un autre lien de la même annonce (autre site)
+                          </button>
+                        )}
+                        <div className="mt-4 rounded-xl border border-copper/40 bg-copper-soft/40 p-4 text-sm text-slate-700">
+                          <span className="font-semibold text-navy">C&apos;est tout ce qu&apos;il faut.</span>{" "}
+                          L&apos;IA ouvre l&apos;annonce et fait le reste : fiche du bien (localisation,
+                          surface, pièces, DPE, prix affiché), historique de diffusion (ancienneté,
+                          baisses de prix), estimation de la valeur réelle sur les ventes DVF du
+                          secteur — la même base de calcul que l&apos;estimation classique — puis prix
+                          de relance et recommandations (prix, texte, photos, diffusion).{" "}
+                          <b>Astuce :</b> mettez le lien du site de l&apos;agence en premier, et ajoutez
+                          les liens des portails (SeLoger, Leboncoin…) — si un site bloque la lecture,
+                          l&apos;IA passe au suivant et croise les versions (écarts de prix, dates).
+                        </div>
                       </div>
-                    </div>
-                  )}
+                    );
+                  })()}
 
                   {input.mission === "locatif" && (
                     <div className="mb-4 grid gap-4 sm:grid-cols-2">
@@ -900,7 +948,9 @@ export default function Home() {
                     <span className="font-semibold text-navy">Récapitulatif :</span>{" "}
                     {[input.clientCivilite, input.clientPrenom, input.clientNom].filter(Boolean).join(" ") || "client n.c."} —{" "}
                     {auditMode
-                      ? (input.urlAnnonce?.trim() ? `annonce à auditer : ${input.urlAnnonce.trim()}` : "lien d'annonce à renseigner")
+                      ? (input.urlAnnonce?.trim()
+                          ? `annonce à auditer : ${input.urlAnnonce.trim()}${(input.urlsAnnonce ?? []).filter((u) => u.trim()).length > 1 ? ` (+ ${(input.urlsAnnonce ?? []).filter((u) => u.trim()).length - 1} autre(s) diffusion(s))` : ""}`
+                          : "lien d'annonce à renseigner")
                       : `${input.typeBien} ${input.surfaceHabitable ?? "?"} m², ${input.adresse || "adresse n.c."}, ${input.codePostal} ${input.ville} — ${input.photos.length} photo${input.photos.length > 1 ? "s" : ""}, DPE ${input.dpe || "n.c."}`}
                   </div>
                 </>

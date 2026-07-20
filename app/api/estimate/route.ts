@@ -1,4 +1,4 @@
-import { computeFinalReport, extractListingFacts, mergeListingFacts } from "@/lib/ai";
+import { auditUrls, computeFinalReport, extractListingFacts, mergeListingFacts } from "@/lib/ai";
 import { fetchDvfContext } from "@/lib/dvf";
 import { computeFallbackBienLoue, computeFallbackEstimate, computeFallbackLocatif } from "@/lib/fallback";
 import { fetchLoyerIndicateur } from "@/lib/loyers";
@@ -28,7 +28,7 @@ export async function POST(request: Request) {
   // En mission audit avec un lien d'annonce, la fiche du bien (localisation
   // comprise) est extraite de l'annonce par l'IA : la saisie se limite au
   // client + lien. Sinon, code postal et type de bien restent obligatoires.
-  const auditParLien = (body.mission ?? "vente") === "audit" && Boolean(body.urlAnnonce?.trim());
+  const auditParLien = (body.mission ?? "vente") === "audit" && auditUrls(body).length > 0;
   if (!auditParLien && (!body.codePostal || !body.typeBien)) {
     return Response.json(
       { error: "Le code postal et le type de bien sont obligatoires" },
@@ -54,7 +54,7 @@ export async function POST(request: Request) {
         // comme une estimation classique (même base de calcul DVF)
         if (auditParLien && process.env.ANTHROPIC_API_KEY) {
           try {
-            const facts = await extractListingFacts(body.urlAnnonce!, (label: string) =>
+            const facts = await extractListingFacts(auditUrls(body), (label: string) =>
               send({ type: "status", label }),
             );
             body = mergeListingFacts(body, facts);
