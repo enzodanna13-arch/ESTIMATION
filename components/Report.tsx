@@ -104,13 +104,17 @@ export default function Report({
     locatif ? v.toLocaleString("fr-FR", { maximumFractionDigits: 1 }) : int.format(v);
 
   const prixPresentation = report.prix_presentation > 0 ? report.prix_presentation : report.prix_estime;
-  // Fourchette de valeur du dossier = du prix « Vente rapide » au « Prix
-  // optimal » : la synthèse est ainsi parfaitement cohérente avec les deux
-  // scénarios présentés au client
+  // Fourchette de valeur du dossier : du prix « Vente rapide » au haut de
+  // fourchette verrouillé par le serveur — le « Prix optimal » se place au
+  // MILIEU de la fourchette (vente/audit) ou à son sommet (locatif/bien
+  // loué, où le plafond réglementaire ou de rendement fait foi)
   const scRapide = report.scenarios_prix.find((sc) => sc.strategie === "Vente rapide")?.prix ?? 0;
   const scOptimal = report.scenarios_prix.find((sc) => sc.strategie === "Prix optimal")?.prix ?? 0;
   const fourchetteBasse = scRapide > 0 ? scRapide : report.fourchette_basse;
-  const fourchetteHaute = scOptimal > fourchetteBasse ? scOptimal : report.fourchette_haute;
+  const fourchetteHaute =
+    Math.max(scOptimal, report.fourchette_haute) > fourchetteBasse
+      ? Math.max(scOptimal, report.fourchette_haute)
+      : report.fourchette_haute;
   // Surface habitable TOTALE affichée dans le dossier = logement principal
   // + dépendances habitables (studio, T2/T3/T4, maison d'amis)
   const surfaceDeps = surfaceDependancesHabitables(input);

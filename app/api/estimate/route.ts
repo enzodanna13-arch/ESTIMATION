@@ -239,11 +239,30 @@ export async function POST(request: Request) {
           }
         }
         // Cohérence de la synthèse : la fourchette de valeur va du prix
-        // « Vente rapide » au « Prix optimal » (les deux scénarios présentés)
+        // « Vente rapide » au haut de fourchette. En vente et en audit, le
+        // « Prix optimal » (= prix de présentation / de relance) se place
+        // TOUJOURS AU MILIEU de la fourchette, arrondi vers le bas à un
+        // seuil attractif (ex. 349 000-365 000 → prix optimal 355 000) —
+        // en locatif et bien loué, les verrous dédiés ci-dessus font foi
         const scRapide = report.scenarios_prix.find((s) => s.strategie === "Vente rapide")?.prix ?? 0;
         const scOptimal = report.scenarios_prix.find((s) => s.strategie === "Prix optimal")?.prix ?? 0;
         if (scRapide > 0 && scOptimal > scRapide) {
-          report = { ...report, fourchette_basse: scRapide, fourchette_haute: scOptimal };
+          if (mission === "vente" || mission === "audit") {
+            const haut = Math.max(scOptimal, report.fourchette_haute);
+            const stepMid = haut >= 200000 ? 5000 : 1000;
+            const optimalMid = Math.max(scRapide, Math.floor((scRapide + haut) / 2 / stepMid) * stepMid);
+            report = {
+              ...report,
+              fourchette_basse: scRapide,
+              fourchette_haute: haut,
+              prix_presentation: optimalMid,
+              scenarios_prix: report.scenarios_prix.map((s) =>
+                s.strategie === "Prix optimal" ? { ...s, prix: optimalMid } : s,
+              ),
+            };
+          } else {
+            report = { ...report, fourchette_basse: scRapide, fourchette_haute: scOptimal };
+          }
         }
         // Historique PARTAGÉ de l'équipe (Vercel Blob) : sauvegarde
         // automatique du dossier — un échec n'empêche jamais le résultat
