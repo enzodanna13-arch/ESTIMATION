@@ -276,7 +276,12 @@ ${auditLiens(input).length > 0 ? auditLiens(input).map((l, i) => `- ANNONCE EN L
     ? `
 ## Projet locatif
 - Location : ${input.meuble || "Vide"}
-- Loyer envisagé par le propriétaire : ${input.loyerSouhaite ? `${input.loyerSouhaite} €/mois` : "non communiqué"}`
+- Loyer envisagé par le propriétaire : ${input.loyerSouhaite ? `${input.loyerSouhaite} €/mois` : "non communiqué"}${
+        input.dissocierAnnexes
+          ? `
+- ANNEXES DISSOCIÉES (choix du propriétaire) : le loyer estimé porte sur le LOGEMENT SEUL — garage, parking, cave et annexes sont EXCLUS du loyer et seront loués séparément. INTERDICTION d'ajouter une plus-value pour stationnement, garage, cave ou annexe dans les ajustements. Mentionne dans les points de vigilance qu'une annexe louée séparément relève d'un contrat de location libre (hors bail d'habitation), et dans la stratégie qu'elle peut générer un revenu complémentaire.`
+          : ""
+      }`
     : ""
 }${
   input.mission === "bienloue"

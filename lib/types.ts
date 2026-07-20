@@ -86,6 +86,7 @@ export interface PropertyInput {
   // Estimation locative
   meuble?: string; // "Vide" | "Meublé"
   loyerSouhaite?: number | null; // loyer envisagé par le propriétaire (€/mois)
+  dissocierAnnexes?: boolean; // garages/annexes EXCLUS du loyer (loués séparément)
 
   // Bien vendu loué : le prix est fixé par capitalisation du loyer NET
   // (loyer − charges non récupérables − taxe foncière) entre 6 et 8 % net

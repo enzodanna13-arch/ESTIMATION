@@ -167,7 +167,9 @@ export default function Report({
       input.etage ? ["Étage / niveaux", input.etage + (input.ascenseur ? " (avec asc.)" : "")] : null,
       input.anneeConstruction ? ["Année", input.anneeConstruction] : null,
       input.nbChambres ? ["Chambres", String(input.nbChambres)] : null,
-      input.stationnement ? ["Stationnement", input.stationnement] : null,
+      input.stationnement
+        ? ["Stationnement", `${input.stationnement}${locatif && input.dissocierAnnexes ? " (dissocié du loyer)" : ""}`]
+        : null,
       input.dpe ? ["DPE / GES", `${input.dpe}${input.ges ? ` / ${input.ges}` : ""}`] : null,
       input.chauffage ? ["Chauffage", input.chauffage] : null,
       input.chargesCopro ? ["Charges copro", `${int.format(input.chargesCopro * 12)} € / an`] : null,
@@ -379,7 +381,7 @@ export default function Report({
             <b>{locatif ? "Fourchette de loyer" : "Fourchette de valeur"} : {euro.format(fourchetteBasse)} à {fmtP(fourchetteHaute)}.
             {" "}{locatif ? "Loyer conseillé" : audit ? "Prix de relance conseillé" : "Prix de présentation conseillé"} : {fmtP(prixPresentation)}.</b>{" "}
             {locatif
-              ? "Ce positionnement loue dans de bons délais tout en restant au niveau du marché locatif constaté sur la commune."
+              ? `Ce positionnement loue dans de bons délais tout en restant au niveau du marché locatif constaté sur la commune.${input.dissocierAnnexes ? " Garages et annexes sont exclus de ce loyer : ils peuvent être loués séparément (contrat libre) et générer un revenu complémentaire." : ""}`
               : bienloue && loyerNetAnn > 0
                 ? ` Prix établis par capitalisation du loyer net annuel de ${euro.format(loyerNetAnn)} à une rentabilité nette de 6 à 8 % : c'est ainsi que raisonne l'acheteur investisseur d'un bien loué.`
                 : "Ce positionnement conserve une marge de négociation d'environ " + margeNego + " % tout en restant cohérent avec les références de vente du secteur."}

@@ -62,6 +62,7 @@ const initialInput: PropertyInput = {
   urlsAnnonce: [],
   meuble: "Vide",
   loyerSouhaite: null,
+  dissocierAnnexes: false,
   loyerActuel: null,
   chargesNonRecuperables: null,
   prixAcquisition: null,
@@ -898,12 +899,30 @@ export default function Home() {
                   })()}
 
                   {input.mission === "locatif" && (
-                    <div className="mb-4 grid gap-4 sm:grid-cols-2">
-                      <Select label="Type de location" value={input.meuble ?? "Vide"} onChange={(v) => set("meuble", v)} options={["Vide", "Meublé"]} />
-                      <Field label="Loyer envisagé par le propriétaire (€/mois)">
-                        <input type="number" className={inputCls} value={input.loyerSouhaite ?? ""} onChange={(e) => set("loyerSouhaite", num(e.target.value))} placeholder="1200" />
-                      </Field>
-                    </div>
+                    <>
+                      <div className="mb-4 grid gap-4 sm:grid-cols-2">
+                        <Select label="Type de location" value={input.meuble ?? "Vide"} onChange={(v) => set("meuble", v)} options={["Vide", "Meublé"]} />
+                        <Field label="Loyer envisagé par le propriétaire (€/mois)">
+                          <input type="number" className={inputCls} value={input.loyerSouhaite ?? ""} onChange={(e) => set("loyerSouhaite", num(e.target.value))} placeholder="1200" />
+                        </Field>
+                      </div>
+                      <label className="mb-4 flex cursor-pointer items-start gap-3 rounded-xl border border-slate-200 bg-slate-50/60 p-4">
+                        <input
+                          type="checkbox"
+                          checked={input.dissocierAnnexes ?? false}
+                          onChange={(e) => set("dissocierAnnexes", e.target.checked)}
+                          className="mt-0.5 h-4 w-4 accent-copper"
+                        />
+                        <span className="text-sm text-slate-700">
+                          <span className="font-semibold text-navy">Dissocier les garages et annexes du loyer</span>
+                          <span className="mt-0.5 block text-xs text-slate-500">
+                            Le loyer estimé portera sur le logement seul : garage, parking, cave et
+                            annexes sont exclus du calcul et pourront être loués séparément
+                            (contrat libre, hors bail d&apos;habitation). Le dossier le mentionne.
+                          </span>
+                        </span>
+                      </label>
+                    </>
                   )}
 
                   {input.mission === "bienloue" && (
