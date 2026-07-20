@@ -631,7 +631,7 @@ export default function Report({
               <div className="n">01</div>
               <h4>{locatif ? "Loyers de référence" : bienloue ? "Loyer net annuel" : "Sélection DVF"}</h4>
               <p>{locatif
-                ? "On part de l'indicateur officiel des loyers de votre commune (« carte des loyers » du Ministère du Logement), pour la typologie de votre bien."
+                ? "On part des niveaux officiels de loyers de votre secteur (observatoire local des loyers), pour la typologie exacte de votre bien : valeur basse et valeur médiane."
                 : bienloue
                   ? "On part du loyer réellement perçu sur un an, dont on retire les charges non récupérables et la taxe foncière : c'est ce que votre bien rapporte vraiment à son propriétaire."
                   : "On part des ventes réellement conclues autour de chez vous (données publiques DVF) : même type de bien, surface proche, au plus près de votre adresse."}</p>
@@ -640,7 +640,7 @@ export default function Report({
               <div className="n">02</div>
               <h4>{bienloue ? "Capitalisation 6 – 8 % net" : "Plus-values & décotes"}</h4>
               <p>{locatif
-                ? "Chaque atout de votre bien ajoute des euros au loyer de base, chaque défaut en retire — état, énergie, extérieur, stationnement…"
+                ? "Votre loyer se positionne entre la valeur basse et la valeur médiane selon l'état et les atouts de votre bien — le médian est le plafond que nous conseillons, jamais au-delà."
                 : bienloue
                   ? "L'acheteur d'un bien loué est un investisseur : il paie le prix qui lui assure une rentabilité nette de 6 à 8 %. Votre fourchette va du prix à 8 % net (vente rapide) au prix à 6 % net (prix optimal)."
                   : "Chaque atout de votre bien ajoute de la valeur, chaque défaut ou effet du marché en retire, à partir de la médiane de ces ventes."}</p>

@@ -2,6 +2,7 @@ import { auditLiens, auditUrls, computeFinalReport, extractListingFacts, mergeLi
 import { fetchDvfContext } from "@/lib/dvf";
 import { computeFallbackBienLoue, computeFallbackEstimate, computeFallbackLocatif } from "@/lib/fallback";
 import { fetchLoyerIndicateur } from "@/lib/loyers";
+import { oll13Indicateur } from "@/lib/oll13";
 import { loyerNetAnnuel, prixParRendement, RENDEMENT_NET_BAS, RENDEMENT_NET_HAUT, RENDEMENT_NET_MEDIAN } from "@/lib/rendement";
 import { buildDvfReferences, medianeReferences } from "@/lib/references";
 import { saveEstimationServer } from "@/lib/serverHistory";
@@ -75,10 +76,15 @@ export async function POST(request: Request) {
           });
         }
         send({ type: "status", label: "Récupération des ventes réelles autour du bien (DVF)…" });
+        // Loyers de référence : dans les Bouches-du-Rhône, le tableau
+        // OFFICIEL de l'observatoire local (OLL 13, zone 5 — Martigues…)
+        // fait foi ; ailleurs, la « carte des loyers » nationale
         const [{ sales: dvfSales, subject }, loyer] = await Promise.all([
           fetchDvfContext(body.codePostal, body.typeBien, body.adresse, body.ville),
           mission === "locatif"
-            ? fetchLoyerIndicateur(body.codePostal, body.typeBien, body.nbPieces)
+            ? (oll13Indicateur(body.codePostal, body.typeBien, body.nbPieces)
+                ? Promise.resolve(oll13Indicateur(body.codePostal, body.typeBien, body.nbPieces))
+                : fetchLoyerIndicateur(body.codePostal, body.typeBien, body.nbPieces))
             : Promise.resolve(null),
         ]);
         const dvfSource = dvfSales.length > 0 ? "api" : "indisponible";
@@ -86,7 +92,7 @@ export async function POST(request: Request) {
           send({
             type: "status",
             label: loyer
-              ? `Loyers de référence : ${loyer.loyerM2} €/m² sur la commune (source officielle)…`
+              ? `Loyers de référence (${loyer.millesime}) : ${loyer.loyerM2Bas} → ${loyer.loyerM2} €/m² (bas → médian, ${loyer.typologie})…`
               : "Indicateur officiel des loyers indisponible — estimation prudente…",
           });
         }
@@ -160,6 +166,49 @@ export async function POST(request: Request) {
           prix_presentation: floorStep(report.prix_presentation),
           scenarios_prix: report.scenarios_prix.map((s) => ({ ...s, prix: floorStep(s.prix) })),
         };
+        // Estimation locative : verrou déterministe — la fourchette de
+        // loyer va TOUJOURS de la valeur BASSE à la valeur MÉDIANE du
+        // tableau officiel des loyers (le médian est le PLAFOND du loyer
+        // conseillé ; la valeur haute du tableau n'est qu'informative)
+        if (mission === "locatif" && loyer) {
+          const surfLoc = surfaceHabitableTotale(body);
+          if (surfLoc > 0) {
+            const floor10 = (v: number) => Math.floor(v / 10) * 10;
+            const basM = floor10(loyer.loyerM2Bas * surfLoc);
+            const medM = floor10(loyer.loyerM2 * surfLoc);
+            if (basM > 0 && medM > basM) {
+              const scen = report.scenarios_prix;
+              const keepLoc = (strategie: string, prix: number, delai: string, commentaire: string) => {
+                const s = scen.find((x) => x.strategie === strategie);
+                return { strategie, prix, delai: s?.delai || delai, commentaire: s?.commentaire || commentaire };
+              };
+              const estime = Math.min(medM, Math.max(basM, floor10(report.prix_estime) || floor10((basM + medM) / 2)));
+              // Cohérence du tableau d'ajustements : base = loyer médian,
+              // et la somme des lignes aboutit exactement au loyer retenu
+              const somme = report.ajustements.reduce((s, a) => s + a.montant, 0);
+              const ajustementsLoc =
+                medM + somme === estime
+                  ? report.ajustements
+                  : estime === medM
+                    ? []
+                    : [{ libelle: "Positionnement dans la fourchette officielle (atouts et défauts de votre bien)", montant: estime - medM }];
+              report = {
+                ...report,
+                ajustements: ajustementsLoc,
+                prix_estime: estime,
+                prix_presentation: medM,
+                prix_m2: Math.round((estime / surfLoc) * 100) / 100,
+                base_mediane: medM,
+                scenarios_prix: [
+                  keepLoc("Vente rapide", basM, "1 à 3 semaines", "Le bas de la fourchette officielle du secteur : votre bien se loue immédiatement et vous choisissez parmi plusieurs dossiers."),
+                  keepLoc("Prix optimal", medM, "2 à 6 semaines", "Le loyer médian officiel du secteur : le plafond que nous conseillons pour louer dans de bons délais sans vacance."),
+                ],
+                fourchette_basse: basM,
+                fourchette_haute: medM,
+              };
+            }
+          }
+        }
         // Bien vendu loué : verrou déterministe — le prix est TOUJOURS la
         // capitalisation du loyer NET annuel entre 6 et 8 % de rentabilité
         // nette (Vente rapide = ÷8 %, Prix optimal = ÷6 %), quel que soit

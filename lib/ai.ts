@@ -299,10 +299,10 @@ const LOCATIF_SYSTEM = `Tu es un expert en gestion locative d'une agence haut de
 
 RÈGLES :
 - Analyse CHAQUE photo fournie (numérotées dans l'ordre : 1 = première) : pièce/vue identifiée, bons points, défauts — ces fiches figurent dans le dossier remis au client propriétaire. Note l'état par catégorie (etat_notes, 1 à 5) et chiffre impact_etat en euros/mois signés. Sans photo : analyse_par_photo et etat_notes vides, impact_etat 0.
-- MÉTHODE (chemin imposé, dans cet ordre) :
-  1. BASE → l'indicateur OFFICIEL de loyer de la commune est fourni (« carte des loyers », €/m²/mois) : base_mediane = indicateur €/m² × surface habitable totale, arrondie à la dizaine d'euros. Si l'indicateur est indisponible, estime prudemment le niveau local et baisse l'indice de confiance.
-  2. AJUSTEMENTS → PLUS-VALUES (atouts réels : extérieur, DPE performant, stationnement, meublé, état, annexes…) et DÉCOTES (défauts : travaux, DPE F/G, nuisances…) en euros/MOIS, dont la somme depuis base_mediane aboutit exactement à prix_estime. GARDE-FOUS : plus-values ≤ ~15 % de la base, décotes ≤ ~15 % (sauf contrainte légale majeure), chaque facteur compté UNE fois.
-  3. FOURCHETTE → fourchette_basse = prix du scénario « Vente rapide » (mise en location immédiate) ; fourchette_haute = prix du scénario « Prix optimal » (loyer conseillé, = prix_presentation) ; écart total 4 à 8 %. « Prix plafond » = garde-fou interne : le loyer au-delà duquel le bien resterait vacant.
+- MÉTHODE (chemin imposé, dans cet ordre — RÈGLE DE L'AGENCE : la fourchette de loyer va TOUJOURS de la valeur BASSE à la valeur MÉDIANE de l'observatoire officiel, le MÉDIAN est le PLAFOND ABSOLU du loyer conseillé, la valeur haute du tableau n'est qu'informative) :
+  1. BASE → l'indicateur OFFICIEL de loyer du secteur est fourni (observatoire local des loyers, €/m²/mois, valeurs bas/médian/haut) : base_mediane = MÉDIAN €/m² × surface habitable totale, arrondie à la dizaine d'euros. Si l'indicateur est indisponible, estime prudemment le niveau local et baisse l'indice de confiance.
+  2. POSITIONNEMENT → place le loyer retenu (prix_estime) ENTRE le bas et le médian de la fourchette officielle selon l'état et les atouts/défauts du bien : un bien impeccable et bien placé se loue AU médian (jamais au-dessus), un bien avec défauts descend vers le bas. Les ajustements (en euros/MOIS, négatifs depuis la base médiane) matérialisent ce positionnement — chaque facteur compté UNE fois, somme exacte de base_mediane à prix_estime.
+  3. FOURCHETTE → fourchette_basse = prix du scénario « Vente rapide » = valeur BASSE officielle × surface ; fourchette_haute = prix du scénario « Prix optimal » (= prix_presentation) = valeur MÉDIANE officielle × surface. AUCUN loyer au-dessus du médian, jamais. « Prix plafond » = garde-fou interne : le médian lui-même.
   4. RENDEMENT → valeur_venale_indicative = valeur de VENTE indicative du bien, fondée sur les ventes réelles DVF fournies (actualisées au marché actuel) ; rendement_brut = (prix_estime × 12) ÷ valeur_venale_indicative × 100, arrondi au dixième.
 - CADRE LÉGAL : si le DPE est F ou G, rappelle les contraintes (gel des loyers, interdiction progressive de louer les passoires) dans les points de vigilance et tiens-en compte dans le loyer. Si la commune est en zone d'encadrement des loyers connue, signale-le.
 - references_dvf : tableau VIDE [] (pas de tableau de ventes dans un dossier locatif). analyse_dvf = 2 à 3 phrases simples sur le marché locatif local (niveau officiel des loyers, demande).
@@ -591,11 +591,12 @@ ${dvfBlock(dvfSales)}
 ${
   mission === "locatif"
     ? `
-# INDICATEUR OFFICIEL DE LOYER (« carte des loyers », Ministère du Logement)
+# INDICATEUR OFFICIEL DE LOYER DU SECTEUR (observatoire des loyers)
 ${
         loyer
-          ? `- Commune : ${loyer.commune} | Typologie : ${loyer.typologie} | Millésime ${loyer.millesime}
-- Loyer d'annonce prédit : ${loyer.loyerM2} €/m²/mois (intervalle ${loyer.loyerM2Bas} – ${loyer.loyerM2Haut} €/m²) — ${loyer.nbAnnonces} annonces observées sur la commune`
+          ? `- Secteur : ${loyer.commune} | Typologie : ${loyer.typologie} | Source : ${loyer.millesime} (${loyer.nbAnnonces} loyers observés)
+- Loyer BAS : ${loyer.loyerM2Bas} €/m²/mois | Loyer MÉDIAN : ${loyer.loyerM2} €/m²/mois | (haut : ${loyer.loyerM2Haut} €/m², INFORMATIF UNIQUEMENT)
+- RÈGLE STRICTE : la fourchette de loyer = du BAS au MÉDIAN × surface. Le loyer conseillé ne dépasse JAMAIS le médian.`
           : "(indicateur indisponible pour cette commune — estime prudemment le niveau local et baisse l'indice de confiance)"
       }
 `
