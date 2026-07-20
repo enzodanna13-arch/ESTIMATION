@@ -78,6 +78,7 @@ export interface PropertyInput {
   nbVisites?: number | null;
   nbOffres?: number | null;
   baissesPrix?: string; // baisses de prix déjà réalisées
+  urlAnnonce?: string; // lien de l'annonce en ligne à auditer
 
   // Estimation locative
   meuble?: string; // "Vide" | "Meublé"
@@ -198,6 +199,18 @@ export interface EstimationReport {
   // Estimation locative uniquement
   valeur_venale_indicative?: number; // valeur de vente indicative (rendement)
   rendement_brut?: number; // % annuel brut
+  // Audit de commercialisation uniquement
+  analyse_annonce?: string; // synthèse de l'audit de l'annonce en ligne
+  anciennete_annonce?: string; // ancienneté détectée de l'annonce
+  baisses_annonce?: string; // baisses de prix détectées
+  recommandations_annonce?: RecommandationAnnonce[];
+}
+
+export interface RecommandationAnnonce {
+  categorie: string; // Prix | Titre & texte | Photos | Diffusion | Mise en valeur
+  constat: string; // ce qui pèche aujourd'hui
+  recommandation: string; // l'action concrète à mener
+  priorite: string; // haute | moyenne | basse
 }
 
 export interface MarketStudy {

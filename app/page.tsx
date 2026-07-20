@@ -57,6 +57,7 @@ const initialInput: PropertyInput = {
   nbVisites: null,
   nbOffres: null,
   baissesPrix: "",
+  urlAnnonce: "",
   meuble: "Vide",
   loyerSouhaite: null,
   prixSouhaiteVendeur: null,
@@ -800,6 +801,9 @@ export default function Home() {
                       </Field>
                       <Field label="Baisses de prix déjà réalisées" className="sm:col-span-2">
                         <input className={inputCls} value={input.baissesPrix ?? ""} onChange={(e) => set("baissesPrix", e.target.value)} placeholder="Ex. 365 000 € → 349 000 € en avril" />
+                      </Field>
+                      <Field label="Lien de l'annonce en ligne (recommandé — l'IA l'analyse : ancienneté, baisses, texte, photos)" className="sm:col-span-2">
+                        <input className={inputCls} inputMode="url" value={input.urlAnnonce ?? ""} onChange={(e) => set("urlAnnonce", e.target.value)} placeholder="https://www.seloger.com/annonces/…" />
                       </Field>
                     </div>
                   )}

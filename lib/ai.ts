@@ -133,6 +133,35 @@ function schemaFor(mission: string): Record<string, unknown> {
     };
     schema.required.push("valeur_venale_indicative", "rendement_brut");
   }
+  if (mission === "audit") {
+    schema.properties.analyse_annonce = {
+      type: "string",
+      description: "2 à 3 phrases simples : verdict global sur l'annonce en ligne (vide si aucune URL fournie)",
+    };
+    schema.properties.anciennete_annonce = {
+      type: "string",
+      description: "Ancienneté détectée de l'annonce, avec la source (vide si non vérifiable)",
+    };
+    schema.properties.baisses_annonce = {
+      type: "string",
+      description: "Baisses de prix détectées, chronologie courte (vide si non vérifiable)",
+    };
+    schema.properties.recommandations_annonce = {
+      type: "array",
+      description: "4 à 8 recommandations concrètes façon audit professionnel, priorité décroissante (vide si aucune URL fournie)",
+      items: {
+        type: "object",
+        properties: {
+          categorie: { type: "string", enum: ["Prix", "Titre & texte", "Photos", "Diffusion", "Mise en valeur"] },
+          constat: { type: "string", description: "Ce qui pèche aujourd'hui — factuel, 1 phrase courte" },
+          recommandation: { type: "string", description: "L'action précise à mener — 1 phrase courte" },
+          priorite: { type: "string", enum: ["haute", "moyenne", "basse"] },
+        },
+        required: ["categorie", "constat", "recommandation", "priorite"],
+      },
+    };
+    schema.required.push("analyse_annonce", "anciennete_annonce", "baisses_annonce", "recommandations_annonce");
+  }
   return schema;
 }
 
@@ -152,7 +181,12 @@ const AUDIT_RULE = `MISSION : AUDIT DE COMMERCIALISATION. Le bien est DÉJÀ EN 
 - scenarios_prix : « Prix optimal » = le PRIX DE RELANCE conseillé (repositionnement) — sous le prix affiché actuel si celui-ci est au-dessus du marché ; « Vente rapide » = l'option coup de fusil.
 - etapes_commercialisation = PLAN DE RELANCE concret : repositionnement du prix, re-shooting photo, réécriture de l'annonce, re-publication (retrouver la fraîcheur), élargissement de la diffusion, home staging…
 - argumentaire_vendeur = les points clés chiffrés pour faire accepter le repositionnement au client (ex. « à ce prix, votre bien est ignoré : N visites en M mois — au prix de relance, il revient dans la zone où les acheteurs cliquent »).
-- delai_vente_estime = délai estimé APRÈS repositionnement.`;
+- delai_vente_estime = délai estimé APRÈS repositionnement.
+- ANALYSE DE L'ANNONCE EN LIGNE (si une URL d'annonce est fournie) : OUVRE l'annonce avec web_fetch. Analyse le prix affiché, le titre et le texte (accroche, longueur, atouts mis en avant, clarté), la qualité, le nombre et l'ordre des photos, les mentions de baisse. Utilise web_search pour retrouver l'HISTORIQUE de l'annonce : ancienneté réelle, baisses de prix successives, re-publications (sites d'historique d'annonces, cache des portails). Renseigne :
+  · anciennete_annonce (ce que tu as détecté, avec la source) et baisses_annonce (chronologie des baisses détectées) — croise avec les informations saisies par le négociateur ;
+  · analyse_annonce : 2 à 3 phrases simples, le verdict global sur l'annonce ;
+  · recommandations_annonce : 4 à 8 recommandations CONCRÈTES, façon audit professionnel — chacune avec categorie (Prix, Titre & texte, Photos, Diffusion, Mise en valeur), constat (ce qui pèche aujourd'hui, factuel), recommandation (l'action précise à mener) et priorite (haute / moyenne / basse). Classe-les par priorité décroissante.
+  Si l'annonce est inaccessible (portail bloqué), appuie-toi sur les informations saisies, dis ce que tu n'as pas pu vérifier — n'invente JAMAIS un constat.`;
 
 const PROXIMITE_RULE = `PROXIMITÉ (impératif) : chaque vente DVF de la liste indique son adresse et sa distance au bien. APPARTEMENT → priorité absolue aux ventes à la MÊME ADRESSE (même copropriété : comparables parfaits), puis même rue, puis rayon proche. MAISON → priorité aux environs immédiats (même rue, rayon ~1 km), puis quartier. N'utilise les ventes éloignées que faute de mieux, et signale-le. La médiane des références doit refléter le micro-marché du bien, pas la commune entière.`;
 
@@ -221,7 +255,8 @@ ${
 ## Commercialisation en cours (le bien ne se vend pas)
 - Prix affiché actuel : ${input.prixAffiche ? `${input.prixAffiche} €` : "n.c."}
 - En vente depuis : ${input.moisEnVente ?? "?"} mois | Visites réalisées : ${input.nbVisites ?? "n.c."} | Offres reçues : ${input.nbOffres ?? "n.c."}
-- Baisses de prix déjà réalisées : ${input.baissesPrix || "aucune"}`
+- Baisses de prix déjà réalisées : ${input.baissesPrix || "aucune"}
+${input.urlAnnonce ? `- ANNONCE EN LIGNE À AUDITER : ${input.urlAnnonce}` : "- (aucun lien d'annonce fourni : audite à partir des informations saisies)"}`
     : ""
 }${
   input.mission === "locatif"
@@ -354,21 +389,47 @@ ${
 ${JSON.stringify(schemaFor(mission))}`,
   });
 
+  // L'audit d'une annonce en ligne réactive les outils web (uniquement
+  // pour ce mode) : ouverture de l'annonce + recherche de son historique
+  const useWebTools = mission === "audit" && Boolean(input.urlAnnonce);
   onProgress(
-    input.photos.length > 0
-      ? `Analyse des ${Math.min(input.photos.length, 20)} photos et rédaction de l'avis de valeur…`
-      : "Rédaction de l'avis de valeur…",
+    useWebTools
+      ? "Ouverture et analyse de l'annonce en ligne (historique, texte, photos)…"
+      : input.photos.length > 0
+        ? `Analyse des ${Math.min(input.photos.length, 20)} photos et rédaction de l'avis de valeur…`
+        : "Rédaction de l'avis de valeur…",
   );
 
-  const stream = client.messages.stream({
-    model,
-    max_tokens: 16000,
-    thinking: { type: "adaptive" },
-    system,
-    output_config: { effort },
-    messages: [{ role: "user", content }],
-  });
-  const message = await stream.finalMessage();
+  let messages: Anthropic.MessageParam[] = [{ role: "user", content }];
+  let message: Anthropic.Message;
+  const MAX_CONTINUATIONS = 3;
+  let continuations = 0;
+  for (;;) {
+    const stream = client.messages.stream({
+      model,
+      max_tokens: 16000,
+      thinking: { type: "adaptive" },
+      system,
+      ...(useWebTools
+        ? {
+            tools: [
+              { type: "web_fetch_20260209" as const, name: "web_fetch" as const, max_uses: 3 },
+              { type: "web_search_20260209" as const, name: "web_search" as const, max_uses: 4 },
+            ],
+          }
+        : {}),
+      output_config: { effort },
+      messages,
+    });
+    message = await stream.finalMessage();
+    if (message.stop_reason === "pause_turn" && continuations < MAX_CONTINUATIONS) {
+      continuations += 1;
+      onProgress("Audit de l'annonce : croisement des sources et rédaction…");
+      messages = [...messages, { role: "assistant", content: message.content }];
+      continue;
+    }
+    break;
+  }
   if (message.stop_reason === "refusal") throw new Error("Requête refusée par les garde-fous du modèle");
 
   const text = message.content
@@ -429,6 +490,10 @@ ${JSON.stringify(schemaFor(mission))}`,
     argumentaire_vendeur: str(r.argumentaire_vendeur),
     valeur_venale_indicative: num(r.valeur_venale_indicative),
     rendement_brut: num(r.rendement_brut),
+    analyse_annonce: str(r.analyse_annonce),
+    anciennete_annonce: str(r.anciennete_annonce),
+    baisses_annonce: str(r.baisses_annonce),
+    recommandations_annonce: arr(r.recommandations_annonce),
   };
   if (report.prix_estime <= 0 || report.fourchette_basse <= 0) {
     throw new Error("Réponse IA incomplète (prix manquants)");

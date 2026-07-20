@@ -21,11 +21,11 @@ const AGENCE = {
   site: process.env.NEXT_PUBLIC_AGENCE_SITE ?? "icazaimmobilier.com",
 };
 
-function PageHead({ page }: { page: number }) {
+function PageHead({ page, label = "Avis de valeur" }: { page: number; label?: string }) {
   return (
     <div className="head">
       <span className="c21">{AGENCE.nom}</span>
-      <span className="pg">Avis de valeur · {String(page).padStart(2, "0")}</span>
+      <span className="pg">{label} · {String(page).padStart(2, "0")}</span>
     </div>
   );
 }
@@ -90,6 +90,7 @@ export default function Report({
   const mission = input.mission ?? "vente";
   const locatif = mission === "locatif";
   const audit = mission === "audit";
+  const docLabel = audit ? "Audit de commercialisation" : locatif ? "Estimation locative" : "Avis de valeur";
   // En mission locative, tous les montants principaux sont des loyers €/mois
   const fmtP = (v: number) => `${euro.format(v)}${locatif ? " /mois" : ""}`;
   const fmtM2 = (v: number) =>
@@ -180,10 +181,13 @@ export default function Report({
   const hasPhotoPage = photoPages.length > 0;
   const hasVisuel = report.etat_notes.length > 0;
   const hasAjust = report.ajustements.length > 0 && report.base_mediane > 0;
+  const recosAnnonce = report.recommandations_annonce ?? [];
+  const hasAuditAnnonce = audit && (recosAnnonce.length > 0 || Boolean(report.analyse_annonce));
   let sec = 0;
   const S = () => ROMANS[sec++];
   const secSynthese = S();
   const secBien = S();
+  const secAnnonce = hasAuditAnnonce ? S() : "";
   const secVisuel = hasVisuel ? S() : "";
   const secPhotos = hasPhotoPage ? S() : "";
   const secMethode = S();
@@ -194,6 +198,7 @@ export default function Report({
   const P = () => ++pageNo;
   const pgSynthese = P();
   const pgBien = P();
+  const pgAnnonce = hasAuditAnnonce ? P() : 0;
   const pgVisuel = hasVisuel ? P() : 0;
   const pgPhotos = hasPhotoPage ? P() : 0;
   for (let i = 1; i < photoPages.length; i++) P(); // pages photo supplémentaires
@@ -296,7 +301,7 @@ export default function Report({
 
         {/* ============ SYNTHÈSE ============ */}
         <section className="page">
-          <PageHead page={pgSynthese} />
+          <PageHead page={pgSynthese} label={docLabel} />
           <SectionTitle idx={secSynthese} title="Synthèse de l'estimation" />
           <p className="section-lead">{report.positionnement_marche}</p>
 
@@ -371,7 +376,7 @@ export default function Report({
 
         {/* ============ LE BIEN ============ */}
         <section className="page">
-          <PageHead page={pgBien} />
+          <PageHead page={pgBien} label={docLabel} />
           <SectionTitle idx={secBien} title="Le bien" />
           <div style={{ height: 22 }} />
           <div className="split">
@@ -426,10 +431,72 @@ export default function Report({
           <Foot left={`${AGENCE.nom} ${AGENCE.enseigne}`} right={`Réf. ${refDossier}`} />
         </section>
 
+        {/* ============ AUDIT DE L'ANNONCE EN LIGNE ============ */}
+        {hasAuditAnnonce && (
+          <section className="page">
+            <PageHead page={pgAnnonce} label={docLabel} />
+            <SectionTitle idx={secAnnonce} title="Audit de votre annonce" />
+            <p className="section-lead" style={{ marginBottom: 12 }}>
+              {report.analyse_annonce ||
+                "Votre annonce en ligne a été analysée : prix, texte, photos et historique de diffusion."}
+            </p>
+
+            {(report.anciennete_annonce || report.baisses_annonce) && (
+              <div className="kpi-row" style={{ gridTemplateColumns: "1fr 1fr", marginBottom: 14 }}>
+                <div className="kpi">
+                  <div className="k">Ancienneté détectée de l&apos;annonce</div>
+                  <div className="v" style={{ fontSize: "11pt", lineHeight: 1.35 }}>{report.anciennete_annonce || "Non vérifiable"}</div>
+                </div>
+                <div className="kpi">
+                  <div className="k">Baisses de prix détectées</div>
+                  <div className="v" style={{ fontSize: "11pt", lineHeight: 1.35 }}>{report.baisses_annonce || "Non vérifiable"}</div>
+                </div>
+              </div>
+            )}
+
+            {recosAnnonce.length > 0 && (
+              <>
+                <div className="eyebrow" style={{ color: "var(--ink-45)" }}>Nos recommandations pour relancer votre annonce</div>
+                <hr className="rule" style={{ margin: "8px 0 4px" }} />
+                <table>
+                  <thead>
+                    <tr>
+                      <th style={{ width: "16%" }}>Volet</th>
+                      <th>Constat</th>
+                      <th>Notre recommandation</th>
+                      <th className="r" style={{ width: "12%" }}>Priorité</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {recosAnnonce.slice(0, 8).map((rec, i) => (
+                      <tr key={i} className={rec.priorite === "haute" ? "warn-row" : ""}>
+                        <td><b>{rec.categorie}</b></td>
+                        <td>{rec.constat}</td>
+                        <td>{rec.recommandation}</td>
+                        <td className="r">
+                          <span style={rec.priorite === "haute" ? { color: "var(--gold-deep)", fontWeight: 700 } : undefined}>
+                            {rec.priorite.charAt(0).toUpperCase()}{rec.priorite.slice(1)}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                <p className="photo-note" style={{ marginTop: 8 }}>
+                  Audit réalisé à partir de l&apos;annonce en ligne et de son historique public ; les
+                  éléments non vérifiables sont signalés.
+                </p>
+              </>
+            )}
+
+            <Foot left={`${AGENCE.nom} ${AGENCE.enseigne}`} right={`Réf. ${refDossier}`} />
+          </section>
+        )}
+
         {/* ============ ANALYSE VISUELLE (état du bien) ============ */}
         {hasVisuel && (
           <section className="page">
-            <PageHead page={pgVisuel} />
+            <PageHead page={pgVisuel} label={docLabel} />
             <SectionTitle idx={secVisuel} title="Analyse visuelle du bien" />
             <p className="section-lead">
               Chaque photo de votre bien est examinée et notée par catégorie. Le résultat est
@@ -476,7 +543,7 @@ export default function Report({
         {/* ============ LE BIEN EN IMAGES (6 fiches par page) ============ */}
         {photoPages.map((chunk, pageIdx) => (
           <section className="page" key={`photos-${pageIdx}`}>
-            <PageHead page={pgPhotos + pageIdx} />
+            <PageHead page={pgPhotos + pageIdx} label={docLabel} />
             <SectionTitle
               idx={secPhotos}
               title={pageIdx === 0 ? "Le bien en images" : "Le bien en images (suite)"}
@@ -517,7 +584,7 @@ export default function Report({
 
         {/* ============ MÉTHODOLOGIE & COMPARABLES ============ */}
         <section className="page">
-          <PageHead page={pgMethode} />
+          <PageHead page={pgMethode} label={docLabel} />
           <SectionTitle idx={secMethode} title={locatif ? "Méthodologie locative" : "Méthodologie & comparables"} />
           <p className="section-lead">
             {report.analyse_dvf ||
@@ -591,7 +658,7 @@ export default function Report({
         {/* ============ AJUSTEMENTS DE VALEUR ============ */}
         {hasAjust && (
           <section className="page">
-            <PageHead page={pgAjust} />
+            <PageHead page={pgAjust} label={docLabel} />
             <SectionTitle idx={secAjust} title={locatif ? "Du marché au loyer retenu" : "Du marché au prix retenu"} />
             <p className="section-lead">
               {locatif
@@ -651,7 +718,7 @@ export default function Report({
 
         {/* ============ RECOMMANDATIONS ============ */}
         <section className="page">
-          <PageHead page={pgReco} />
+          <PageHead page={pgReco} label={docLabel} />
           <SectionTitle idx={secReco} title="Recommandations commerciales" />
           <div style={{ height: 14 }} />
 
@@ -734,7 +801,7 @@ export default function Report({
 
         {/* ============ ARGUMENTAIRE & BON POUR ACCORD ============ */}
         <section className="page">
-          <PageHead page={pgSign} />
+          <PageHead page={pgSign} label={docLabel} />
           <SectionTitle idx={secSign} title="Argumentaire & accord" />
           <p className="section-lead" style={{ marginBottom: 14 }}>
             Les points clés à retenir sur la valeur de votre bien, et votre accord sur la
