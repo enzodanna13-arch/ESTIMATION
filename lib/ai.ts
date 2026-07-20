@@ -1,4 +1,5 @@
 import Anthropic from "@anthropic-ai/sdk";
+import { loyerNetAnnuel, prixParRendement, RENDEMENT_NET_BAS, RENDEMENT_NET_HAUT } from "./rendement";
 import { buildDvfReferences } from "./references";
 import { surfaceDependancesHabitables, surfaceHabitableTotale } from "./surfaces";
 import type { LoyerIndicateur } from "./loyers";
@@ -133,6 +134,18 @@ function schemaFor(mission: string): Record<string, unknown> {
     };
     schema.required.push("valeur_venale_indicative", "rendement_brut");
   }
+  if (mission === "bienloue") {
+    schema.properties.prix_estime.description =
+      "Prix retenu = loyer NET annuel ÷ 7 % (capitalisation au taux médian), arrondi vers le bas au millier";
+    schema.properties.fourchette_basse.description =
+      "= prix du scénario Vente rapide = loyer NET annuel ÷ 8 % de rentabilité nette";
+    schema.properties.fourchette_haute.description =
+      "= prix du scénario Prix optimal (= prix_presentation) = loyer NET annuel ÷ 6 % de rentabilité nette";
+    schema.properties.prix_presentation.description =
+      "Prix de présentation conseillé = le prix du scénario Prix optimal (6 % net)";
+    schema.properties.ajustements.description =
+      "TOUJOURS un tableau vide [] : le prix d'un bien loué est fixé par la rentabilité nette, pas par des ajustements";
+  }
   if (mission === "audit") {
     schema.properties.analyse_annonce = {
       type: "string",
@@ -265,6 +278,15 @@ ${input.urlAnnonce ? `- ANNONCE EN LIGNE À AUDITER : ${input.urlAnnonce}` : "- 
 - Location : ${input.meuble || "Vide"}
 - Loyer envisagé par le propriétaire : ${input.loyerSouhaite ? `${input.loyerSouhaite} €/mois` : "non communiqué"}`
     : ""
+}${
+  input.mission === "bienloue"
+    ? `
+## Bien vendu loué (calcul par la rentabilité nette)
+- Loyer actuellement perçu : ${input.loyerActuel ? `${input.loyerActuel} €/mois hors charges` : "NON RENSEIGNÉ"} (${input.meuble || "Vide"})
+- Charges non récupérables du propriétaire : ${input.chargesNonRecuperables ?? 0} €/an | Taxe foncière : ${input.taxeFonciere ?? 0} €/an
+- LOYER NET ANNUEL = ${loyerNetAnnuel(input)} € — c'est LA base du calcul
+- FOURCHETTE IMPOSÉE (rentabilité nette 6 à 8 %) : Vente rapide = ${prixParRendement(loyerNetAnnuel(input), RENDEMENT_NET_HAUT)} € (8 % net) → Prix optimal = ${prixParRendement(loyerNetAnnuel(input), RENDEMENT_NET_BAS)} € (6 % net)`
+    : ""
 }`;
 }
 
@@ -284,6 +306,33 @@ RÈGLES :
 - description_bien, points forts/faibles, etapes_commercialisation (plan de mise en location : annonce, photos, visites, dossier locataire) et argumentaire_vendeur (points clés pour le propriétaire, dont le rendement) : adressés directement au client.
 - indice_confiance : reflète la fiabilité de l'indicateur (nombre d'annonces observées) et la cohérence des données.
 - Réponds intégralement en français.
+
+${STYLE_RULE}
+
+${JSON_RULE}`;
+
+const BIENLOUE_SYSTEM = `Tu es un expert en immobilier d'investissement d'une agence haut de gamme. Le bien est VENDU LOUÉ (un locataire est en place) : l'acheteur est un INVESTISSEUR, et le prix d'un bien loué se fixe par sa RENTABILITÉ NETTE — pas par comparaison directe avec les biens vendus libres.
+
+MÉTHODE IMPOSÉE (l'unique chemin de calcul) :
+1. LOYER NET ANNUEL → loyer actuellement perçu × 12, MOINS les charges non récupérables du propriétaire et la taxe foncière (les montants sont fournis dans la fiche, avec le loyer net annuel déjà calculé — reprends-le tel quel).
+2. FOURCHETTE PAR CAPITALISATION à une rentabilité NETTE de 6 à 8 % (règle stricte) :
+   - scénario « Vente rapide » = loyer net annuel ÷ 8 % — le prix qui offre 8 % net à l'investisseur : il part en quelques semaines.
+   - scénario « Prix optimal » (= prix_presentation = fourchette_haute) = loyer net annuel ÷ 6 % — le haut de fourchette défendable (6 % net, plancher du marché de l'investissement).
+   - prix_estime = loyer net annuel ÷ 7 % (le cœur de fourchette).
+   - Arrondis tous ces prix VERS LE BAS au millier. Aucun prix en dehors de cette fourchette 6-8 % net.
+3. CONTRÔLE MARCHÉ → les ventes réelles DVF fournies servent de CONTEXTE : sélectionne 4 à 6 références proches (references_dvf, règle de proximité), base_mediane = médiane de leurs prix actés, et commente dans analyse_dvf l'écart entre la valeur « libre » du marché et le prix investisseur (un bien occupé se vend sous sa valeur libre : décote d'occupation). ajustements = [] TOUJOURS (le prix vient de la rentabilité, pas d'ajustements).
+- positionnement_marche : explique SIMPLEMENT au client pourquoi un bien loué se vend par sa rentabilité : l'acheteur est un investisseur qui raisonne en rendement net (2 à 4 phrases, chiffres à l'appui : loyer net, fourchette 6-8 %).
+- scenarios_prix : exactement les 2 stratégies « Vente rapide » (8 % net) et « Prix optimal » (6 % net), prix croissants, chaque commentaire mentionnant la rentabilité nette offerte à l'acheteur.
+- delai_vente_estime : délai réaliste pour une vente investisseur au prix conseillé.
+- points_forts : ce qui rassure un investisseur (locataire en place et payeur, loyer net solide, taxe foncière contenue…) ; points_faibles : ce qui le freine (DPE, charges, loyer sous le marché…).
+- etapes_commercialisation : plan de commercialisation ORIENTÉ INVESTISSEURS (dossier locatif complet : bail, quittances, rendement net mis en avant dans l'annonce, diffusion vers les investisseurs…).
+- argumentaire_vendeur : points clés chiffrés pour le client (« votre bien », « vous ») autour du rendement : ce qu'un investisseur accepte de payer, pourquoi viser plus de 6 % net fait fuir les acheteurs.
+- Analyse CHAQUE photo fournie comme pour une estimation classique (analyse_par_photo, etat_notes, impact_etat en euros signés — informatif ici, le prix restant fixé par la rentabilité). Sans photo : tableaux vides, impact_etat 0.
+- prix_m2 = prix_estime ÷ surface habitable totale, arrondi à l'euro.
+- indice_confiance : élevé si loyer et charges sont renseignés (le calcul est alors mécanique), abaissé sinon.
+- Réponds intégralement en français.
+
+${PROXIMITE_RULE}
 
 ${STYLE_RULE}
 
@@ -346,9 +395,11 @@ export async function computeFinalReport(
   const system =
     mission === "locatif"
       ? LOCATIF_SYSTEM
-      : mission === "audit"
-        ? `${FINAL_SYSTEM}\n\n${AUDIT_RULE}`
-        : FINAL_SYSTEM;
+      : mission === "bienloue"
+        ? BIENLOUE_SYSTEM
+        : mission === "audit"
+          ? `${FINAL_SYSTEM}\n\n${AUDIT_RULE}`
+          : FINAL_SYSTEM;
 
   const content: Anthropic.ContentBlockParam[] = [];
   for (const photo of input.photos.slice(0, 20)) {
@@ -380,7 +431,9 @@ ${
 ${
   mission === "locatif"
     ? "Produis l'estimation locative complète : analyse chaque photo, fixe le loyer de base depuis l'indicateur officiel, les ajustements en €/mois, la fourchette de loyer, les 3 scénarios, la valeur vénale indicative (ventes DVF actualisées) et le rendement brut."
-    : mission === "audit"
+    : mission === "bienloue"
+      ? "Produis l'estimation du bien vendu loué : fourchette par capitalisation du loyer net annuel à 6-8 % de rentabilité nette (méthode imposée), références DVF en contexte (décote d'occupation), plan de commercialisation orienté investisseurs et argumentaire rendement pour le client."
+      : mission === "audit"
       ? "Produis l'audit de commercialisation complet : estimation de la valeur réelle (ventes DVF actualisées), diagnostic chiffré des raisons de la non-vente, prix de relance conseillé et plan de relance concret."
       : "Produis l'avis de valeur final, fondé uniquement sur ces ventes réelles : analyse chaque photo, sélectionne les références les plus proches, fixe la base médiane, les ajustements (dont l'actualisation au marché actuel), la fourchette (4-6 % d'écart justifié) et les 3 scénarios de prix."
 }

@@ -1,5 +1,7 @@
 import { medianPrixM2 } from "./dvf";
 import type { LoyerIndicateur } from "./loyers";
+import { loyerNetAnnuel, prixParRendement, RENDEMENT_NET_BAS, RENDEMENT_NET_HAUT, RENDEMENT_NET_MEDIAN } from "./rendement";
+import { buildDvfReferences } from "./references";
 import { surfaceHabitableTotale } from "./surfaces";
 import type { DvfSale, EstimationReport, PropertyInput } from "./types";
 
@@ -165,5 +167,52 @@ export function computeFallbackLocatif(
       : base.scenarios_prix,
     valeur_venale_indicative: venale,
     rendement_brut: venale > 0 && loyerBase > 0 ? Math.round(((loyerBase * 12) / venale) * 1000) / 10 : 0,
+  };
+}
+
+
+/**
+ * Moteur statistique « bien vendu loué » (sans IA) : prix par capitalisation
+ * du loyer NET annuel à une rentabilité nette de 6 à 8 % — le calcul est
+ * mécanique, l'IA n'apporte que la rédaction.
+ */
+export function computeFallbackBienLoue(
+  input: PropertyInput,
+  dvfSales: DvfSale[],
+): EstimationReport {
+  const base = computeFallbackEstimate(input, dvfSales);
+  const net = loyerNetAnnuel(input);
+  if (net <= 0) return base; // loyer non renseigné : estimation classique
+  const pRapide = prixParRendement(net, RENDEMENT_NET_HAUT);
+  const pOptimal = prixParRendement(net, RENDEMENT_NET_BAS);
+  const pEstime = prixParRendement(net, RENDEMENT_NET_MEDIAN);
+  const surface = surfaceHabitableTotale(input);
+  const det = buildDvfReferences(dvfSales, input);
+  return {
+    ...base,
+    prix_estime: pEstime,
+    fourchette_basse: pRapide,
+    fourchette_haute: pOptimal,
+    prix_m2: surface > 0 ? Math.round(pEstime / surface) : 0,
+    prix_presentation: pOptimal,
+    references_dvf: det.references,
+    base_mediane: det.baseMediane,
+    ajustements: [],
+    indice_confiance: 75,
+    delai_vente_estime: "2 à 4 mois auprès d'investisseurs",
+    positionnement_marche: `Votre bien est vendu loué : son prix se fixe par la rentabilité nette offerte à l'investisseur. Loyer net annuel de ${net} € (loyer perçu moins charges non récupérables et taxe foncière), capitalisé entre 6 et 8 % net : la fourchette va de ${pRapide} € à ${pOptimal} €.`,
+    scenarios_prix: [
+      { strategie: "Vente rapide", prix: pRapide, delai: "4 à 8 semaines", commentaire: "À ce prix, l'acheteur obtient 8 % de rentabilité nette : votre bien devient une évidence pour les investisseurs du secteur." },
+      { strategie: "Prix optimal", prix: pOptimal, delai: "2 à 4 mois", commentaire: "Le haut de fourchette défendable : 6 % de rentabilité nette pour l'acheteur, le plancher qu'accepte le marché de l'investissement." },
+    ],
+    etapes_commercialisation: [
+      "Dossier investisseur complet — bail, quittances, charges et taxe foncière réunis dès la mise en vente",
+      "Rendement net mis en avant dans l'annonce — c'est le premier critère de l'acheteur investisseur",
+      "Diffusion ciblée — investisseurs locaux et acquéreurs en recherche de rapport",
+      "Comptes rendus réguliers — vous suivez chaque contact et chaque offre",
+    ],
+    strategie_commercialisation:
+      "Le bien étant vendu loué, la commercialisation vise les investisseurs : le rendement net est l'argument central de l'annonce et du dossier remis aux acquéreurs.",
+    argumentaire_vendeur: `Un prix fixé par le rendement — l'acheteur d'un bien loué est un investisseur : il paie ce que rapporte votre bien, soit ${net} € nets par an.\nUne fourchette de 6 à 8 % net — au-delà de ${pOptimal} €, la rentabilité passe sous 6 % et les investisseurs ne regardent plus l'annonce.\nUn locataire en place — des revenus dès le premier jour : c'est un vrai atout de vente auprès des investisseurs.`,
   };
 }

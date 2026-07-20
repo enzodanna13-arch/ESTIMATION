@@ -69,8 +69,9 @@ export interface PropertyInput {
   taxeFonciere: number | null;
 
   // Mission de l'outil : estimation vente (défaut), audit d'un bien qui ne
-  // se vend pas, ou estimation locative
-  mission?: "vente" | "audit" | "locatif";
+  // se vend pas, estimation locative, ou estimation d'un bien vendu loué
+  // (prix par la rentabilité nette)
+  mission?: "vente" | "audit" | "locatif" | "bienloue";
 
   // Audit de commercialisation
   prixAffiche?: number | null; // prix actuellement affiché
@@ -83,6 +84,11 @@ export interface PropertyInput {
   // Estimation locative
   meuble?: string; // "Vide" | "Meublé"
   loyerSouhaite?: number | null; // loyer envisagé par le propriétaire (€/mois)
+
+  // Bien vendu loué : le prix est fixé par capitalisation du loyer NET
+  // (loyer − charges non récupérables − taxe foncière) entre 6 et 8 % net
+  loyerActuel?: number | null; // loyer actuellement perçu (€/mois hors charges)
+  chargesNonRecuperables?: number | null; // charges propriétaire non récupérables (€/an)
 
   // Contexte de vente
   prixSouhaiteVendeur: number | null;

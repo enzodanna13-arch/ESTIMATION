@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import ComparablesEditor from "@/components/ComparablesEditor";
 import Report from "@/components/Report";
 import { deleteEstimation, getEstimation, getHistoryKey, HistoryLockedError, listEstimations, setHistoryKey, type HistoryMeta } from "@/lib/history";
+import { loyerNetAnnuel, prixParRendement, RENDEMENT_NET_BAS, RENDEMENT_NET_HAUT } from "@/lib/rendement";
 import { surfaceDependancesHabitables, surfaceHabitableTotale } from "@/lib/surfaces";
 import { compressImage } from "@/lib/compressImage";
 import type { EstimateResponse, PhotoInput, PropertyInput } from "@/lib/types";
@@ -60,6 +61,8 @@ const initialInput: PropertyInput = {
   urlAnnonce: "",
   meuble: "Vide",
   loyerSouhaite: null,
+  loyerActuel: null,
+  chargesNonRecuperables: null,
   prixSouhaiteVendeur: null,
   contexteVente: "",
   commentaires: "",
@@ -412,12 +415,13 @@ export default function Home() {
           <Report result={result} input={input} onReset={() => { setResult(null); setStep(0); }} />
         ) : (
           <>
-            <div className="mb-6 grid gap-3 sm:grid-cols-3 print:hidden">
+            <div className="mb-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4 print:hidden">
               {(
                 [
                   ["vente", "💶", "Estimation vente", "Avis de valeur pour vendre le bien"],
                   ["audit", "🔍", "Audit de commercialisation", "Le bien est en vente et ne se vend pas"],
                   ["locatif", "🔑", "Estimation locative", "Loyer conseillé + rendement locatif"],
+                  ["bienloue", "🏢", "Bien vendu loué", "Prix par la rentabilité nette 6 à 8 %"],
                 ] as const
               ).map(([m, icon, titre, texte]) => (
                 <button
@@ -775,14 +779,18 @@ export default function Home() {
                       ? "Commercialisation en cours"
                       : input.mission === "locatif"
                         ? "Projet locatif"
-                        : "Contexte de vente"}
+                        : input.mission === "bienloue"
+                          ? "Location en place"
+                          : "Contexte de vente"}
                   </h2>
                   <p className="mb-6 text-sm text-slate-500">
                     {input.mission === "audit"
                       ? "Décrivez la mise en vente actuelle : l'IA diagnostique pourquoi le bien ne se vend pas et propose un prix de relance + un plan d'action."
                       : input.mission === "locatif"
                         ? "L'IA fixe le loyer conseillé à partir des indicateurs officiels de loyers et calcule le rendement brut."
-                        : "Si le vendeur a un prix en tête, l'IA le positionnera face au marché et vous fournira l'argumentaire pour recadrer si besoin."}
+                        : input.mission === "bienloue"
+                          ? "Le bien est vendu loué : son prix est établi par capitalisation du loyer NET (loyer − charges non récupérables − taxe foncière) à une rentabilité nette de 6 à 8 %."
+                          : "Si le vendeur a un prix en tête, l'IA le positionnera face au marché et vous fournira l'argumentaire pour recadrer si besoin."}
                   </p>
 
                   {input.mission === "audit" && (
@@ -815,6 +823,33 @@ export default function Home() {
                         <input type="number" className={inputCls} value={input.loyerSouhaite ?? ""} onChange={(e) => set("loyerSouhaite", num(e.target.value))} placeholder="1200" />
                       </Field>
                     </div>
+                  )}
+
+                  {input.mission === "bienloue" && (
+                    <>
+                      <div className="mb-4 grid gap-4 sm:grid-cols-2">
+                        <Field label="Loyer actuellement perçu (€/mois hors charges) *">
+                          <input type="number" className={inputCls} value={input.loyerActuel ?? ""} onChange={(e) => set("loyerActuel", num(e.target.value))} placeholder="850" />
+                        </Field>
+                        <Field label="Charges non récupérables du propriétaire (€/an)">
+                          <input type="number" className={inputCls} value={input.chargesNonRecuperables ?? ""} onChange={(e) => set("chargesNonRecuperables", num(e.target.value))} placeholder="600" />
+                        </Field>
+                        <Field label="Taxe foncière (€/an)">
+                          <input type="number" className={inputCls} value={input.taxeFonciere ?? ""} onChange={(e) => set("taxeFonciere", num(e.target.value))} placeholder="1100" />
+                        </Field>
+                        <Select label="Type de location en place" value={input.meuble ?? "Vide"} onChange={(v) => set("meuble", v)} options={["Vide", "Meublé"]} />
+                      </div>
+                      {loyerNetAnnuel(input) > 0 && (
+                        <div className="mb-4 rounded-xl border border-copper/40 bg-copper-soft/40 p-4 text-sm text-slate-700">
+                          <span className="font-semibold text-navy">Aperçu du calcul :</span>{" "}
+                          loyer net annuel <b>{int.format(loyerNetAnnuel(input))} €</b> → fourchette de prix{" "}
+                          <b>
+                            {int.format(prixParRendement(loyerNetAnnuel(input), RENDEMENT_NET_HAUT))} € (8 % net) —{" "}
+                            {int.format(prixParRendement(loyerNetAnnuel(input), RENDEMENT_NET_BAS))} € (6 % net)
+                          </b>
+                        </div>
+                      )}
+                    </>
                   )}
 
                   <div className="grid gap-4 sm:grid-cols-2">

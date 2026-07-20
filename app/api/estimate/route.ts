@@ -1,7 +1,8 @@
 import { computeFinalReport } from "@/lib/ai";
 import { fetchDvfContext } from "@/lib/dvf";
-import { computeFallbackEstimate, computeFallbackLocatif } from "@/lib/fallback";
+import { computeFallbackBienLoue, computeFallbackEstimate, computeFallbackLocatif } from "@/lib/fallback";
 import { fetchLoyerIndicateur } from "@/lib/loyers";
+import { loyerNetAnnuel, prixParRendement, RENDEMENT_NET_BAS, RENDEMENT_NET_HAUT, RENDEMENT_NET_MEDIAN } from "@/lib/rendement";
 import { buildDvfReferences, medianeReferences } from "@/lib/references";
 import { saveEstimationServer } from "@/lib/serverHistory";
 import { surfaceHabitableTotale } from "@/lib/surfaces";
@@ -75,7 +76,9 @@ export async function POST(request: Request) {
           report =
             mission === "locatif"
               ? computeFallbackLocatif(body, dvfSales, loyer)
-              : computeFallbackEstimate(body, dvfSales);
+              : mission === "bienloue"
+                ? computeFallbackBienLoue(body, dvfSales)
+                : computeFallbackEstimate(body, dvfSales);
         }
         // Filet de sécurité : le tableau des comparables DVF ne doit
         // jamais être vide dès que des ventes existent (hors mission
@@ -122,6 +125,35 @@ export async function POST(request: Request) {
           prix_presentation: floorStep(report.prix_presentation),
           scenarios_prix: report.scenarios_prix.map((s) => ({ ...s, prix: floorStep(s.prix) })),
         };
+        // Bien vendu loué : verrou déterministe — le prix est TOUJOURS la
+        // capitalisation du loyer NET annuel entre 6 et 8 % de rentabilité
+        // nette (Vente rapide = ÷8 %, Prix optimal = ÷6 %), quel que soit
+        // le résultat rédigé par l'IA
+        if (mission === "bienloue") {
+          const net = loyerNetAnnuel(body);
+          if (net > 0) {
+            const pRapide = prixParRendement(net, RENDEMENT_NET_HAUT);
+            const pOptimal = prixParRendement(net, RENDEMENT_NET_BAS);
+            const pEstime = prixParRendement(net, RENDEMENT_NET_MEDIAN);
+            const surfBl = surfaceHabitableTotale(body);
+            const scen = report.scenarios_prix;
+            const keep = (strategie: string, prix: number, delai: string, commentaire: string) => {
+              const s = scen.find((x) => x.strategie === strategie);
+              return { strategie, prix, delai: s?.delai || delai, commentaire: s?.commentaire || commentaire };
+            };
+            report = {
+              ...report,
+              prix_estime: pEstime,
+              prix_presentation: pOptimal,
+              prix_m2: surfBl > 0 ? Math.round(pEstime / surfBl) : report.prix_m2,
+              ajustements: [],
+              scenarios_prix: [
+                keep("Vente rapide", pRapide, "4 à 8 semaines", "À ce prix, l'acheteur obtient 8 % de rentabilité nette : votre bien devient une évidence pour les investisseurs du secteur."),
+                keep("Prix optimal", pOptimal, "2 à 4 mois", "Le haut de fourchette défendable : 6 % de rentabilité nette pour l'acheteur, le plancher qu'accepte le marché de l'investissement."),
+              ],
+            };
+          }
+        }
         // Cohérence de la synthèse : la fourchette de valeur va du prix
         // « Vente rapide » au « Prix optimal » (les deux scénarios présentés)
         const scRapide = report.scenarios_prix.find((s) => s.strategie === "Vente rapide")?.prix ?? 0;
@@ -138,7 +170,7 @@ export async function POST(request: Request) {
             client:
               [body.clientCivilite, body.clientPrenom, body.clientNom].filter(Boolean).join(" ") ||
               "Client non renseigné",
-            bien: `${mission === "audit" ? "Audit — " : mission === "locatif" ? "Locatif — " : ""}${body.typeBien.charAt(0).toUpperCase()}${body.typeBien.slice(1)}${body.nbPieces ? ` ${body.nbPieces} p.` : ""}${surfaceHabitableTotale(body) > 0 ? ` · ${surfaceHabitableTotale(body)} m²` : ""}`,
+            bien: `${mission === "audit" ? "Audit — " : mission === "locatif" ? "Locatif — " : mission === "bienloue" ? "Bien loué — " : ""}${body.typeBien.charAt(0).toUpperCase()}${body.typeBien.slice(1)}${body.nbPieces ? ` ${body.nbPieces} p.` : ""}${surfaceHabitableTotale(body) > 0 ? ` · ${surfaceHabitableTotale(body)} m²` : ""}`,
             ville: `${body.codePostal} ${body.ville ?? ""}`.trim(),
             negociateur: body.negociateur ?? "",
             fourchetteBasse: report.fourchette_basse,

@@ -90,7 +90,13 @@ export default function Report({
   const mission = input.mission ?? "vente";
   const locatif = mission === "locatif";
   const audit = mission === "audit";
-  const docLabel = audit ? "Audit de commercialisation" : locatif ? "Estimation locative" : "Avis de valeur";
+  const bienloue = mission === "bienloue";
+  const docLabel = audit ? "Audit de commercialisation" : locatif ? "Estimation locative" : bienloue ? "Estimation bien loué" : "Avis de valeur";
+  // Bien vendu loué : le prix est la capitalisation du loyer net annuel
+  // (loyer − charges non récupérables − taxe foncière) entre 6 et 8 % net
+  const loyerBrutAnnuel = (input.loyerActuel ?? 0) * 12;
+  const chargesInvestisseur = (input.chargesNonRecuperables ?? 0) + (input.taxeFonciere ?? 0);
+  const loyerNetAnn = Math.max(0, Math.round(loyerBrutAnnuel - chargesInvestisseur));
   // En mission locative, tous les montants principaux sont des loyers €/mois
   const fmtP = (v: number) => `${euro.format(v)}${locatif ? " /mois" : ""}`;
   const fmtM2 = (v: number) =>
@@ -247,13 +253,15 @@ export default function Report({
           </div>
           <div className="cover-center">
             <div className="eyebrow">
-              {audit ? "Audit confidentiel" : locatif ? "Estimation locative confidentielle" : "Estimation confidentielle"}
+              {audit ? "Audit confidentiel" : locatif ? "Estimation locative confidentielle" : bienloue ? "Estimation confidentielle · bien vendu loué" : "Estimation confidentielle"}
             </div>
-            <div className="cover-title" style={audit ? { fontSize: "40pt" } : undefined}>
+            <div className="cover-title" style={audit ? { fontSize: "40pt" } : bienloue ? { fontSize: "44pt" } : undefined}>
               {audit ? (
                 <>Audit de<br />Commercialisation</>
               ) : locatif ? (
                 <>Estimation<br />Locative</>
+              ) : bienloue ? (
+                <>Valeur<br />Investisseur</>
               ) : (
                 <>Avis<br />de Valeur</>
               )}
@@ -342,12 +350,27 @@ export default function Report({
             </>
           )}
 
+          {bienloue && loyerNetAnn > 0 && (
+            <>
+              <div className="eyebrow" style={{ color: "var(--ink-45)" }}>Location en place — la base du calcul</div>
+              <hr className="rule" style={{ margin: "8px 0 8px" }} />
+              <div className="kpi-row" style={{ marginBottom: 14 }}>
+                <div className="kpi"><div className="k">Loyer perçu</div><div className="v" style={{ fontSize: "13pt" }}>{euro.format(input.loyerActuel ?? 0)} <small>/mois</small></div></div>
+                <div className="kpi"><div className="k">Charges + taxe foncière</div><div className="v" style={{ fontSize: "13pt" }}>{euro.format(chargesInvestisseur)} <small>/an</small></div></div>
+                <div className="kpi"><div className="k">Loyer net annuel</div><div className="v" style={{ fontSize: "13pt" }}>{euro.format(loyerNetAnn)}</div></div>
+                <div className="kpi"><div className="k">Rentabilité nette visée</div><div className="v" style={{ fontSize: "13pt" }}>6 – 8 %</div></div>
+              </div>
+            </>
+          )}
+
           <div className="callout">
             <b>{locatif ? "Fourchette de loyer" : "Fourchette de valeur"} : {euro.format(fourchetteBasse)} à {fmtP(fourchetteHaute)}.
             {" "}{locatif ? "Loyer conseillé" : audit ? "Prix de relance conseillé" : "Prix de présentation conseillé"} : {fmtP(prixPresentation)}.</b>{" "}
             {locatif
               ? "Ce positionnement loue dans de bons délais tout en restant au niveau du marché locatif constaté sur la commune."
-              : "Ce positionnement conserve une marge de négociation d'environ " + margeNego + " % tout en restant cohérent avec les références de vente du secteur."}
+              : bienloue && loyerNetAnn > 0
+                ? ` Prix établis par capitalisation du loyer net annuel de ${euro.format(loyerNetAnn)} à une rentabilité nette de 6 à 8 % : c'est ainsi que raisonne l'acheteur investisseur d'un bien loué.`
+                : "Ce positionnement conserve une marge de négociation d'environ " + margeNego + " % tout en restant cohérent avec les références de vente du secteur."}
             {audit && input.prixAffiche ? (
               <>
                 {" "}Prix affiché actuellement : <b>{euro.format(input.prixAffiche)}</b>{" "}
@@ -585,7 +608,7 @@ export default function Report({
         {/* ============ MÉTHODOLOGIE & COMPARABLES ============ */}
         <section className="page">
           <PageHead page={pgMethode} label={docLabel} />
-          <SectionTitle idx={secMethode} title={locatif ? "Méthodologie locative" : "Méthodologie & comparables"} />
+          <SectionTitle idx={secMethode} title={locatif ? "Méthodologie locative" : bienloue ? "Méthodologie investisseur" : "Méthodologie & comparables"} />
           <p className="section-lead">
             {report.analyse_dvf ||
               "La valeur de votre bien est établie à partir des ventes réellement conclues (données publiques DVF) de biens comparables, ajustées à ses caractéristiques propres."}
@@ -594,24 +617,30 @@ export default function Report({
           <div className="method">
             <div className="step">
               <div className="n">01</div>
-              <h4>{locatif ? "Loyers de référence" : "Sélection DVF"}</h4>
+              <h4>{locatif ? "Loyers de référence" : bienloue ? "Loyer net annuel" : "Sélection DVF"}</h4>
               <p>{locatif
                 ? "On part de l'indicateur officiel des loyers de votre commune (« carte des loyers » du Ministère du Logement), pour la typologie de votre bien."
-                : "On part des ventes réellement conclues autour de chez vous (données publiques DVF) : même type de bien, surface proche, au plus près de votre adresse."}</p>
+                : bienloue
+                  ? "On part du loyer réellement perçu sur un an, dont on retire les charges non récupérables et la taxe foncière : c'est ce que votre bien rapporte vraiment à son propriétaire."
+                  : "On part des ventes réellement conclues autour de chez vous (données publiques DVF) : même type de bien, surface proche, au plus près de votre adresse."}</p>
             </div>
             <div className="step">
               <div className="n">02</div>
-              <h4>Plus-values &amp; décotes</h4>
+              <h4>{bienloue ? "Capitalisation 6 – 8 % net" : "Plus-values & décotes"}</h4>
               <p>{locatif
                 ? "Chaque atout de votre bien ajoute des euros au loyer de base, chaque défaut en retire — état, énergie, extérieur, stationnement…"
-                : "Chaque atout de votre bien ajoute de la valeur, chaque défaut ou effet du marché en retire, à partir de la médiane de ces ventes."}</p>
+                : bienloue
+                  ? "L'acheteur d'un bien loué est un investisseur : il paie le prix qui lui assure une rentabilité nette de 6 à 8 %. Votre fourchette va du prix à 8 % net (vente rapide) au prix à 6 % net (prix optimal)."
+                  : "Chaque atout de votre bien ajoute de la valeur, chaque défaut ou effet du marché en retire, à partir de la médiane de ces ventes."}</p>
             </div>
             <div className="step">
               <div className="n">03</div>
-              <h4>{locatif ? "Rendement" : "Actualisation au marché"}</h4>
+              <h4>{locatif ? "Rendement" : bienloue ? "Contrôle marché (DVF)" : "Actualisation au marché"}</h4>
               <p>{locatif
                 ? "Les ventes réelles du secteur donnent une valeur de vente indicative de votre bien : elle permet de calculer votre rendement locatif brut."
-                : "Le marché est actuellement en baisse : les ventes des années passées sont ramenées au prix d'aujourd'hui avant de fixer votre fourchette."}</p>
+                : bienloue
+                  ? "Les ventes réelles du quartier (données publiques DVF) servent de contrôle : elles situent la valeur « libre » de votre bien et confirment la cohérence du prix investisseur."
+                  : "Le marché est actuellement en baisse : les ventes des années passées sont ramenées au prix d'aujourd'hui avant de fixer votre fourchette."}</p>
             </div>
           </div>
 
@@ -733,8 +762,8 @@ export default function Report({
                 .map((sc, i) => {
                   const titre =
                     sc.strategie === "Prix optimal"
-                      ? locatif ? "Loyer optimal" : audit ? "Prix de relance" : "Prix optimal"
-                      : locatif ? "Location rapide" : "Vente rapide";
+                      ? locatif ? "Loyer optimal" : audit ? "Prix de relance" : bienloue ? "Prix optimal · 6 % net" : "Prix optimal"
+                      : locatif ? "Location rapide" : bienloue ? "Vente rapide · 8 % net" : "Vente rapide";
                   return (
                     <div key={i} className="reco" style={sc.strategie === "Prix optimal" ? { borderColor: "var(--gold)", borderWidth: 2 } : undefined}>
                       <div className="t">{titre}{sc.strategie === "Prix optimal" ? " ★" : ""}</div>
@@ -761,6 +790,20 @@ export default function Report({
                 <p>Sur la base des délais observés pour cette typologie au prix conseillé, hors saisonnalité défavorable.</p>
               </div>
             </div>
+          )}
+
+          {bienloue && loyerNetAnn > 0 && (
+            <>
+              <div style={{ height: 18 }} />
+              <div className="eyebrow" style={{ color: "var(--ink-45)" }}>Ce que voit l&apos;acheteur investisseur</div>
+              <hr className="rule" style={{ margin: "8px 0 8px" }} />
+              <div className="kpi-row" style={{ marginBottom: 4 }}>
+                <div className="kpi"><div className="k">Loyer net annuel</div><div className="v" style={{ fontSize: "13pt" }}>{euro.format(loyerNetAnn)}</div></div>
+                <div className="kpi"><div className="k">Rentabilité au prix optimal</div><div className="v" style={{ fontSize: "13pt" }}>{fourchetteHaute > 0 ? ((loyerNetAnn / fourchetteHaute) * 100).toLocaleString("fr-FR", { maximumFractionDigits: 1 }) : "—"} % <small>net</small></div></div>
+                <div className="kpi"><div className="k">Rentabilité en vente rapide</div><div className="v" style={{ fontSize: "13pt" }}>{fourchetteBasse > 0 ? ((loyerNetAnn / fourchetteBasse) * 100).toLocaleString("fr-FR", { maximumFractionDigits: 1 }) : "—"} % <small>net</small></div></div>
+                <div className="kpi"><div className="k">Location en place</div><div className="v" style={{ fontSize: "13pt" }}>{input.meuble || "Vide"}</div></div>
+              </div>
+            </>
           )}
 
           {locatif && (report.valeur_venale_indicative ?? 0) > 0 && (
