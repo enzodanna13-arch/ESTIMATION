@@ -1,6 +1,7 @@
 import { computeFinalReport } from "@/lib/ai";
 import { fetchDvfContext } from "@/lib/dvf";
-import { computeFallbackEstimate } from "@/lib/fallback";
+import { computeFallbackEstimate, computeFallbackLocatif } from "@/lib/fallback";
+import { fetchLoyerIndicateur } from "@/lib/loyers";
 import { buildDvfReferences, medianeReferences } from "@/lib/references";
 import { saveEstimationServer } from "@/lib/serverHistory";
 import { surfaceHabitableTotale } from "@/lib/surfaces";
@@ -36,16 +37,33 @@ export async function POST(request: Request) {
       const send = (obj: unknown) => controller.enqueue(encoder.encode(JSON.stringify(obj) + "\n"));
       const heartbeat = setInterval(() => send({ type: "ping" }), 8000);
       try {
+        const mission = body.mission ?? "vente";
         send({ type: "status", label: "Récupération des ventes réelles autour du bien (DVF)…" });
-        const { sales: dvfSales, subject } = await fetchDvfContext(body.codePostal, body.typeBien, body.adresse, body.ville);
+        const [{ sales: dvfSales, subject }, loyer] = await Promise.all([
+          fetchDvfContext(body.codePostal, body.typeBien, body.adresse, body.ville),
+          mission === "locatif"
+            ? fetchLoyerIndicateur(body.codePostal, body.typeBien, body.nbPieces)
+            : Promise.resolve(null),
+        ]);
         const dvfSource = dvfSales.length > 0 ? "api" : "indisponible";
+        if (mission === "locatif") {
+          send({
+            type: "status",
+            label: loyer
+              ? `Loyers de référence : ${loyer.loyerM2} €/m² sur la commune (source officielle)…`
+              : "Indicateur officiel des loyers indisponible — estimation prudente…",
+          });
+        }
 
         let report = null;
         let engine: "ia" | "statistique" = "statistique";
         if (process.env.ANTHROPIC_API_KEY) {
           try {
-            report = await computeFinalReport(body, dvfSales, (label: string) =>
-              send({ type: "status", label }),
+            report = await computeFinalReport(
+              body,
+              dvfSales,
+              (label: string) => send({ type: "status", label }),
+              loyer,
             );
             engine = "ia";
           } catch (err) {
@@ -54,11 +72,15 @@ export async function POST(request: Request) {
           }
         }
         if (!report) {
-          report = computeFallbackEstimate(body, dvfSales);
+          report =
+            mission === "locatif"
+              ? computeFallbackLocatif(body, dvfSales, loyer)
+              : computeFallbackEstimate(body, dvfSales);
         }
         // Filet de sécurité : le tableau des comparables DVF ne doit
-        // jamais être vide dès que des ventes existent
-        if (report.references_dvf.length === 0 && dvfSales.length > 0) {
+        // jamais être vide dès que des ventes existent (hors mission
+        // locative, qui n'affiche pas de tableau de ventes)
+        if (mission !== "locatif" && report.references_dvf.length === 0 && dvfSales.length > 0) {
           const det = buildDvfReferences(dvfSales, body);
           report = {
             ...report,
@@ -71,7 +93,7 @@ export async function POST(request: Request) {
         // utilisé une autre base (ex. médiane €/m² transposée à la surface),
         // l'écart devient une ligne d'ajustement explicite — la somme du
         // tableau reste exactement égale au cœur de fourchette.
-        const medRefs = medianeReferences(report.references_dvf);
+        const medRefs = mission === "locatif" ? 0 : medianeReferences(report.references_dvf);
         if (medRefs > 0 && report.base_mediane !== medRefs) {
           const diff = report.base_mediane - medRefs;
           const ajustements = [...report.ajustements];
@@ -91,13 +113,14 @@ export async function POST(request: Request) {
           }
           report = { ...report, base_mediane: medRefs, ajustements };
         }
-        // Prix psychologiques : les prix affichés (présentation + scénarios)
-        // sont arrondis au millier INFÉRIEUR — jamais vers le haut
-        const floor1000 = (v: number) => (v > 0 ? Math.floor(v / 1000) * 1000 : v);
+        // Prix psychologiques : arrondi VERS LE BAS des prix affichés —
+        // au millier pour une vente, à la dizaine pour un loyer mensuel
+        const step = mission === "locatif" ? 10 : 1000;
+        const floorStep = (v: number) => (v > 0 ? Math.floor(v / step) * step : v);
         report = {
           ...report,
-          prix_presentation: floor1000(report.prix_presentation),
-          scenarios_prix: report.scenarios_prix.map((s) => ({ ...s, prix: floor1000(s.prix) })),
+          prix_presentation: floorStep(report.prix_presentation),
+          scenarios_prix: report.scenarios_prix.map((s) => ({ ...s, prix: floorStep(s.prix) })),
         };
         // Cohérence de la synthèse : la fourchette de valeur va du prix
         // « Vente rapide » au « Prix optimal » (les deux scénarios présentés)
@@ -115,7 +138,7 @@ export async function POST(request: Request) {
             client:
               [body.clientCivilite, body.clientPrenom, body.clientNom].filter(Boolean).join(" ") ||
               "Client non renseigné",
-            bien: `${body.typeBien.charAt(0).toUpperCase()}${body.typeBien.slice(1)}${body.nbPieces ? ` ${body.nbPieces} p.` : ""}${surfaceHabitableTotale(body) > 0 ? ` · ${surfaceHabitableTotale(body)} m²` : ""}`,
+            bien: `${mission === "audit" ? "Audit — " : mission === "locatif" ? "Locatif — " : ""}${body.typeBien.charAt(0).toUpperCase()}${body.typeBien.slice(1)}${body.nbPieces ? ` ${body.nbPieces} p.` : ""}${surfaceHabitableTotale(body) > 0 ? ` · ${surfaceHabitableTotale(body)} m²` : ""}`,
             ville: `${body.codePostal} ${body.ville ?? ""}`.trim(),
             negociateur: body.negociateur ?? "",
             fourchetteBasse: report.fourchette_basse,

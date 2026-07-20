@@ -87,6 +87,14 @@ export default function Report({
       ? `Appartement T${input.nbPieces}`
       : input.typeBien.charAt(0).toUpperCase() + input.typeBien.slice(1) + (input.nbPieces ? ` ${input.nbPieces} pièces` : "");
 
+  const mission = input.mission ?? "vente";
+  const locatif = mission === "locatif";
+  const audit = mission === "audit";
+  // En mission locative, tous les montants principaux sont des loyers €/mois
+  const fmtP = (v: number) => `${euro.format(v)}${locatif ? " /mois" : ""}`;
+  const fmtM2 = (v: number) =>
+    locatif ? v.toLocaleString("fr-FR", { maximumFractionDigits: 1 }) : int.format(v);
+
   const prixPresentation = report.prix_presentation > 0 ? report.prix_presentation : report.prix_estime;
   // Fourchette de valeur du dossier = du prix « Vente rapide » au « Prix
   // optimal » : la synthèse est ainsi parfaitement cohérente avec les deux
@@ -233,8 +241,18 @@ export default function Report({
             <div className="cover-ref">Réf. dossier<br />{refDossier}</div>
           </div>
           <div className="cover-center">
-            <div className="eyebrow">Estimation confidentielle</div>
-            <div className="cover-title">Avis<br />de Valeur</div>
+            <div className="eyebrow">
+              {audit ? "Audit confidentiel" : locatif ? "Estimation locative confidentielle" : "Estimation confidentielle"}
+            </div>
+            <div className="cover-title" style={audit ? { fontSize: "40pt" } : undefined}>
+              {audit ? (
+                <>Audit de<br />Commercialisation</>
+              ) : locatif ? (
+                <>Estimation<br />Locative</>
+              ) : (
+                <>Avis<br />de Valeur</>
+              )}
+            </div>
             <div className="cover-addr">
               {typeLabel} — {surface} m²
               <span>
@@ -284,38 +302,66 @@ export default function Report({
 
           <div className="valuation">
             <div className="cell">
-              <div className="lbl">Prix moyen au m²</div>
-              <div className="amt">{int.format(report.prix_m2)} €</div>
+              <div className="lbl">{locatif ? "Loyer au m²" : "Prix moyen au m²"}</div>
+              <div className="amt">{fmtM2(report.prix_m2)} €</div>
             </div>
             <div className="cell center">
-              <div className="lbl">Fourchette de valeur</div>
-              <div className="amt" style={{ fontSize: "21pt" }}>
-                {euro.format(fourchetteBasse)} — {euro.format(fourchetteHaute)}
+              <div className="lbl">{locatif ? "Fourchette de loyer" : "Fourchette de valeur"}</div>
+              <div className="amt" style={{ fontSize: locatif ? "18pt" : "21pt" }}>
+                {euro.format(fourchetteBasse)} — {fmtP(fourchetteHaute)}
               </div>
             </div>
             <div className="cell">
-              <div className="lbl">Prix de présentation</div>
-              <div className="amt">{euro.format(prixPresentation)}</div>
+              <div className="lbl">{locatif ? "Loyer conseillé" : "Prix de présentation"}</div>
+              <div className="amt">{fmtP(prixPresentation)}</div>
             </div>
           </div>
 
           <div className="kpi-row">
             <div className="kpi"><div className="k">Surface</div><div className="v">{surface} <small>m²</small></div></div>
-            <div className="kpi"><div className="k">Fourchette / m²</div><div className="v" style={{ fontSize: "12pt" }}>{surface > 0 ? `${int.format(Math.round(fourchetteBasse / surface))} – ${int.format(Math.round(fourchetteHaute / surface))}` : int.format(report.prix_m2)} <small>€/m²</small></div></div>
+            <div className="kpi"><div className="k">{locatif ? "Loyer / m²" : "Fourchette / m²"}</div><div className="v" style={{ fontSize: "12pt" }}>{surface > 0 ? `${fmtM2(locatif ? fourchetteBasse / surface : Math.round(fourchetteBasse / surface))} – ${fmtM2(locatif ? fourchetteHaute / surface : Math.round(fourchetteHaute / surface))}` : fmtM2(report.prix_m2)} <small>€/m²</small></div></div>
             <div className="kpi"><div className="k">DPE</div><div className="v">{input.dpe || "—"}</div></div>
-            <div className="kpi"><div className="k">Délai de vente estimé</div><div className="v" style={{ fontSize: "11pt", lineHeight: 1.3 }}>{report.delai_vente_estime}</div></div>
+            <div className="kpi"><div className="k">{locatif ? "Délai de mise en location" : audit ? "Délai après repositionnement" : "Délai de vente estimé"}</div><div className="v" style={{ fontSize: "11pt", lineHeight: 1.3 }}>{report.delai_vente_estime}</div></div>
           </div>
 
+          {audit && (
+            <>
+              <div className="eyebrow" style={{ color: "var(--ink-45)" }}>Situation actuelle de la mise en vente</div>
+              <hr className="rule" style={{ margin: "8px 0 8px" }} />
+              <div className="kpi-row" style={{ marginBottom: 14 }}>
+                <div className="kpi"><div className="k">Prix affiché</div><div className="v" style={{ fontSize: "13pt" }}>{input.prixAffiche ? euro.format(input.prixAffiche) : "—"}</div></div>
+                <div className="kpi"><div className="k">En vente depuis</div><div className="v" style={{ fontSize: "13pt" }}>{input.moisEnVente ? `${input.moisEnVente} mois` : "—"}</div></div>
+                <div className="kpi"><div className="k">Visites</div><div className="v" style={{ fontSize: "13pt" }}>{input.nbVisites ?? "—"}</div></div>
+                <div className="kpi"><div className="k">Offres reçues</div><div className="v" style={{ fontSize: "13pt" }}>{input.nbOffres ?? "—"}</div></div>
+              </div>
+            </>
+          )}
+
           <div className="callout">
-            <b>Fourchette de valeur : {euro.format(fourchetteBasse)} à {euro.format(fourchetteHaute)}.
-            Prix de présentation conseillé : {euro.format(prixPresentation)}.</b>{" "}
-            Ce positionnement conserve une marge de négociation d&apos;environ {margeNego} % tout en
-            restant cohérent avec les références de vente et la concurrence active du secteur.
-            {input.prixSouhaiteVendeur ? (
+            <b>{locatif ? "Fourchette de loyer" : "Fourchette de valeur"} : {euro.format(fourchetteBasse)} à {fmtP(fourchetteHaute)}.
+            {" "}{locatif ? "Loyer conseillé" : audit ? "Prix de relance conseillé" : "Prix de présentation conseillé"} : {fmtP(prixPresentation)}.</b>{" "}
+            {locatif
+              ? "Ce positionnement loue dans de bons délais tout en restant au niveau du marché locatif constaté sur la commune."
+              : "Ce positionnement conserve une marge de négociation d'environ " + margeNego + " % tout en restant cohérent avec les références de vente du secteur."}
+            {audit && input.prixAffiche ? (
+              <>
+                {" "}Prix affiché actuellement : <b>{euro.format(input.prixAffiche)}</b>{" "}
+                ({input.prixAffiche > fourchetteHaute ? "+" : ""}
+                {(((input.prixAffiche - fourchetteHaute) / fourchetteHaute) * 100).toFixed(1)} % au-dessus du haut de fourchette).
+              </>
+            ) : null}
+            {!audit && !locatif && input.prixSouhaiteVendeur ? (
               <>
                 {" "}Prix que vous envisagez : <b>{euro.format(input.prixSouhaiteVendeur)}</b>{" "}
                 ({input.prixSouhaiteVendeur > report.prix_estime ? "+" : ""}
                 {(((input.prixSouhaiteVendeur - report.prix_estime) / report.prix_estime) * 100).toFixed(1)} % vs valeur retenue).
+              </>
+            ) : null}
+            {locatif && input.loyerSouhaite ? (
+              <>
+                {" "}Loyer que vous envisagez : <b>{euro.format(input.loyerSouhaite)} /mois</b>{" "}
+                ({input.loyerSouhaite > report.prix_estime ? "+" : ""}
+                {report.prix_estime > 0 ? (((input.loyerSouhaite - report.prix_estime) / report.prix_estime) * 100).toFixed(1) : "0"} % vs loyer retenu).
               </>
             ) : null}
           </div>
@@ -472,7 +518,7 @@ export default function Report({
         {/* ============ MÉTHODOLOGIE & COMPARABLES ============ */}
         <section className="page">
           <PageHead page={pgMethode} />
-          <SectionTitle idx={secMethode} title="Méthodologie & comparables" />
+          <SectionTitle idx={secMethode} title={locatif ? "Méthodologie locative" : "Méthodologie & comparables"} />
           <p className="section-lead">
             {report.analyse_dvf ||
               "La valeur de votre bien est établie à partir des ventes réellement conclues (données publiques DVF) de biens comparables, ajustées à ses caractéristiques propres."}
@@ -481,18 +527,24 @@ export default function Report({
           <div className="method">
             <div className="step">
               <div className="n">01</div>
-              <h4>Sélection DVF</h4>
-              <p>On part des ventes réellement conclues autour de chez vous (données publiques DVF) : même type de bien, surface proche, au plus près de votre adresse.</p>
+              <h4>{locatif ? "Loyers de référence" : "Sélection DVF"}</h4>
+              <p>{locatif
+                ? "On part de l'indicateur officiel des loyers de votre commune (« carte des loyers » du Ministère du Logement), pour la typologie de votre bien."
+                : "On part des ventes réellement conclues autour de chez vous (données publiques DVF) : même type de bien, surface proche, au plus près de votre adresse."}</p>
             </div>
             <div className="step">
               <div className="n">02</div>
               <h4>Plus-values &amp; décotes</h4>
-              <p>Chaque atout de votre bien ajoute de la valeur, chaque défaut ou effet du marché en retire, à partir de la médiane de ces ventes.</p>
+              <p>{locatif
+                ? "Chaque atout de votre bien ajoute des euros au loyer de base, chaque défaut en retire — état, énergie, extérieur, stationnement…"
+                : "Chaque atout de votre bien ajoute de la valeur, chaque défaut ou effet du marché en retire, à partir de la médiane de ces ventes."}</p>
             </div>
             <div className="step">
               <div className="n">03</div>
-              <h4>Actualisation au marché</h4>
-              <p>Le marché est actuellement en baisse : les ventes des années passées sont ramenées au prix d&apos;aujourd&apos;hui avant de fixer votre fourchette.</p>
+              <h4>{locatif ? "Rendement" : "Actualisation au marché"}</h4>
+              <p>{locatif
+                ? "Les ventes réelles du secteur donnent une valeur de vente indicative de votre bien : elle permet de calculer votre rendement locatif brut."
+                : "Le marché est actuellement en baisse : les ventes des années passées sont ramenées au prix d'aujourd'hui avant de fixer votre fourchette."}</p>
             </div>
           </div>
 
@@ -540,17 +592,17 @@ export default function Report({
         {hasAjust && (
           <section className="page">
             <PageHead page={pgAjust} />
-            <SectionTitle idx={secAjust} title="Du marché au prix retenu" />
+            <SectionTitle idx={secAjust} title={locatif ? "Du marché au loyer retenu" : "Du marché au prix retenu"} />
             <p className="section-lead">
-              On part de la médiane des ventes comparables. On ajoute les atouts de votre bien, on
-              retire ses défauts et l&apos;effet du marché : le résultat est le cœur de votre
-              fourchette de valeur.
+              {locatif
+                ? "On part du loyer de référence officiel de votre commune. On ajoute les atouts de votre bien, on retire ses défauts : le résultat est le cœur de votre fourchette de loyer."
+                : "On part de la médiane des ventes comparables. On ajoute les atouts de votre bien, on retire ses défauts et l'effet du marché : le résultat est le cœur de votre fourchette de valeur."}
             </p>
 
             <div className="adjust">
               <div className="ar">
-                <span><b>Médiane DVF de référence — ancre de valeur</b></span>
-                <span className="money">{euro.format(report.base_mediane)}</span>
+                <span><b>{locatif ? `Loyer de référence du secteur (${surface} m²)` : "Médiane DVF de référence — ancre de valeur"}</b></span>
+                <span className="money">{fmtP(report.base_mediane)}</span>
               </div>
               {plusValues.length > 0 && (
                 <>
@@ -581,15 +633,15 @@ export default function Report({
                 </>
               )}
               <div className="ar total">
-                <span><b>Cœur de fourchette retenu</b></span>
-                <span className="money">{euro.format(report.prix_estime)}</span>
+                <span><b>{locatif ? "Loyer retenu (cœur de fourchette)" : "Cœur de fourchette retenu"}</b></span>
+                <span className="money">{fmtP(report.prix_estime)}</span>
               </div>
             </div>
 
             <div className="callout" style={{ marginTop: 20 }}>
-              <b>Fourchette de valeur : {euro.format(fourchetteBasse)} à {euro.format(fourchetteHaute)}.</b>{" "}
-              Le cœur de fourchette de {euro.format(report.prix_estime)} résulte de la médiane DVF
-              corrigée des plus-values et décotes ci-dessus ; les bornes traduisent
+              <b>{locatif ? "Fourchette de loyer" : "Fourchette de valeur"} : {euro.format(fourchetteBasse)} à {fmtP(fourchetteHaute)}.</b>{" "}
+              Le cœur de fourchette de {fmtP(report.prix_estime)} résulte de la {locatif ? "référence officielle des loyers" : "médiane DVF"}
+              {" "}corrigée des plus-values et décotes ci-dessus ; les bornes traduisent
               l&apos;incertitude résiduelle du marché (indice de confiance : {report.indice_confiance}/100).
             </div>
 
@@ -611,14 +663,20 @@ export default function Report({
               {report.scenarios_prix
                 .filter((sc) => sc.strategie !== "Prix plafond")
                 .slice(0, 2)
-                .map((sc, i) => (
-                  <div key={i} className="reco" style={sc.strategie === "Prix optimal" ? { borderColor: "var(--gold)", borderWidth: 2 } : undefined}>
-                    <div className="t">{sc.strategie}{sc.strategie === "Prix optimal" ? " ★" : ""}</div>
-                    <div className="big" style={{ fontSize: "20pt" }}>{euro.format(sc.prix)}</div>
-                    <p style={{ marginBottom: 6 }}><b style={{ color: "var(--ink)" }}>Délai : {sc.delai}</b></p>
-                    <p>{sc.commentaire}</p>
-                  </div>
-                ))}
+                .map((sc, i) => {
+                  const titre =
+                    sc.strategie === "Prix optimal"
+                      ? locatif ? "Loyer optimal" : audit ? "Prix de relance" : "Prix optimal"
+                      : locatif ? "Location rapide" : "Vente rapide";
+                  return (
+                    <div key={i} className="reco" style={sc.strategie === "Prix optimal" ? { borderColor: "var(--gold)", borderWidth: 2 } : undefined}>
+                      <div className="t">{titre}{sc.strategie === "Prix optimal" ? " ★" : ""}</div>
+                      <div className="big" style={{ fontSize: locatif ? "17pt" : "20pt" }}>{fmtP(sc.prix)}</div>
+                      <p style={{ marginBottom: 6 }}><b style={{ color: "var(--ink)" }}>Délai : {sc.delai}</b></p>
+                      <p>{sc.commentaire}</p>
+                    </div>
+                  );
+                })}
             </div>
           ) : (
             <div className="reco-grid">
@@ -638,10 +696,24 @@ export default function Report({
             </div>
           )}
 
+          {locatif && (report.valeur_venale_indicative ?? 0) > 0 && (
+            <>
+              <div style={{ height: 18 }} />
+              <div className="eyebrow" style={{ color: "var(--ink-45)" }}>Votre investissement en chiffres</div>
+              <hr className="rule" style={{ margin: "8px 0 8px" }} />
+              <div className="kpi-row" style={{ marginBottom: 4 }}>
+                <div className="kpi"><div className="k">Loyer annuel (loyer conseillé)</div><div className="v" style={{ fontSize: "13pt" }}>{euro.format(prixPresentation * 12)}</div></div>
+                <div className="kpi"><div className="k">Valeur de vente indicative</div><div className="v" style={{ fontSize: "13pt" }}>{euro.format(report.valeur_venale_indicative ?? 0)}</div></div>
+                <div className="kpi"><div className="k">Rendement brut</div><div className="v" style={{ fontSize: "13pt" }}>{(report.rendement_brut ?? 0).toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %</div></div>
+                <div className="kpi"><div className="k">Type de location</div><div className="v" style={{ fontSize: "13pt" }}>{input.meuble || "Vide"}</div></div>
+              </div>
+            </>
+          )}
+
           {report.etapes_commercialisation.length > 0 && (
             <>
               <div style={{ height: 22 }} />
-              <div className="eyebrow" style={{ color: "var(--ink-45)" }}>Stratégie de mise en marché</div>
+              <div className="eyebrow" style={{ color: "var(--ink-45)" }}>{locatif ? "Plan de mise en location" : audit ? "Plan de relance" : "Stratégie de mise en marché"}</div>
               <hr className="rule" style={{ margin: "8px 0 2px" }} />
               <ul className="strategy">
                 {report.etapes_commercialisation.map((e, i) => {

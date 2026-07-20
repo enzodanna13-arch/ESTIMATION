@@ -1,6 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { buildDvfReferences } from "./references";
 import { surfaceDependancesHabitables, surfaceHabitableTotale } from "./surfaces";
+import type { LoyerIndicateur } from "./loyers";
 import type {
   DvfSale,
   EstimationReport,
@@ -107,6 +108,34 @@ const FINAL_SCHEMA = {
   ],
 } as const;
 
+/** Schéma adapté à la mission (le locatif exprime tout en €/mois + rendement). */
+function schemaFor(mission: string): Record<string, unknown> {
+  const schema = JSON.parse(JSON.stringify(FINAL_SCHEMA)) as {
+    properties: Record<string, { description?: string } & Record<string, unknown>>;
+    required: string[];
+  };
+  if (mission === "locatif") {
+    schema.properties.prix_estime.description = "Loyer mensuel estimé (cœur de fourchette), en €/mois hors charges";
+    schema.properties.fourchette_basse.description = "= loyer du scénario Vente rapide (mise en location immédiate), €/mois";
+    schema.properties.fourchette_haute.description = "= loyer du scénario Prix optimal (loyer conseillé, = prix_presentation), €/mois";
+    schema.properties.prix_m2.description = "Loyer mensuel par m² habitable";
+    schema.properties.prix_presentation.description = "Loyer conseillé à l'affichage (= scénario Prix optimal), €/mois";
+    schema.properties.base_mediane.description = "Loyer de base : indicateur officiel €/m² × surface habitable totale, arrondi à la dizaine (€/mois)";
+    schema.properties.references_dvf.description = "TOUJOURS un tableau vide [] pour une estimation locative";
+    schema.properties.delai_vente_estime.description = "Délai estimé de mise en location";
+    schema.properties.valeur_venale_indicative = {
+      type: "number",
+      description: "Valeur de VENTE indicative du bien (euros), fondée sur les ventes DVF fournies actualisées — sert au calcul du rendement",
+    };
+    schema.properties.rendement_brut = {
+      type: "number",
+      description: "Rendement brut annuel en % = (loyer mensuel × 12) ÷ valeur vénale × 100, arrondi au dixième",
+    };
+    schema.required.push("valeur_venale_indicative", "rendement_brut");
+  }
+  return schema;
+}
+
 const JSON_RULE = `FORMAT DE SORTIE (impératif) : réponds EXCLUSIVEMENT par un objet JSON valide — aucun texte avant ou après, aucune balise markdown — conforme exactement au schéma JSON fourni dans le message utilisateur.`;
 
 const CONJONCTURE_RULE = `MARCHÉ BAISSIER (règle PRIORITAIRE) : le marché immobilier est actuellement en baisse — taux d'intérêt élevés, budget des acquéreurs en recul. Une vente conclue il y a un ou deux ans l'a donc été à un prix PLUS ÉLEVÉ que ce que le même bien vaudrait aujourd'hui. Conséquences obligatoires :
@@ -116,6 +145,14 @@ const CONJONCTURE_RULE = `MARCHÉ BAISSIER (règle PRIORITAIRE) : le marché imm
 - sois réaliste sur les délais de vente : ils s'allongent en marché baissier.`;
 
 const STYLE_RULE = `STYLE DES TEXTES (le dossier est remis directement AU CLIENT vendeur) : ADRESSE-TOI À LUI : « votre maison », « votre appartement », « vous », « nous vous conseillons » — jamais « le vendeur », « le bien à estimer » ni la troisième personne. Écris SIMPLE et clair : phrases courtes (une idée par phrase), vocabulaire courant, pas de jargon (« ancre de valeur », « transposable », « décote conjoncturelle », « médiane des actés »…) — dis plutôt « les ventes réelles », « les biens comparables au vôtre se sont vendus entre X et Y », « le marché refuse au-delà de Z ». Chaque texte d'analyse : 2 à 4 phrases maximum, compréhensibles à la première lecture.`;
+
+const AUDIT_RULE = `MISSION : AUDIT DE COMMERCIALISATION. Le bien est DÉJÀ EN VENTE et ne se vend pas (prix affiché, ancienneté, visites et offres fournis dans la fiche). En plus de l'estimation complète :
+- positionnement_marche = le DIAGNOSTIC en 3 à 4 phrases simples : pourquoi le bien ne se vend pas (écart entre le prix affiché et la valeur de marché actualisée, présentation, cible), chiffres à l'appui.
+- points_faibles = les freins concrets à la vente identifiés ; points_forts = les atouts à mieux mettre en avant dans l'annonce.
+- scenarios_prix : « Prix optimal » = le PRIX DE RELANCE conseillé (repositionnement) — sous le prix affiché actuel si celui-ci est au-dessus du marché ; « Vente rapide » = l'option coup de fusil.
+- etapes_commercialisation = PLAN DE RELANCE concret : repositionnement du prix, re-shooting photo, réécriture de l'annonce, re-publication (retrouver la fraîcheur), élargissement de la diffusion, home staging…
+- argumentaire_vendeur = les points clés chiffrés pour faire accepter le repositionnement au client (ex. « à ce prix, votre bien est ignoré : N visites en M mois — au prix de relance, il revient dans la zone où les acheteurs cliquent »).
+- delai_vente_estime = délai estimé APRÈS repositionnement.`;
 
 const PROXIMITE_RULE = `PROXIMITÉ (impératif) : chaque vente DVF de la liste indique son adresse et sa distance au bien. APPARTEMENT → priorité absolue aux ventes à la MÊME ADRESSE (même copropriété : comparables parfaits), puis même rue, puis rayon proche. MAISON → priorité aux environs immédiats (même rue, rayon ~1 km), puis quartier. N'utilise les ventes éloignées que faute de mieux, et signale-le. La médiane des références doit refléter le micro-marché du bien, pas la commune entière.`;
 
@@ -177,8 +214,45 @@ ${(input.dependances ?? []).length ? `- Dépendances : ${(input.dependances ?? [
 ## Contexte de vente
 - Prix souhaité par le vendeur : ${input.prixSouhaiteVendeur ? `${input.prixSouhaiteVendeur} €` : "non communiqué"}
 - Contexte : ${input.contexteVente || "n.c."}
-${input.commentaires ? `- Commentaires du négociateur : ${input.commentaires}` : ""}`;
+${input.commentaires ? `- Commentaires du négociateur : ${input.commentaires}` : ""}
+${
+  input.mission === "audit"
+    ? `
+## Commercialisation en cours (le bien ne se vend pas)
+- Prix affiché actuel : ${input.prixAffiche ? `${input.prixAffiche} €` : "n.c."}
+- En vente depuis : ${input.moisEnVente ?? "?"} mois | Visites réalisées : ${input.nbVisites ?? "n.c."} | Offres reçues : ${input.nbOffres ?? "n.c."}
+- Baisses de prix déjà réalisées : ${input.baissesPrix || "aucune"}`
+    : ""
+}${
+  input.mission === "locatif"
+    ? `
+## Projet locatif
+- Location : ${input.meuble || "Vide"}
+- Loyer envisagé par le propriétaire : ${input.loyerSouhaite ? `${input.loyerSouhaite} €/mois` : "non communiqué"}`
+    : ""
+}`;
 }
+
+const LOCATIF_SYSTEM = `Tu es un expert en gestion locative d'une agence haut de gamme. Tu produis une ESTIMATION LOCATIVE : TOUS les montants principaux (prix_estime, fourchette_basse, fourchette_haute, prix_presentation, prix des scénarios, montants des ajustements, base_mediane) sont des LOYERS MENSUELS en euros par mois (hors charges). prix_m2 = loyer mensuel par m².
+
+RÈGLES :
+- Analyse CHAQUE photo fournie (numérotées dans l'ordre : 1 = première) : pièce/vue identifiée, bons points, défauts — ces fiches figurent dans le dossier remis au client propriétaire. Note l'état par catégorie (etat_notes, 1 à 5) et chiffre impact_etat en euros/mois signés. Sans photo : analyse_par_photo et etat_notes vides, impact_etat 0.
+- MÉTHODE (chemin imposé, dans cet ordre) :
+  1. BASE → l'indicateur OFFICIEL de loyer de la commune est fourni (« carte des loyers », €/m²/mois) : base_mediane = indicateur €/m² × surface habitable totale, arrondie à la dizaine d'euros. Si l'indicateur est indisponible, estime prudemment le niveau local et baisse l'indice de confiance.
+  2. AJUSTEMENTS → PLUS-VALUES (atouts réels : extérieur, DPE performant, stationnement, meublé, état, annexes…) et DÉCOTES (défauts : travaux, DPE F/G, nuisances…) en euros/MOIS, dont la somme depuis base_mediane aboutit exactement à prix_estime. GARDE-FOUS : plus-values ≤ ~15 % de la base, décotes ≤ ~15 % (sauf contrainte légale majeure), chaque facteur compté UNE fois.
+  3. FOURCHETTE → fourchette_basse = prix du scénario « Vente rapide » (mise en location immédiate) ; fourchette_haute = prix du scénario « Prix optimal » (loyer conseillé, = prix_presentation) ; écart total 4 à 8 %. « Prix plafond » = garde-fou interne : le loyer au-delà duquel le bien resterait vacant.
+  4. RENDEMENT → valeur_venale_indicative = valeur de VENTE indicative du bien, fondée sur les ventes réelles DVF fournies (actualisées au marché actuel) ; rendement_brut = (prix_estime × 12) ÷ valeur_venale_indicative × 100, arrondi au dixième.
+- CADRE LÉGAL : si le DPE est F ou G, rappelle les contraintes (gel des loyers, interdiction progressive de louer les passoires) dans les points de vigilance et tiens-en compte dans le loyer. Si la commune est en zone d'encadrement des loyers connue, signale-le.
+- references_dvf : tableau VIDE [] (pas de tableau de ventes dans un dossier locatif). analyse_dvf = 2 à 3 phrases simples sur le marché locatif local (niveau officiel des loyers, demande).
+- scenarios_prix : exactement 3, prix croissants, en €/mois — « Vente rapide » (location immédiate, léger sous-marché), « Prix optimal » (loyer conseillé), « Prix plafond » (à ne pas dépasser : vacance locative).
+- delai_vente_estime = délai estimé de mise en location.
+- description_bien, points forts/faibles, etapes_commercialisation (plan de mise en location : annonce, photos, visites, dossier locataire) et argumentaire_vendeur (points clés pour le propriétaire, dont le rendement) : adressés directement au client.
+- indice_confiance : reflète la fiabilité de l'indicateur (nombre d'annonces observées) et la cohérence des données.
+- Réponds intégralement en français.
+
+${STYLE_RULE}
+
+${JSON_RULE}`;
 
 function ageMois(dateIso: string): number {
   const t = new Date(dateIso).getTime();
@@ -229,9 +303,17 @@ export async function computeFinalReport(
   input: PropertyInput,
   dvfSales: DvfSale[],
   onProgress: (label: string) => void = () => {},
+  loyer: LoyerIndicateur | null = null,
 ): Promise<EstimationReport> {
   const client = new Anthropic();
   const { model, effort } = modelConfig();
+  const mission = input.mission ?? "vente";
+  const system =
+    mission === "locatif"
+      ? LOCATIF_SYSTEM
+      : mission === "audit"
+        ? `${FINAL_SYSTEM}\n\n${AUDIT_RULE}`
+        : FINAL_SYSTEM;
 
   const content: Anthropic.ContentBlockParam[] = [];
   for (const photo of input.photos.slice(0, 20)) {
@@ -246,12 +328,30 @@ export async function computeFinalReport(
 
 # VENTES RÉELLES DVF (commune entière du code postal ${input.codePostal}, triées par proximité avec le bien)
 ${dvfBlock(dvfSales)}
-
+${
+  mission === "locatif"
+    ? `
+# INDICATEUR OFFICIEL DE LOYER (« carte des loyers », Ministère du Logement)
+${
+        loyer
+          ? `- Commune : ${loyer.commune} | Typologie : ${loyer.typologie} | Millésime ${loyer.millesime}
+- Loyer d'annonce prédit : ${loyer.loyerM2} €/m²/mois (intervalle ${loyer.loyerM2Bas} – ${loyer.loyerM2Haut} €/m²) — ${loyer.nbAnnonces} annonces observées sur la commune`
+          : "(indicateur indisponible pour cette commune — estime prudemment le niveau local et baisse l'indice de confiance)"
+      }
+`
+    : ""
+}
 # TA MISSION
-Produis l'avis de valeur final, fondé uniquement sur ces ventes réelles : analyse chaque photo, sélectionne les références les plus proches, fixe la base médiane, les ajustements (dont l'actualisation au marché actuel), la fourchette (5-8 % d'écart justifié) et les 3 scénarios de prix.
+${
+  mission === "locatif"
+    ? "Produis l'estimation locative complète : analyse chaque photo, fixe le loyer de base depuis l'indicateur officiel, les ajustements en €/mois, la fourchette de loyer, les 3 scénarios, la valeur vénale indicative (ventes DVF actualisées) et le rendement brut."
+    : mission === "audit"
+      ? "Produis l'audit de commercialisation complet : estimation de la valeur réelle (ventes DVF actualisées), diagnostic chiffré des raisons de la non-vente, prix de relance conseillé et plan de relance concret."
+      : "Produis l'avis de valeur final, fondé uniquement sur ces ventes réelles : analyse chaque photo, sélectionne les références les plus proches, fixe la base médiane, les ajustements (dont l'actualisation au marché actuel), la fourchette (4-6 % d'écart justifié) et les 3 scénarios de prix."
+}
 
 # SCHÉMA JSON DE LA RÉPONSE (respecte-le exactement)
-${JSON.stringify(FINAL_SCHEMA)}`,
+${JSON.stringify(schemaFor(mission))}`,
   });
 
   onProgress(
@@ -264,7 +364,7 @@ ${JSON.stringify(FINAL_SCHEMA)}`,
     model,
     max_tokens: 16000,
     thinking: { type: "adaptive" },
-    system: FINAL_SYSTEM,
+    system,
     output_config: { effort },
     messages: [{ role: "user", content }],
   });
@@ -278,13 +378,22 @@ ${JSON.stringify(FINAL_SCHEMA)}`,
   const r = parseJsonLoose(text);
 
   // Références DVF : sélection du rédacteur, sinon la sélection déterministe
-  // — jamais de tableau vide tant que des ventes DVF existent.
-  const deterministic = buildDvfReferences(dvfSales, input);
+  // — jamais de tableau vide tant que des ventes DVF existent. En mission
+  // locative, pas de tableau de ventes et la base = indicateur de loyer.
+  const deterministic = mission === "locatif" ? null : buildDvfReferences(dvfSales, input);
   const referencesDvf =
-    arr<ReferenceDvf>(r.references_dvf).length > 0
-      ? arr<ReferenceDvf>(r.references_dvf)
-      : deterministic.references;
-  const baseMediane = num(r.base_mediane) || deterministic.baseMediane;
+    mission === "locatif"
+      ? []
+      : arr<ReferenceDvf>(r.references_dvf).length > 0
+        ? arr<ReferenceDvf>(r.references_dvf)
+        : (deterministic?.references ?? []);
+  const loyerBase = loyer
+    ? Math.round((loyer.loyerM2 * surfaceHabitableTotale(input)) / 10) * 10
+    : 0;
+  const baseMediane =
+    mission === "locatif"
+      ? num(r.base_mediane) || loyerBase
+      : num(r.base_mediane) || (deterministic?.baseMediane ?? 0);
 
   const report: EstimationReport = {
     prix_estime: num(r.prix_estime),
@@ -318,6 +427,8 @@ ${JSON.stringify(FINAL_SCHEMA)}`,
     points_faibles: arr(r.points_faibles),
     strategie_commercialisation: str(r.strategie_commercialisation),
     argumentaire_vendeur: str(r.argumentaire_vendeur),
+    valeur_venale_indicative: num(r.valeur_venale_indicative),
+    rendement_brut: num(r.rendement_brut),
   };
   if (report.prix_estime <= 0 || report.fourchette_basse <= 0) {
     throw new Error("Réponse IA incomplète (prix manquants)");

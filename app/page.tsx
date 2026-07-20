@@ -51,6 +51,14 @@ const initialInput: PropertyInput = {
   dependances: [],
   chargesCopro: null,
   taxeFonciere: null,
+  mission: "vente" as const,
+  prixAffiche: null,
+  moisEnVente: null,
+  nbVisites: null,
+  nbOffres: null,
+  baissesPrix: "",
+  meuble: "Vide",
+  loyerSouhaite: null,
   prixSouhaiteVendeur: null,
   contexteVente: "",
   commentaires: "",
@@ -403,6 +411,31 @@ export default function Home() {
           <Report result={result} input={input} onReset={() => { setResult(null); setStep(0); }} />
         ) : (
           <>
+            <div className="mb-6 grid gap-3 sm:grid-cols-3 print:hidden">
+              {(
+                [
+                  ["vente", "💶", "Estimation vente", "Avis de valeur pour vendre le bien"],
+                  ["audit", "🔍", "Audit de commercialisation", "Le bien est en vente et ne se vend pas"],
+                  ["locatif", "🔑", "Estimation locative", "Loyer conseillé + rendement locatif"],
+                ] as const
+              ).map(([m, icon, titre, texte]) => (
+                <button
+                  key={m}
+                  type="button"
+                  onClick={() => set("mission", m)}
+                  className={`rounded-2xl border-2 p-4 text-left transition ${
+                    (input.mission ?? "vente") === m
+                      ? "border-copper bg-copper-soft/50 shadow-md"
+                      : "border-slate-200 bg-white hover:border-slate-300"
+                  }`}
+                >
+                  <div className="mb-1 text-2xl">{icon}</div>
+                  <div className="text-sm font-bold text-navy">{titre}</div>
+                  <div className="mt-0.5 text-xs text-slate-500">{texte}</div>
+                </button>
+              ))}
+            </div>
+
             <nav className="mb-8 print:hidden">
               <div className="flex items-center">
                 {STEPS.map((label, i) => (
@@ -736,15 +769,56 @@ export default function Home() {
 
               {step === 4 && (
                 <>
-                  <h2 className="mb-1 text-xl font-bold text-navy">Contexte de vente</h2>
+                  <h2 className="mb-1 text-xl font-bold text-navy">
+                    {input.mission === "audit"
+                      ? "Commercialisation en cours"
+                      : input.mission === "locatif"
+                        ? "Projet locatif"
+                        : "Contexte de vente"}
+                  </h2>
                   <p className="mb-6 text-sm text-slate-500">
-                    Si le vendeur a un prix en tête, l&apos;IA le positionnera face au marché et vous
-                    fournira l&apos;argumentaire pour recadrer si besoin.
+                    {input.mission === "audit"
+                      ? "Décrivez la mise en vente actuelle : l'IA diagnostique pourquoi le bien ne se vend pas et propose un prix de relance + un plan d'action."
+                      : input.mission === "locatif"
+                        ? "L'IA fixe le loyer conseillé à partir des indicateurs officiels de loyers et calcule le rendement brut."
+                        : "Si le vendeur a un prix en tête, l'IA le positionnera face au marché et vous fournira l'argumentaire pour recadrer si besoin."}
                   </p>
+
+                  {input.mission === "audit" && (
+                    <div className="mb-4 grid gap-4 sm:grid-cols-2">
+                      <Field label="Prix affiché actuellement (€) *">
+                        <input type="number" className={inputCls} value={input.prixAffiche ?? ""} onChange={(e) => set("prixAffiche", num(e.target.value))} placeholder="349000" />
+                      </Field>
+                      <Field label="En vente depuis (mois) *">
+                        <input type="number" className={inputCls} value={input.moisEnVente ?? ""} onChange={(e) => set("moisEnVente", num(e.target.value))} placeholder="5" />
+                      </Field>
+                      <Field label="Nombre de visites réalisées">
+                        <input type="number" className={inputCls} value={input.nbVisites ?? ""} onChange={(e) => set("nbVisites", num(e.target.value))} placeholder="4" />
+                      </Field>
+                      <Field label="Nombre d'offres reçues">
+                        <input type="number" className={inputCls} value={input.nbOffres ?? ""} onChange={(e) => set("nbOffres", num(e.target.value))} placeholder="0" />
+                      </Field>
+                      <Field label="Baisses de prix déjà réalisées" className="sm:col-span-2">
+                        <input className={inputCls} value={input.baissesPrix ?? ""} onChange={(e) => set("baissesPrix", e.target.value)} placeholder="Ex. 365 000 € → 349 000 € en avril" />
+                      </Field>
+                    </div>
+                  )}
+
+                  {input.mission === "locatif" && (
+                    <div className="mb-4 grid gap-4 sm:grid-cols-2">
+                      <Select label="Type de location" value={input.meuble ?? "Vide"} onChange={(v) => set("meuble", v)} options={["Vide", "Meublé"]} />
+                      <Field label="Loyer envisagé par le propriétaire (€/mois)">
+                        <input type="number" className={inputCls} value={input.loyerSouhaite ?? ""} onChange={(e) => set("loyerSouhaite", num(e.target.value))} placeholder="1200" />
+                      </Field>
+                    </div>
+                  )}
+
                   <div className="grid gap-4 sm:grid-cols-2">
-                    <Field label="Prix souhaité par le vendeur (€)">
-                      <input type="number" className={inputCls} value={input.prixSouhaiteVendeur ?? ""} onChange={(e) => set("prixSouhaiteVendeur", num(e.target.value))} placeholder="320000" />
-                    </Field>
+                    {(input.mission ?? "vente") === "vente" && (
+                      <Field label="Prix souhaité par le vendeur (€)">
+                        <input type="number" className={inputCls} value={input.prixSouhaiteVendeur ?? ""} onChange={(e) => set("prixSouhaiteVendeur", num(e.target.value))} placeholder="320000" />
+                      </Field>
+                    )}
                     <Field label="Contexte (mutation, succession, divorce…)">
                       <input className={inputCls} value={input.contexteVente} onChange={(e) => set("contexteVente", e.target.value)} />
                     </Field>

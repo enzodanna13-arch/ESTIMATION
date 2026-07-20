@@ -68,6 +68,21 @@ export interface PropertyInput {
   chargesCopro: number | null;
   taxeFonciere: number | null;
 
+  // Mission de l'outil : estimation vente (défaut), audit d'un bien qui ne
+  // se vend pas, ou estimation locative
+  mission?: "vente" | "audit" | "locatif";
+
+  // Audit de commercialisation
+  prixAffiche?: number | null; // prix actuellement affiché
+  moisEnVente?: number | null; // ancienneté de la mise en vente (mois)
+  nbVisites?: number | null;
+  nbOffres?: number | null;
+  baissesPrix?: string; // baisses de prix déjà réalisées
+
+  // Estimation locative
+  meuble?: string; // "Vide" | "Meublé"
+  loyerSouhaite?: number | null; // loyer envisagé par le propriétaire (€/mois)
+
   // Contexte de vente
   prixSouhaiteVendeur: number | null;
   contexteVente: string;
@@ -180,6 +195,9 @@ export interface EstimationReport {
   points_faibles: string[];
   strategie_commercialisation: string;
   argumentaire_vendeur: string;
+  // Estimation locative uniquement
+  valeur_venale_indicative?: number; // valeur de vente indicative (rendement)
+  rendement_brut?: number; // % annuel brut
 }
 
 export interface MarketStudy {

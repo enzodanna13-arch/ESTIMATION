@@ -1,4 +1,5 @@
 import { medianPrixM2 } from "./dvf";
+import type { LoyerIndicateur } from "./loyers";
 import { surfaceHabitableTotale } from "./surfaces";
 import type { DvfSale, EstimationReport, PropertyInput } from "./types";
 
@@ -118,5 +119,51 @@ export function computeFallbackEstimate(
       "Mode statistique : positionner le bien légèrement sous la concurrence active pour capter les acheteurs en veille, et rester sous le niveau des invendus. Pour une stratégie détaillée, activer le moteur IA.",
     argumentaire_vendeur:
       "Cette estimation croise les prix de vente réels (DVF), les biens actuellement en concurrence et les biens qui ne se vendent pas : un prix au-dessus de cette fourchette expose à une commercialisation longue et à une négociation finale plus dure.",
+  };
+}
+
+
+/**
+ * Moteur statistique locatif (sans IA) : loyer = indicateur officiel × surface
+ * habitable totale, fourchette ± l'intervalle de prédiction de l'indicateur.
+ */
+export function computeFallbackLocatif(
+  input: PropertyInput,
+  dvfSales: DvfSale[],
+  loyer: LoyerIndicateur | null,
+): EstimationReport {
+  const base = computeFallbackEstimate(input, dvfSales);
+  const surface = surfaceHabitableTotale(input);
+  const m2 = loyer?.loyerM2 ?? 0;
+  const loyerBase = m2 > 0 && surface > 0 ? Math.round((m2 * surface) / 10) * 10 : 0;
+  const bas = loyerBase > 0 ? Math.round((loyerBase * 0.96) / 10) * 10 : 0;
+  const haut = loyerBase;
+  const venale = base.prix_estime;
+  return {
+    ...base,
+    prix_estime: loyerBase > 0 ? Math.round(((bas + haut) / 2) / 10) * 10 : 0,
+    fourchette_basse: bas,
+    fourchette_haute: haut,
+    prix_m2: m2 > 0 ? Math.round(m2 * 100) / 100 : 0,
+    prix_presentation: haut,
+    base_mediane: loyerBase,
+    references_dvf: [],
+    ajustements: [],
+    delai_vente_estime: "2 à 6 semaines",
+    positionnement_marche: loyerBase > 0
+      ? `L'indicateur officiel des loyers donne ${m2} €/m² sur la commune : pour ${surface} m², le loyer de base ressort à ${loyerBase} €/mois. La fourchette proposée encadre ce niveau de marché.`
+      : "L'indicateur officiel des loyers est indisponible pour cette commune : estimation locative à confirmer lors du rendez-vous.",
+    analyse_dvf: loyerBase > 0
+      ? `Le loyer d'annonce médian observé sur la commune est de ${m2} €/m²/mois (source officielle « carte des loyers »).`
+      : "",
+    scenarios_prix: loyerBase > 0
+      ? [
+          { strategie: "Vente rapide", prix: bas, delai: "1 à 3 semaines", commentaire: "Un loyer légèrement sous le marché pour louer immédiatement et choisir parmi plusieurs dossiers." },
+          { strategie: "Prix optimal", prix: haut, delai: "2 à 6 semaines", commentaire: "Le loyer conseillé, au niveau du marché constaté sur la commune." },
+          { strategie: "Prix plafond", prix: Math.round((haut * 1.05) / 10) * 10, delai: "2 mois et plus", commentaire: "Au-delà, le bien risque de rester vacant." },
+        ]
+      : base.scenarios_prix,
+    valeur_venale_indicative: venale,
+    rendement_brut: venale > 0 && loyerBase > 0 ? Math.round(((loyerBase * 12) / venale) * 1000) / 10 : 0,
   };
 }

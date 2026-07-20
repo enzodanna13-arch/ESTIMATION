@@ -24,7 +24,7 @@ async function fetchWithTimeout(url: string, ms: number): Promise<Response | nul
  * Paris, Lyon et Marseille sont découpés par arrondissement municipal dans
  * les fichiers DVF : on interroge d'abord ce niveau, puis les communes.
  */
-async function getInseeCodes(codePostal: string): Promise<string[]> {
+export async function getInseeCodes(codePostal: string): Promise<string[]> {
   for (const type of ["arrondissement-municipal", ""]) {
     const url = `${GEO_API}?codePostal=${codePostal}&fields=code&format=json${type ? `&type=${type}` : ""}`;
     const res = await fetchWithTimeout(url, 8000);
