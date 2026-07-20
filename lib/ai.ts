@@ -188,7 +188,7 @@ const CONJONCTURE_RULE = `MARCHÉ BAISSIER (règle PRIORITAIRE) : le marché imm
 
 const STYLE_RULE = `STYLE DES TEXTES (le dossier est remis directement AU CLIENT vendeur) : ADRESSE-TOI À LUI : « votre maison », « votre appartement », « vous », « nous vous conseillons » — jamais « le vendeur », « le bien à estimer » ni la troisième personne. Écris SIMPLE et clair : phrases courtes (une idée par phrase), vocabulaire courant, pas de jargon (« ancre de valeur », « transposable », « décote conjoncturelle », « médiane des actés »…) — dis plutôt « les ventes réelles », « les biens comparables au vôtre se sont vendus entre X et Y », « le marché refuse au-delà de Z ». Chaque texte d'analyse : 2 à 4 phrases maximum, compréhensibles à la première lecture.`;
 
-const AUDIT_RULE = `MISSION : AUDIT DE COMMERCIALISATION. Le bien est DÉJÀ EN VENTE et ne se vend pas (prix affiché, ancienneté, visites et offres fournis dans la fiche). En plus de l'estimation complète :
+const AUDIT_RULE = `MISSION : AUDIT DE COMMERCIALISATION. Le bien est DÉJÀ EN VENTE et ne se vend pas. La fiche du bien a été EXTRAITE DE L'ANNONCE EN LIGNE elle-même (le négociateur n'a saisi que le client et le lien) : les champs absents de l'annonce sont vides — ne les invente pas, et fonde ton estimation sur les caractéristiques disponibles + les ventes DVF, exactement comme une estimation classique. En plus de l'estimation complète :
 - positionnement_marche = le DIAGNOSTIC en 3 à 4 phrases simples : pourquoi le bien ne se vend pas (écart entre le prix affiché et la valeur de marché actualisée, présentation, cible), chiffres à l'appui.
 - points_faibles = les freins concrets à la vente identifiés ; points_forts = les atouts à mieux mettre en avant dans l'annonce.
 - scenarios_prix : « Prix optimal » = le PRIX DE RELANCE conseillé (repositionnement) — sous le prix affiché actuel si celui-ci est au-dessus du marché ; « Vente rapide » = l'option coup de fusil.
@@ -386,6 +386,147 @@ function parseJsonLoose(text: string): Record<string, unknown> {
 const num = (v: unknown) => (typeof v === "number" && Number.isFinite(v) ? v : 0);
 const str = (v: unknown) => (typeof v === "string" ? v : "");
 const arr = <T,>(v: unknown) => (Array.isArray(v) ? (v as T[]) : []);
+
+// ---------------------------------------------------------------------------
+// Audit de commercialisation : le négociateur ne saisit QUE le client et le
+// lien de l'annonce. Cette phase ouvre l'annonce et en extrait la fiche
+// complète du bien (localisation, surface, pièces, DPE, prix affiché…),
+// qui alimente ensuite le même moteur d'estimation DVF que le mode Vente.
+// ---------------------------------------------------------------------------
+
+const EXTRACT_SCHEMA = {
+  type: "object",
+  properties: {
+    adresse: { type: "string", description: "Adresse ou rue si mentionnée, sinon le secteur indiqué par l'annonce" },
+    codePostal: { type: "string", description: "Code postal à 5 chiffres — déduis-le de la ville/du secteur si l'annonce ne l'affiche pas (web_search autorisé)" },
+    ville: { type: "string" },
+    quartier: { type: "string" },
+    typeBien: { type: "string", enum: ["appartement", "maison", "terrain", "immeuble", "local"] },
+    surfaceHabitable: { type: "number", description: "m² habitables (0 si introuvable)" },
+    surfaceTerrain: { type: "number", description: "m² de terrain (0 si sans objet)" },
+    nbPieces: { type: "number" },
+    nbChambres: { type: "number" },
+    nbSallesDeBain: { type: "number" },
+    etage: { type: "string" },
+    ascenseur: { type: "boolean" },
+    anneeConstruction: { type: "string" },
+    dpe: { type: "string", description: "Lettre A à G, vide si absente" },
+    ges: { type: "string" },
+    etatGeneral: { type: "string", description: "Ex. Bon état, Travaux à prévoir — d'après le texte de l'annonce" },
+    chauffage: { type: "string" },
+    exposition: { type: "array", items: { type: "string" } },
+    exterieur: { type: "array", items: { type: "string" }, description: "Balcon, Terrasse, Jardin, Piscine…" },
+    stationnement: { type: "string" },
+    cave: { type: "boolean" },
+    vue: { type: "string" },
+    environnement: { type: "string" },
+    luminosite: { type: "string" },
+    equipements: { type: "array", items: { type: "string" } },
+    chargesCopro: { type: "number", description: "Charges de copropriété €/mois (0 si absentes)" },
+    taxeFonciere: { type: "number", description: "€/an (0 si absente)" },
+    prixAffiche: { type: "number", description: "PRIX AFFICHÉ actuel de l'annonce en euros" },
+    baissesPrix: { type: "string", description: "Baisses de prix détectées (mention de l'annonce ou historique), vide sinon" },
+    commentaires: { type: "string", description: "2 à 3 phrases : ce que l'annonce met en avant + nombre et qualité apparente des photos" },
+  },
+  required: ["codePostal", "ville", "typeBien", "surfaceHabitable", "prixAffiche"],
+} as const;
+
+/** Ouvre l'annonce en ligne et en extrait la fiche du bien (mission audit). */
+export async function extractListingFacts(
+  url: string,
+  onProgress: (label: string) => void = () => {},
+): Promise<Record<string, unknown>> {
+  const client = new Anthropic();
+  const { model } = modelConfig();
+  onProgress("Lecture de l'annonce en ligne : extraction de la fiche du bien…");
+  let messages: Anthropic.MessageParam[] = [
+    {
+      role: "user",
+      content: `Ouvre cette annonce immobilière avec web_fetch et extrais la fiche EXACTE du bien : ${url}
+
+RÈGLES :
+- N'invente RIEN : un champ absent de l'annonce reste vide ("", 0, false ou []).
+- codePostal est OBLIGATOIRE : s'il n'apparaît pas, déduis-le de la ville ou du quartier (web_search autorisé pour retrouver le code postal de la commune).
+- prixAffiche = le prix actuellement affiché par l'annonce, en euros.
+- Si l'annonce est inaccessible (page bloquée), réponds quand même avec ce que l'URL et une recherche web permettent d'établir (ville, type de bien…), champs inconnus vides.
+
+FORMAT : réponds EXCLUSIVEMENT par un objet JSON conforme à ce schéma :
+${JSON.stringify(EXTRACT_SCHEMA)}`,
+    },
+  ];
+  let message: Anthropic.Message;
+  let continuations = 0;
+  for (;;) {
+    const stream = client.messages.stream({
+      model,
+      max_tokens: 4000,
+      system:
+        "Tu extrais la fiche d'un bien immobilier depuis son annonce en ligne. Tu réponds exclusivement par un objet JSON valide conforme au schéma fourni, sans texte autour.",
+      tools: [
+        { type: "web_fetch_20260209" as const, name: "web_fetch" as const, max_uses: 3 },
+        { type: "web_search_20260209" as const, name: "web_search" as const, max_uses: 3 },
+      ],
+      output_config: { effort: "medium" },
+      messages,
+    });
+    message = await stream.finalMessage();
+    if (message.stop_reason === "pause_turn" && continuations < 3) {
+      continuations += 1;
+      messages = [...messages, { role: "assistant", content: message.content }];
+      continue;
+    }
+    break;
+  }
+  const text = message.content
+    .filter((b): b is Anthropic.TextBlock => b.type === "text")
+    .map((b) => b.text)
+    .join("");
+  return parseJsonLoose(text);
+}
+
+/**
+ * Fusionne la fiche extraite de l'annonce dans la saisie du négociateur :
+ * les champs extraits remplissent la fiche (en mission audit, seuls le
+ * client et le lien sont saisis), sans jamais toucher aux informations
+ * client/négociateur ni aux champs déjà renseignés à la main.
+ */
+export function mergeListingFacts(
+  input: PropertyInput,
+  facts: Record<string, unknown>,
+): PropertyInput {
+  const out: PropertyInput = { ...input };
+  const KEYS: (keyof PropertyInput)[] = [
+    "adresse", "codePostal", "ville", "quartier", "typeBien",
+    "surfaceHabitable", "surfaceTerrain", "nbPieces", "nbChambres", "nbSallesDeBain",
+    "etage", "ascenseur", "anneeConstruction", "dpe", "ges", "etatGeneral",
+    "chauffage", "exposition", "exterieur", "stationnement", "cave", "vue",
+    "environnement", "luminosite", "equipements", "chargesCopro", "taxeFonciere",
+    "prixAffiche", "baissesPrix",
+  ];
+  const empty = (v: unknown) =>
+    v === null || v === undefined || v === "" || v === 0 || v === false ||
+    (Array.isArray(v) && v.length === 0);
+  for (const k of KEYS) {
+    const v = facts[k];
+    if (empty(v)) continue;
+    if (empty(out[k]) || ["adresse", "codePostal", "ville", "typeBien", "surfaceHabitable"].includes(k)) {
+      (out as unknown as Record<string, unknown>)[k] = v as unknown;
+    }
+  }
+  // codePostal : ne garder que 5 chiffres valides
+  if (!/^\d{5}$/.test(out.codePostal ?? "")) {
+    const m = String(facts.codePostal ?? "").match(/\d{5}/);
+    out.codePostal = m ? m[0] : input.codePostal;
+  }
+  // Le résumé de l'annonce enrichit les commentaires sans écraser la saisie
+  const resume = typeof facts.commentaires === "string" ? facts.commentaires.trim() : "";
+  if (resume) {
+    out.commentaires = [input.commentaires?.trim(), `Lu dans l'annonce : ${resume}`]
+      .filter(Boolean)
+      .join("\n");
+  }
+  return out;
+}
 
 /** Estimation complète en une phase : photos + ventes réelles DVF (sans outils web). */
 export async function computeFinalReport(

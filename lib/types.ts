@@ -241,4 +241,5 @@ export interface EstimateResponse {
   dvfSource: "api" | "indisponible";
   engine: "ia" | "statistique";
   subject?: { lat: number; lon: number } | null; // position géocodée du bien (carte)
+  input?: PropertyInput; // saisie enrichie par l'annonce (mission audit par lien)
 }

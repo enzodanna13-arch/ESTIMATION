@@ -217,6 +217,10 @@ function LoadingOverlay({ status }: { status: string }) {
 export default function Home() {
   const [input, setInput] = useState<PropertyInput>(initialInput);
   const [step, setStep] = useState(0);
+  // Mission audit : la saisie se limite au client + lien de l'annonce —
+  // l'IA extrait la fiche du bien depuis l'annonce elle-même
+  const auditMode = (input.mission ?? "vente") === "audit";
+  const steps = auditMode ? (["Client", "Annonce à auditer"] as const) : STEPS;
   const [loading, setLoading] = useState(false);
   const [loadingStatus, setLoadingStatus] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -286,6 +290,7 @@ export default function Home() {
 
   const stepValid = (s: number): boolean => {
     if (s === 0) return input.clientNom.trim() !== "";
+    if (auditMode) return s !== 1 || /^https?:\/\/\S+/.test((input.urlAnnonce ?? "").trim());
     if (s === 1) return input.adresse.trim() !== "" && /^\d{5}$/.test(input.codePostal) && input.ville.trim() !== "";
     if (s === 2) return input.surfaceHabitable !== null && input.surfaceHabitable > 0;
     return true;
@@ -294,9 +299,11 @@ export default function Home() {
   const stepError = (s: number): string =>
     s === 0
       ? "Renseignez au minimum le nom du client vendeur."
-      : s === 1
-        ? "Renseignez l'adresse, un code postal à 5 chiffres et la ville."
-        : "Renseignez la surface habitable.";
+      : auditMode
+        ? "Collez le lien complet de l'annonce à auditer (https://…)."
+        : s === 1
+          ? "Renseignez l'adresse, un code postal à 5 chiffres et la ville."
+          : "Renseignez la surface habitable.";
 
   const goTo = (target: number) => {
     if (target <= step || [...Array(target).keys()].every(stepValid)) {
@@ -362,6 +369,11 @@ export default function Home() {
   };
 
   const submit = async () => {
+    // La dernière étape se valide aussi (en audit, c'est l'URL de l'annonce)
+    if (!stepValid(step)) {
+      setError(stepError(step));
+      return;
+    }
     setLoading(true);
     setLoadingStatus("");
     setError(null);
@@ -376,6 +388,9 @@ export default function Home() {
         engine: rapportPhase.engine,
         subject: rapportPhase.subject ?? null,
       } as unknown as EstimateResponse;
+      // Mission audit par lien : le serveur renvoie la fiche ENRICHIE par
+      // l'annonce (localisation, surface, DPE…) — le dossier l'affiche
+      if (rapportPhase.input) setInput(rapportPhase.input as PropertyInput);
       setResult(estimation);
       window.scrollTo({ top: 0, behavior: "smooth" });
       // La sauvegarde dans l'historique partagé est faite par le serveur
@@ -423,7 +438,7 @@ export default function Home() {
               {(
                 [
                   ["vente", "💶", "Estimation vente", "Avis de valeur pour vendre le bien"],
-                  ["audit", "🔍", "Audit de commercialisation", "Le bien est en vente et ne se vend pas"],
+                  ["audit", "🔍", "Audit de commercialisation", "Collez le lien de l'annonce : l'IA fait le reste"],
                   ["locatif", "🔑", "Estimation locative", "Loyer conseillé + rendement locatif"],
                   ["bienloue", "🏢", "Bien vendu loué", "Prix par la rentabilité nette 6 à 8 %"],
                 ] as const
@@ -431,7 +446,7 @@ export default function Home() {
                 <button
                   key={m}
                   type="button"
-                  onClick={() => set("mission", m)}
+                  onClick={() => { set("mission", m); setStep(0); }}
                   className={`rounded-2xl border-2 p-4 text-left transition ${
                     (input.mission ?? "vente") === m
                       ? "border-copper bg-copper-soft/50 shadow-md"
@@ -447,8 +462,8 @@ export default function Home() {
 
             <nav className="mb-8 print:hidden">
               <div className="flex items-center">
-                {STEPS.map((label, i) => (
-                  <div key={label} className={`flex items-center ${i < STEPS.length - 1 ? "flex-1" : ""}`}>
+                {steps.map((label, i) => (
+                  <div key={label} className={`flex items-center ${i < steps.length - 1 ? "flex-1" : ""}`}>
                     <button type="button" onClick={() => goTo(i)} className="group flex flex-col items-center gap-1.5">
                       <span
                         className={`flex h-9 w-9 items-center justify-center rounded-full text-sm font-bold transition ${
@@ -469,7 +484,7 @@ export default function Home() {
                         {label}
                       </span>
                     </button>
-                    {i < STEPS.length - 1 && (
+                    {i < steps.length - 1 && (
                       <div className={`mx-2 mb-5 h-0.5 flex-1 rounded ${i < step ? "bg-navy" : "bg-slate-300"}`} />
                     )}
                   </div>
@@ -551,7 +566,7 @@ export default function Home() {
                 </>
               )}
 
-              {step === 1 && (
+              {step === 1 && !auditMode && (
                 <>
                   <h2 className="mb-1 text-xl font-bold text-navy">Où se situe le bien ?</h2>
                   <p className="mb-6 text-sm text-slate-500">
@@ -575,7 +590,7 @@ export default function Home() {
                 </>
               )}
 
-              {step === 2 && (
+              {step === 2 && !auditMode && (
                 <>
                   <h2 className="mb-1 text-xl font-bold text-navy">Décrivez le bien</h2>
                   <p className="mb-6 text-sm text-slate-500">
@@ -742,7 +757,7 @@ export default function Home() {
                 </>
               )}
 
-              {step === 3 && (
+              {step === 3 && !auditMode && (
                 <>
                   <h2 className="mb-1 text-xl font-bold text-navy">Photos du bien</h2>
                   <p className="mb-6 text-sm text-slate-500">
@@ -776,11 +791,11 @@ export default function Home() {
                 </>
               )}
 
-              {step === 4 && (
+              {(auditMode ? step === 1 : step === 4) && (
                 <>
                   <h2 className="mb-1 text-xl font-bold text-navy">
                     {input.mission === "audit"
-                      ? "Commercialisation en cours"
+                      ? "L'annonce à auditer"
                       : input.mission === "locatif"
                         ? "Projet locatif"
                         : input.mission === "bienloue"
@@ -789,7 +804,7 @@ export default function Home() {
                   </h2>
                   <p className="mb-6 text-sm text-slate-500">
                     {input.mission === "audit"
-                      ? "Décrivez la mise en vente actuelle : l'IA diagnostique pourquoi le bien ne se vend pas et propose un prix de relance + un plan d'action."
+                      ? "Collez simplement le lien de l'annonce : l'IA lit l'annonce, en extrait la fiche du bien et son historique, estime la valeur réelle sur la même base de calcul que l'estimation classique, puis établit le diagnostic et les axes d'amélioration."
                       : input.mission === "locatif"
                         ? "L'IA fixe le loyer conseillé à partir des indicateurs officiels de loyers et calcule le rendement brut."
                         : input.mission === "bienloue"
@@ -798,25 +813,18 @@ export default function Home() {
                   </p>
 
                   {input.mission === "audit" && (
-                    <div className="mb-4 grid gap-4 sm:grid-cols-2">
-                      <Field label="Prix affiché actuellement (€) *">
-                        <input type="number" className={inputCls} value={input.prixAffiche ?? ""} onChange={(e) => set("prixAffiche", num(e.target.value))} placeholder="349000" />
-                      </Field>
-                      <Field label="En vente depuis (mois) *">
-                        <input type="number" className={inputCls} value={input.moisEnVente ?? ""} onChange={(e) => set("moisEnVente", num(e.target.value))} placeholder="5" />
-                      </Field>
-                      <Field label="Nombre de visites réalisées">
-                        <input type="number" className={inputCls} value={input.nbVisites ?? ""} onChange={(e) => set("nbVisites", num(e.target.value))} placeholder="4" />
-                      </Field>
-                      <Field label="Nombre d'offres reçues">
-                        <input type="number" className={inputCls} value={input.nbOffres ?? ""} onChange={(e) => set("nbOffres", num(e.target.value))} placeholder="0" />
-                      </Field>
-                      <Field label="Baisses de prix déjà réalisées" className="sm:col-span-2">
-                        <input className={inputCls} value={input.baissesPrix ?? ""} onChange={(e) => set("baissesPrix", e.target.value)} placeholder="Ex. 365 000 € → 349 000 € en avril" />
-                      </Field>
-                      <Field label="Lien de l'annonce en ligne (recommandé — l'IA l'analyse : ancienneté, baisses, texte, photos)" className="sm:col-span-2">
+                    <div className="mb-4">
+                      <Field label="Lien de l'annonce en ligne à auditer *">
                         <input className={inputCls} inputMode="url" value={input.urlAnnonce ?? ""} onChange={(e) => set("urlAnnonce", e.target.value)} placeholder="https://www.seloger.com/annonces/…" />
                       </Field>
+                      <div className="mt-4 rounded-xl border border-copper/40 bg-copper-soft/40 p-4 text-sm text-slate-700">
+                        <span className="font-semibold text-navy">C&apos;est tout ce qu&apos;il faut.</span>{" "}
+                        L&apos;IA ouvre l&apos;annonce et fait le reste : fiche du bien (localisation,
+                        surface, pièces, DPE, prix affiché), historique de diffusion (ancienneté,
+                        baisses de prix), estimation de la valeur réelle sur les ventes DVF du
+                        secteur — la même base de calcul que l&apos;estimation classique — puis prix
+                        de relance et recommandations (prix, texte, photos, diffusion).
+                      </div>
                     </div>
                   )}
 
@@ -891,9 +899,9 @@ export default function Home() {
                   <div className="mt-6 rounded-xl bg-slate-50 p-4 text-sm text-slate-600">
                     <span className="font-semibold text-navy">Récapitulatif :</span>{" "}
                     {[input.clientCivilite, input.clientPrenom, input.clientNom].filter(Boolean).join(" ") || "client n.c."} —{" "}
-                    {input.typeBien} {input.surfaceHabitable ?? "?"} m², {input.adresse || "adresse n.c."},{" "}
-                    {input.codePostal} {input.ville} — {input.photos.length} photo{input.photos.length > 1 ? "s" : ""},{" "}
-                    DPE {input.dpe || "n.c."}
+                    {auditMode
+                      ? (input.urlAnnonce?.trim() ? `annonce à auditer : ${input.urlAnnonce.trim()}` : "lien d'annonce à renseigner")
+                      : `${input.typeBien} ${input.surfaceHabitable ?? "?"} m², ${input.adresse || "adresse n.c."}, ${input.codePostal} ${input.ville} — ${input.photos.length} photo${input.photos.length > 1 ? "s" : ""}, DPE ${input.dpe || "n.c."}`}
                   </div>
                 </>
               )}
@@ -911,7 +919,7 @@ export default function Home() {
                 >
                   ← Retour
                 </button>
-                {step < STEPS.length - 1 ? (
+                {step < steps.length - 1 ? (
                   <button
                     type="button"
                     onClick={next}

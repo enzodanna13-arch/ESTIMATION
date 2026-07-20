@@ -1,4 +1,4 @@
-import { computeFinalReport } from "@/lib/ai";
+import { computeFinalReport, extractListingFacts, mergeListingFacts } from "@/lib/ai";
 import { fetchDvfContext } from "@/lib/dvf";
 import { computeFallbackBienLoue, computeFallbackEstimate, computeFallbackLocatif } from "@/lib/fallback";
 import { fetchLoyerIndicateur } from "@/lib/loyers";
@@ -25,9 +25,19 @@ export async function POST(request: Request) {
     return Response.json({ error: "Corps de requête invalide" }, { status: 400 });
   }
 
-  if (!body.codePostal || !body.typeBien) {
+  // En mission audit avec un lien d'annonce, la fiche du bien (localisation
+  // comprise) est extraite de l'annonce par l'IA : la saisie se limite au
+  // client + lien. Sinon, code postal et type de bien restent obligatoires.
+  const auditParLien = (body.mission ?? "vente") === "audit" && Boolean(body.urlAnnonce?.trim());
+  if (!auditParLien && (!body.codePostal || !body.typeBien)) {
     return Response.json(
       { error: "Le code postal et le type de bien sont obligatoires" },
+      { status: 400 },
+    );
+  }
+  if (auditParLien && !process.env.ANTHROPIC_API_KEY && !body.codePostal) {
+    return Response.json(
+      { error: "L'audit par lien d'annonce nécessite le moteur IA (clé non configurée)" },
       { status: 400 },
     );
   }
@@ -39,6 +49,31 @@ export async function POST(request: Request) {
       const heartbeat = setInterval(() => send({ type: "ping" }), 8000);
       try {
         const mission = body.mission ?? "vente";
+        // Audit par lien : l'IA ouvre l'annonce et en extrait la fiche du
+        // bien AVANT tout — l'estimation se déroule ensuite exactement
+        // comme une estimation classique (même base de calcul DVF)
+        if (auditParLien && process.env.ANTHROPIC_API_KEY) {
+          try {
+            const facts = await extractListingFacts(body.urlAnnonce!, (label: string) =>
+              send({ type: "status", label }),
+            );
+            body = mergeListingFacts(body, facts);
+          } catch (err) {
+            console.error("Extraction de l'annonce impossible :", err);
+          }
+          if (!/^\d{5}$/.test(body.codePostal ?? "")) {
+            send({
+              type: "error",
+              error:
+                "Impossible de lire la localisation dans cette annonce (portail bloqué ?). Réessayez, ou vérifiez que le lien est bien public.",
+            });
+            return;
+          }
+          send({
+            type: "status",
+            label: `Bien identifié : ${body.typeBien} ${body.surfaceHabitable ?? "?"} m² à ${body.ville || body.codePostal} — analyse du marché…`,
+          });
+        }
         send({ type: "status", label: "Récupération des ventes réelles autour du bien (DVF)…" });
         const [{ sales: dvfSales, subject }, loyer] = await Promise.all([
           fetchDvfContext(body.codePostal, body.typeBien, body.adresse, body.ville),
@@ -181,7 +216,9 @@ export async function POST(request: Request) {
         } catch (err) {
           console.error("Sauvegarde de l'historique impossible :", err);
         }
-        send({ type: "result", data: { phase: "rapport", report, dvfSales, dvfSource, engine, subject } });
+        // La fiche renvoyée inclut la saisie ENRICHIE par l'annonce (mission
+        // audit par lien) : le dossier affiche ainsi le bien complet
+        send({ type: "result", data: { phase: "rapport", report, dvfSales, dvfSource, engine, subject, input: body } });
       } catch (err) {
         send({ type: "error", error: err instanceof Error ? err.message : "Erreur inattendue" });
       } finally {
