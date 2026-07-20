@@ -815,47 +815,66 @@ export default function Home() {
 
                   {input.mission === "audit" && (() => {
                     // Multidiffusion : la même annonce peut être fournie via
-                    // plusieurs liens (site de l'agence, SeLoger, Leboncoin…)
-                    // — si un portail bloque, l'IA ouvre le suivant
+                    // plusieurs liens, chacun ANNOTÉ de sa source (notre
+                    // agence, agence concurrente, portail…) — si un site
+                    // bloque, l'IA ouvre le suivant
+                    const SOURCES = ["Site de notre agence", "Agence concurrente", "SeLoger", "Leboncoin", "Bien'ici", "Autre portail"];
                     const links = input.urlsAnnonce?.length ? input.urlsAnnonce : [input.urlAnnonce ?? ""];
-                    const setLinks = (nextLinks: string[]) =>
+                    const srcs = links.map((_, i) => input.sourcesAnnonce?.[i] ?? SOURCES[Math.min(i, 1)]);
+                    const setLinks = (nextLinks: string[], nextSrcs: string[]) =>
                       setInput((prev) => ({
                         ...prev,
                         urlsAnnonce: nextLinks,
+                        sourcesAnnonce: nextSrcs,
                         urlAnnonce: nextLinks.find((u) => u.trim())?.trim() ?? "",
                       }));
                     return (
                       <div className="mb-4">
                         {links.map((u, i) => (
-                          <div key={i} className="mb-3 flex items-end gap-2">
-                            <Field
-                              label={i === 0 ? "Lien de l'annonce en ligne à auditer *" : `La même annonce sur un autre site (lien ${i + 1})`}
-                              className="flex-1"
-                            >
-                              <input
-                                className={inputCls}
-                                inputMode="url"
-                                value={u}
-                                onChange={(e) => setLinks(links.map((x, j) => (j === i ? e.target.value : x)))}
-                                placeholder={i === 0 ? "https://www.votre-agence.fr/annonce/… (site d'agence de préférence)" : "https://www.seloger.com/annonces/…"}
-                              />
-                            </Field>
-                            {i > 0 && (
-                              <button
-                                type="button"
-                                onClick={() => setLinks(links.filter((_, j) => j !== i))}
-                                className="mb-0.5 rounded-lg border border-slate-300 px-3 py-2.5 text-sm text-slate-500 transition hover:bg-slate-100"
-                                aria-label="Retirer ce lien"
-                              >
-                                ✕
-                              </button>
-                            )}
+                          <div key={i} className="mb-3 rounded-xl border border-slate-200 bg-slate-50/60 p-3">
+                            <div className="mb-2 flex items-center justify-between gap-2">
+                              <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                                Lien {i + 1}{i === 0 ? " — annonce à auditer *" : " — la même annonce sur un autre site"}
+                              </span>
+                              {i > 0 && (
+                                <button
+                                  type="button"
+                                  onClick={() => setLinks(links.filter((_, j) => j !== i), srcs.filter((_, j) => j !== i))}
+                                  className="rounded-lg border border-slate-300 px-2.5 py-1 text-xs text-slate-500 transition hover:bg-slate-100"
+                                  aria-label="Retirer ce lien"
+                                >
+                                  ✕ Retirer
+                                </button>
+                              )}
+                            </div>
+                            <div className="grid gap-3 sm:grid-cols-[200px_1fr]">
+                              <Field label="Source du lien">
+                                <select
+                                  className={inputCls}
+                                  value={srcs[i]}
+                                  onChange={(e) => setLinks(links, srcs.map((x, j) => (j === i ? e.target.value : x)))}
+                                >
+                                  {SOURCES.map((s) => (
+                                    <option key={s} value={s}>{s}</option>
+                                  ))}
+                                </select>
+                              </Field>
+                              <Field label="Adresse du lien (URL)">
+                                <input
+                                  className={inputCls}
+                                  inputMode="url"
+                                  value={u}
+                                  onChange={(e) => setLinks(links.map((x, j) => (j === i ? e.target.value : x)), srcs)}
+                                  placeholder={i === 0 ? "https://www.votre-agence.fr/annonce/… (site d'agence de préférence)" : "https://www.seloger.com/annonces/…"}
+                                />
+                              </Field>
+                            </div>
                           </div>
                         ))}
                         {links.length < 4 && (
                           <button
                             type="button"
-                            onClick={() => setLinks([...links, ""])}
+                            onClick={() => setLinks([...links, ""], [...srcs, links.length === 0 ? SOURCES[0] : SOURCES[2]])}
                             className="rounded-lg border border-dashed border-copper px-4 py-2 text-sm font-semibold text-copper transition hover:bg-copper-soft/40"
                           >
                             + Ajouter un autre lien de la même annonce (autre site)
@@ -868,9 +887,11 @@ export default function Home() {
                           baisses de prix), estimation de la valeur réelle sur les ventes DVF du
                           secteur — la même base de calcul que l&apos;estimation classique — puis prix
                           de relance et recommandations (prix, texte, photos, diffusion).{" "}
-                          <b>Astuce :</b> mettez le lien du site de l&apos;agence en premier, et ajoutez
-                          les liens des portails (SeLoger, Leboncoin…) — si un site bloque la lecture,
-                          l&apos;IA passe au suivant et croise les versions (écarts de prix, dates).
+                          <b>Astuce :</b> mettez le lien du site de l&apos;agence en premier, ajoutez
+                          les liens des portails (SeLoger, Leboncoin…) et annotez la source de chacun —
+                          si un site bloque la lecture, l&apos;IA passe au suivant et croise les versions.
+                          Si le bien est diffusé par plusieurs agences (mandat simple), l&apos;IA le
+                          relève : prix divergents entre agences = constat d&apos;audit à part entière.
                         </div>
                       </div>
                     );

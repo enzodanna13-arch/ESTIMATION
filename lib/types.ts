@@ -81,6 +81,7 @@ export interface PropertyInput {
   baissesPrix?: string; // baisses de prix déjà réalisées
   urlAnnonce?: string; // lien principal de l'annonce en ligne à auditer
   urlsAnnonce?: string[]; // liens supplémentaires de la MÊME annonce (multidiffusion)
+  sourcesAnnonce?: string[]; // annotation de chaque lien (même index) : notre agence, agence concurrente, portail…
 
   // Estimation locative
   meuble?: string; // "Vide" | "Meublé"

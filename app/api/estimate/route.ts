@@ -1,4 +1,4 @@
-import { auditUrls, computeFinalReport, extractListingFacts, mergeListingFacts } from "@/lib/ai";
+import { auditLiens, auditUrls, computeFinalReport, extractListingFacts, mergeListingFacts } from "@/lib/ai";
 import { fetchDvfContext } from "@/lib/dvf";
 import { computeFallbackBienLoue, computeFallbackEstimate, computeFallbackLocatif } from "@/lib/fallback";
 import { fetchLoyerIndicateur } from "@/lib/loyers";
@@ -54,7 +54,7 @@ export async function POST(request: Request) {
         // comme une estimation classique (même base de calcul DVF)
         if (auditParLien && process.env.ANTHROPIC_API_KEY) {
           try {
-            const facts = await extractListingFacts(auditUrls(body), (label: string) =>
+            const facts = await extractListingFacts(auditLiens(body), (label: string) =>
               send({ type: "status", label }),
             );
             body = mergeListingFacts(body, facts);
