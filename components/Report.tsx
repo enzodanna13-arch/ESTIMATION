@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import { calculPlusValue } from "@/lib/plusvalue";
 import { medianeReferences } from "@/lib/references";
 import { surfaceDependancesHabitables, surfaceHabitableTotale } from "@/lib/surfaces";
 import type { EstimateResponse, PropertyInput } from "@/lib/types";
@@ -114,6 +115,14 @@ export default function Report({
   // + dépendances habitables (studio, T2/T3/T4, maison d'amis)
   const surfaceDeps = surfaceDependancesHabitables(input);
   const surface = surfaceHabitableTotale(input);
+  // Plus-value immobilière (dossier bien loué) : calcul indicatif complet au
+  // prix optimal, avec le net vendeur en vente rapide en contrepoint
+  const pv = bienloue
+    ? calculPlusValue(fourchetteHaute, input.prixAcquisition ?? 0, input.anneeAcquisition ?? 0, input.fraisAcquisitionReels, input.travauxRealises, year)
+    : null;
+  const pvRapide = bienloue
+    ? calculPlusValue(fourchetteBasse, input.prixAcquisition ?? 0, input.anneeAcquisition ?? 0, input.fraisAcquisitionReels, input.travauxRealises, year)
+    : null;
   const margeNego = report.prix_estime > 0 ? (((prixPresentation - report.prix_estime) / report.prix_estime) * 100).toFixed(1) : "0";
 
   const photoAnalyses = report.analyse_par_photo.filter((pa) => input.photos[pa.photo - 1]);
@@ -199,6 +208,8 @@ export default function Report({
   const secMethode = S();
   const secAjust = hasAjust ? S() : "";
   const secReco = S();
+  const hasPlusValue = Boolean(pv);
+  const secPV = hasPlusValue ? S() : "";
   const secSign = S();
   let pageNo = 1;
   const P = () => ++pageNo;
@@ -211,6 +222,7 @@ export default function Report({
   const pgMethode = P();
   const pgAjust = hasAjust ? P() : 0;
   const pgReco = P();
+  const pgPV = hasPlusValue ? P() : 0;
   const pgSign = P();
 
   const footLeft = `${AGENCE.nom} ${AGENCE.enseigne} — ${AGENCE.adresse} · ${AGENCE.tel}`;
@@ -841,6 +853,67 @@ export default function Report({
 
           <Foot left={footLeft} right={`Réf. ${refDossier}`} />
         </section>
+
+        {/* ============ PLUS-VALUE IMMOBILIÈRE & NET VENDEUR ============ */}
+        {hasPlusValue && pv && (
+          <section className="page">
+            <PageHead page={pgPV} label={docLabel} />
+            <SectionTitle idx={secPV} title="Plus-value & net vendeur" />
+            <p className="section-lead" style={{ marginBottom: 12 }}>
+              Vous détenez votre bien depuis {pv.dureeDetention} an{pv.dureeDetention > 1 ? "s" : ""} :
+              voici, au prix optimal de {euro.format(pv.prixVente)}, le calcul complet de votre
+              plus-value, de l&apos;impôt et de ce qu&apos;il vous restera réellement.
+            </p>
+
+            <div className="kpi-row" style={{ marginBottom: 14 }}>
+              <div className="kpi"><div className="k">Durée de détention</div><div className="v" style={{ fontSize: "13pt" }}>{pv.dureeDetention} ans</div></div>
+              <div className="kpi"><div className="k">Abattement impôt (19 %)</div><div className="v" style={{ fontSize: "13pt" }}>{pv.exonereIR ? "Exonéré" : `${pv.abattementIRPct.toLocaleString("fr-FR")} %`}</div></div>
+              <div className="kpi"><div className="k">Abattement prélèv. sociaux</div><div className="v" style={{ fontSize: "13pt" }}>{pv.exonerePS ? "Exonéré" : `${pv.abattementPSPct.toLocaleString("fr-FR")} %`}</div></div>
+              <div className="kpi"><div className="k">Impôt total estimé</div><div className="v" style={{ fontSize: "13pt" }}>{euro.format(pv.impotTotal)}</div></div>
+            </div>
+
+            <div className="eyebrow" style={{ color: "var(--ink-45)" }}>Le calcul, étape par étape — au prix optimal</div>
+            <hr className="rule" style={{ margin: "8px 0 4px" }} />
+            <table>
+              <tbody>
+                <tr><td>Prix de vente retenu (Prix optimal)</td><td className="r"><span className="money">{euro.format(pv.prixVente)}</span></td></tr>
+                <tr><td>Prix d&apos;acquisition ({input.anneeAcquisition})</td><td className="r">{euro.format(pv.prixAcquisition)}</td></tr>
+                <tr><td>+ Frais d&apos;acquisition {pv.forfaitFrais ? "(forfait 7,5 %)" : "(frais réels)"}</td><td className="r">{euro.format(pv.fraisAcquisition)}</td></tr>
+                {pv.travaux > 0 && (
+                  <tr><td>+ Travaux {pv.forfaitTravaux ? "(forfait 15 % — détention ≥ 5 ans)" : "(montants justifiés)"}</td><td className="r">{euro.format(pv.travaux)}</td></tr>
+                )}
+                <tr><td><b>= Prix d&apos;acquisition corrigé</b></td><td className="r"><b>{euro.format(pv.prixAcquisitionCorrige)}</b></td></tr>
+                <tr><td><b>Plus-value brute</b></td><td className="r"><b>{euro.format(pv.plusValueBrute)}</b></td></tr>
+                <tr><td>Impôt sur le revenu — 19 % après abattement de {pv.abattementIRPct.toLocaleString("fr-FR")} % (base {euro.format(pv.baseIR)})</td><td className="r">− {euro.format(pv.impotIR)}</td></tr>
+                <tr><td>Prélèvements sociaux — 17,2 % après abattement de {pv.abattementPSPct.toLocaleString("fr-FR")} % (base {euro.format(pv.basePS)})</td><td className="r">− {euro.format(pv.impotPS)}</td></tr>
+                {pv.surtaxe > 0 && (
+                  <tr className="warn-row"><td>Taxe supplémentaire (plus-value imposable &gt; 50 000 €)</td><td className="r">− {euro.format(pv.surtaxe)}</td></tr>
+                )}
+                <tr><td><b>Impôt total sur la plus-value</b></td><td className="r"><b>− {euro.format(pv.impotTotal)}</b></td></tr>
+                <tr className="median-row"><td><b>Net vendeur estimé</b></td><td className="r"><span className="money">{euro.format(pv.netVendeur)}</span></td></tr>
+              </tbody>
+            </table>
+
+            <div className="callout" style={{ marginTop: 14 }}>
+              <b>Ce qu&apos;il vous reste selon le scénario choisi :</b>{" "}
+              {euro.format(pv.netVendeur)} net au prix optimal
+              {pvRapide ? <> · {euro.format(pvRapide.netVendeur)} net en vente rapide (impôt {euro.format(pvRapide.impotTotal)})</> : null}.
+              {pv.exonereIR && pv.exonerePS
+                ? " Bonne nouvelle : après 30 ans de détention, votre plus-value est totalement exonérée d'impôt."
+                : pv.exonereIR
+                  ? " Après 22 ans de détention, votre plus-value est exonérée d'impôt sur le revenu : ne restent que les prélèvements sociaux."
+                  : ""}
+            </div>
+
+            <p className="photo-note" style={{ marginTop: 8 }}>
+              Calcul indicatif selon les règles fiscales en vigueur (régime des particuliers, bien
+              autre que résidence principale) ; le calcul définitif est établi par le notaire au
+              moment de la vente.
+            </p>
+
+            <Foot left={footLeft} right={`Réf. ${refDossier}`} />
+          </section>
+        )}
 
         {/* ============ ARGUMENTAIRE & BON POUR ACCORD ============ */}
         <section className="page">

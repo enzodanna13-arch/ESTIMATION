@@ -63,6 +63,10 @@ const initialInput: PropertyInput = {
   loyerSouhaite: null,
   loyerActuel: null,
   chargesNonRecuperables: null,
+  prixAcquisition: null,
+  anneeAcquisition: null,
+  fraisAcquisitionReels: null,
+  travauxRealises: null,
   prixSouhaiteVendeur: null,
   contexteVente: "",
   commentaires: "",
@@ -849,6 +853,25 @@ export default function Home() {
                           </b>
                         </div>
                       )}
+                      <h3 className="mb-1 mt-6 text-sm font-bold uppercase tracking-wide text-navy">Plus-value immobilière (facultatif)</h3>
+                      <p className="mb-4 text-xs text-slate-500">
+                        Renseignez l&apos;acquisition pour ajouter au dossier le calcul complet de la plus-value :
+                        durée de détention, abattements fiscaux, impôt (19 % + 17,2 %) et net vendeur.
+                      </p>
+                      <div className="mb-4 grid gap-4 sm:grid-cols-2">
+                        <Field label="Prix d'acquisition du bien (€)">
+                          <input type="number" className={inputCls} value={input.prixAcquisition ?? ""} onChange={(e) => set("prixAcquisition", num(e.target.value))} placeholder="95000" />
+                        </Field>
+                        <Field label="Année d'acquisition">
+                          <input type="number" className={inputCls} value={input.anneeAcquisition ?? ""} onChange={(e) => set("anneeAcquisition", num(e.target.value))} placeholder="2015" />
+                        </Field>
+                        <Field label="Frais d'acquisition réels (€ — sinon forfait 7,5 %)">
+                          <input type="number" className={inputCls} value={input.fraisAcquisitionReels ?? ""} onChange={(e) => set("fraisAcquisitionReels", num(e.target.value))} placeholder="laisser vide = forfait" />
+                        </Field>
+                        <Field label="Travaux justifiés (€ — sinon forfait 15 % si +5 ans)">
+                          <input type="number" className={inputCls} value={input.travauxRealises ?? ""} onChange={(e) => set("travauxRealises", num(e.target.value))} placeholder="laisser vide = forfait" />
+                        </Field>
+                      </div>
                     </>
                   )}
 

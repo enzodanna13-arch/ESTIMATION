@@ -90,6 +90,12 @@ export interface PropertyInput {
   loyerActuel?: number | null; // loyer actuellement perçu (€/mois hors charges)
   chargesNonRecuperables?: number | null; // charges propriétaire non récupérables (€/an)
 
+  // Plus-value immobilière (calcul fiscal du dossier bien loué)
+  prixAcquisition?: number | null; // prix d'achat du bien (€)
+  anneeAcquisition?: number | null; // année d'acquisition
+  fraisAcquisitionReels?: number | null; // frais réels (€) — sinon forfait 7,5 %
+  travauxRealises?: number | null; // travaux justifiés (€) — sinon forfait 15 % si ≥ 5 ans
+
   // Contexte de vente
   prixSouhaiteVendeur: number | null;
   contexteVente: string;

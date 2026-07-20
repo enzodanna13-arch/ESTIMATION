@@ -285,7 +285,12 @@ ${input.urlAnnonce ? `- ANNONCE EN LIGNE À AUDITER : ${input.urlAnnonce}` : "- 
 - Loyer actuellement perçu : ${input.loyerActuel ? `${input.loyerActuel} €/mois hors charges` : "NON RENSEIGNÉ"} (${input.meuble || "Vide"})
 - Charges non récupérables du propriétaire : ${input.chargesNonRecuperables ?? 0} €/an | Taxe foncière : ${input.taxeFonciere ?? 0} €/an
 - LOYER NET ANNUEL = ${loyerNetAnnuel(input)} € — c'est LA base du calcul
-- FOURCHETTE IMPOSÉE (rentabilité nette 6 à 8 %) : Vente rapide = ${prixParRendement(loyerNetAnnuel(input), RENDEMENT_NET_HAUT)} € (8 % net) → Prix optimal = ${prixParRendement(loyerNetAnnuel(input), RENDEMENT_NET_BAS)} € (6 % net)`
+- FOURCHETTE IMPOSÉE (rentabilité nette 6 à 8 %) : Vente rapide = ${prixParRendement(loyerNetAnnuel(input), RENDEMENT_NET_HAUT)} € (8 % net) → Prix optimal = ${prixParRendement(loyerNetAnnuel(input), RENDEMENT_NET_BAS)} € (6 % net)${
+        input.prixAcquisition
+          ? `
+- Acquisition : ${input.prixAcquisition} € en ${input.anneeAcquisition ?? "?"} — le dossier inclut une page de calcul de plus-value immobilière (abattements par durée de détention, impôt 19 % + prélèvements sociaux 17,2 %, net vendeur) calculée automatiquement : tu peux évoquer la fiscalité de la revente dans l'argumentaire, sans refaire le calcul.`
+          : ""
+      }`
     : ""
 }`;
 }
