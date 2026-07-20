@@ -264,6 +264,46 @@ export async function POST(request: Request) {
             report = { ...report, fourchette_basse: scRapide, fourchette_haute: scOptimal };
           }
         }
+        // Audit : le prix rendu est TOUJOURS STRICTEMENT INFÉRIEUR au prix
+        // affiché actuel — relancer au prix qui ne se vend pas n'aurait
+        // aucun effet. Plafond : au moins ~1 % sous le prix affiché.
+        if (mission === "audit" && (body.prixAffiche ?? 0) > 0) {
+          const affiche = body.prixAffiche!;
+          const stepC = affiche >= 200000 ? 5000 : 1000;
+          const cap = Math.floor((affiche * 0.99) / stepC) * stepC;
+          if (cap > 0 && report.fourchette_haute > cap) {
+            const haut = cap;
+            let rapide = report.fourchette_basse;
+            if (rapide >= haut) rapide = Math.floor((haut * 0.95) / 1000) * 1000;
+            const stepMid = haut >= 200000 ? 5000 : 1000;
+            const optimalMid = Math.max(rapide, Math.floor((rapide + haut) / 2 / stepMid) * stepMid);
+            const estime = Math.min(Math.max(report.prix_estime, rapide), haut);
+            // Le tableau d'ajustements reste exact : l'écart d'alignement
+            // devient une ligne explicite du calcul
+            const diffEstime = estime - report.prix_estime;
+            const ajustements =
+              diffEstime !== 0 && report.ajustements.length > 0
+                ? [...report.ajustements, { libelle: "Alignement sous le prix affiché actuel (bien en échec à ce prix)", montant: diffEstime }]
+                : report.ajustements;
+            const surfAudit = surfaceHabitableTotale(body);
+            report = {
+              ...report,
+              fourchette_basse: rapide,
+              fourchette_haute: haut,
+              prix_presentation: optimalMid,
+              prix_estime: estime,
+              prix_m2: surfAudit > 0 ? Math.round(estime / surfAudit) : report.prix_m2,
+              ajustements,
+              scenarios_prix: report.scenarios_prix.map((s) =>
+                s.strategie === "Prix optimal"
+                  ? { ...s, prix: optimalMid }
+                  : s.strategie === "Vente rapide"
+                    ? { ...s, prix: rapide }
+                    : { ...s, prix: Math.min(s.prix, cap) },
+              ),
+            };
+          }
+        }
         // Historique PARTAGÉ de l'équipe (Vercel Blob) : sauvegarde
         // automatique du dossier — un échec n'empêche jamais le résultat
         try {
