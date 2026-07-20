@@ -82,6 +82,7 @@ export interface PropertyInput {
   urlAnnonce?: string; // lien principal de l'annonce en ligne à auditer
   urlsAnnonce?: string[]; // liens supplémentaires de la MÊME annonce (multidiffusion)
   sourcesAnnonce?: string[]; // annotation de chaque lien (même index) : notre agence, agence concurrente, portail…
+  auditWebNotes?: string; // constats web de la phase d'extraction (ancienneté, baisses, qualité de l'annonce)
 
   // Estimation locative
   meuble?: string; // "Vide" | "Meublé"

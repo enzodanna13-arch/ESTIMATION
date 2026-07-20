@@ -195,11 +195,11 @@ const AUDIT_RULE = `MISSION : AUDIT DE COMMERCIALISATION. Le bien est DÉJÀ EN 
 - etapes_commercialisation = PLAN DE RELANCE concret : repositionnement du prix, re-shooting photo, réécriture de l'annonce, re-publication (retrouver la fraîcheur), élargissement de la diffusion, home staging…
 - argumentaire_vendeur = les points clés chiffrés pour faire accepter le repositionnement au client (ex. « à ce prix, votre bien est ignoré : N visites en M mois — au prix de relance, il revient dans la zone où les acheteurs cliquent »).
 - delai_vente_estime = délai estimé APRÈS repositionnement.
-- ANALYSE DE L'ANNONCE EN LIGNE (si une URL d'annonce est fournie) : OUVRE l'annonce avec web_fetch. Si PLUSIEURS liens de la MÊME annonce sont fournis (multidiffusion), ouvre le premier accessible et sers-toi des autres pour croiser : écarts de prix entre portails, dates de publication différentes = matière première de l'audit. Chaque lien est annoté de sa SOURCE (site de notre agence, agence concurrente, portail…) : si le bien est diffusé par PLUSIEURS AGENCES (mandat simple), relève-le — prix divergents entre agences, annonces incohérentes ou concurrentes = constat majeur qui brouille les acheteurs, avec une recommandation dédiée (catégorie Diffusion). Analyse le prix affiché, le titre et le texte (accroche, longueur, atouts mis en avant, clarté), la qualité, le nombre et l'ordre des photos, les mentions de baisse. Utilise web_search pour retrouver l'HISTORIQUE de l'annonce : ancienneté réelle, baisses de prix successives, re-publications (sites d'historique d'annonces, cache des portails). Renseigne :
-  · anciennete_annonce (ce que tu as détecté, avec la source) et baisses_annonce (chronologie des baisses détectées) — croise avec les informations saisies par le négociateur ;
+- AUDIT DE L'ANNONCE : tu n'as PAS d'accès web dans cette phase. Les CONSTATS RELEVÉS EN LIGNE (ancienneté, baisses, qualité du titre/texte/photos) figurent déjà dans la fiche, section « Constats relevés en ligne » — c'est TA matière première, ne cherche pas à re-vérifier et n'invente RIEN au-delà. Si le bien est diffusé par PLUSIEURS AGENCES (mandat simple, visible dans les sources des liens ou les constats), relève-le : prix divergents, annonces concurrentes = constat majeur qui brouille les acheteurs (catégorie Diffusion). Renseigne :
+  · anciennete_annonce et baisses_annonce : reprends les constats fournis, croisés avec la saisie du négociateur — indique « Non vérifiable » si rien n'a été détecté ;
   · analyse_annonce : 2 à 3 phrases simples, le verdict global sur l'annonce ;
-  · recommandations_annonce : 4 à 8 recommandations CONCRÈTES, façon audit professionnel — chacune avec categorie (Prix, Titre & texte, Photos, Diffusion, Mise en valeur), constat (ce qui pèche aujourd'hui, factuel), recommandation (l'action précise à mener) et priorite (haute / moyenne / basse). Classe-les par priorité décroissante.
-  Si l'annonce est inaccessible (portail bloqué), appuie-toi sur les informations saisies, dis ce que tu n'as pas pu vérifier — n'invente JAMAIS un constat.`;
+  · recommandations_annonce : 4 à 8 recommandations CONCRÈTES, façon audit professionnel — chacune avec categorie (Prix, Titre & texte, Photos, Diffusion, Mise en valeur), constat (ce qui pèche aujourd'hui, factuel, tiré des constats fournis ou du positionnement prix), recommandation (l'action précise à mener) et priorite (haute / moyenne / basse). Classe-les par priorité décroissante.
+  Si les constats fournis sont vides (annonce inaccessible), appuie-toi sur les informations disponibles, dis ce qui n'a pas pu être vérifié — n'invente JAMAIS un constat.`;
 
 const PROXIMITE_RULE = `PROXIMITÉ (impératif) : chaque vente DVF de la liste indique son adresse et sa distance au bien. APPARTEMENT → priorité absolue aux ventes à la MÊME ADRESSE (même copropriété : comparables parfaits), puis même rue, puis rayon proche. MAISON → priorité aux environs immédiats (même rue, rayon ~1 km), puis quartier. N'utilise les ventes éloignées que faute de mieux, et signale-le. La médiane des références doit refléter le micro-marché du bien, pas la commune entière.`;
 
@@ -269,7 +269,14 @@ ${
 - Prix affiché actuel : ${input.prixAffiche ? `${input.prixAffiche} €` : "n.c."}
 - En vente depuis : ${input.moisEnVente ?? "?"} mois | Visites réalisées : ${input.nbVisites ?? "n.c."} | Offres reçues : ${input.nbOffres ?? "n.c."}
 - Baisses de prix déjà réalisées : ${input.baissesPrix || "aucune"}
-${auditLiens(input).length > 0 ? auditLiens(input).map((l, i) => `- ANNONCE EN LIGNE À AUDITER${auditLiens(input).length > 1 ? ` — diffusion ${i + 1}/${auditLiens(input).length} de la même annonce` : ""} (source : ${l.source}) : ${l.url}`).join("\n") : "- (aucun lien d'annonce fourni : audite à partir des informations saisies)"}`
+${auditLiens(input).length > 0 ? auditLiens(input).map((l, i) => `- Annonce auditée${auditLiens(input).length > 1 ? ` — diffusion ${i + 1}/${auditLiens(input).length} de la même annonce` : ""} (source : ${l.source}) : ${l.url}`).join("\n") : "- (aucun lien d'annonce fourni : audite à partir des informations saisies)"}${
+      input.auditWebNotes
+        ? `
+
+### Constats relevés en ligne (audit automatique de l'annonce — ta matière première)
+${input.auditWebNotes}`
+        : ""
+    }`
     : ""
 }${
   input.mission === "locatif"
@@ -452,10 +459,12 @@ const EXTRACT_SCHEMA = {
     chargesCopro: { type: "number", description: "Charges de copropriété €/mois (0 si absentes)" },
     taxeFonciere: { type: "number", description: "€/an (0 si absente)" },
     prixAffiche: { type: "number", description: "PRIX AFFICHÉ actuel de l'annonce en euros" },
-    baissesPrix: { type: "string", description: "Baisses de prix détectées (mention de l'annonce ou historique), vide sinon" },
+    baissesPrix: { type: "string", description: "Baisses de prix détectées (mention de l'annonce ou historique web), chronologie courte, vide sinon" },
+    ancienneteAnnonce: { type: "string", description: "Ancienneté détectée de la diffusion (annonce + historique web), avec la source, vide si non vérifiable" },
+    qualiteAnnonce: { type: "string", description: "3 à 6 constats CONCIS sur l'annonce elle-même, un par ligne : titre (accroche ?), texte (longueur, atouts mis en avant, clarté), photos (nombre, ordre, qualité apparente), mentions de baisse, diffusion multi-agences éventuelle" },
     commentaires: { type: "string", description: "2 à 3 phrases : ce que l'annonce met en avant + nombre et qualité apparente des photos" },
   },
-  required: ["codePostal", "ville", "typeBien", "surfaceHabitable", "prixAffiche"],
+  required: ["codePostal", "ville", "typeBien", "surfaceHabitable", "prixAffiche", "ancienneteAnnonce", "baissesPrix", "qualiteAnnonce"],
 } as const;
 
 /** Ouvre l'annonce en ligne et en extrait la fiche du bien (mission audit).
@@ -475,11 +484,14 @@ export async function extractListingFacts(
       content: `Voici ${liens.length > 1 ? "les liens de la MÊME annonce immobilière, diffusée sur plusieurs sites" : "le lien d'une annonce immobilière"}, chacun annoté de sa source entre crochets (site de notre agence, agence concurrente, portail…) :
 ${liste}
 
-Ouvre l'annonce avec web_fetch (commence par le lien 1 ; si un site bloque l'accès, passe au lien suivant) et extrais la fiche EXACTE du bien. Les annotations t'indiquent la nature de chaque site : un site d'agence est généralement plus accessible qu'un portail. ${liens.length > 1 ? "Si plusieurs versions sont accessibles, CROISE-les : elles se complètent (une version peut afficher le DPE ou l'adresse que l'autre masque), et un écart de prix entre elles est une information précieuse (annonce non mise à jour, baisse en cours — ou prix différents selon les agences si plusieurs agences diffusent le bien) — signale-le dans commentaires." : ""}
+C'est la SEULE phase avec accès au web : fais TOUT le travail en ligne ici, en une passe efficace.
+1. FICHE DU BIEN → ouvre l'annonce avec web_fetch (commence par le lien 1 ; si un site bloque l'accès, passe au lien suivant, les annotations t'indiquent la nature de chaque site) et extrais la fiche EXACTE du bien.
+2. AUDIT DE LA DIFFUSION → note tes constats sur l'annonce elle-même (qualiteAnnonce : titre, texte, photos, mentions de baisse) et utilise UNE OU DEUX recherches web maximum pour l'historique (ancienneteAnnonce, baissesPrix : ancienneté réelle, baisses successives, re-publications).${liens.length > 1 ? " Si plusieurs versions sont accessibles, CROISE-les : elles se complètent, et un écart de prix entre elles (annonce non mise à jour, prix différents selon les agences) est un constat précieux — signale-le." : ""}
 
 RÈGLES :
+- SOIS RAPIDE ET DIRECT : pas d'exploration exhaustive — dès que tu as la fiche et 2-3 constats solides, réponds. Un champ non trouvé reste vide, ce n'est pas un échec.
 - N'invente RIEN : un champ absent de l'annonce reste vide ("", 0, false ou []).
-- codePostal est OBLIGATOIRE : s'il n'apparaît pas, déduis-le de la ville ou du quartier (web_search autorisé pour retrouver le code postal de la commune).
+- codePostal est OBLIGATOIRE : s'il n'apparaît pas, déduis-le de la ville ou du quartier.
 - prixAffiche = le prix actuellement affiché par l'annonce, en euros (le plus récent si les versions divergent).
 - Si TOUTES les versions sont inaccessibles (pages bloquées), réponds quand même avec ce que les URLs et une recherche web permettent d'établir (ville, type de bien…), champs inconnus vides.
 
@@ -492,19 +504,20 @@ ${JSON.stringify(EXTRACT_SCHEMA)}`,
   for (;;) {
     const stream = client.messages.stream({
       model,
-      max_tokens: 4000,
+      max_tokens: 5000,
       system:
-        "Tu extrais la fiche d'un bien immobilier depuis son annonce en ligne. Tu réponds exclusivement par un objet JSON valide conforme au schéma fourni, sans texte autour.",
+        "Tu extrais la fiche d'un bien immobilier depuis son annonce en ligne et tu relèves les constats d'audit (ancienneté, baisses, qualité de l'annonce). Tu travailles VITE : le strict nécessaire d'outils, pas d'exploration superflue. Tu réponds exclusivement par un objet JSON valide conforme au schéma fourni, sans texte autour.",
       tools: [
-        { type: "web_fetch_20260209" as const, name: "web_fetch" as const, max_uses: 5 },
-        { type: "web_search_20260209" as const, name: "web_search" as const, max_uses: 3 },
+        { type: "web_fetch_20260209" as const, name: "web_fetch" as const, max_uses: 4 },
+        { type: "web_search_20260209" as const, name: "web_search" as const, max_uses: 2 },
       ],
       output_config: { effort: "medium" },
       messages,
     });
     message = await stream.finalMessage();
-    if (message.stop_reason === "pause_turn" && continuations < 3) {
+    if (message.stop_reason === "pause_turn" && continuations < 4) {
       continuations += 1;
+      onProgress("Audit de l'annonce en ligne : historique et constats…");
       messages = [...messages, { role: "assistant", content: message.content }];
       continue;
     }
@@ -558,6 +571,16 @@ export function mergeListingFacts(
       .filter(Boolean)
       .join("\n");
   }
+  // Constats web (ancienneté, baisses, qualité de l'annonce) : digest passé
+  // à la phase de rédaction, qui n'a PLUS d'accès web — une seule passe en
+  // ligne pour tout l'audit
+  const sTxt = (v: unknown) => (typeof v === "string" ? v.trim() : "");
+  const notes = [
+    sTxt(facts.ancienneteAnnonce) ? `Ancienneté détectée : ${sTxt(facts.ancienneteAnnonce)}` : "",
+    sTxt(facts.baissesPrix) ? `Baisses de prix détectées : ${sTxt(facts.baissesPrix)}` : "",
+    sTxt(facts.qualiteAnnonce) ? `Constats sur l'annonce (titre, texte, photos) :\n${sTxt(facts.qualiteAnnonce)}` : "",
+  ].filter(Boolean);
+  if (notes.length) out.auditWebNotes = notes.join("\n");
   return out;
 }
 
@@ -622,47 +645,26 @@ ${
 ${JSON.stringify(schemaFor(mission))}`,
   });
 
-  // L'audit d'une annonce en ligne réactive les outils web (uniquement
-  // pour ce mode) : ouverture de l'annonce + recherche de son historique
-  const useWebTools = mission === "audit" && auditUrls(input).length > 0;
+  // AUCUN outil web ici, quel que soit le mode : en audit, tout le travail
+  // en ligne a déjà été fait par la phase d'extraction (une seule passe web)
+  // — la rédaction est ainsi rapide, fiable et économe en tokens
   onProgress(
-    useWebTools
-      ? "Ouverture et analyse de l'annonce en ligne (historique, texte, photos)…"
+    mission === "audit"
+      ? "Rédaction de l'audit : diagnostic, prix de relance et recommandations…"
       : input.photos.length > 0
         ? `Analyse des ${Math.min(input.photos.length, 20)} photos et rédaction de l'avis de valeur…`
         : "Rédaction de l'avis de valeur…",
   );
 
-  let messages: Anthropic.MessageParam[] = [{ role: "user", content }];
-  let message: Anthropic.Message;
-  const MAX_CONTINUATIONS = 3;
-  let continuations = 0;
-  for (;;) {
-    const stream = client.messages.stream({
-      model,
-      max_tokens: 16000,
-      thinking: { type: "adaptive" },
-      system,
-      ...(useWebTools
-        ? {
-            tools: [
-              { type: "web_fetch_20260209" as const, name: "web_fetch" as const, max_uses: 3 },
-              { type: "web_search_20260209" as const, name: "web_search" as const, max_uses: 4 },
-            ],
-          }
-        : {}),
-      output_config: { effort },
-      messages,
-    });
-    message = await stream.finalMessage();
-    if (message.stop_reason === "pause_turn" && continuations < MAX_CONTINUATIONS) {
-      continuations += 1;
-      onProgress("Audit de l'annonce : croisement des sources et rédaction…");
-      messages = [...messages, { role: "assistant", content: message.content }];
-      continue;
-    }
-    break;
-  }
+  const stream = client.messages.stream({
+    model,
+    max_tokens: 16000,
+    thinking: { type: "adaptive" },
+    system,
+    output_config: { effort },
+    messages: [{ role: "user", content }],
+  });
+  const message = await stream.finalMessage();
   if (message.stop_reason === "refusal") throw new Error("Requête refusée par les garde-fous du modèle");
 
   const text = message.content
