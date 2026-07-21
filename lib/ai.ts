@@ -209,7 +209,7 @@ const FINAL_SYSTEM = `Tu es un expert en estimation immobilière d'une agence ha
 RÈGLES :
 - Analyse CHAQUE photo fournie (numérotées dans l'ordre : 1 = première) : pièce/vue identifiée, bons points, défauts visibles concrets — ces fiches figurent dans le dossier remis au client. Note l'état par catégorie (etat_notes, 1 à 5) et chiffre impact_etat en euros signés. Signale tout écart avec l'état déclaré. Sans photo : analyse_par_photo et etat_notes vides, impact_etat 0.
 - MÉTHODE D'ESTIMATION (chemin imposé, dans cet ordre) :
-  1. RÉFÉRENCES → sélectionne 4 à 6 ventes réelles dans la liste DVF fournie, en appliquant la règle de PROXIMITÉ ci-dessous et des surfaces proches du bien (±25 %) — dès que la liste n'est pas vide, references_dvf ne doit JAMAIS être vide. Reporte l'adresse et la distance dans localisation/detail. Rédige analyse_dvf.
+  1. RÉFÉRENCES → si la fiche fournit une section « RÉFÉRENCES RETENUES », reprends-la TELLE QUELLE dans references_dvf (mêmes ventes, mêmes montants) et utilise la base_mediane IMPOSÉE : c'est ce qui garantit qu'un même dossier donne toujours le même calcul. Sinon, sélectionne 4 à 6 ventes réelles dans la liste DVF fournie, en appliquant la règle de PROXIMITÉ ci-dessous et des surfaces proches du bien (±25 %) — dès que la liste n'est pas vide, references_dvf ne doit JAMAIS être vide. Reporte l'adresse et la distance dans localisation/detail. Rédige analyse_dvf.
   2. BASE → base_mediane = la médiane des PRIX ACTÉS de ces références, telle quelle (le chiffre affiché sous le tableau des comparables du dossier) — ne la transpose NI au m² NI à la surface du bien.
   3. AJUSTEMENTS → liste les PLUS-VALUES (montants positifs : atouts réels — extérieur, DPE, état issu des photos, stationnement, annexes…) et les DÉCOTES (montants négatifs : défauts réels — nuisances, travaux…) dont la somme, depuis base_mediane, aboutit exactement à prix_estime. Chaque ligne est une caractéristique concrète, JAMAIS une correction technique abstraite. Si la surface du bien diffère sensiblement des références : une seule ligne « Surface supérieure/inférieure aux références (X m² vs Y m² médians) ». Ligne OBLIGATOIRE d'actualisation au marché actuel (voir règle prioritaire ci-dessous). GARDE-FOUS (dans les deux sens) : hors lignes de surface et d'actualisation, la somme des DÉCOTES ne doit pas excéder ~10 % de base_mediane (sauf défaut majeur objectif justifié), et la somme des PLUS-VALUES ne doit pas excéder ~8 % de base_mediane. Chaque facteur ne se compte qu'UNE fois dans un seul sens — ne cumule pas plusieurs lignes pour le même avantage (ex. « piscine » + « extérieur » + « jardin » = un seul atout extérieur). Reste sobre : un atout courant vaut 1 à 2 % de la base, un atout rare 3 à 4 % maximum.
   4. FOURCHETTE RESSERRÉE → fourchette_basse = le prix du scénario « Vente rapide » ; fourchette_haute = le HAUT de la fourchette présentée au client, avec un écart total de 4 à 6 % MAXIMUM et prix_estime entre les deux. Le prix de mise en marché conseillé (prix_presentation = scénario « Prix optimal ») se place TOUJOURS AU MILIEU de cette fourchette — jamais à son sommet —, arrondi vers le bas à un seuil attractif (ex. fourchette 349 000-365 000 → prix optimal 355 000). Le « Prix plafond » reste ton garde-fou interne : fourchette_haute ne dépasse jamais la meilleure vente comparable ACTUALISÉE. Justifie les deux bornes et le prix conseillé dans positionnement_marche (ventes de référence, actualisation, atouts/défauts).
@@ -262,7 +262,14 @@ ${(input.dependances ?? []).length ? `- Dépendances : ${(input.dependances ?? [
 ## Contexte de vente
 - Prix souhaité par le vendeur : ${input.prixSouhaiteVendeur ? `${input.prixSouhaiteVendeur} €` : "non communiqué"}
 - Contexte : ${input.contexteVente || "n.c."}
-${input.commentaires ? `- Commentaires du négociateur : ${input.commentaires}` : ""}
+${input.commentaires ? `- Commentaires du négociateur : ${input.commentaires}` : ""}${
+    input.instructionsIA?.trim()
+      ? `
+
+## INSTRUCTIONS PARTICULIÈRES DU NÉGOCIATEUR (respecte-les dans l'analyse, la pondération et la rédaction — sans JAMAIS enfreindre les règles de calcul imposées ni inventer de données)
+${input.instructionsIA.trim()}`
+      : ""
+  }
 ${
   input.mission === "audit"
     ? `
@@ -611,6 +618,10 @@ export async function computeFinalReport(
       source: { type: "base64", media_type: photo.mediaType, data: photo.data },
     });
   }
+  // Sélection déterministe des références AVANT l'appel : le même dossier
+  // relancé deux fois s'appuie ainsi sur les MÊMES ventes et la MÊME base
+  // médiane — seuls les textes gardent une légère variation rédactionnelle
+  const deterministic = mission === "locatif" ? null : buildDvfReferences(dvfSales, input);
   content.push({
     type: "text",
     text: `${buildPropertyText(input)}
@@ -618,6 +629,14 @@ export async function computeFinalReport(
 # VENTES RÉELLES DVF (commune entière du code postal ${input.codePostal}, triées par proximité avec le bien)
 ${dvfBlock(dvfSales)}
 ${
+  deterministic && deterministic.references.length > 0
+    ? `
+# RÉFÉRENCES RETENUES (sélection déterministe par proximité et surface — reprends-les TELLES QUELLES dans references_dvf, sans en changer ni les ventes ni les montants)
+${deterministic.references.map((ref) => `- ${ref.localisation} | ${ref.detail} | ${ref.surface} m² | ${ref.date} | ${ref.prix} € | ${ref.prix_m2} €/m²`).join("\n")}
+- base_mediane IMPOSÉE = ${deterministic.baseMediane} € (médiane des prix actés ci-dessus — ne la recalcule pas)
+`
+    : ""
+}${
   mission === "locatif"
     ? `
 # INDICATEUR OFFICIEL DE LOYER DU SECTEUR (observatoire des loyers)
@@ -674,23 +693,22 @@ ${JSON.stringify(schemaFor(mission))}`,
     .join("");
   const r = parseJsonLoose(text);
 
-  // Références DVF : sélection du rédacteur, sinon la sélection déterministe
-  // — jamais de tableau vide tant que des ventes DVF existent. En mission
-  // locative, pas de tableau de ventes et la base = indicateur de loyer.
-  const deterministic = mission === "locatif" ? null : buildDvfReferences(dvfSales, input);
+  // Références DVF : la sélection déterministe fait TOUJOURS foi (stabilité
+  // entre deux lancements du même dossier) ; celle du rédacteur ne sert que
+  // de secours. En mission locative, pas de tableau de ventes.
   const referencesDvf =
     mission === "locatif"
       ? []
-      : arr<ReferenceDvf>(r.references_dvf).length > 0
-        ? arr<ReferenceDvf>(r.references_dvf)
-        : (deterministic?.references ?? []);
+      : (deterministic?.references.length ?? 0) > 0
+        ? deterministic!.references
+        : arr<ReferenceDvf>(r.references_dvf);
   const loyerBase = loyer
     ? Math.round((loyer.loyerM2 * surfaceHabitableTotale(input)) / 10) * 10
     : 0;
   const baseMediane =
     mission === "locatif"
       ? num(r.base_mediane) || loyerBase
-      : num(r.base_mediane) || (deterministic?.baseMediane ?? 0);
+      : (deterministic?.baseMediane ?? 0) || num(r.base_mediane);
 
   const report: EstimationReport = {
     prix_estime: num(r.prix_estime),

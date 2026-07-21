@@ -72,6 +72,7 @@ const initialInput: PropertyInput = {
   prixSouhaiteVendeur: null,
   contexteVente: "",
   commentaires: "",
+  instructionsIA: "",
   concurrence: [],
   invendus: [],
   photos: [],
@@ -982,6 +983,9 @@ export default function Home() {
                     </Field>
                     <Field label="Commentaires du négociateur" className="sm:col-span-2">
                       <textarea rows={4} className={inputCls} value={input.commentaires} onChange={(e) => set("commentaires", e.target.value)} placeholder="Nuisances, copropriété, éléments non visibles sur les photos…" />
+                    </Field>
+                    <Field label="Instructions pour l'IA (facultatif — orientez l'analyse et la rédaction)" className="sm:col-span-2">
+                      <textarea rows={3} className={inputCls} value={input.instructionsIA ?? ""} onChange={(e) => set("instructionsIA", e.target.value)} placeholder="Ex. insiste sur la vue dégagée et le calme · vise plutôt le bas de la fourchette · mets l'accent sur le potentiel locatif · ton très sobre…" />
                     </Field>
                   </div>
                   <div className="mt-6 rounded-xl bg-slate-50 p-4 text-sm text-slate-600">

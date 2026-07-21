@@ -104,6 +104,7 @@ export interface PropertyInput {
   prixSouhaiteVendeur: number | null;
   contexteVente: string;
   commentaires: string;
+  instructionsIA?: string; // consignes libres du négociateur à l'IA (toutes missions)
 
   // Marché (saisi par le commercial)
   concurrence: ComparableListing[];
