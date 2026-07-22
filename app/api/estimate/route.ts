@@ -174,46 +174,44 @@ export async function POST(request: Request) {
           const surfLoc = surfaceHabitableTotale(body);
           if (surfLoc > 0) {
             const floor10 = (v: number) => Math.floor(v / 10) * 10;
-            const basM = floor10(loyer.loyerM2Bas * surfLoc);
             const medM = floor10(loyer.loyerM2 * surfLoc);
-            const hautM = floor10(loyer.loyerM2Haut * surfLoc);
-            if (basM > 0 && medM > basM) {
+            const hautM = Math.max(floor10(loyer.loyerM2Haut * surfLoc), medM + 10);
+            if (medM > 0 && hautM > medM) {
               const scen = report.scenarios_prix;
               const keepLoc = (strategie: string, prix: number, delai: string, commentaire: string) => {
                 const s = scen.find((x) => x.strategie === strategie);
                 return { strategie, prix, delai: s?.delai || delai, commentaire: s?.commentaire || commentaire };
               };
-              const estime = Math.min(medM, Math.max(basM, floor10(report.prix_estime) || floor10((basM + medM) / 2)));
-              // Cohérence du tableau d'ajustements : base = loyer médian,
-              // et la somme des lignes aboutit exactement au loyer retenu
+              // RÉFÉRENCE = le m² HAUT du tableau officiel : le loyer
+              // conseillé (jugement de l'IA) s'ancre sur le haut et ne
+              // descend jamais sous le médian
+              const estime = Math.min(hautM, Math.max(medM, floor10(report.prix_estime) || hautM));
+              // Cohérence du tableau d'ajustements : base = loyer de
+              // référence (haut), la somme aboutit exactement au loyer retenu
               const somme = report.ajustements.reduce((s, a) => s + a.montant, 0);
               const ajustementsLoc =
-                medM + somme === estime
+                hautM + somme === estime
                   ? report.ajustements
-                  : estime === medM
+                  : estime === hautM
                     ? []
-                    : [{ libelle: "Positionnement dans la fourchette officielle (atouts et défauts de votre bien)", montant: estime - medM }];
+                    : [{ libelle: "Positionnement dans la fourchette officielle (atouts et défauts de votre bien)", montant: estime - hautM }];
               report = {
                 ...report,
                 ajustements: ajustementsLoc,
                 prix_estime: estime,
-                // Règle ASSOUPLIE (locatif uniquement) : le loyer conseillé
-                // est le jugement de l'IA, borné [bas → médian] — il peut
-                // donc varier légèrement d'une analyse à l'autre
                 prix_presentation: estime,
                 prix_m2: Math.round((estime / surfLoc) * 100) / 100,
-                base_mediane: medM,
-                // Dossier locatif : 2 cartes « Loyer optimal » (conseillé)
-                // et « Loyer maximum » (m² haut) — la « Location rapide »
-                // n'apparaît plus
+                base_mediane: hautM,
+                // Dossier locatif : 2 cartes « Loyer optimal » (conseillé,
+                // ancré sur le haut) et « Loyer maximum » (m² haut)
                 scenarios_prix: [
-                  keepLoc("Vente rapide", basM, "1 à 3 semaines", "Le bas de la fourchette officielle du secteur."),
-                  keepLoc("Prix optimal", estime, "2 à 6 semaines", "Le loyer que nous conseillons pour votre bien : le juste niveau pour louer dans de bons délais et sans vacance, sans jamais dépasser le médian officiel du secteur."),
-                  keepLoc("Prix plafond", hautM > medM ? hautM : medM, "Risque de vacance", "Le haut du marché observé sur votre secteur : au-delà de ce niveau, les candidats se détournent et le bien risque de rester vide."),
+                  keepLoc("Vente rapide", medM, "1 à 3 semaines", "Le loyer médian officiel du secteur : le plancher de votre fourchette."),
+                  keepLoc("Prix optimal", estime, "2 à 6 semaines", "Le loyer que nous conseillons pour votre bien, ancré sur le haut du marché officiel de votre secteur."),
+                  keepLoc("Prix plafond", hautM, "Haut du marché", "La valeur haute officielle observée sur votre secteur : le maximum que le marché accepte pour votre typologie."),
                 ],
-                // Fourchette AFFICHÉE : du m² BAS au m² HAUT du tableau
-                fourchette_basse: basM,
-                fourchette_haute: hautM > medM ? hautM : medM,
+                // Fourchette AFFICHÉE : du MÉDIAN au HAUT du tableau
+                fourchette_basse: medM,
+                fourchette_haute: hautM,
               };
             }
           }

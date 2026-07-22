@@ -637,7 +637,7 @@ export default function Report({
               <div className="n">01</div>
               <h4>{locatif ? "Loyers de référence" : bienloue ? "Loyer net annuel" : "Sélection DVF"}</h4>
               <p>{locatif
-                ? "On part des niveaux officiels de loyers de votre secteur (observatoire local des loyers), pour la typologie exacte de votre bien : valeurs basse, médiane et haute au m²."
+                ? "On part des niveaux officiels de loyers de votre secteur (observatoire local des loyers), pour la typologie exacte de votre bien : notre référence est la valeur HAUTE au m² du secteur."
                 : bienloue
                   ? "On part du loyer réellement perçu sur un an, dont on retire les charges non récupérables et la taxe foncière : c'est ce que votre bien rapporte vraiment à son propriétaire."
                   : "On part des ventes réellement conclues autour de chez vous (données publiques DVF) : même type de bien, surface proche, au plus près de votre adresse."}</p>
@@ -646,7 +646,7 @@ export default function Report({
               <div className="n">02</div>
               <h4>{bienloue ? "Capitalisation 6 – 8 % net" : "Plus-values & décotes"}</h4>
               <p>{locatif
-                ? "Votre fourchette va de la valeur basse à la valeur haute du secteur. Le loyer conseillé se place au médian, selon l'état et les atouts de votre bien : le juste niveau pour louer vite."
+                ? "Votre fourchette va du loyer médian au loyer haut du secteur. Le loyer conseillé s'ancre sur la valeur haute et s'ajuste selon l'état et les atouts de votre bien — jamais sous le médian."
                 : bienloue
                   ? "L'acheteur d'un bien loué est un investisseur : il paie le prix qui lui assure une rentabilité nette de 6 à 8 %. Votre fourchette va du prix à 8 % net (vente rapide) au prix à 6 % net (prix optimal)."
                   : "Chaque atout de votre bien ajoute de la valeur, chaque défaut ou effet du marché en retire, à partir de la médiane de ces ventes."}</p>

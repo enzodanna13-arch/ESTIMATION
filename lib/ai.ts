@@ -117,14 +117,14 @@ function schemaFor(mission: string): Record<string, unknown> {
   };
   if (mission === "locatif") {
     schema.properties.prix_estime.description = "Loyer mensuel estimé (cœur de fourchette), en €/mois hors charges";
-    schema.properties.fourchette_basse.description = "= loyer du scénario Vente rapide (mise en location immédiate), €/mois";
+    schema.properties.fourchette_basse.description = "= valeur MÉDIANE officielle × surface habitable totale (€/mois) — plancher de la fourchette";
     schema.properties.fourchette_haute.description = "= valeur HAUTE officielle du secteur × surface habitable totale (€/mois) — borne haute d'information du marché";
     schema.properties.prix_m2.description = "Loyer mensuel par m² habitable";
     schema.properties.prix_presentation.description = "Loyer conseillé à l'affichage (= scénario Prix optimal), €/mois";
-    schema.properties.base_mediane.description = "Loyer de base : indicateur officiel €/m² × surface habitable totale, arrondi à la dizaine (€/mois)";
+    schema.properties.base_mediane.description = "Loyer de référence : valeur HAUTE officielle €/m² × surface habitable totale, arrondi à la dizaine (€/mois)";
     schema.properties.references_dvf.description = "TOUJOURS un tableau vide [] pour une estimation locative";
     schema.properties.delai_vente_estime.description = "Délai estimé de mise en location";
-    schema.properties.prix_presentation.description = "TON loyer conseillé (= prix_estime = scénario Prix optimal), entre le bas et le médian officiels, €/mois — jamais au-dessus du médian";
+    schema.properties.prix_presentation.description = "TON loyer conseillé (= prix_estime = scénario Prix optimal), entre le MÉDIAN et le HAUT officiels, ancré sur le haut, €/mois";
   }
   if (mission === "bienloue") {
     schema.properties.prix_estime.description =
@@ -311,10 +311,10 @@ const LOCATIF_SYSTEM = `Tu es un expert en gestion locative d'une agence haut de
 
 RÈGLES :
 - Analyse CHAQUE photo fournie (numérotées dans l'ordre : 1 = première) : pièce/vue identifiée, bons points, défauts — ces fiches figurent dans le dossier remis au client propriétaire. Note l'état par catégorie (etat_notes, 1 à 5) et chiffre impact_etat en euros/mois signés. Sans photo : analyse_par_photo et etat_notes vides, impact_etat 0.
-- MÉTHODE (chemin imposé, dans cet ordre — RÈGLE DE L'AGENCE : le loyer CONSEILLÉ ne dépasse JAMAIS la valeur MÉDIANE de l'observatoire officiel ; la valeur HAUTE du tableau est le « Loyer maximum » du marché, affiché au client à titre de repère) :
-  1. BASE → l'indicateur OFFICIEL de loyer du secteur est fourni (observatoire local des loyers, €/m²/mois, valeurs bas/médian/haut) : base_mediane = MÉDIAN €/m² × surface habitable totale, arrondie à la dizaine d'euros. Si l'indicateur est indisponible, estime prudemment le niveau local et baisse l'indice de confiance.
-  2. POSITIONNEMENT → place le loyer retenu (prix_estime) ENTRE le bas et le médian de la fourchette officielle selon l'état et les atouts/défauts du bien : un bien impeccable et bien placé se loue AU médian (jamais au-dessus), un bien avec défauts descend vers le bas. C'est TON JUGEMENT professionnel qui fixe ce positionnement — il peut légitimement différer d'une analyse à l'autre. Les ajustements (en euros/MOIS, négatifs depuis la base médiane) le matérialisent — chaque facteur compté UNE fois, somme exacte de base_mediane à prix_estime.
-  3. FOURCHETTE → fourchette_basse = valeur BASSE officielle × surface (= scénario « Vente rapide », interne au calcul) ; fourchette_haute = valeur HAUTE officielle × surface. Le loyer CONSEILLÉ (= prix_presentation = scénario « Prix optimal », affiché « Loyer optimal ») = TON loyer retenu (prix_estime), entre bas et médian. « Prix plafond » = valeur HAUTE × surface, affiché au client comme « Loyer maximum » (au-delà : vacance). AUCUNE valeur de vente ni rendement dans ce dossier : il parle exclusivement de loyers.
+- MÉTHODE (chemin imposé, dans cet ordre — RÈGLE DE L'AGENCE : la RÉFÉRENCE du loyer est EXCLUSIVEMENT la valeur HAUTE du tableau officiel (m² haut) ; le loyer conseillé s'ancre sur ce haut et ne descend JAMAIS sous le médian) :
+  1. BASE → l'indicateur OFFICIEL de loyer du secteur est fourni (observatoire local des loyers, €/m²/mois, valeurs bas/médian/haut) : base_mediane = HAUT €/m² × surface habitable totale, arrondie à la dizaine d'euros — c'est LA référence du calcul. Si l'indicateur est indisponible, estime le niveau local et baisse l'indice de confiance.
+  2. POSITIONNEMENT → place le loyer retenu (prix_estime) ENTRE le MÉDIAN et le HAUT de la fourchette officielle selon l'état et les atouts/défauts du bien : un bien impeccable et bien placé se loue AU haut (la référence), un bien avec défauts descend vers le médian — JAMAIS en dessous du médian. C'est TON JUGEMENT professionnel qui fixe ce positionnement — il peut légitimement différer d'une analyse à l'autre. Les ajustements (en euros/MOIS, négatifs depuis la base haute) le matérialisent — chaque facteur compté UNE fois, somme exacte de base_mediane à prix_estime.
+  3. FOURCHETTE → fourchette_basse = valeur MÉDIANE officielle × surface (= scénario « Vente rapide », interne au calcul) ; fourchette_haute = valeur HAUTE officielle × surface. Le loyer CONSEILLÉ (= prix_presentation = scénario « Prix optimal », affiché « Loyer optimal ») = TON loyer retenu (prix_estime), entre médian et haut. « Prix plafond » = valeur HAUTE × surface, affiché au client comme « Loyer maximum ». AUCUNE valeur de vente ni rendement dans ce dossier : il parle exclusivement de loyers.
 - CADRE LÉGAL : si le DPE est F ou G, rappelle les contraintes (gel des loyers, interdiction progressive de louer les passoires) dans les points de vigilance et tiens-en compte dans le loyer. Si la commune est en zone d'encadrement des loyers connue, signale-le.
 - references_dvf : tableau VIDE [] (pas de tableau de ventes dans un dossier locatif). analyse_dvf = 2 à 3 phrases simples sur le marché locatif local (niveau officiel des loyers, demande).
 - scenarios_prix : exactement 3, prix croissants, en €/mois — « Vente rapide » (bas officiel, interne au calcul), « Prix optimal » (TON loyer conseillé — affiché « Loyer optimal »), « Prix plafond » (valeur haute officielle — affiché « Loyer maximum », le niveau au-delà duquel le bien reste vide).
@@ -635,7 +635,7 @@ ${
         loyer
           ? `- Secteur : ${loyer.commune} | Typologie : ${loyer.typologie} | Source : ${loyer.millesime} (${loyer.nbAnnonces} loyers observés)
 - Loyer BAS : ${loyer.loyerM2Bas} €/m²/mois | Loyer MÉDIAN : ${loyer.loyerM2} €/m²/mois | (haut : ${loyer.loyerM2Haut} €/m², INFORMATIF UNIQUEMENT)
-- RÈGLE STRICTE : la fourchette de loyer = du BAS au HAUT × surface ; le loyer CONSEILLÉ = le MÉDIAN × surface, jamais au-dessus.`
+- RÈGLE STRICTE : la RÉFÉRENCE = le m² HAUT. Fourchette de loyer = du MÉDIAN au HAUT × surface ; le loyer CONSEILLÉ s'ancre sur le HAUT et ne descend jamais sous le médian.`
           : "(indicateur indisponible pour cette commune — estime prudemment le niveau local et baisse l'indice de confiance)"
       }
 `

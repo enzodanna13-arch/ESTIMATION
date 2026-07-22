@@ -136,45 +136,39 @@ export function computeFallbackLocatif(
 ): EstimationReport {
   const base = computeFallbackEstimate(input, dvfSales);
   const surface = surfaceHabitableTotale(input);
-  const m2 = loyer?.loyerM2 ?? 0;
-  // Règle de l'agence : fourchette = valeur BASSE → valeur MÉDIANE de
-  // l'observatoire officiel (le médian est le plafond du loyer conseillé)
-  const loyerBase = m2 > 0 && surface > 0 ? Math.floor((m2 * surface) / 10) * 10 : 0;
-  const bas = loyer && loyer.loyerM2Bas > 0 && surface > 0
-    ? Math.floor((loyer.loyerM2Bas * surface) / 10) * 10
-    : loyerBase > 0 ? Math.round((loyerBase * 0.96) / 10) * 10 : 0;
-  const haut = loyerBase; // médian = loyer conseillé
-  // Fourchette AFFICHÉE : m² bas → m² haut du tableau officiel
-  const plafond = loyer && loyer.loyerM2Haut > 0 && surface > 0
-    ? Math.floor((loyer.loyerM2Haut * surface) / 10) * 10
-    : haut;
+  // Règle de l'agence : la RÉFÉRENCE du loyer est la valeur HAUTE du
+  // tableau officiel ; la fourchette va du MÉDIAN au HAUT × surface
+  const m2Med = loyer?.loyerM2 ?? 0;
+  const m2Haut = loyer?.loyerM2Haut && loyer.loyerM2Haut > 0 ? loyer.loyerM2Haut : m2Med;
+  const medM = m2Med > 0 && surface > 0 ? Math.floor((m2Med * surface) / 10) * 10 : 0;
+  const hautM = m2Haut > 0 && surface > 0 ? Math.max(Math.floor((m2Haut * surface) / 10) * 10, medM) : medM;
   const venale = base.prix_estime;
   return {
     ...base,
-    prix_estime: loyerBase > 0 ? Math.round(((bas + haut) / 2) / 10) * 10 : 0,
-    fourchette_basse: bas,
-    fourchette_haute: plafond > haut ? plafond : haut,
-    prix_m2: m2 > 0 ? Math.round(m2 * 100) / 100 : 0,
-    prix_presentation: haut,
-    base_mediane: loyerBase,
+    prix_estime: hautM,
+    fourchette_basse: medM,
+    fourchette_haute: hautM,
+    prix_m2: m2Haut > 0 ? Math.round(m2Haut * 100) / 100 : 0,
+    prix_presentation: hautM,
+    base_mediane: hautM,
     references_dvf: [],
     ajustements: [],
     delai_vente_estime: "2 à 6 semaines",
-    positionnement_marche: loyerBase > 0
-      ? `L'observatoire officiel des loyers de votre secteur (${loyer?.millesime ?? "source officielle"}) situe les loyers entre ${loyer?.loyerM2Bas ?? "?"} €/m² (bas) et ${loyer?.loyerM2Haut ?? "?"} €/m² (haut) pour votre typologie : pour ${surface} m², votre fourchette va de ${bas} à ${plafond} €/mois. Nous conseillons le loyer médian, ${haut} €/mois : le juste niveau pour louer vite et sans vacance.`
+    positionnement_marche: hautM > 0
+      ? `L'observatoire officiel des loyers de votre secteur (${loyer?.millesime ?? "source officielle"}) situe le haut du marché à ${m2Haut} €/m² pour votre typologie : c'est notre référence. Pour ${surface} m², votre fourchette va de ${medM} €/mois (médian) à ${hautM} €/mois (haut), et nous conseillons ${hautM} €/mois.`
       : "L'indicateur officiel des loyers est indisponible pour cette commune : estimation locative à confirmer lors du rendez-vous.",
-    analyse_dvf: loyerBase > 0
-      ? `Les loyers observés sur votre secteur (${loyer?.typologie ?? "votre typologie"}, ${loyer?.nbAnnonces ?? "?"} loyers collectés — ${loyer?.millesime ?? "source officielle"}) vont de ${loyer?.loyerM2Bas ?? "?"} à ${loyer?.loyerM2Haut ?? "?"} €/m². Le loyer que nous conseillons se cale sur le médian du secteur (${m2} €/m²), jamais au-dessus.`
+    analyse_dvf: hautM > 0
+      ? `Les loyers observés sur votre secteur (${loyer?.typologie ?? "votre typologie"}, ${loyer?.nbAnnonces ?? "?"} loyers collectés — ${loyer?.millesime ?? "source officielle"}) montent jusqu'à ${m2Haut} €/m². Votre loyer se cale sur cette valeur haute, sans jamais descendre sous le médian (${m2Med} €/m²).`
       : "",
-    scenarios_prix: loyerBase > 0
+    scenarios_prix: hautM > 0
       ? [
-          { strategie: "Vente rapide", prix: bas, delai: "1 à 3 semaines", commentaire: "Le bas de la fourchette officielle : votre bien se loue immédiatement et vous choisissez parmi plusieurs dossiers." },
-          { strategie: "Prix optimal", prix: haut, delai: "2 à 6 semaines", commentaire: "Le loyer médian officiel du secteur : le plafond que nous conseillons pour louer sans vacance." },
-          { strategie: "Prix plafond", prix: plafond > haut ? plafond : haut, delai: "Risque de vacance", commentaire: "Le haut du marché observé sur votre secteur : au-delà de ce niveau, les candidats se détournent et le bien risque de rester vide." },
+          { strategie: "Vente rapide", prix: medM, delai: "1 à 3 semaines", commentaire: "Le loyer médian officiel du secteur : le plancher de votre fourchette." },
+          { strategie: "Prix optimal", prix: hautM, delai: "2 à 6 semaines", commentaire: "Le loyer que nous conseillons pour votre bien, ancré sur le haut du marché officiel de votre secteur." },
+          { strategie: "Prix plafond", prix: hautM, delai: "Haut du marché", commentaire: "La valeur haute officielle observée sur votre secteur : le maximum que le marché accepte pour votre typologie." },
         ]
       : base.scenarios_prix,
     valeur_venale_indicative: venale,
-    rendement_brut: venale > 0 && loyerBase > 0 ? Math.round(((loyerBase * 12) / venale) * 1000) / 10 : 0,
+    rendement_brut: venale > 0 && hautM > 0 ? Math.round(((hautM * 12) / venale) * 1000) / 10 : 0,
   };
 }
 
