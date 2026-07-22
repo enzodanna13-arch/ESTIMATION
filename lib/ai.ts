@@ -118,21 +118,13 @@ function schemaFor(mission: string): Record<string, unknown> {
   if (mission === "locatif") {
     schema.properties.prix_estime.description = "Loyer mensuel estimé (cœur de fourchette), en €/mois hors charges";
     schema.properties.fourchette_basse.description = "= loyer du scénario Vente rapide (mise en location immédiate), €/mois";
-    schema.properties.fourchette_haute.description = "= loyer du scénario Prix optimal (loyer conseillé, = prix_presentation), €/mois";
+    schema.properties.fourchette_haute.description = "= valeur HAUTE officielle du secteur × surface habitable totale (€/mois) — borne haute d'information du marché";
     schema.properties.prix_m2.description = "Loyer mensuel par m² habitable";
     schema.properties.prix_presentation.description = "Loyer conseillé à l'affichage (= scénario Prix optimal), €/mois";
     schema.properties.base_mediane.description = "Loyer de base : indicateur officiel €/m² × surface habitable totale, arrondi à la dizaine (€/mois)";
     schema.properties.references_dvf.description = "TOUJOURS un tableau vide [] pour une estimation locative";
     schema.properties.delai_vente_estime.description = "Délai estimé de mise en location";
-    schema.properties.valeur_venale_indicative = {
-      type: "number",
-      description: "Valeur de VENTE indicative du bien (euros), fondée sur les ventes DVF fournies actualisées — sert au calcul du rendement",
-    };
-    schema.properties.rendement_brut = {
-      type: "number",
-      description: "Rendement brut annuel en % = (loyer mensuel × 12) ÷ valeur vénale × 100, arrondi au dixième",
-    };
-    schema.required.push("valeur_venale_indicative", "rendement_brut");
+    schema.properties.prix_presentation.description = "Loyer conseillé (= scénario Prix optimal) = valeur MÉDIANE officielle × surface, €/mois — jamais au-dessus du médian";
   }
   if (mission === "bienloue") {
     schema.properties.prix_estime.description =
@@ -322,8 +314,7 @@ RÈGLES :
 - MÉTHODE (chemin imposé, dans cet ordre — RÈGLE DE L'AGENCE : la fourchette de loyer va TOUJOURS de la valeur BASSE à la valeur MÉDIANE de l'observatoire officiel, le MÉDIAN est le PLAFOND ABSOLU du loyer conseillé, la valeur haute du tableau n'est qu'informative) :
   1. BASE → l'indicateur OFFICIEL de loyer du secteur est fourni (observatoire local des loyers, €/m²/mois, valeurs bas/médian/haut) : base_mediane = MÉDIAN €/m² × surface habitable totale, arrondie à la dizaine d'euros. Si l'indicateur est indisponible, estime prudemment le niveau local et baisse l'indice de confiance.
   2. POSITIONNEMENT → place le loyer retenu (prix_estime) ENTRE le bas et le médian de la fourchette officielle selon l'état et les atouts/défauts du bien : un bien impeccable et bien placé se loue AU médian (jamais au-dessus), un bien avec défauts descend vers le bas. Les ajustements (en euros/MOIS, négatifs depuis la base médiane) matérialisent ce positionnement — chaque facteur compté UNE fois, somme exacte de base_mediane à prix_estime.
-  3. FOURCHETTE → fourchette_basse = prix du scénario « Vente rapide » = valeur BASSE officielle × surface ; fourchette_haute = prix du scénario « Prix optimal » (= prix_presentation) = valeur MÉDIANE officielle × surface. AUCUN loyer au-dessus du médian, jamais. « Prix plafond » = garde-fou interne : le médian lui-même.
-  4. RENDEMENT → valeur_venale_indicative = valeur de VENTE indicative du bien, fondée sur les ventes réelles DVF fournies (actualisées au marché actuel) ; rendement_brut = (prix_estime × 12) ÷ valeur_venale_indicative × 100, arrondi au dixième.
+  3. FOURCHETTE → fourchette_basse = valeur BASSE officielle × surface (= scénario « Vente rapide ») ; fourchette_haute = valeur HAUTE officielle × surface (borne d'information du marché). Le loyer CONSEILLÉ (= prix_presentation = scénario « Prix optimal ») = valeur MÉDIANE × surface — il ne dépasse JAMAIS le médian. « Prix plafond » = garde-fou interne : le médian. AUCUNE valeur de vente ni rendement dans ce dossier : il parle exclusivement de loyers.
 - CADRE LÉGAL : si le DPE est F ou G, rappelle les contraintes (gel des loyers, interdiction progressive de louer les passoires) dans les points de vigilance et tiens-en compte dans le loyer. Si la commune est en zone d'encadrement des loyers connue, signale-le.
 - references_dvf : tableau VIDE [] (pas de tableau de ventes dans un dossier locatif). analyse_dvf = 2 à 3 phrases simples sur le marché locatif local (niveau officiel des loyers, demande).
 - scenarios_prix : exactement 3, prix croissants, en €/mois — « Vente rapide » (location immédiate, léger sous-marché), « Prix optimal » (loyer conseillé), « Prix plafond » (à ne pas dépasser : vacance locative).
@@ -644,7 +635,7 @@ ${
         loyer
           ? `- Secteur : ${loyer.commune} | Typologie : ${loyer.typologie} | Source : ${loyer.millesime} (${loyer.nbAnnonces} loyers observés)
 - Loyer BAS : ${loyer.loyerM2Bas} €/m²/mois | Loyer MÉDIAN : ${loyer.loyerM2} €/m²/mois | (haut : ${loyer.loyerM2Haut} €/m², INFORMATIF UNIQUEMENT)
-- RÈGLE STRICTE : la fourchette de loyer = du BAS au MÉDIAN × surface. Le loyer conseillé ne dépasse JAMAIS le médian.`
+- RÈGLE STRICTE : la fourchette de loyer = du BAS au HAUT × surface ; le loyer CONSEILLÉ = le MÉDIAN × surface, jamais au-dessus.`
           : "(indicateur indisponible pour cette commune — estime prudemment le niveau local et baisse l'indice de confiance)"
       }
 `
@@ -653,7 +644,7 @@ ${
 # TA MISSION
 ${
   mission === "locatif"
-    ? "Produis l'estimation locative complète : analyse chaque photo, fixe le loyer de base depuis l'indicateur officiel, les ajustements en €/mois, la fourchette de loyer, les 3 scénarios, la valeur vénale indicative (ventes DVF actualisées) et le rendement brut."
+    ? "Produis l'estimation locative complète : analyse chaque photo, fixe le loyer de base depuis l'indicateur officiel (médian), les ajustements en €/mois, la fourchette de loyer (bas → haut du secteur) et les 3 scénarios — uniquement des loyers, aucune valeur de vente."
     : mission === "bienloue"
       ? "Produis l'estimation du bien vendu loué : fourchette par capitalisation du loyer net annuel à 6-8 % de rentabilité nette (méthode imposée), références DVF en contexte (décote d'occupation), plan de commercialisation orienté investisseurs et argumentaire rendement pour le client."
       : mission === "audit"

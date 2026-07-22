@@ -176,6 +176,7 @@ export async function POST(request: Request) {
             const floor10 = (v: number) => Math.floor(v / 10) * 10;
             const basM = floor10(loyer.loyerM2Bas * surfLoc);
             const medM = floor10(loyer.loyerM2 * surfLoc);
+            const hautM = floor10(loyer.loyerM2Haut * surfLoc);
             if (basM > 0 && medM > basM) {
               const scen = report.scenarios_prix;
               const keepLoc = (strategie: string, prix: number, delai: string, commentaire: string) => {
@@ -201,10 +202,12 @@ export async function POST(request: Request) {
                 base_mediane: medM,
                 scenarios_prix: [
                   keepLoc("Vente rapide", basM, "1 à 3 semaines", "Le bas de la fourchette officielle du secteur : votre bien se loue immédiatement et vous choisissez parmi plusieurs dossiers."),
-                  keepLoc("Prix optimal", medM, "2 à 6 semaines", "Le loyer médian officiel du secteur : le plafond que nous conseillons pour louer dans de bons délais sans vacance."),
+                  keepLoc("Prix optimal", medM, "2 à 6 semaines", "Le loyer médian officiel du secteur : le juste loyer que nous conseillons pour louer dans de bons délais et sans vacance."),
                 ],
+                // Fourchette AFFICHÉE : du m² BAS au m² HAUT du tableau
+                // officiel — le loyer conseillé reste au MÉDIAN
                 fourchette_basse: basM,
-                fourchette_haute: medM,
+                fourchette_haute: hautM > medM ? hautM : medM,
               };
             }
           }
@@ -260,9 +263,11 @@ export async function POST(request: Request) {
                 s.strategie === "Prix optimal" ? { ...s, prix: optimalMid } : s,
               ),
             };
-          } else {
+          } else if (mission === "bienloue") {
             report = { ...report, fourchette_basse: scRapide, fourchette_haute: scOptimal };
           }
+          // locatif : la fourchette (m² bas → m² haut) est déjà verrouillée
+          // par le bloc dédié ci-dessus — ne pas la réécrire ici
         }
         // Audit : le prix rendu est TOUJOURS STRICTEMENT INFÉRIEUR au prix
         // affiché actuel — relancer au prix qui ne se vend pas n'aurait

@@ -143,13 +143,17 @@ export function computeFallbackLocatif(
   const bas = loyer && loyer.loyerM2Bas > 0 && surface > 0
     ? Math.floor((loyer.loyerM2Bas * surface) / 10) * 10
     : loyerBase > 0 ? Math.round((loyerBase * 0.96) / 10) * 10 : 0;
-  const haut = loyerBase;
+  const haut = loyerBase; // médian = loyer conseillé
+  // Fourchette AFFICHÉE : m² bas → m² haut du tableau officiel
+  const plafond = loyer && loyer.loyerM2Haut > 0 && surface > 0
+    ? Math.floor((loyer.loyerM2Haut * surface) / 10) * 10
+    : haut;
   const venale = base.prix_estime;
   return {
     ...base,
     prix_estime: loyerBase > 0 ? Math.round(((bas + haut) / 2) / 10) * 10 : 0,
     fourchette_basse: bas,
-    fourchette_haute: haut,
+    fourchette_haute: plafond > haut ? plafond : haut,
     prix_m2: m2 > 0 ? Math.round(m2 * 100) / 100 : 0,
     prix_presentation: haut,
     base_mediane: loyerBase,
@@ -157,10 +161,10 @@ export function computeFallbackLocatif(
     ajustements: [],
     delai_vente_estime: "2 à 6 semaines",
     positionnement_marche: loyerBase > 0
-      ? `L'observatoire officiel des loyers de votre secteur (${loyer?.millesime ?? "source officielle"}) situe les loyers entre ${loyer?.loyerM2Bas ?? "?"} et ${m2} €/m² (bas → médian) pour votre typologie : pour ${surface} m², votre fourchette va de ${bas} à ${haut} €/mois. Le médian est le plafond que nous conseillons.`
+      ? `L'observatoire officiel des loyers de votre secteur (${loyer?.millesime ?? "source officielle"}) situe les loyers entre ${loyer?.loyerM2Bas ?? "?"} €/m² (bas) et ${loyer?.loyerM2Haut ?? "?"} €/m² (haut) pour votre typologie : pour ${surface} m², votre fourchette va de ${bas} à ${plafond} €/mois. Nous conseillons le loyer médian, ${haut} €/mois : le juste niveau pour louer vite et sans vacance.`
       : "L'indicateur officiel des loyers est indisponible pour cette commune : estimation locative à confirmer lors du rendez-vous.",
     analyse_dvf: loyerBase > 0
-      ? `Les loyers observés sur votre secteur (${loyer?.typologie ?? "votre typologie"}, ${loyer?.nbAnnonces ?? "?"} loyers collectés — ${loyer?.millesime ?? "source officielle"}) vont de ${loyer?.loyerM2Bas ?? "?"} €/m² (bas) à ${m2} €/m² (médian). Votre loyer se place dans cette fourchette, jamais au-dessus du médian.`
+      ? `Les loyers observés sur votre secteur (${loyer?.typologie ?? "votre typologie"}, ${loyer?.nbAnnonces ?? "?"} loyers collectés — ${loyer?.millesime ?? "source officielle"}) vont de ${loyer?.loyerM2Bas ?? "?"} à ${loyer?.loyerM2Haut ?? "?"} €/m². Le loyer que nous conseillons se cale sur le médian du secteur (${m2} €/m²), jamais au-dessus.`
       : "",
     scenarios_prix: loyerBase > 0
       ? [

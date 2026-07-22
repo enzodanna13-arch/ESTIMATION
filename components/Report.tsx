@@ -637,7 +637,7 @@ export default function Report({
               <div className="n">01</div>
               <h4>{locatif ? "Loyers de référence" : bienloue ? "Loyer net annuel" : "Sélection DVF"}</h4>
               <p>{locatif
-                ? "On part des niveaux officiels de loyers de votre secteur (observatoire local des loyers), pour la typologie exacte de votre bien : valeur basse et valeur médiane."
+                ? "On part des niveaux officiels de loyers de votre secteur (observatoire local des loyers), pour la typologie exacte de votre bien : valeurs basse, médiane et haute au m²."
                 : bienloue
                   ? "On part du loyer réellement perçu sur un an, dont on retire les charges non récupérables et la taxe foncière : c'est ce que votre bien rapporte vraiment à son propriétaire."
                   : "On part des ventes réellement conclues autour de chez vous (données publiques DVF) : même type de bien, surface proche, au plus près de votre adresse."}</p>
@@ -646,16 +646,16 @@ export default function Report({
               <div className="n">02</div>
               <h4>{bienloue ? "Capitalisation 6 – 8 % net" : "Plus-values & décotes"}</h4>
               <p>{locatif
-                ? "Votre loyer se positionne entre la valeur basse et la valeur médiane selon l'état et les atouts de votre bien — le médian est le plafond que nous conseillons, jamais au-delà."
+                ? "Votre fourchette va de la valeur basse à la valeur haute du secteur. Le loyer conseillé se place au médian, selon l'état et les atouts de votre bien : le juste niveau pour louer vite."
                 : bienloue
                   ? "L'acheteur d'un bien loué est un investisseur : il paie le prix qui lui assure une rentabilité nette de 6 à 8 %. Votre fourchette va du prix à 8 % net (vente rapide) au prix à 6 % net (prix optimal)."
                   : "Chaque atout de votre bien ajoute de la valeur, chaque défaut ou effet du marché en retire, à partir de la médiane de ces ventes."}</p>
             </div>
             <div className="step">
               <div className="n">03</div>
-              <h4>{locatif ? "Rendement" : bienloue ? "Contrôle marché (DVF)" : "Actualisation au marché"}</h4>
+              <h4>{locatif ? "Le juste loyer" : bienloue ? "Contrôle marché (DVF)" : "Actualisation au marché"}</h4>
               <p>{locatif
-                ? "Les ventes réelles du secteur donnent une valeur de vente indicative de votre bien : elle permet de calculer votre rendement locatif brut."
+                ? "Un loyer au juste niveau du marché loue vite et sans vacance ; un loyer au-dessus fait fuir les candidats et laisse le bien vide. Nous visons le point d'équilibre."
                 : bienloue
                   ? "Les ventes réelles du quartier (données publiques DVF) servent de contrôle : elles situent la valeur « libre » de votre bien et confirment la cohérence du prix investisseur."
                   : "Le marché est actuellement en baisse : les ventes des années passées sont ramenées au prix d'aujourd'hui avant de fixer votre fourchette."}</p>
@@ -824,15 +824,15 @@ export default function Report({
             </>
           )}
 
-          {locatif && (report.valeur_venale_indicative ?? 0) > 0 && (
+          {locatif && (
             <>
               <div style={{ height: 18 }} />
-              <div className="eyebrow" style={{ color: "var(--ink-45)" }}>Votre investissement en chiffres</div>
+              <div className="eyebrow" style={{ color: "var(--ink-45)" }}>Votre location en chiffres</div>
               <hr className="rule" style={{ margin: "8px 0 8px" }} />
               <div className="kpi-row" style={{ marginBottom: 4 }}>
-                <div className="kpi"><div className="k">Loyer annuel (loyer conseillé)</div><div className="v" style={{ fontSize: "13pt" }}>{euro.format(prixPresentation * 12)}</div></div>
-                <div className="kpi"><div className="k">Valeur de vente indicative</div><div className="v" style={{ fontSize: "13pt" }}>{euro.format(report.valeur_venale_indicative ?? 0)}</div></div>
-                <div className="kpi"><div className="k">Rendement brut</div><div className="v" style={{ fontSize: "13pt" }}>{(report.rendement_brut ?? 0).toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %</div></div>
+                <div className="kpi"><div className="k">Loyer conseillé</div><div className="v" style={{ fontSize: "13pt" }}>{euro.format(prixPresentation)} <small>/mois</small></div></div>
+                <div className="kpi"><div className="k">Revenu annuel (loyer conseillé)</div><div className="v" style={{ fontSize: "13pt" }}>{euro.format(prixPresentation * 12)}</div></div>
+                <div className="kpi"><div className="k">Fourchette du secteur</div><div className="v" style={{ fontSize: "11pt", lineHeight: 1.3 }}>{euro.format(fourchetteBasse)} – {euro.format(fourchetteHaute)} /mois</div></div>
                 <div className="kpi"><div className="k">Type de location</div><div className="v" style={{ fontSize: "13pt" }}>{input.meuble || "Vide"}</div></div>
               </div>
             </>
