@@ -769,24 +769,31 @@ export default function Report({
           <SectionTitle idx={secReco} title="Recommandations commerciales" />
           <div style={{ height: 14 }} />
 
-          {report.scenarios_prix.filter((sc) => sc.strategie !== "Prix plafond").length >= 2 ? (
-            /* Le « Prix plafond » sert au calcul (borne haute de la fourchette)
-               mais n'apparaît pas dans le dossier : seuls Vente rapide et
-               Prix optimal sont présentés au client */
+          {(locatif
+            ? report.scenarios_prix.filter((sc) => sc.strategie !== "Vente rapide")
+            : report.scenarios_prix.filter((sc) => sc.strategie !== "Prix plafond")
+          ).length >= 2 ? (
+            /* Vente/audit/bien loué : Vente rapide + Prix optimal (le
+               « Prix plafond » reste interne). Locatif : Loyer optimal +
+               Loyer maximum (la « Location rapide » n'apparaît plus) */
             <div className="reco-grid" style={{ gridTemplateColumns: "repeat(2, 1fr)" }}>
-              {report.scenarios_prix
-                .filter((sc) => sc.strategie !== "Prix plafond")
+              {(locatif
+                ? report.scenarios_prix.filter((sc) => sc.strategie !== "Vente rapide")
+                : report.scenarios_prix.filter((sc) => sc.strategie !== "Prix plafond")
+              )
                 .slice(0, 2)
                 .map((sc, i) => {
                   const titre =
                     sc.strategie === "Prix optimal"
                       ? locatif ? "Loyer optimal" : audit ? "Prix de relance" : bienloue ? "Prix optimal · 6 % net" : "Prix optimal"
-                      : locatif ? "Location rapide" : bienloue ? "Vente rapide · 8 % net" : "Vente rapide";
+                      : sc.strategie === "Prix plafond"
+                        ? "Loyer maximum"
+                        : bienloue ? "Vente rapide · 8 % net" : "Vente rapide";
                   return (
                     <div key={i} className="reco" style={sc.strategie === "Prix optimal" ? { borderColor: "var(--gold)", borderWidth: 2 } : undefined}>
                       <div className="t">{titre}{sc.strategie === "Prix optimal" ? " ★" : ""}</div>
                       <div className="big" style={{ fontSize: locatif ? "17pt" : "20pt" }}>{fmtP(sc.prix)}</div>
-                      <p style={{ marginBottom: 6 }}><b style={{ color: "var(--ink)" }}>Délai : {sc.delai}</b></p>
+                      <p style={{ marginBottom: 6 }}><b style={{ color: "var(--ink)" }}>{sc.strategie === "Prix plafond" ? sc.delai : `Délai : ${sc.delai}`}</b></p>
                       <p>{sc.commentaire}</p>
                     </div>
                   );

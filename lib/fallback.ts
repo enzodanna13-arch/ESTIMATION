@@ -170,7 +170,7 @@ export function computeFallbackLocatif(
       ? [
           { strategie: "Vente rapide", prix: bas, delai: "1 à 3 semaines", commentaire: "Le bas de la fourchette officielle : votre bien se loue immédiatement et vous choisissez parmi plusieurs dossiers." },
           { strategie: "Prix optimal", prix: haut, delai: "2 à 6 semaines", commentaire: "Le loyer médian officiel du secteur : le plafond que nous conseillons pour louer sans vacance." },
-          { strategie: "Prix plafond", prix: haut, delai: "—", commentaire: "Le médian est le plafond : au-delà, le bien sort de la fourchette officielle et risque la vacance." },
+          { strategie: "Prix plafond", prix: plafond > haut ? plafond : haut, delai: "Risque de vacance", commentaire: "Le haut du marché observé sur votre secteur : au-delà de ce niveau, les candidats se détournent et le bien risque de rester vide." },
         ]
       : base.scenarios_prix,
     valeur_venale_indicative: venale,

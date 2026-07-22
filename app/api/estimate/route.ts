@@ -197,15 +197,21 @@ export async function POST(request: Request) {
                 ...report,
                 ajustements: ajustementsLoc,
                 prix_estime: estime,
-                prix_presentation: medM,
+                // Règle ASSOUPLIE (locatif uniquement) : le loyer conseillé
+                // est le jugement de l'IA, borné [bas → médian] — il peut
+                // donc varier légèrement d'une analyse à l'autre
+                prix_presentation: estime,
                 prix_m2: Math.round((estime / surfLoc) * 100) / 100,
                 base_mediane: medM,
+                // Dossier locatif : 2 cartes « Loyer optimal » (conseillé)
+                // et « Loyer maximum » (m² haut) — la « Location rapide »
+                // n'apparaît plus
                 scenarios_prix: [
-                  keepLoc("Vente rapide", basM, "1 à 3 semaines", "Le bas de la fourchette officielle du secteur : votre bien se loue immédiatement et vous choisissez parmi plusieurs dossiers."),
-                  keepLoc("Prix optimal", medM, "2 à 6 semaines", "Le loyer médian officiel du secteur : le juste loyer que nous conseillons pour louer dans de bons délais et sans vacance."),
+                  keepLoc("Vente rapide", basM, "1 à 3 semaines", "Le bas de la fourchette officielle du secteur."),
+                  keepLoc("Prix optimal", estime, "2 à 6 semaines", "Le loyer que nous conseillons pour votre bien : le juste niveau pour louer dans de bons délais et sans vacance, sans jamais dépasser le médian officiel du secteur."),
+                  keepLoc("Prix plafond", hautM > medM ? hautM : medM, "Risque de vacance", "Le haut du marché observé sur votre secteur : au-delà de ce niveau, les candidats se détournent et le bien risque de rester vide."),
                 ],
                 // Fourchette AFFICHÉE : du m² BAS au m² HAUT du tableau
-                // officiel — le loyer conseillé reste au MÉDIAN
                 fourchette_basse: basM,
                 fourchette_haute: hautM > medM ? hautM : medM,
               };
