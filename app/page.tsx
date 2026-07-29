@@ -241,6 +241,10 @@ export default function Home() {
     prixHT: 316.67, numeroDevis: "",
     factureNumero: "", factureClientNom: "", factureClientAdresse: "",
     factureBien: "", factureNotaire: "", commissionTTC: null, factureRef: "",
+    compromisObjetBien: "", compromisBien: "", compromisVendeurs: "",
+    compromisAcquereur: "", compromisNotaireVendeur: "", compromisNotaireAcquereur: "",
+    compromisConditions: "", compromisPiecesVendeur: "Pièces d'identité\nTaxe foncière\nLivret de famille\nMandat de vente\nAttestation de propriété\nDiagnostics techniques",
+    compromisPiecesAcquereur: "Offre d'achat acceptée et signée\nPièce d'identité",
   });
   const [docResult, setDocResult] = useState<DocumentResult | null>(null);
   const setD = <K extends keyof DocumentInput>(key: K, value: DocumentInput[K]) =>
@@ -453,6 +457,11 @@ export default function Home() {
       if (!docInput.factureNotaire?.trim()) return "Renseignez le notaire chargé du dossier.";
       if (!docInput.commissionTTC || docInput.commissionTTC <= 0) return "Renseignez le montant de la commission TTC.";
     }
+    if (docType === "compromis") {
+      if (!docInput.compromisObjetBien?.trim()) return "Renseignez le bien (objet du courrier).";
+      if (!docInput.compromisVendeurs?.trim()) return "Renseignez les vendeurs.";
+      if (!docInput.compromisAcquereur?.trim()) return "Renseignez l'acquéreur.";
+    }
     return null;
   };
 
@@ -463,7 +472,7 @@ export default function Home() {
       return;
     }
     // Modèles fixes (devis pré-état daté, facture) : générés sans IA
-    if (docType === "preetatdate" || docType === "facture") {
+    if (docType === "preetatdate" || docType === "facture" || docType === "compromis") {
       setError(null);
       setDocResult({ titre: DOC_LABELS[docType].titre, objet: "", blocs: [] });
       window.scrollTo({ top: 0, behavior: "smooth" });
@@ -1280,6 +1289,44 @@ export default function Home() {
                       </div>
                     )}
 
+                    {docType === "compromis" && (
+                      <div className="mb-4 grid gap-4 sm:grid-cols-2">
+                        <Field label="Bien (objet du courrier) *" className="sm:col-span-2">
+                          <input className={inputCls} value={docInput.compromisObjetBien ?? ""} onChange={(e) => setD("compromisObjetBien", e.target.value)} placeholder="Résidence Le Canal – Bâtiment SD4 – 13500 Martigues" />
+                        </Field>
+                        <Field label="Identification du bien vendu (lots, description, tantièmes)" className="sm:col-span-2">
+                          <textarea rows={4} className={inputCls} value={docInput.compromisBien ?? ""} onChange={(e) => setD("compromisBien", e.target.value)} placeholder={"Un ensemble immobilier situé sur la commune de Martigues (13500), au sein de la résidence Le Canal – Bâtiment SD4.\nLot n°8 :\nUn appartement situé au deuxième étage, porte de droite, composé de : entrée, WC, séjour, cuisine, salle de bains, deux chambres, cellier, placards et une loggia.\nEt les 46/1000èmes de la propriété du sol et des parties communes générales."} />
+                        </Field>
+                        <Field label="Vendeurs (état civil, profession, adresse, contact) *">
+                          <textarea rows={6} className={inputCls} value={docInput.compromisVendeurs ?? ""} onChange={(e) => setD("compromisVendeurs", e.target.value)} placeholder={"Monsieur Patrice VELLA, électricien,\net Madame Cindy LEQUESNE, employée en restauration, son épouse,\ndemeurant ensemble Résidence Le Canal – 13500 Martigues.\nNés respectivement à … le …\nContact : 06 …\nEmail : …"} />
+                        </Field>
+                        <Field label="Acquéreur (état civil, profession, adresse, contact) *">
+                          <textarea rows={6} className={inputCls} value={docInput.compromisAcquereur ?? ""} onChange={(e) => setD("compromisAcquereur", e.target.value)} placeholder={"Madame CASQUEL épouse YASSIN Marie-Christine,\nnée le 16 septembre 1957 à Marseille,\nde nationalité française, retraitée,\ndemeurant Résidence Paradis Parc – 13500 Martigues.\nContact : 06 …"} />
+                        </Field>
+                        <Field label="Notaire vendeur (nom, étude, adresse, tél, email)">
+                          <textarea rows={4} className={inputCls} value={docInput.compromisNotaireVendeur ?? ""} onChange={(e) => setD("compromisNotaireVendeur", e.target.value)} placeholder={"Maître Mathieu TORRES\nOmega Notaires\nAvenue Jean Moulin – 13500 Martigues\n04 42 80 70 00 · contact@omega-notaires.fr"} />
+                        </Field>
+                        <Field label="Notaire acquéreur (nom, étude, adresse, tél, email)">
+                          <textarea rows={4} className={inputCls} value={docInput.compromisNotaireAcquereur ?? ""} onChange={(e) => setD("compromisNotaireAcquereur", e.target.value)} placeholder={"Maître PASQUIER\nOffice notarial – 13220 Châteauneuf-les-Martigues\n04 42 76 20 00 · office.13105@notaires.fr"} />
+                        </Field>
+                        <Field label="Conditions de la vente (une par ligne)" className="sm:col-span-2">
+                          <textarea rows={4} className={inputCls} value={docInput.compromisConditions ?? ""} onChange={(e) => setD("compromisConditions", e.target.value)} placeholder={"Prix de vente : 155 000 € frais d'agence inclus\nHonoraires d'agence : 7 000 € TTC\nPaiement comptant du prix de vente\nAbsence de condition suspensive de financement"} />
+                        </Field>
+                        <Field label="Pièces du dossier vendeur (une par ligne)">
+                          <textarea rows={5} className={inputCls} value={docInput.compromisPiecesVendeur ?? ""} onChange={(e) => setD("compromisPiecesVendeur", e.target.value)} />
+                        </Field>
+                        <Field label="Pièces du dossier acquéreur (une par ligne)">
+                          <textarea rows={5} className={inputCls} value={docInput.compromisPiecesAcquereur ?? ""} onChange={(e) => setD("compromisPiecesAcquereur", e.target.value)} />
+                        </Field>
+                        <div className="rounded-xl border border-copper/40 bg-copper-soft/40 p-3 text-xs text-slate-600 sm:col-span-2">
+                          <b className="text-navy">Étape suivante :</b> après génération, vous ajoutez les PDF des
+                          pièces (vendeur et acquéreur) et téléchargez UN SEUL fichier : lettre + pages de garde +
+                          toutes les pièces, prêt à envoyer au notaire. Généré sans IA, fusion locale (aucun envoi
+                          de documents sur un serveur).
+                        </div>
+                      </div>
+                    )}
+
                     {docType === "facture" && (
                       <div className="mb-4 grid gap-4 sm:grid-cols-2">
                         <Field label="Numéro de facture *">
@@ -1359,9 +1406,11 @@ export default function Home() {
                       <Field label="Email">
                         <input className={inputCls} inputMode="email" value={docInput.negociateurEmail} onChange={(e) => setD("negociateurEmail", e.target.value)} placeholder="prenom.nom@century21.fr" />
                       </Field>
+                      {docType !== "compromis" && (
                       <Field label="Instructions pour l'IA (facultatif)" className="sm:col-span-3">
                         <textarea rows={2} className={inputCls} value={docInput.instructionsIA ?? ""} onChange={(e) => setD("instructionsIA", e.target.value)} placeholder="Ex. ton très haut de gamme · insiste sur la vue · courrier plutôt court…" />
                       </Field>
+                      )}
                     </div>
                     )}
 

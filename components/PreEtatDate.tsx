@@ -21,7 +21,7 @@ function Sceau({ taille }: { taille: number }) {
   );
 }
 
-function EnTete() {
+export function EnTete() {
   return (
     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
       <div style={{ fontFamily: SANS }}>
@@ -54,7 +54,7 @@ function DateLigne({ dateStr }: { dateStr: string }) {
   return <div style={{ marginLeft: "46%", marginTop: 20 }}>Martigues, le {dateStr}</div>;
 }
 
-function PiedC21() {
+export function PiedC21() {
   return (
     <div style={{ marginTop: "auto", fontFamily: SANS }}>
       <div style={{ display: "flex", gap: 12, alignItems: "flex-start", paddingTop: 6 }}>

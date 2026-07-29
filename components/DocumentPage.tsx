@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import CompromisPage from "@/components/CompromisPage";
 import FactureCommission from "@/components/FactureCommission";
 import PreEtatDate from "@/components/PreEtatDate";
 import type { DocumentInput, DocumentResult } from "@/lib/docTypes";
@@ -58,6 +59,11 @@ export default function DocumentPage({
   // Facture de commission : modèle fixe de l'agence (RIB figé) — sans IA
   if (input.docType === "facture") {
     return <FactureCommission input={input} onReset={onReset} />;
+  }
+
+  // Demande de compromis : lettre + fusion des pièces PDF — sans IA
+  if (input.docType === "compromis") {
+    return <CompromisPage input={input} onReset={onReset} />;
   }
 
   // Texte d'annonce : pas de page PDF — un rendu texte à copier-coller

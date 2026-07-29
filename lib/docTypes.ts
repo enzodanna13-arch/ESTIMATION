@@ -1,6 +1,6 @@
 // Génération de documents : types partagés client/serveur
 
-export type DocType = "annonce" | "crv" | "prospection" | "preetatdate" | "facture";
+export type DocType = "annonce" | "crv" | "prospection" | "preetatdate" | "facture" | "compromis";
 
 export const DOC_LABELS: Record<DocType, { titre: string; icone: string; description: string }> = {
   annonce: {
@@ -27,6 +27,11 @@ export const DOC_LABELS: Record<DocType, { titre: string; icone: string; descrip
     titre: "Facture de commission",
     icone: "🧾",
     description: "Honoraires de transaction — modèle exact de l'agence avec RIB",
+  },
+  compromis: {
+    titre: "Demande de compromis au notaire",
+    icone: "📨",
+    description: "Courrier + pièces vendeur et acquéreur fusionnés en un seul PDF",
   },
 };
 
@@ -76,6 +81,16 @@ export interface DocumentInput {
   factureNotaire?: string; // ex. DEGRANDI / KEMLER (affiché « Maitre … »)
   commissionTTC?: number | null; // montant de la commission TTC (€)
   factureRef?: string; // réf. de la ligne (ex. initiales du négociateur)
+  // Demande de compromis de vente au notaire (générée sans IA)
+  compromisObjetBien?: string; // ex. Résidence Le Canal – 13500 Martigues
+  compromisBien?: string; // identification du bien vendu (texte libre, lots…)
+  compromisVendeurs?: string; // état civil et coordonnées des vendeurs
+  compromisAcquereur?: string; // état civil et coordonnées de l'acquéreur
+  compromisNotaireVendeur?: string; // nom, étude, adresse, tél, email
+  compromisNotaireAcquereur?: string;
+  compromisConditions?: string; // une condition par ligne
+  compromisPiecesVendeur?: string; // une pièce par ligne
+  compromisPiecesAcquereur?: string;
   // Toutes missions
   instructionsIA?: string;
 }
