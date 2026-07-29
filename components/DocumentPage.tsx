@@ -210,11 +210,23 @@ export default function DocumentPage({
             <div className="sign" style={{ gridTemplateColumns: "1fr", marginTop: 10 }}>
               <div className="box">
                 <div className="lbl" style={{ marginBottom: 6 }}>Votre négociateur</div>
-                <div className="name">{input.negociateur || AGENCE.enseigne}</div>
-                <div className="role">
-                  {AGENCE.nom} {AGENCE.enseigne}
-                  {(input.negociateurTel || input.negociateurEmail) &&
-                    ` · ${[input.negociateurTel, input.negociateurEmail].filter(Boolean).join(" · ")}`}
+                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  {input.negociateurPhoto && (
+                    /* eslint-disable-next-line @next/next/no-img-element */
+                    <img
+                      src={`data:${input.negociateurPhoto.mediaType};base64,${input.negociateurPhoto.data}`}
+                      alt=""
+                      style={{ width: "14mm", height: "14mm", borderRadius: "50%", objectFit: "cover", border: "1.5px solid rgba(180, 151, 91, 0.7)", flexShrink: 0 }}
+                    />
+                  )}
+                  <div>
+                    <div className="name">{input.negociateur || AGENCE.enseigne}</div>
+                    <div className="role">
+                      {AGENCE.nom} {AGENCE.enseigne}
+                      {(input.negociateurTel || input.negociateurEmail) &&
+                        ` · ${[input.negociateurTel, input.negociateurEmail].filter(Boolean).join(" · ")}`}
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>

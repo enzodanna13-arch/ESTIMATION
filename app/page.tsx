@@ -526,7 +526,9 @@ export default function Home() {
     setLoadingStatus("");
     setError(null);
     try {
-      const res = await streamPhase({ ...docInput, docType }, "/api/document");
+      // La photo reste côté client (affichage) — inutile de l'envoyer à l'IA
+      const { negociateurPhoto: _photo, ...docSansPhoto } = docInput;
+      const res = await streamPhase({ ...docSansPhoto, docType }, "/api/document");
       setDocResult(res.doc as DocumentResult);
       sauverDocument(res.doc as DocumentResult);
       window.scrollTo({ top: 0, behavior: "smooth" });
@@ -1465,6 +1467,48 @@ export default function Home() {
                       <Field label="Email">
                         <input className={inputCls} inputMode="email" value={docInput.negociateurEmail} onChange={(e) => setD("negociateurEmail", e.target.value)} placeholder="prenom.nom@century21.fr" />
                       </Field>
+                      {docType === "prospection" && (
+                      <Field label="Photo du négociateur (affichée sur le courrier)" className="sm:col-span-3">
+                        <div className="flex items-center gap-3">
+                          {docInput.negociateurPhoto ? (
+                            <>
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img
+                                src={`data:${docInput.negociateurPhoto.mediaType};base64,${docInput.negociateurPhoto.data}`}
+                                alt="Photo du négociateur"
+                                className="h-14 w-14 rounded-full border-2 border-copper object-cover"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => setD("negociateurPhoto", null)}
+                                className="rounded-lg border border-slate-300 px-3 py-1.5 text-xs text-slate-500 transition hover:bg-red-50 hover:text-red-600"
+                              >
+                                Retirer
+                              </button>
+                            </>
+                          ) : (
+                            <label className="cursor-pointer rounded-lg border border-dashed border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-500 transition hover:border-copper hover:text-copper">
+                              📷 Ajouter ma photo
+                              <input
+                                type="file"
+                                accept="image/*"
+                                className="hidden"
+                                onChange={async (e) => {
+                                  const f = e.target.files?.[0];
+                                  if (!f) return;
+                                  try {
+                                    setD("negociateurPhoto", await compressImage(f));
+                                  } catch {
+                                    setError("Impossible de traiter la photo.");
+                                  }
+                                }}
+                              />
+                            </label>
+                          )}
+                          <span className="text-xs text-slate-400">Un portrait humanise le courrier et crée la confiance dès l&apos;ouverture.</span>
+                        </div>
+                      </Field>
+                      )}
                       {docType !== "compromis" && (
                       <Field label="Instructions pour l'IA (facultatif)" className="sm:col-span-3">
                         <textarea rows={2} className={inputCls} value={docInput.instructionsIA ?? ""} onChange={(e) => setD("instructionsIA", e.target.value)} placeholder="Ex. ton très haut de gamme · insiste sur la vue · courrier plutôt court…" />

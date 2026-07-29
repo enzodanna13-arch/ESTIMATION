@@ -41,6 +41,7 @@ export interface DocumentInput {
   negociateur: string;
   negociateurTel: string;
   negociateurEmail: string;
+  negociateurPhoto?: { mediaType: string; data: string } | null; // portrait (courrier de prospection)
   // Le bien (annonce + compte rendu)
   typeBien?: string;
   surface?: number | null;
