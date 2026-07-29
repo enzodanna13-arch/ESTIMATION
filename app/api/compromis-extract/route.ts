@@ -11,8 +11,10 @@ export const dynamic = "force-dynamic";
 
 const CHAMPS = [
   "compromisObjetBien", "cLot", "cBienDescription", "cTantiemes",
-  "cVendeurNoms", "cVendeurProfessions", "cVendeurAdresse", "cVendeurNaissances", "cVendeurTel", "cVendeurEmail",
-  "cAcqNom", "cAcqNaissance", "cAcqProfession", "cAcqAdresse", "cAcqTel", "cAcqEmail",
+  "cVendeurM", "cVendeurMme", "cVendeurMProfession", "cVendeurMmeProfession",
+  "cVendeurMNaissance", "cVendeurMmeNaissance", "cVendeurAdresse", "cVendeurTel", "cVendeurEmail",
+  "cAcqM", "cAcqMme", "cAcqMNaissance", "cAcqMmeNaissance",
+  "cAcqMProfession", "cAcqMmeProfession", "cAcqAdresse", "cAcqTel", "cAcqEmail",
   "cNotVNom", "cNotVEtude", "cNotVAdresse", "cNotVTel", "cNotVEmail",
   "cNotANom", "cNotAEtude", "cNotAAdresse", "cNotATel", "cNotAEmail",
 ] as const;
@@ -24,18 +26,36 @@ const SCHEMA = {
     cLot: { type: "string", description: "Numéro(s) de lot" },
     cBienDescription: { type: "string", description: "Composition du bien : étage, pièces, annexes" },
     cTantiemes: { type: "string", description: "Tantièmes des parties communes (ex. 46/1000èmes…)" },
-    cVendeurNoms: { type: "string", description: "Nom(s) complet(s) du/des vendeur(s)" },
-    cVendeurProfessions: { type: "string" },
+    cVendeurM: { type: "string", description: "VENDEUR Monsieur : nom complet (prénoms + NOM), vide si pas de vendeur masculin" },
+    cVendeurMme: { type: "string", description: "VENDEUR Madame : nom complet, vide si pas de vendeuse" },
+    cVendeurMProfession: { type: "string", description: "Profession de Monsieur (vendeur)" },
+    cVendeurMmeProfession: { type: "string", description: "Profession de Madame (vendeuse)" },
+    cVendeurMNaissance: { type: "string", description: "Naissance de Monsieur au format « à VILLE (CP), le JJ mois AAAA »" },
+    cVendeurMmeNaissance: { type: "string", description: "Naissance de Madame au même format" },
     cVendeurAdresse: { type: "string" },
-    cVendeurNaissances: { type: "string", description: "Dates et lieux de naissance des vendeurs" },
     cVendeurTel: { type: "string" },
     cVendeurEmail: { type: "string" },
-    cAcqNom: { type: "string", description: "Nom complet de l'acquéreur" },
-    cAcqNaissance: { type: "string" },
-    cAcqProfession: { type: "string", description: "Nationalité et profession" },
+    cAcqM: { type: "string", description: "ACQUÉREUR Monsieur : nom complet, vide si sans objet" },
+    cAcqMme: { type: "string", description: "ACQUÉREUR Madame : nom complet, vide si sans objet" },
+    cAcqMNaissance: { type: "string", description: "Naissance de Monsieur (acquéreur) : « né le … à … »" },
+    cAcqMmeNaissance: { type: "string", description: "Naissance de Madame (acquéreur) : « née le … à … »" },
+    cAcqMProfession: { type: "string", description: "Nationalité et profession de Monsieur (acquéreur)" },
+    cAcqMmeProfession: { type: "string", description: "Nationalité et profession de Madame (acquéreur)" },
     cAcqAdresse: { type: "string" },
     cAcqTel: { type: "string" },
     cAcqEmail: { type: "string" },
+    cLots: {
+      type: "array",
+      description: "TOUS les lots vendus (lot principal + annexes cave/garage/parking), chacun avec son numéro de LOT au règlement de copropriété (pas le numéro de porte)",
+      items: {
+        type: "object",
+        properties: {
+          numero: { type: "string" },
+          nature: { type: "string", enum: ["Appartement", "Maison", "Cave", "Garage", "Parking", "Cellier", "Autre"] },
+        },
+        required: ["numero", "nature"],
+      },
+    },
     cNotVNom: { type: "string", description: "Notaire du vendeur (Maître …)" },
     cNotVEtude: { type: "string" },
     cNotVAdresse: { type: "string" },
@@ -49,7 +69,7 @@ const SCHEMA = {
     cPrixVente: { type: "number", description: "Prix de vente en euros, frais d'agence inclus (0 si introuvable)" },
     cHonoraires: { type: "number", description: "Honoraires d'agence en euros TTC (0 si introuvable)" },
   },
-  required: [...CHAMPS, "cPrixVente", "cHonoraires"],
+  required: [...CHAMPS, "cPrixVente", "cHonoraires", "cLots"],
 } as const;
 
 interface FichierIn {
@@ -89,7 +109,8 @@ EXTRAIS-EN les informations pour préparer la demande de compromis de vente au n
 RÈGLES :
 - N'INVENTE RIEN : un champ introuvable dans les pièces reste vide ("" ou 0).
 - Orthographie les noms EXACTEMENT comme sur les pièces (majuscules des noms de famille).
-- cVendeurNaissances : au format « Monsieur X, à VILLE (CP), le JJ mois AAAA — Madame Y, à … ».
+- Sépare bien MONSIEUR et MADAME dans les champs dédiés (vendeur comme acquéreur) ; si une seule personne, remplis le champ correspondant et laisse l'autre vide.
+- cLots : liste TOUS les lots (appartement + cave + garage…) avec leur numéro de LOT de copropriété — ne confonds pas avec un numéro de porte ou de cave peint.
 - Le prix (cPrixVente) et les honoraires (cHonoraires) viennent de l'offre d'achat ou du mandat s'ils y figurent.
 - Réponds EXCLUSIVEMENT par un objet JSON valide conforme au schéma, sans texte autour.
 
@@ -120,7 +141,12 @@ SCHÉMA : ${JSON.stringify(SCHEMA)}`,
     }
     if (typeof r.cPrixVente === "number" && r.cPrixVente > 0) champs.cPrixVente = r.cPrixVente;
     if (typeof r.cHonoraires === "number" && r.cHonoraires > 0) champs.cHonoraires = r.cHonoraires;
-    return Response.json({ champs });
+    const lots = Array.isArray(r.cLots)
+      ? (r.cLots as { numero?: unknown; nature?: unknown }[])
+          .map((l) => ({ numero: String(l.numero ?? "").trim(), nature: String(l.nature ?? "").trim() || "Autre" }))
+          .filter((l) => l.numero)
+      : [];
+    return Response.json({ champs, lots });
   } catch (err) {
     console.error("Extraction des pièces impossible :", err);
     return Response.json({ error: "Lecture des pièces impossible — réessayez ou remplissez à la main" }, { status: 500 });

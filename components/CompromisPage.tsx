@@ -45,25 +45,57 @@ const int = new Intl.NumberFormat("fr-FR", { maximumFractionDigits: 0 });
 /** Assemble les champs structurés en textes de la lettre (les anciens
  *  champs texte restent des replis pour les dossiers de l'historique). */
 function assembler(d: DocumentInput): DocumentInput {
+  // Lots : principal + annexes (cave, garage…) — chaque lot est une partie
+  // privative avec sa quote-part des parties communes
+  const lots = (d.cLots ?? []).filter((l) => l.numero.trim());
+  const lignesLots = lots.length
+    ? lots.map((l, i) =>
+        i === 0
+          ? [`Lot n°${l.numero.trim()}${l.nature ? ` – ${l.nature}` : ""} :`, d.cBienDescription ?? ""].filter(Boolean).join("\n")
+          : `Lot n°${l.numero.trim()}${l.nature ? ` – ${l.nature}` : ""}`,
+      )
+    : [d.cLot ? `Lot n°${d.cLot} :` : "", d.cBienDescription ?? ""].filter(Boolean);
   const bien = [
     d.compromisObjetBien ? `Un ensemble immobilier situé ${d.compromisObjetBien}.` : "",
-    d.cLot ? `Lot n°${d.cLot} :` : "",
-    d.cBienDescription ?? "",
+    ...lignesLots,
     d.cTantiemes ? `Et les ${d.cTantiemes}.` : "",
   ].filter(Boolean).join("\n");
+
+  const vM = d.cVendeurM?.trim();
+  const vMme = d.cVendeurMme?.trim();
+  const nomsVendeurs = vM && vMme
+    ? `Monsieur ${vM}${d.cVendeurMProfession ? `, ${d.cVendeurMProfession}` : ""},\net Madame ${vMme}${d.cVendeurMmeProfession ? `, ${d.cVendeurMmeProfession}` : ""},`
+    : vM
+      ? `Monsieur ${vM}${d.cVendeurMProfession ? `, ${d.cVendeurMProfession}` : ""},`
+      : vMme
+        ? `Madame ${vMme}${d.cVendeurMmeProfession ? `, ${d.cVendeurMmeProfession}` : ""},`
+        : [d.cVendeurNoms ?? "", d.cVendeurProfessions ?? ""].filter(Boolean).join("\n");
+  const naissV = [
+    vM && d.cVendeurMNaissance ? `Monsieur, ${d.cVendeurMNaissance}` : "",
+    vMme && d.cVendeurMmeNaissance ? `Madame, ${d.cVendeurMmeNaissance}` : "",
+  ].filter(Boolean).join(" — ") || d.cVendeurNaissances || "";
   const vendeurs = [
-    d.cVendeurNoms ?? "",
-    d.cVendeurProfessions ?? "",
-    d.cVendeurAdresse ? `demeurant ${d.cVendeurAdresse}.` : "",
-    d.cVendeurNaissances ? `Nés respectivement : ${d.cVendeurNaissances}` : "",
+    nomsVendeurs,
+    d.cVendeurAdresse ? `demeurant ${vM && vMme ? "ensemble " : ""}${d.cVendeurAdresse}.` : "",
+    naissV ? `Nés respectivement : ${naissV}` : "",
     d.cVendeurTel ? `Contact : ${d.cVendeurTel}` : "",
     d.cVendeurEmail ? `Email : ${d.cVendeurEmail}` : "",
   ].filter(Boolean).join("\n");
+
+  const aM = d.cAcqM?.trim();
+  const aMme = d.cAcqMme?.trim();
+  const blocsAcq: string[] = [];
+  if (aM) {
+    blocsAcq.push([`Monsieur ${aM},`, d.cAcqMNaissance ? `${d.cAcqMNaissance},` : "", d.cAcqMProfession ? `${d.cAcqMProfession},` : ""].filter(Boolean).join("\n"));
+  }
+  if (aMme) {
+    blocsAcq.push([`${aM ? "et " : ""}Madame ${aMme},`, d.cAcqMmeNaissance ? `${d.cAcqMmeNaissance},` : "", d.cAcqMmeProfession ? `${d.cAcqMmeProfession},` : ""].filter(Boolean).join("\n"));
+  }
   const acquereur = [
-    d.cAcqNom ?? "",
-    d.cAcqNaissance ? `${d.cAcqNaissance},` : "",
-    d.cAcqProfession ? `${d.cAcqProfession},` : "",
-    d.cAcqAdresse ? `demeurant ${d.cAcqAdresse}.` : "",
+    blocsAcq.length
+      ? blocsAcq.join("\n")
+      : [d.cAcqNom ?? "", d.cAcqNaissance ? `${d.cAcqNaissance},` : "", d.cAcqProfession ? `${d.cAcqProfession},` : ""].filter(Boolean).join("\n"),
+    d.cAcqAdresse ? `demeurant ${aM && aMme ? "ensemble " : ""}${d.cAcqAdresse}.` : "",
     d.cAcqTel ? `Contact : ${d.cAcqTel}` : "",
     d.cAcqEmail ? `Email : ${d.cAcqEmail}` : "",
   ].filter(Boolean).join("\n");
@@ -142,7 +174,9 @@ export default function CompromisPage({
   onReset: () => void;
   onSauvegarder?: (d: DocumentInput) => void;
 }) {
-  const dejaRempli = Boolean(input.compromisVendeurs?.trim() || input.cVendeurNoms?.trim());
+  const dejaRempli = Boolean(
+    input.compromisVendeurs?.trim() || input.cVendeurNoms?.trim() || input.cVendeurM?.trim() || input.cVendeurMme?.trim(),
+  );
   const [donnees, setDonnees] = useState<DocumentInput>(input);
   const [mode, setMode] = useState<"saisie" | "apercu">(dejaRempli ? "apercu" : "saisie");
   const [piecesVendeur, setPiecesVendeur] = useState<Piece[]>([]);
@@ -194,9 +228,14 @@ export default function CompromisPage({
         headers: { "content-type": "application/json", "x-history-key": getHistoryKey() },
         body: JSON.stringify({ fichiers: retenues.map((p) => ({ nom: p.nom, data: bufToB64(p.data) })) }),
       });
-      const body = (await res.json()) as { champs?: Record<string, string | number>; error?: string };
+      const body = (await res.json()) as {
+        champs?: Record<string, string | number>;
+        lots?: { numero: string; nature: string }[];
+        error?: string;
+      };
       if (!res.ok || !body.champs) throw new Error(body.error ?? "Lecture impossible");
       const champs = body.champs;
+      const lotsIA = (body.lots ?? []).filter((l) => l.numero?.trim());
       let remplis = 0;
       setDonnees((prev) => {
         const n = { ...prev } as Record<string, unknown>;
@@ -207,6 +246,13 @@ export default function CompromisPage({
             n[k] = v;
             remplis += 1;
           }
+        }
+        // Lots détectés par l'IA : repris seulement si rien n'a été saisi
+        const lotsSaisis = (prev.cLots ?? []).filter((l) => l.numero.trim());
+        if (lotsIA.length > 0 && lotsSaisis.length === 0 && !prev.cLot?.trim()) {
+          n.cLots = lotsIA;
+          n.cLot = lotsIA[0]?.numero ?? "";
+          remplis += 1;
         }
         return n as unknown as DocumentInput;
       });
@@ -223,8 +269,10 @@ export default function CompromisPage({
 
   const genererLettre = () => {
     if (!donnees.compromisObjetBien?.trim()) return setSaisieErreur("Renseignez le bien (objet du courrier).");
-    if (!donnees.cVendeurNoms?.trim() && !donnees.compromisVendeurs?.trim()) return setSaisieErreur("Renseignez le(s) vendeur(s).");
-    if (!donnees.cAcqNom?.trim() && !donnees.compromisAcquereur?.trim()) return setSaisieErreur("Renseignez l'acquéreur.");
+    if (!donnees.cVendeurM?.trim() && !donnees.cVendeurMme?.trim() && !donnees.cVendeurNoms?.trim() && !donnees.compromisVendeurs?.trim())
+      return setSaisieErreur("Renseignez le(s) vendeur(s) — Monsieur et/ou Madame.");
+    if (!donnees.cAcqM?.trim() && !donnees.cAcqMme?.trim() && !donnees.cAcqNom?.trim() && !donnees.compromisAcquereur?.trim())
+      return setSaisieErreur("Renseignez l'acquéreur — Monsieur et/ou Madame.");
     setSaisieErreur(null);
     const assemblees = assembler(donnees);
     setDonnees(assemblees);
@@ -465,13 +513,49 @@ export default function CompromisPage({
             <Champ label="Résidence / adresse du bien *" className="sm:col-span-2">
               <input className={inputCls} value={donnees.compromisObjetBien ?? ""} onChange={(e) => set("compromisObjetBien", e.target.value)} placeholder="Résidence Le Canal – Bâtiment SD4 – 13500 Martigues" />
             </Champ>
-            <Champ label="Numéro(s) de lot">
-              <input className={inputCls} value={donnees.cLot ?? ""} onChange={(e) => set("cLot", e.target.value)} placeholder="8" />
-            </Champ>
             <Champ label="Composition du bien (étage, pièces, annexes)">
               <textarea rows={2} className={inputCls} value={donnees.cBienDescription ?? ""} onChange={(e) => set("cBienDescription", e.target.value)} placeholder="Appartement au deuxième étage, porte de droite : entrée, WC, séjour, cuisine, salle de bains, deux chambres, cellier, placards, loggia." />
             </Champ>
           </div>
+          {(() => {
+            const lots = donnees.cLots?.length ? donnees.cLots : [{ numero: donnees.cLot ?? "", nature: "Appartement" }];
+            const setLots = (next: { numero: string; nature: string }[]) =>
+              setDonnees((prev) => ({ ...prev, cLots: next, cLot: next[0]?.numero ?? "" }));
+            return (
+              <div className="mt-3">
+                <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">Lots vendus (appartement, cave, garage…)</span>
+                <div className="grid gap-2">
+                  {lots.map((l, i) => (
+                    <div key={i} className="flex items-center gap-2">
+                      <select
+                        className={`${inputCls} w-44`}
+                        value={l.nature}
+                        onChange={(e) => setLots(lots.map((x, j) => (j === i ? { ...x, nature: e.target.value } : x)))}
+                      >
+                        {["Appartement", "Maison", "Cave", "Garage", "Parking", "Cellier", "Autre"].map((n) => (
+                          <option key={n} value={n}>{n}</option>
+                        ))}
+                      </select>
+                      <input
+                        className={`${inputCls} w-36`}
+                        value={l.numero}
+                        onChange={(e) => setLots(lots.map((x, j) => (j === i ? { ...x, numero: e.target.value } : x)))}
+                        placeholder={i === 0 ? "Lot n° 8" : "Lot n° 21"}
+                      />
+                      {i > 0 && (
+                        <button type="button" onClick={() => setLots(lots.filter((_, j) => j !== i))} className="rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs text-slate-500 hover:bg-slate-100" aria-label="Retirer ce lot">✕</button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+                {lots.length < 6 && (
+                  <button type="button" onClick={() => setLots([...lots, { numero: "", nature: "Cave" }])} className="mt-2 rounded-lg border border-dashed border-copper px-3 py-1.5 text-xs font-semibold text-copper transition hover:bg-copper-soft/40">
+                    + Ajouter un lot (cave, garage…)
+                  </button>
+                )}
+              </div>
+            );
+          })()}
           <details className="mt-2">
             <summary className="cursor-pointer text-xs font-semibold text-slate-500 hover:text-copper">+ Détails facultatifs du bien (tantièmes)</summary>
             <div className="mt-3 grid gap-4 sm:grid-cols-2">
@@ -482,25 +566,34 @@ export default function CompromisPage({
           </details>
 
           <SousTitre>Vendeur(s)</SousTitre>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Champ label="Nom(s) complet(s) *">
-              <input className={inputCls} value={donnees.cVendeurNoms ?? ""} onChange={(e) => set("cVendeurNoms", e.target.value)} placeholder="Monsieur Patrice VELLA et Madame Cindy LEQUESNE, son épouse" />
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <Champ label="Monsieur — nom complet">
+              <input className={inputCls} value={donnees.cVendeurM ?? ""} onChange={(e) => set("cVendeurM", e.target.value)} placeholder="Patrice Jean-François Victor VELLA" />
+            </Champ>
+            <Champ label="Madame — nom complet">
+              <input className={inputCls} value={donnees.cVendeurMme ?? ""} onChange={(e) => set("cVendeurMme", e.target.value)} placeholder="Cindy Varié LEQUESNE" />
             </Champ>
             <Champ label="Téléphone">
               <input className={inputCls} inputMode="tel" value={donnees.cVendeurTel ?? ""} onChange={(e) => set("cVendeurTel", e.target.value)} placeholder="06 13 89 37 24" />
             </Champ>
           </div>
-          <details className="mt-2" open={Boolean(donnees.cVendeurProfessions || donnees.cVendeurAdresse || donnees.cVendeurNaissances || donnees.cVendeurEmail)}>
-            <summary className="cursor-pointer text-xs font-semibold text-slate-500 hover:text-copper">+ Détails vendeur(s) : professions, adresse, naissances, email (l'IA les remplit depuis les pièces)</summary>
+          <details className="mt-2" open={Boolean(donnees.cVendeurMProfession || donnees.cVendeurMmeProfession || donnees.cVendeurAdresse || donnees.cVendeurMNaissance || donnees.cVendeurMmeNaissance || donnees.cVendeurEmail)}>
+            <summary className="cursor-pointer text-xs font-semibold text-slate-500 hover:text-copper">+ Détails vendeur(s) : professions, naissances, adresse, email (l'IA les remplit depuis les pièces)</summary>
             <div className="mt-3 grid gap-4 sm:grid-cols-2">
-              <Champ label="Profession(s)">
-                <input className={inputCls} value={donnees.cVendeurProfessions ?? ""} onChange={(e) => set("cVendeurProfessions", e.target.value)} placeholder="électricien / employée en restauration" />
+              <Champ label="Monsieur — profession">
+                <input className={inputCls} value={donnees.cVendeurMProfession ?? ""} onChange={(e) => set("cVendeurMProfession", e.target.value)} placeholder="électricien" />
+              </Champ>
+              <Champ label="Madame — profession">
+                <input className={inputCls} value={donnees.cVendeurMmeProfession ?? ""} onChange={(e) => set("cVendeurMmeProfession", e.target.value)} placeholder="employée en restauration" />
+              </Champ>
+              <Champ label="Monsieur — naissance">
+                <input className={inputCls} value={donnees.cVendeurMNaissance ?? ""} onChange={(e) => set("cVendeurMNaissance", e.target.value)} placeholder="à Martigues (13500), le 12 juillet 1984" />
+              </Champ>
+              <Champ label="Madame — naissance">
+                <input className={inputCls} value={donnees.cVendeurMmeNaissance ?? ""} onChange={(e) => set("cVendeurMmeNaissance", e.target.value)} placeholder="à Marignane (13700), le 24 septembre 1986" />
               </Champ>
               <Champ label="Adresse">
-                <input className={inputCls} value={donnees.cVendeurAdresse ?? ""} onChange={(e) => set("cVendeurAdresse", e.target.value)} placeholder="ensemble Résidence Le Canal – Bâtiment SD4 – 13500 Martigues" />
-              </Champ>
-              <Champ label="Naissances (dates et lieux)">
-                <input className={inputCls} value={donnees.cVendeurNaissances ?? ""} onChange={(e) => set("cVendeurNaissances", e.target.value)} placeholder="M. VELLA à Martigues (13500) le 12/07/1984 — Mme LEQUESNE à Marignane (13700) le 24/09/1986" />
+                <input className={inputCls} value={donnees.cVendeurAdresse ?? ""} onChange={(e) => set("cVendeurAdresse", e.target.value)} placeholder="Résidence Le Canal – Bâtiment SD4 – 13500 Martigues" />
               </Champ>
               <Champ label="Email">
                 <input className={inputCls} inputMode="email" value={donnees.cVendeurEmail ?? ""} onChange={(e) => set("cVendeurEmail", e.target.value)} placeholder="email@exemple.fr" />
@@ -508,23 +601,32 @@ export default function CompromisPage({
             </div>
           </details>
 
-          <SousTitre>Acquéreur</SousTitre>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Champ label="Nom complet *">
-              <input className={inputCls} value={donnees.cAcqNom ?? ""} onChange={(e) => set("cAcqNom", e.target.value)} placeholder="Madame CASQUEL épouse YASSIN Marie-Christine" />
+          <SousTitre>Acquéreur(s)</SousTitre>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <Champ label="Monsieur — nom complet">
+              <input className={inputCls} value={donnees.cAcqM ?? ""} onChange={(e) => set("cAcqM", e.target.value)} placeholder="Karim YASSIN" />
+            </Champ>
+            <Champ label="Madame — nom complet">
+              <input className={inputCls} value={donnees.cAcqMme ?? ""} onChange={(e) => set("cAcqMme", e.target.value)} placeholder="CASQUEL épouse YASSIN Marie-Christine" />
             </Champ>
             <Champ label="Téléphone">
               <input className={inputCls} inputMode="tel" value={donnees.cAcqTel ?? ""} onChange={(e) => set("cAcqTel", e.target.value)} placeholder="06 63 69 93 71" />
             </Champ>
           </div>
-          <details className="mt-2" open={Boolean(donnees.cAcqNaissance || donnees.cAcqProfession || donnees.cAcqAdresse || donnees.cAcqEmail)}>
-            <summary className="cursor-pointer text-xs font-semibold text-slate-500 hover:text-copper">+ Détails acquéreur : naissance, profession, adresse, email (l'IA les remplit depuis les pièces)</summary>
+          <details className="mt-2" open={Boolean(donnees.cAcqMNaissance || donnees.cAcqMmeNaissance || donnees.cAcqMProfession || donnees.cAcqMmeProfession || donnees.cAcqAdresse || donnees.cAcqEmail)}>
+            <summary className="cursor-pointer text-xs font-semibold text-slate-500 hover:text-copper">+ Détails acquéreur(s) : naissances, professions, adresse, email (l'IA les remplit depuis les pièces)</summary>
             <div className="mt-3 grid gap-4 sm:grid-cols-2">
-              <Champ label="Naissance (date et lieu)">
-                <input className={inputCls} value={donnees.cAcqNaissance ?? ""} onChange={(e) => set("cAcqNaissance", e.target.value)} placeholder="née le 16 septembre 1957 à Marseille" />
+              <Champ label="Monsieur — naissance (date et lieu)">
+                <input className={inputCls} value={donnees.cAcqMNaissance ?? ""} onChange={(e) => set("cAcqMNaissance", e.target.value)} placeholder="né le 3 mars 1955 à Marseille" />
               </Champ>
-              <Champ label="Nationalité et profession">
-                <input className={inputCls} value={donnees.cAcqProfession ?? ""} onChange={(e) => set("cAcqProfession", e.target.value)} placeholder="de nationalité française, retraitée" />
+              <Champ label="Madame — naissance (date et lieu)">
+                <input className={inputCls} value={donnees.cAcqMmeNaissance ?? ""} onChange={(e) => set("cAcqMmeNaissance", e.target.value)} placeholder="née le 16 septembre 1957 à Marseille" />
+              </Champ>
+              <Champ label="Monsieur — nationalité et profession">
+                <input className={inputCls} value={donnees.cAcqMProfession ?? ""} onChange={(e) => set("cAcqMProfession", e.target.value)} placeholder="de nationalité française, retraité" />
+              </Champ>
+              <Champ label="Madame — nationalité et profession">
+                <input className={inputCls} value={donnees.cAcqMmeProfession ?? ""} onChange={(e) => set("cAcqMmeProfession", e.target.value)} placeholder="de nationalité française, retraitée" />
               </Champ>
               <Champ label="Adresse">
                 <input className={inputCls} value={donnees.cAcqAdresse ?? ""} onChange={(e) => set("cAcqAdresse", e.target.value)} placeholder="Résidence Paradis Parc – 13500 Martigues" />

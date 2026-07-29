@@ -93,18 +93,31 @@ export interface DocumentInput {
   compromisPiecesAcquereur?: string;
   // Compromis — champs structurés (saisie classique, pré-remplissables par
   // l'IA à partir des pièces PDF)
-  cLot?: string; // n° de lot(s)
+  cLot?: string; // n° de lot(s) — ancien champ libre (repli)
+  cLots?: { numero: string; nature: string }[]; // lots multiples : appartement, cave, garage…
   cBienDescription?: string; // composition du bien (étage, pièces…)
   cTantiemes?: string; // ex. 46/1000èmes des parties communes
-  cVendeurNoms?: string; // ex. M. Patrice VELLA et Mme Cindy LEQUESNE
-  cVendeurProfessions?: string;
+  cVendeurNoms?: string; // ancien champ combiné (repli)
+  cVendeurM?: string; // Monsieur — nom complet
+  cVendeurMme?: string; // Madame — nom complet
+  cVendeurMProfession?: string;
+  cVendeurMmeProfession?: string;
+  cVendeurMNaissance?: string; // né à … le …
+  cVendeurMmeNaissance?: string;
+  cVendeurProfessions?: string; // repli
   cVendeurAdresse?: string;
-  cVendeurNaissances?: string; // nés respectivement à … le …
+  cVendeurNaissances?: string; // repli
   cVendeurTel?: string;
   cVendeurEmail?: string;
-  cAcqNom?: string;
-  cAcqNaissance?: string; // né(e) le … à …
-  cAcqProfession?: string; // nationalité, profession
+  cAcqNom?: string; // ancien champ combiné (repli)
+  cAcqM?: string; // Monsieur — nom complet
+  cAcqMme?: string; // Madame — nom complet
+  cAcqMProfession?: string;
+  cAcqMmeProfession?: string;
+  cAcqMNaissance?: string;
+  cAcqMmeNaissance?: string;
+  cAcqNaissance?: string; // repli
+  cAcqProfession?: string; // repli
   cAcqAdresse?: string;
   cAcqTel?: string;
   cAcqEmail?: string;
