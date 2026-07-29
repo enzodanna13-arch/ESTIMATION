@@ -1,0 +1,143 @@
+"use client";
+
+import type { DocumentInput, DocumentResult } from "@/lib/docTypes";
+import { DOC_LABELS } from "@/lib/docTypes";
+
+const AGENCE = {
+  nom: process.env.NEXT_PUBLIC_AGENCE_NOM ?? "CENTURY 21",
+  enseigne: process.env.NEXT_PUBLIC_AGENCE_ENSEIGNE ?? "Icaza Immobilier",
+  adresse: process.env.NEXT_PUBLIC_AGENCE_ADRESSE ?? "32 avenue de la Paix, 13500 Martigues",
+  tel: process.env.NEXT_PUBLIC_AGENCE_TEL ?? "04 42 42 80 85",
+};
+
+const int = new Intl.NumberFormat("fr-FR", { maximumFractionDigits: 0 });
+
+/**
+ * Rendu d'un document généré (annonce, compte rendu de visite, courrier de
+ * prospection) dans la charte du dossier d'estimation Century 21 —
+ * une page A4, prête à imprimer, mêmes typographies et mêmes règles print.
+ */
+export default function DocumentPage({
+  doc,
+  input,
+  onReset,
+}: {
+  doc: DocumentResult;
+  input: DocumentInput;
+  onReset: () => void;
+}) {
+  const today = new Date().toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });
+  const label = DOC_LABELS[input.docType]?.titre ?? "Document";
+  const annonce = input.docType === "annonce";
+  const specs: [string, string][] = annonce
+    ? ([
+        input.typeBien ? ["Type", input.typeBien.charAt(0).toUpperCase() + input.typeBien.slice(1)] : null,
+        input.surface ? ["Surface", `${input.surface} m²`] : null,
+        input.nbPieces ? ["Pièces", String(input.nbPieces)] : null,
+        input.prix ? ["Prix", `${int.format(input.prix)} €`] : null,
+        input.dpe ? ["DPE", input.dpe] : null,
+      ].filter(Boolean) as [string, string][])
+    : [];
+
+  return (
+    <div>
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3 print:hidden">
+        <h2 className="text-2xl font-bold text-navy">{label}</h2>
+        <div className="flex items-center gap-2">
+          <button onClick={() => window.print()} className="rounded-lg bg-copper px-4 py-1.5 text-sm font-bold text-white transition hover:brightness-110">
+            📄 Imprimer / PDF
+          </button>
+          <button onClick={onReset} className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-600 transition hover:bg-slate-100">
+            Nouveau document
+          </button>
+        </div>
+      </div>
+
+      <div className="dossier">
+        <section className="page page-doc">
+          <div className="head">
+            <span className="c21">{AGENCE.nom}</span>
+            <span className="pg">{label} · {today}</span>
+          </div>
+
+          <div className="section-title">
+            <h2>{doc.titre}</h2>
+          </div>
+          <hr className="rule-gold" />
+
+          {doc.objet ? (
+            <p className="section-lead" style={{ marginBottom: 10 }}>
+              <b>Objet : </b>
+              {doc.objet}
+            </p>
+          ) : (
+            <div style={{ height: 6 }} />
+          )}
+
+          {specs.length > 0 && (
+            <div className="kpi-row" style={{ gridTemplateColumns: `repeat(${specs.length}, 1fr)`, marginBottom: 12 }}>
+              {specs.map(([k, v]) => (
+                <div key={k} className="kpi">
+                  <div className="k">{k}</div>
+                  <div className="v" style={{ fontSize: "12pt" }}>{v}</div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {doc.blocs.map((b, i) => (
+            <div key={i} style={{ marginBottom: 10 }}>
+              {b.titre ? (
+                <>
+                  <div className="eyebrow" style={{ color: "var(--ink-45)" }}>{b.titre}</div>
+                  <hr className="rule" style={{ margin: "6px 0 8px" }} />
+                </>
+              ) : null}
+              {b.texte
+                ? b.texte.split("\n").filter((p) => p.trim()).map((p, j) => (
+                    <p key={j} style={{ marginBottom: 7 }}>{p}</p>
+                  ))
+                : null}
+              {(b.items?.length ?? 0) > 0 && (
+                <ul className="strategy">
+                  {b.items!.map((it, j) => {
+                    const [titre, ...reste] = it.split("—");
+                    return (
+                      <li key={j}>
+                        {reste.length ? (
+                          <>
+                            <b>{titre.trim()}</b> — {reste.join("—").trim()}
+                          </>
+                        ) : (
+                          it
+                        )}
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+            </div>
+          ))}
+
+          <div className="fin-doc" style={{ marginTop: "auto" }}>
+            <div className="sign" style={{ gridTemplateColumns: "1fr", marginTop: 10 }}>
+              <div className="box">
+                <div className="lbl" style={{ marginBottom: 6 }}>Votre négociateur</div>
+                <div className="name">{input.negociateur || AGENCE.enseigne}</div>
+                <div className="role">
+                  {AGENCE.nom} {AGENCE.enseigne}
+                  {(input.negociateurTel || input.negociateurEmail) &&
+                    ` · ${[input.negociateurTel, input.negociateurEmail].filter(Boolean).join(" · ")}`}
+                </div>
+              </div>
+            </div>
+            <div className="foot" style={{ marginTop: 12 }}>
+              <span>{AGENCE.nom} {AGENCE.enseigne} — {AGENCE.adresse} · {AGENCE.tel}</span>
+              <span>Document généré le {today}</span>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+  );
+}

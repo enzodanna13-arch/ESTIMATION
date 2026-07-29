@@ -254,6 +254,12 @@ body {
 .dossier .photo-card li.plus::before { background: var(--gold); }
 .dossier .photo-card li.moins::before { background: #9a5b3f; }
 
+/* Documents générés (annonce, courriers) : typographie légèrement plus
+   compacte pour tenir sur une page, et fin de document insécable
+   (signature + pied ensemble, jamais orphelins) */
+.dossier .page-doc { font-size: 10.2pt; line-height: 1.5; }
+.dossier .page-doc .fin-doc { break-inside: avoid; page-break-inside: avoid; }
+
 @media print {
   .print\:hidden { display: none !important; }
   html, body { background: #fff !important; }

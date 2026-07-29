@@ -2,7 +2,9 @@
 
 import { useEffect, useState } from "react";
 import ComparablesEditor from "@/components/ComparablesEditor";
+import DocumentPage from "@/components/DocumentPage";
 import Report from "@/components/Report";
+import { DOC_LABELS, type DocType, type DocumentInput, type DocumentResult } from "@/lib/docTypes";
 import { deleteEstimation, getEstimation, getHistoryKey, HistoryLockedError, listEstimations, setHistoryKey, type HistoryMeta } from "@/lib/history";
 import { loyerNetAnnuel, prixParRendement, RENDEMENT_NET_BAS, RENDEMENT_NET_HAUT } from "@/lib/rendement";
 import { surfaceDependancesHabitables, surfaceHabitableTotale } from "@/lib/surfaces";
@@ -223,6 +225,21 @@ export default function Home() {
   // Accueil à deux univers : Estimation (les 4 missions) et Génération de
   // documents (menu des documents de l'agence)
   const [univers, setUnivers] = useState<"" | "estimation" | "documents">("");
+  // Génération de documents : type choisi, saisie et résultat
+  const [docType, setDocType] = useState<DocType | "">("");
+  const [docInput, setDocInput] = useState<DocumentInput>({
+    docType: "annonce",
+    negociateur: "", negociateurTel: "", negociateurEmail: "",
+    typeBien: "appartement", surface: null, nbPieces: null,
+    adresse: "", codePostal: "13500", ville: "Martigues", quartier: "",
+    prix: null, dpe: "", atouts: "",
+    clientNom: "", dateVisite: "", profilAcquereur: "", pointsAimes: "",
+    objections: "", avisPrix: "", suite: "",
+    cible: "", contexte: "", instructionsIA: "",
+  });
+  const [docResult, setDocResult] = useState<DocumentResult | null>(null);
+  const setD = <K extends keyof DocumentInput>(key: K, value: DocumentInput[K]) =>
+    setDocInput((prev) => ({ ...prev, [key]: value }));
   // Mission audit : la saisie se limite au client + lien de l'annonce —
   // l'IA extrait la fiche du bien depuis l'annonce elle-même
   const auditMode = (input.mission ?? "vente") === "audit";
@@ -342,8 +359,8 @@ export default function Home() {
   };
 
   // Appelle une phase de l'analyse et lit le flux NDJSON (statuts + résultat)
-  const streamPhase = async (payload: Record<string, unknown>): Promise<Record<string, unknown>> => {
-    const res = await fetch("/api/estimate", {
+  const streamPhase = async (payload: Record<string, unknown>, url = "/api/estimate"): Promise<Record<string, unknown>> => {
+    const res = await fetch(url, {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify(payload),
@@ -408,6 +425,40 @@ export default function Home() {
     }
   };
 
+  const docValid = (): string | null => {
+    if (docType === "annonce") {
+      if (!docInput.surface || !docInput.ville?.trim()) return "Renseignez au minimum la surface et la ville du bien.";
+    }
+    if (docType === "crv") {
+      if (!docInput.clientNom?.trim()) return "Renseignez le nom du propriétaire destinataire.";
+      if (!docInput.pointsAimes?.trim() && !docInput.objections?.trim()) return "Indiquez au moins un retour de visite (points aimés ou réserves).";
+    }
+    if (docType === "prospection") {
+      if (!docInput.contexte?.trim()) return "Décrivez le contexte de la prospection (bien repéré, vente récente…).";
+    }
+    return null;
+  };
+
+  const submitDoc = async () => {
+    const invalid = docValid();
+    if (invalid) {
+      setError(invalid);
+      return;
+    }
+    setLoading(true);
+    setLoadingStatus("");
+    setError(null);
+    try {
+      const res = await streamPhase({ ...docInput, docType }, "/api/document");
+      setDocResult(res.doc as DocumentResult);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Erreur inattendue");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const numLabel = (v: number | null) => (v === null ? "" : v >= 8 ? "8 et +" : String(v));
 
   return (
@@ -438,6 +489,8 @@ export default function Home() {
       <main className="mx-auto max-w-5xl px-4 py-8">
         {result ? (
           <Report result={result} input={input} onReset={() => { setResult(null); setStep(0); }} />
+        ) : docResult ? (
+          <DocumentPage doc={docResult} input={{ ...docInput, docType: (docType || "annonce") as DocType }} onReset={() => setDocResult(null)} />
         ) : (
           <>
             {univers === "" && (
@@ -1087,47 +1140,157 @@ export default function Home() {
               <>
                 <button
                   type="button"
-                  onClick={() => setUnivers("")}
+                  onClick={() => { if (docType) { setDocType(""); setError(null); } else setUnivers(""); }}
                   className="mb-4 rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-100 print:hidden"
                 >
-                  ← Accueil
+                  {docType ? "← Documents" : "← Accueil"}
                 </button>
-                <h2 className="mb-1 text-xl font-bold text-navy">Génération de documents</h2>
-                <p className="mb-6 text-sm text-slate-500">
-                  Choisissez le document à générer : l'IA le rédige à partir des informations
-                  saisies, au format de l'agence, prêt à imprimer.
-                </p>
-                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                  {(
-                    [
-                      ["📣", "Texte d'annonce", "Annonce complète du bien : titre accrocheur + texte optimisé portails"],
-                      ["🗒️", "Compte rendu de visite", "Retour de visite structuré à envoyer au propriétaire"],
-                      ["✉️", "Courrier de prospection", "Courrier ou e-mail de pige pour rentrer des mandats"],
-                      ["📝", "Bon de visite", "Bon de visite à faire signer avant chaque visite"],
-                    ] as const
-                  ).map(([icon, titre, texte]) => (
-                    <div
-                      key={titre}
-                      className="relative rounded-2xl border-2 border-dashed border-slate-200 bg-white p-4 text-left opacity-75"
-                    >
-                      <span className="absolute right-3 top-3 rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-slate-500">
-                        Bientôt
-                      </span>
-                      <div className="mb-1 text-2xl">{icon}</div>
-                      <div className="text-sm font-bold text-navy">{titre}</div>
-                      <div className="mt-0.5 text-xs text-slate-500">{texte}</div>
+
+                {docType === "" && (
+                  <>
+                    <h2 className="mb-1 text-xl font-bold text-navy">Génération de documents</h2>
+                    <p className="mb-6 text-sm text-slate-500">
+                      Choisissez le document : l&apos;IA le rédige à partir de vos informations, dans la
+                      charte Century 21 du dossier d&apos;estimation, prêt à imprimer.
+                    </p>
+                    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                      {(Object.keys(DOC_LABELS) as DocType[]).map((t) => (
+                        <button
+                          key={t}
+                          type="button"
+                          onClick={() => { setDocType(t); setD("docType", t); setError(null); }}
+                          className="rounded-2xl border-2 border-slate-200 bg-white p-4 text-left transition hover:border-copper hover:shadow-md"
+                        >
+                          <div className="mb-1 text-2xl">{DOC_LABELS[t].icone}</div>
+                          <div className="text-sm font-bold text-navy">{DOC_LABELS[t].titre}</div>
+                          <div className="mt-0.5 text-xs text-slate-500">{DOC_LABELS[t].description}</div>
+                        </button>
+                      ))}
+                      <div className="relative rounded-2xl border-2 border-dashed border-slate-200 bg-white p-4 text-left opacity-75">
+                        <span className="absolute right-3 top-3 rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-slate-500">
+                          Bientôt
+                        </span>
+                        <div className="mb-1 text-2xl">📝</div>
+                        <div className="text-sm font-bold text-navy">Bon de visite</div>
+                        <div className="mt-0.5 text-xs text-slate-500">Bon de visite à faire signer avant chaque visite</div>
+                      </div>
                     </div>
-                  ))}
-                </div>
-                <div className="mt-6 rounded-xl border border-copper/40 bg-copper-soft/40 p-4 text-sm text-slate-700">
-                  <span className="font-semibold text-navy">Section en préparation.</span>{" "}
-                  Le menu est en place — indiquez à l'équipe technique quels documents activer
-                  en premier et les informations qu'ils doivent contenir.
-                </div>
+                  </>
+                )}
+
+                {docType !== "" && (
+                  <div className="rise-in rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+                    <h2 className="mb-1 text-xl font-bold text-navy">
+                      {DOC_LABELS[docType].icone} {DOC_LABELS[docType].titre}
+                    </h2>
+                    <p className="mb-6 text-sm text-slate-500">{DOC_LABELS[docType].description}.</p>
+
+                    {docType === "annonce" && (
+                      <div className="mb-4 grid gap-4 sm:grid-cols-3">
+                        <Select label="Type de bien" value={docInput.typeBien ?? "appartement"} onChange={(v) => setD("typeBien", v)} options={["appartement", "maison", "terrain", "immeuble", "local"]} />
+                        <Field label="Surface habitable (m²) *">
+                          <input type="number" className={inputCls} value={docInput.surface ?? ""} onChange={(e) => setD("surface", num(e.target.value))} placeholder="74" />
+                        </Field>
+                        <Field label="Nombre de pièces">
+                          <input type="number" className={inputCls} value={docInput.nbPieces ?? ""} onChange={(e) => setD("nbPieces", num(e.target.value))} placeholder="3" />
+                        </Field>
+                        <Field label="Code postal">
+                          <input className={inputCls} value={docInput.codePostal ?? ""} onChange={(e) => setD("codePostal", e.target.value)} placeholder="13500" />
+                        </Field>
+                        <Field label="Ville *">
+                          <input className={inputCls} value={docInput.ville ?? ""} onChange={(e) => setD("ville", e.target.value)} placeholder="Martigues" />
+                        </Field>
+                        <Field label="Quartier">
+                          <input className={inputCls} value={docInput.quartier ?? ""} onChange={(e) => setD("quartier", e.target.value)} placeholder="Jonquières" />
+                        </Field>
+                        <Field label="Prix affiché (€)">
+                          <input type="number" className={inputCls} value={docInput.prix ?? ""} onChange={(e) => setD("prix", num(e.target.value))} placeholder="329000" />
+                        </Field>
+                        <Select label="DPE" value={docInput.dpe ?? ""} onChange={(v) => setD("dpe", v)} options={["", "A", "B", "C", "D", "E", "F", "G"]} />
+                        <Field label="Atouts & équipements (en vrac)" className="sm:col-span-3">
+                          <textarea rows={3} className={inputCls} value={docInput.atouts ?? ""} onChange={(e) => setD("atouts", e.target.value)} placeholder="Balcon sud avec vue dégagée, cuisine équipée récente, cave, place de parking, proche écoles et port…" />
+                        </Field>
+                      </div>
+                    )}
+
+                    {docType === "crv" && (
+                      <div className="mb-4 grid gap-4 sm:grid-cols-2">
+                        <Field label="Propriétaire destinataire *">
+                          <input className={inputCls} value={docInput.clientNom ?? ""} onChange={(e) => setD("clientNom", e.target.value)} placeholder="M. et Mme Dupont" />
+                        </Field>
+                        <Field label="Bien visité (adresse ou description)">
+                          <input className={inputCls} value={docInput.adresse ?? ""} onChange={(e) => setD("adresse", e.target.value)} placeholder="Appartement T3, 12 quai Brescon" />
+                        </Field>
+                        <Field label="Date de la visite">
+                          <input className={inputCls} value={docInput.dateVisite ?? ""} onChange={(e) => setD("dateVisite", e.target.value)} placeholder="mardi 28 juillet à 14 h" />
+                        </Field>
+                        <Field label="Profil de l'acquéreur">
+                          <input className={inputCls} value={docInput.profilAcquereur ?? ""} onChange={(e) => setD("profilAcquereur", e.target.value)} placeholder="Couple avec 1 enfant, primo-accédants, financement validé" />
+                        </Field>
+                        <Field label="Ce que le visiteur a aimé" className="sm:col-span-2">
+                          <textarea rows={2} className={inputCls} value={docInput.pointsAimes ?? ""} onChange={(e) => setD("pointsAimes", e.target.value)} placeholder="La luminosité du séjour, le balcon, le calme de la résidence…" />
+                        </Field>
+                        <Field label="Réserves / objections exprimées" className="sm:col-span-2">
+                          <textarea rows={2} className={inputCls} value={docInput.objections ?? ""} onChange={(e) => setD("objections", e.target.value)} placeholder="Salle de bain à rénover, pas d'ascenseur, cuisine jugée petite…" />
+                        </Field>
+                        <Field label="Avis du visiteur sur le prix">
+                          <input className={inputCls} value={docInput.avisPrix ?? ""} onChange={(e) => setD("avisPrix", e.target.value)} placeholder="Trouve le prix un peu élevé au vu des travaux" />
+                        </Field>
+                        <Field label="Suite envisagée">
+                          <input className={inputCls} value={docInput.suite ?? ""} onChange={(e) => setD("suite", e.target.value)} placeholder="Souhaite une seconde visite avec ses parents / réfléchit / abandon" />
+                        </Field>
+                      </div>
+                    )}
+
+                    {docType === "prospection" && (
+                      <div className="mb-4 grid gap-4 sm:grid-cols-2">
+                        <Field label="Destinataire">
+                          <input className={inputCls} value={docInput.cible ?? ""} onChange={(e) => setD("cible", e.target.value)} placeholder="Propriétaire du 12 rue de la République / habitants du quartier de l'Île" />
+                        </Field>
+                        <Field label="Ville / secteur">
+                          <input className={inputCls} value={docInput.ville ?? ""} onChange={(e) => setD("ville", e.target.value)} placeholder="Martigues" />
+                        </Field>
+                        <Field label="Contexte de la prospection *" className="sm:col-span-2">
+                          <textarea rows={3} className={inputCls} value={docInput.contexte ?? ""} onChange={(e) => setD("contexte", e.target.value)} placeholder="Bien repéré en vente entre particuliers sur Leboncoin depuis 2 mois / nous venons de vendre un T3 dans votre rue en 5 semaines / plusieurs acquéreurs en recherche active sur votre secteur…" />
+                        </Field>
+                      </div>
+                    )}
+
+                    <div className="grid gap-4 sm:grid-cols-3">
+                      <Field label="Négociateur (signature)">
+                        <input className={inputCls} value={docInput.negociateur} onChange={(e) => setD("negociateur", e.target.value)} placeholder="Votre nom" />
+                      </Field>
+                      <Field label="Téléphone">
+                        <input className={inputCls} inputMode="tel" value={docInput.negociateurTel} onChange={(e) => setD("negociateurTel", e.target.value)} placeholder="06 12 34 56 78" />
+                      </Field>
+                      <Field label="Email">
+                        <input className={inputCls} inputMode="email" value={docInput.negociateurEmail} onChange={(e) => setD("negociateurEmail", e.target.value)} placeholder="prenom.nom@century21.fr" />
+                      </Field>
+                      <Field label="Instructions pour l'IA (facultatif)" className="sm:col-span-3">
+                        <textarea rows={2} className={inputCls} value={docInput.instructionsIA ?? ""} onChange={(e) => setD("instructionsIA", e.target.value)} placeholder="Ex. ton très haut de gamme · insiste sur la vue · courrier plutôt court…" />
+                      </Field>
+                    </div>
+
+                    {error && (
+                      <p className="mt-5 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</p>
+                    )}
+
+                    <div className="mt-8 flex justify-end">
+                      <button
+                        type="button"
+                        onClick={submitDoc}
+                        disabled={loading}
+                        className="rounded-xl bg-copper px-7 py-2.5 text-sm font-bold text-white shadow-md shadow-copper/30 transition hover:brightness-110 disabled:opacity-60"
+                      >
+                        ✦ Générer le document
+                      </button>
+                    </div>
+                  </div>
+                )}
               </>
             )}
 
-            {univers === "" && (
+                        {univers === "" && (
             <section className="mt-8 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8 print:hidden">
                 <div className="mb-4 flex items-center justify-between">
                   <div>
