@@ -257,7 +257,21 @@ body {
 /* Documents générés (annonce, courriers) : typographie légèrement plus
    compacte pour tenir sur une page, et fin de document insécable
    (signature + pied ensemble, jamais orphelins) */
-.dossier .page-doc { font-size: 10.2pt; line-height: 1.5; }
+.dossier .page-doc { font-size: 10.2pt; line-height: 1.48; }
+/* Les listes et la signature des documents une-page se compactent pour
+   absorber les rédactions IA un peu longues sans passer sur 2 pages */
+.dossier .page-doc .strategy li { padding: 5px 0 5px 22px; }
+.dossier .page-doc .sign { margin-top: 10px; }
+.dossier .page-doc .sign .box .lbl { margin-bottom: 6px; }
+.dossier .page-doc .foot { padding-top: 8px; }
+.dossier .page-doc .section-title h2 { font-size: 19pt; }
+/* Mode dense : activé automatiquement quand la rédaction IA est longue,
+   pour garantir la tenue sur une seule page A4 */
+.dossier .page-doc-dense { font-size: 9.4pt; line-height: 1.42; padding-top: 16mm; padding-bottom: 14mm; }
+.dossier .page-doc-dense .section-title h2 { font-size: 16.5pt; }
+.dossier .page-doc-dense .strategy li { padding: 3px 0 3px 20px; font-size: 9.2pt; }
+.dossier .page-doc-dense .kpi-row { margin-bottom: 8px; }
+.dossier .page-doc-dense .eyebrow { font-size: 7.6pt; }
 /* Papier à en-tête C21 (devis pré-état daté) : marges fidèles au modèle
    du syndic et corps en serif */
 .dossier .page-c21 {
@@ -309,6 +323,10 @@ body {
   }
   .dossier .page.page-c21 {
     padding: 12mm 15mm 8mm !important;
+  }
+  /* Le mode dense garde ses marges réduites à l'impression */
+  .dossier .page.page-doc-dense {
+    padding: 16mm 20mm 14mm !important;
   }
   .dossier .page + .page {
     break-before: page;

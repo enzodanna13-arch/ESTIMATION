@@ -51,6 +51,9 @@ export default function DocumentPage({
   const toutLeTexte = doc.blocs
     .map((b) => [b.titre ? `${b.titre.toUpperCase()}` : "", blocEnTexte(b)].filter(Boolean).join("\n"))
     .join("\n\n");
+  // La longueur de rédaction de l'IA varie : au-delà d'un seuil, la page
+  // passe en mode « dense » pour rester sur une seule page A4
+  const dense = toutLeTexte.length > 1600;
 
   // Devis pré-état daté : modèle fixe du syndic, reproduit fidèlement
   // (papier à en-tête C21) — généré sans IA
@@ -141,7 +144,7 @@ export default function DocumentPage({
       </div>
 
       <div className="dossier">
-        <section className="page page-doc">
+        <section className={`page page-doc${dense ? " page-doc-dense" : ""}`}>
           <div className="head">
             <span className="c21">{AGENCE.nom}</span>
             <span className="pg">{label} · {today}</span>
