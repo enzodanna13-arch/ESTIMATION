@@ -12,30 +12,26 @@ const OR_CLAIR = "#c9b18a";
 const SERIF = 'Cambria, Georgia, "Times New Roman", serif';
 const SANS = 'Arial, "Helvetica Neue", sans-serif';
 
-function Sceau({ taille }: { taille: number }) {
-  return (
-    <svg width={taille} height={taille} viewBox="0 0 100 100" aria-hidden>
-      <path d="M 82 20 A 44 44 0 1 0 82 80" fill="none" stroke={OR} strokeWidth="13" />
-      <text x="42" y="67" fontSize="46" fontWeight="bold" fill={OR} fontFamily="Georgia, serif">21</text>
-    </svg>
-  );
-}
+// Visuels officiels du papier à en-tête de l'agence, extraits des modèles
+// PDF fournis (devis syndic / facture) — servis depuis /public/c21/.
+// Positions relevées sur l'original : wordmark 86×10 pt en haut à gauche,
+// sceau 84×107 pt collé dans l'angle supérieur droit (2 mm du bord),
+// bandeau « PARLONS DE VOUS, PARLONS BIENS » 512×56 pt en pied de page.
 
 export function EnTete() {
   return (
-    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-      <div style={{ fontFamily: SANS }}>
-        <div style={{ color: OR, fontWeight: 700, fontSize: "15pt", letterSpacing: "0.14em" }}>
-          CENTURY 21<span style={{ fontSize: "7pt", verticalAlign: "super" }}>®</span>
-        </div>
-        <div style={{ color: "#8a8a8a", fontSize: "12pt", marginTop: 1 }}>Icaza Immobilier</div>
-        <div style={{ fontSize: "10pt", marginTop: 6, fontFamily: SERIF, lineHeight: 1.4 }}>
-          32 avenue de la Paix
-          <br />
-          13500 Martigues
-        </div>
+    <div style={{ minHeight: "26mm" }}>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src="/c21/wordmark.png" alt="CENTURY 21" style={{ width: "30.5mm", display: "block", marginTop: "1mm" }} />
+      <div style={{ fontSize: "10pt", marginTop: "2mm", fontFamily: SERIF, lineHeight: 1.45 }}>
+        Icaza Immobilier
+        <br />
+        32 avenue de la Paix
+        <br />
+        13500 Martigues
       </div>
-      <Sceau taille={100} />
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src="/c21/sceau.png" alt="" style={{ position: "absolute", top: "2mm", right: "15mm", width: "29.5mm" }} />
     </div>
   );
 }
@@ -59,7 +55,8 @@ export function PiedC21() {
     <div style={{ marginTop: "auto", fontFamily: SANS }}>
       <div style={{ display: "flex", gap: 12, alignItems: "flex-start", paddingTop: 6 }}>
         <div style={{ flexShrink: 0, marginTop: 2 }}>
-          <Sceau taille={30} />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/c21/sceau-petit.png" alt="" style={{ width: "6.8mm", display: "block" }} />
         </div>
         <div style={{ fontSize: "6.8pt", lineHeight: 1.4 }}>
           <b style={{ color: OR }}>Vente – Location – Gestion – Syndic de copropriété</b>
@@ -74,40 +71,12 @@ export function PiedC21() {
           </span>
         </div>
       </div>
-      <div style={{ display: "flex", marginTop: 6 }}>
-        <div
-          style={{
-            flex: 1,
-            background: "#141414",
-            color: "#fff",
-            padding: "7px 16px",
-            fontWeight: 800,
-            letterSpacing: "0.16em",
-            fontSize: "12.5pt",
-            border: `3px solid ${OR}`,
-            borderRight: "none",
-            whiteSpace: "nowrap",
-          }}
-        >
-          PARLONS DE VOUS, PARLONS BIEN<span style={{ color: OR }}>S</span>
-        </div>
-        <div
-          style={{
-            background: OR,
-            color: "#141414",
-            padding: "7px 20px",
-            fontWeight: 800,
-            letterSpacing: "0.12em",
-            fontSize: "12.5pt",
-            display: "flex",
-            alignItems: "center",
-            whiteSpace: "nowrap",
-          }}
-        >
-          CENTURY 21<span style={{ fontSize: "7pt", verticalAlign: "super" }}>®</span>
-        </div>
-      </div>
-      <div style={{ fontSize: "7.5pt", marginTop: 3, color: "#333" }}>ⓕ ⓟ 🅨 ⓘ ◎ century21.fr</div>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src="/c21/bandeau.png"
+        alt="PARLONS DE VOUS, PARLONS BIENS — CENTURY 21 · century21.fr"
+        style={{ width: "100%", marginTop: "2.5mm", display: "block" }}
+      />
     </div>
   );
 }

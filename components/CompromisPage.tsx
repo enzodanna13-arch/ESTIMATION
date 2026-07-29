@@ -299,15 +299,40 @@ export default function CompromisPage({
       const noir = rgb(0, 0, 0);
       const gris = rgb(0.45, 0.45, 0.45);
 
+      // Visuels officiels du papier à en-tête (mêmes fichiers que l'aperçu) —
+      // en cas d'échec de chargement, repli sur l'en-tête texte
+      const chargerPng = async (url: string) => {
+        try {
+          const r = await fetch(url);
+          if (!r.ok) return null;
+          return await pdf.embedPng(await r.arrayBuffer());
+        } catch {
+          return null;
+        }
+      };
+      const [imgWordmark, imgSceau, imgBandeau] = await Promise.all([
+        chargerPng("/c21/wordmark.png"),
+        chargerPng("/c21/sceau.png"),
+        chargerPng("/c21/bandeau.png"),
+      ]);
+
       let page = pdf.addPage(A4);
       let y = 0;
+      const pagesLettre = [page];
 
       const enTetePdf = () => {
-        let yy = A4[1] - 46;
-        page.drawText("CENTURY 21", { x: M, y: yy, size: 14, font: helvB, color: or });
-        yy -= 16;
-        page.drawText("Icaza Immobilier", { x: M, y: yy, size: 11, font: helv, color: gris });
-        yy -= 14;
+        // Positions du modèle : wordmark 86×10 pt, sceau 84×107 pt angle haut droit
+        if (imgWordmark) {
+          page.drawImage(imgWordmark, { x: M, y: A4[1] - 44, width: 86.5, height: 10 });
+        } else {
+          page.drawText("CENTURY 21", { x: M, y: A4[1] - 46, size: 14, font: helvB, color: or });
+        }
+        if (imgSceau) {
+          page.drawImage(imgSceau, { x: 468, y: A4[1] - 112.5, width: 84.5, height: 107.5 });
+        }
+        let yy = A4[1] - 60;
+        page.drawText("Icaza Immobilier", { x: M, y: yy, size: 10, font: helv, color: gris });
+        yy -= 13;
         page.drawText("32 avenue de la Paix", { x: M, y: yy, size: 9, font: times, color: noir });
         yy -= 12;
         page.drawText("13500 Martigues", { x: M, y: yy, size: 9, font: times, color: noir });
@@ -316,6 +341,7 @@ export default function CompromisPage({
 
       const nouvellePage = () => {
         page = pdf.addPage(A4);
+        pagesLettre.push(page);
         enTetePdf();
       };
 
@@ -342,7 +368,7 @@ export default function CompromisPage({
         const indent = opts.indent ?? 0;
         for (const brut of texte.split("\n")) {
           for (const l of wrap(brut, font, size, LARG - indent)) {
-            if (y < 64) nouvellePage();
+            if (y < 96) nouvellePage();
             page.drawText(l, { x: M + indent, y, size, font, color: opts.couleur ?? noir });
             y -= size * 1.42;
           }
@@ -352,7 +378,7 @@ export default function CompromisPage({
 
       const titreSection = (t: string) => {
         y -= 4;
-        if (y < 90) nouvellePage();
+        if (y < 122) nouvellePage();
         para(t, { font: timesB, size: 11.5, gap: 2 });
       };
 
@@ -404,6 +430,14 @@ export default function CompromisPage({
         `CENTURY 21 Icaza Immobilier${d.negociateurTel ? ` · ${d.negociateurTel}` : ""}${d.negociateurEmail ? ` · ${d.negociateurEmail}` : ""}`,
         { size: 10, couleur: gris, gap: 0 },
       );
+
+      // Bandeau officiel « PARLONS DE VOUS, PARLONS BIENS » au bas de chaque
+      // page de la lettre — position du modèle : 512×56 pt à 14 pt du bord
+      if (imgBandeau) {
+        for (const pg of pagesLettre) {
+          pg.drawImage(imgBandeau, { x: 14, y: 20, width: 512, height: 56 });
+        }
+      }
 
       // ----- Pages de garde + pièces jointes -----
       const pageGarde = (titre: string, pieces: Piece[]) => {

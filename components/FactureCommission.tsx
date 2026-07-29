@@ -30,15 +30,6 @@ const MENTIONS = [
   "Garantie financière GALIAN 89 rue de la Boétie 75008 Paris.",
 ];
 
-function SceauCentre() {
-  return (
-    <svg width={64} height={64} viewBox="0 0 100 100" aria-hidden>
-      <path d="M 82 20 A 44 44 0 1 0 82 80" fill="none" stroke={OR} strokeWidth="9" />
-      <text x="44" y="64" fontSize="38" fontWeight="bold" fill={OR} fontFamily="Georgia, serif">21</text>
-    </svg>
-  );
-}
-
 const cell: React.CSSProperties = {
   border: "1px solid #000",
   padding: "4px 8px",
@@ -73,13 +64,11 @@ export default function FactureCommission({ input, onReset }: { input: DocumentI
 
       <div className="dossier">
         <section className="page page-c21" style={{ background: "#fff" }}>
-          {/* Logo centré-gauche, sceau au-dessus du wordmark */}
-          <div style={{ marginLeft: "8%", marginTop: 8, display: "inline-block", textAlign: "center", fontFamily: SANS }}>
-            <SceauCentre />
-            <div style={{ color: OR, fontWeight: 700, fontSize: "21pt", letterSpacing: "0.1em", lineHeight: 1.05 }}>
-              CENTURY 21<span style={{ fontSize: "9pt", verticalAlign: "super" }}>®</span>
-            </div>
-            <div style={{ color: OR, fontSize: "13pt", letterSpacing: "0.14em", marginTop: 2 }}>ICAZA Immobilier</div>
+          {/* Logo officiel de l'agence (sceau + CENTURY 21 + ICAZA Immobilier),
+              extrait du modèle fourni — 65×34 mm en haut à gauche comme sur l'original */}
+          <div style={{ marginLeft: "6%", marginTop: 6 }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/c21/logo-icaza.png" alt="CENTURY 21 ICAZA Immobilier" style={{ width: "65mm", display: "block" }} />
           </div>
 
           {/* Client facturé */}
