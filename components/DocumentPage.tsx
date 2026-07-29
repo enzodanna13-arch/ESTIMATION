@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import type { DocumentInput, DocumentResult } from "@/lib/docTypes";
 import { DOC_LABELS } from "@/lib/docTypes";
 
@@ -29,6 +30,70 @@ export default function DocumentPage({
   const today = new Date().toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });
   const label = DOC_LABELS[input.docType]?.titre ?? "Document";
   const annonce = input.docType === "annonce";
+  const [copie, setCopie] = useState<string | null>(null);
+  const copier = async (cle: string, texte: string) => {
+    try {
+      await navigator.clipboard.writeText(texte);
+      setCopie(cle);
+      setTimeout(() => setCopie(null), 2000);
+    } catch {
+      /* presse-papiers indisponible : sélection manuelle possible */
+    }
+  };
+  const blocEnTexte = (b: { titre?: string; texte?: string; items?: string[] }) =>
+    [b.texte ?? "", ...(b.items ?? []).map((i) => `• ${i}`)].filter(Boolean).join("\n");
+  const toutLeTexte = doc.blocs
+    .map((b) => [b.titre ? `${b.titre.toUpperCase()}` : "", blocEnTexte(b)].filter(Boolean).join("\n"))
+    .join("\n\n");
+
+  // Texte d'annonce : pas de page PDF — un rendu texte à copier-coller
+  // directement dans les portails (SeLoger, Leboncoin…)
+  if (annonce) {
+    return (
+      <div>
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+          <h2 className="text-2xl font-bold text-navy">{label}</h2>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => copier("tout", toutLeTexte)}
+              className="rounded-lg bg-copper px-4 py-1.5 text-sm font-bold text-white transition hover:brightness-110"
+            >
+              {copie === "tout" ? "✓ Copié !" : "📋 Tout copier"}
+            </button>
+            <button onClick={onReset} className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-600 transition hover:bg-slate-100">
+              Nouveau document
+            </button>
+          </div>
+        </div>
+
+        <div className="grid gap-4">
+          {doc.blocs.map((b, i) => {
+            const texte = blocEnTexte(b);
+            return (
+              <div key={i} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+                <div className="mb-2 flex items-center justify-between gap-3">
+                  <h3 className="text-sm font-bold uppercase tracking-wide text-slate-500">{b.titre || "Texte"}</h3>
+                  <button
+                    onClick={() => copier(String(i), texte)}
+                    className="rounded-lg border border-slate-300 px-3 py-1 text-xs font-semibold text-slate-600 transition hover:bg-slate-100"
+                  >
+                    {copie === String(i) ? "✓ Copié !" : "📋 Copier"}
+                  </button>
+                </div>
+                <div className="select-all whitespace-pre-wrap rounded-xl bg-slate-50 p-4 text-sm leading-relaxed text-slate-800">
+                  {texte}
+                </div>
+                {b.titre?.toLowerCase().includes("version courte") && (
+                  <p className="mt-2 text-xs text-slate-400">{texte.length} caractères</p>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  }
+
   const specs: [string, string][] = annonce
     ? ([
         input.typeBien ? ["Type", input.typeBien.charAt(0).toUpperCase() + input.typeBien.slice(1)] : null,
