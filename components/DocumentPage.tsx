@@ -25,10 +25,12 @@ export default function DocumentPage({
   doc,
   input,
   onReset,
+  onSauvegarder,
 }: {
   doc: DocumentResult;
   input: DocumentInput;
   onReset: () => void;
+  onSauvegarder?: (d: DocumentInput) => void;
 }) {
   const today = new Date().toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });
   const label = DOC_LABELS[input.docType]?.titre ?? "Document";
@@ -63,7 +65,7 @@ export default function DocumentPage({
 
   // Demande de compromis : lettre + fusion des pièces PDF — sans IA
   if (input.docType === "compromis") {
-    return <CompromisPage input={input} onReset={onReset} />;
+    return <CompromisPage input={input} onReset={onReset} onSauvegarder={onSauvegarder} />;
   }
 
   // Texte d'annonce : pas de page PDF — un rendu texte à copier-coller

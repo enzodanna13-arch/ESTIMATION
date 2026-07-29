@@ -91,6 +91,37 @@ export interface DocumentInput {
   compromisConditions?: string; // une condition par ligne
   compromisPiecesVendeur?: string; // une pièce par ligne
   compromisPiecesAcquereur?: string;
+  // Compromis — champs structurés (saisie classique, pré-remplissables par
+  // l'IA à partir des pièces PDF)
+  cLot?: string; // n° de lot(s)
+  cBienDescription?: string; // composition du bien (étage, pièces…)
+  cTantiemes?: string; // ex. 46/1000èmes des parties communes
+  cVendeurNoms?: string; // ex. M. Patrice VELLA et Mme Cindy LEQUESNE
+  cVendeurProfessions?: string;
+  cVendeurAdresse?: string;
+  cVendeurNaissances?: string; // nés respectivement à … le …
+  cVendeurTel?: string;
+  cVendeurEmail?: string;
+  cAcqNom?: string;
+  cAcqNaissance?: string; // né(e) le … à …
+  cAcqProfession?: string; // nationalité, profession
+  cAcqAdresse?: string;
+  cAcqTel?: string;
+  cAcqEmail?: string;
+  cNotVNom?: string; // Maître …
+  cNotVEtude?: string;
+  cNotVAdresse?: string;
+  cNotVTel?: string;
+  cNotVEmail?: string;
+  cNotANom?: string;
+  cNotAEtude?: string;
+  cNotAAdresse?: string;
+  cNotATel?: string;
+  cNotAEmail?: string;
+  cPrixVente?: number | null; // € frais d'agence inclus
+  cHonoraires?: number | null; // € TTC
+  cPaiement?: string; // Paiement comptant / prêt…
+  cCondSuspensive?: string;
   // Toutes missions
   instructionsIA?: string;
 }

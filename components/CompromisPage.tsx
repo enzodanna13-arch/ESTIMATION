@@ -3,12 +3,14 @@
 import { useState } from "react";
 import { EnTete, PiedC21 } from "@/components/PreEtatDate";
 import type { DocumentInput } from "@/lib/docTypes";
+import { getHistoryKey } from "@/lib/history";
 
-// Demande de compromis de vente au notaire — courrier sur papier à en-tête
-// C21 + PIÈCES JOINTES : les PDF des dossiers vendeur et acquéreur sont
-// fusionnés avec la lettre en UN SEUL PDF, prêt à transmettre au notaire.
-// La fusion se fait entièrement dans le navigateur (pdf-lib) : aucun
-// document n'est envoyé sur un serveur.
+// Demande de compromis de vente au notaire — assistant en deux temps :
+// 1) SAISIE : champs classiques (bien, vendeurs, acquéreur, notaires,
+//    conditions) + pièces PDF ; l'IA peut LIRE les pièces et pré-remplir
+//    les champs automatiquement.
+// 2) APERÇU : lettre sur papier à en-tête C21 + fusion lettre + pièces
+//    vendeur + pièces acquéreur en UN SEUL PDF (pdf-lib, 100 % local).
 
 interface Piece {
   nom: string;
@@ -18,8 +20,82 @@ interface Piece {
 
 const OR = { r: 0.706, g: 0.592, b: 0.357 };
 
+const inputCls =
+  "w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 transition focus:border-copper focus:outline-none focus:ring-2 focus:ring-copper/20";
+
+function Champ({ label, children, className = "" }: { label: string; children: React.ReactNode; className?: string }) {
+  return (
+    <label className={`block ${className}`}>
+      <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">{label}</span>
+      {children}
+    </label>
+  );
+}
+
+function SousTitre({ children }: { children: React.ReactNode }) {
+  return <h3 className="mb-2 mt-5 text-sm font-bold uppercase tracking-wide text-navy first:mt-0">{children}</h3>;
+}
+
 function lignes(v?: string): string[] {
   return (v ?? "").split("\n").map((l) => l.trim()).filter(Boolean);
+}
+
+const int = new Intl.NumberFormat("fr-FR", { maximumFractionDigits: 0 });
+
+/** Assemble les champs structurés en textes de la lettre (les anciens
+ *  champs texte restent des replis pour les dossiers de l'historique). */
+function assembler(d: DocumentInput): DocumentInput {
+  const bien = [
+    d.compromisObjetBien ? `Un ensemble immobilier situé ${d.compromisObjetBien}.` : "",
+    d.cLot ? `Lot n°${d.cLot} :` : "",
+    d.cBienDescription ?? "",
+    d.cTantiemes ? `Et les ${d.cTantiemes}.` : "",
+  ].filter(Boolean).join("\n");
+  const vendeurs = [
+    d.cVendeurNoms ?? "",
+    d.cVendeurProfessions ?? "",
+    d.cVendeurAdresse ? `demeurant ${d.cVendeurAdresse}.` : "",
+    d.cVendeurNaissances ? `Nés respectivement : ${d.cVendeurNaissances}` : "",
+    d.cVendeurTel ? `Contact : ${d.cVendeurTel}` : "",
+    d.cVendeurEmail ? `Email : ${d.cVendeurEmail}` : "",
+  ].filter(Boolean).join("\n");
+  const acquereur = [
+    d.cAcqNom ?? "",
+    d.cAcqNaissance ? `${d.cAcqNaissance},` : "",
+    d.cAcqProfession ? `${d.cAcqProfession},` : "",
+    d.cAcqAdresse ? `demeurant ${d.cAcqAdresse}.` : "",
+    d.cAcqTel ? `Contact : ${d.cAcqTel}` : "",
+    d.cAcqEmail ? `Email : ${d.cAcqEmail}` : "",
+  ].filter(Boolean).join("\n");
+  const notV = [d.cNotVNom, d.cNotVEtude, d.cNotVAdresse, [d.cNotVTel, d.cNotVEmail].filter(Boolean).join(" · ")]
+    .map((x) => (x ?? "").trim()).filter(Boolean).join("\n");
+  const notA = [d.cNotANom, d.cNotAEtude, d.cNotAAdresse, [d.cNotATel, d.cNotAEmail].filter(Boolean).join(" · ")]
+    .map((x) => (x ?? "").trim()).filter(Boolean).join("\n");
+  const conditions = [
+    d.cPrixVente ? `Prix de vente : ${int.format(d.cPrixVente)} € frais d'agence inclus` : "",
+    d.cHonoraires ? `Honoraires d'agence : ${int.format(d.cHonoraires)} € TTC` : "",
+    d.cPaiement ?? "",
+    d.cCondSuspensive ?? "",
+  ].filter(Boolean).join("\n");
+  return {
+    ...d,
+    compromisBien: bien || d.compromisBien,
+    compromisVendeurs: vendeurs || d.compromisVendeurs,
+    compromisAcquereur: acquereur || d.compromisAcquereur,
+    compromisNotaireVendeur: notV || d.compromisNotaireVendeur,
+    compromisNotaireAcquereur: notA || d.compromisNotaireAcquereur,
+    compromisConditions: conditions || d.compromisConditions,
+  };
+}
+
+function bufToB64(buf: ArrayBuffer): string {
+  const bytes = new Uint8Array(buf);
+  let bin = "";
+  const CHUNK = 0x8000;
+  for (let i = 0; i < bytes.length; i += CHUNK) {
+    bin += String.fromCharCode(...bytes.subarray(i, i + CHUNK));
+  }
+  return btoa(bin);
 }
 
 function ZonePieces({
@@ -57,13 +133,32 @@ function ZonePieces({
   );
 }
 
-export default function CompromisPage({ input, onReset }: { input: DocumentInput; onReset: () => void }) {
+export default function CompromisPage({
+  input,
+  onReset,
+  onSauvegarder,
+}: {
+  input: DocumentInput;
+  onReset: () => void;
+  onSauvegarder?: (d: DocumentInput) => void;
+}) {
+  const dejaRempli = Boolean(input.compromisVendeurs?.trim() || input.cVendeurNoms?.trim());
+  const [donnees, setDonnees] = useState<DocumentInput>(input);
+  const [mode, setMode] = useState<"saisie" | "apercu">(dejaRempli ? "apercu" : "saisie");
   const [piecesVendeur, setPiecesVendeur] = useState<Piece[]>([]);
   const [piecesAcquereur, setPiecesAcquereur] = useState<Piece[]>([]);
   const [fusionEnCours, setFusionEnCours] = useState(false);
   const [fusionErreur, setFusionErreur] = useState<string | null>(null);
+  const [iaEnCours, setIaEnCours] = useState(false);
+  const [iaMessage, setIaMessage] = useState<string | null>(null);
+  const [saisieErreur, setSaisieErreur] = useState<string | null>(null);
   const dateStr = new Date().toLocaleDateString("fr-FR");
-  const objet = `Demande de date pour signature du compromis de vente – ${input.compromisObjetBien || "—"}`;
+  const d = mode === "apercu" ? assembler(donnees) : donnees;
+  const objet = `Demande de date pour signature du compromis de vente – ${d.compromisObjetBien || "—"}`;
+
+  const set = <K extends keyof DocumentInput>(key: K, value: DocumentInput[K]) =>
+    setDonnees((prev) => ({ ...prev, [key]: value }));
+  const num = (v: string) => (v === "" ? null : +v);
 
   const ajouterPieces = async (files: FileList | null, setter: React.Dispatch<React.SetStateAction<Piece[]>>) => {
     if (!files) return;
@@ -72,6 +167,70 @@ export default function CompromisPage({ input, onReset }: { input: DocumentInput
       const data = await f.arrayBuffer();
       setter((prev) => [...prev, { nom: f.name, taille: f.size, data }]);
     }
+  };
+
+  // ---- Pré-remplissage des champs par l'IA à partir des pièces PDF ----
+  const preRemplir = async () => {
+    const toutes = [...piecesVendeur, ...piecesAcquereur];
+    if (toutes.length === 0) {
+      setIaMessage("Ajoutez d'abord les pièces PDF (vendeur et/ou acquéreur) ci-dessus.");
+      return;
+    }
+    setIaEnCours(true);
+    setIaMessage(null);
+    try {
+      // Limite d'envoi serveur (~4,5 Mo) : les pièces les plus légères d'abord
+      const triees = [...toutes].sort((a, b) => a.taille - b.taille);
+      let total = 0;
+      const retenues: Piece[] = [];
+      for (const p of triees) {
+        if (total + p.taille > 3_800_000) continue;
+        total += p.taille;
+        retenues.push(p);
+      }
+      if (retenues.length === 0) throw new Error("Pièces trop lourdes pour la lecture IA (limite ~4 Mo)");
+      const res = await fetch("/api/compromis-extract", {
+        method: "POST",
+        headers: { "content-type": "application/json", "x-history-key": getHistoryKey() },
+        body: JSON.stringify({ fichiers: retenues.map((p) => ({ nom: p.nom, data: bufToB64(p.data) })) }),
+      });
+      const body = (await res.json()) as { champs?: Record<string, string | number>; error?: string };
+      if (!res.ok || !body.champs) throw new Error(body.error ?? "Lecture impossible");
+      const champs = body.champs;
+      let remplis = 0;
+      setDonnees((prev) => {
+        const n = { ...prev } as Record<string, unknown>;
+        for (const [k, v] of Object.entries(champs)) {
+          const actuel = n[k];
+          const vide = actuel === null || actuel === undefined || String(actuel).trim() === "" || actuel === 0;
+          if (vide) {
+            n[k] = v;
+            remplis += 1;
+          }
+        }
+        return n as unknown as DocumentInput;
+      });
+      const ignorees = toutes.length - retenues.length;
+      setIaMessage(
+        `✓ ${remplis} champ${remplis > 1 ? "s" : ""} pré-rempli${remplis > 1 ? "s" : ""} à partir de ${retenues.length} pièce${retenues.length > 1 ? "s" : ""}${ignorees > 0 ? ` (${ignorees} pièce(s) trop lourde(s) non lue(s))` : ""} — vérifiez et corrigez avant de générer.`,
+      );
+    } catch (err) {
+      setIaMessage(err instanceof Error ? err.message : "Lecture des pièces impossible");
+    } finally {
+      setIaEnCours(false);
+    }
+  };
+
+  const genererLettre = () => {
+    if (!donnees.compromisObjetBien?.trim()) return setSaisieErreur("Renseignez le bien (objet du courrier).");
+    if (!donnees.cVendeurNoms?.trim() && !donnees.compromisVendeurs?.trim()) return setSaisieErreur("Renseignez le(s) vendeur(s).");
+    if (!donnees.cAcqNom?.trim() && !donnees.compromisAcquereur?.trim()) return setSaisieErreur("Renseignez l'acquéreur.");
+    setSaisieErreur(null);
+    const assemblees = assembler(donnees);
+    setDonnees(assemblees);
+    setMode("apercu");
+    onSauvegarder?.(assemblees);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   // ---- Construction du PDF fusionné (lettre + pièces) ----
@@ -86,7 +245,7 @@ export default function CompromisPage({ input, onReset }: { input: DocumentInput
       const times = await pdf.embedFont(StandardFonts.TimesRoman);
       const timesB = await pdf.embedFont(StandardFonts.TimesRomanBold);
       const A4: [number, number] = [595.28, 841.89];
-      const M = 57; // marge ~20 mm
+      const M = 57;
       const LARG = A4[0] - 2 * M;
       const or = rgb(OR.r, OR.g, OR.b);
       const noir = rgb(0, 0, 0);
@@ -157,29 +316,29 @@ export default function CompromisPage({ input, onReset }: { input: DocumentInput
       para(`Objet : ${objet}`, { font: timesB, size: 11.5, gap: 12 });
       para("Maître,", { gap: 8 });
       para(
-        `Je me permets de revenir vers vous afin de convenir d’une date pour la signature du compromis de vente relatif au bien situé ${input.compromisObjetBien || "—"}, dont les éléments sont détaillés ci-dessous.`,
+        `Je me permets de revenir vers vous afin de convenir d’une date pour la signature du compromis de vente relatif au bien situé ${d.compromisObjetBien || "—"}, dont les éléments sont détaillés ci-dessous.`,
         { gap: 10 },
       );
       titreSection("Identification du bien vendu");
-      para(input.compromisBien || "—", { gap: 10 });
+      para(d.compromisBien || "—", { gap: 10 });
       titreSection("Vendeurs");
-      para(input.compromisVendeurs || "—", { gap: 10 });
+      para(d.compromisVendeurs || "—", { gap: 10 });
       titreSection("Acquéreur");
-      para(input.compromisAcquereur || "—", { gap: 10 });
+      para(d.compromisAcquereur || "—", { gap: 10 });
       titreSection("Représentation notariale");
       para("Notaire vendeur :", { font: timesB, size: 11, gap: 2 });
-      para(input.compromisNotaireVendeur || "—", { gap: 8 });
+      para(d.compromisNotaireVendeur || "—", { gap: 8 });
       para("Notaire acquéreur :", { font: timesB, size: 11, gap: 2 });
-      para(input.compromisNotaireAcquereur || "—", { gap: 10 });
+      para(d.compromisNotaireAcquereur || "—", { gap: 10 });
       titreSection("Conditions de la vente");
-      for (const c of lignes(input.compromisConditions)) para(`•  ${c}`, { gap: 0, indent: 6 });
+      for (const c of lignes(d.compromisConditions)) para(`•  ${c}`, { gap: 0, indent: 6 });
       y -= 10;
       titreSection("Pièces transmises");
       para("Dossier vendeur :", { font: timesB, size: 11, gap: 2 });
-      for (const p of lignes(input.compromisPiecesVendeur)) para(`•  ${p}`, { gap: 0, indent: 6 });
+      for (const p of lignes(d.compromisPiecesVendeur)) para(`•  ${p}`, { gap: 0, indent: 6 });
       y -= 6;
       para("Dossier acquéreur :", { font: timesB, size: 11, gap: 2 });
-      for (const p of lignes(input.compromisPiecesAcquereur)) para(`•  ${p}`, { gap: 0, indent: 6 });
+      for (const p of lignes(d.compromisPiecesAcquereur)) para(`•  ${p}`, { gap: 0, indent: 6 });
       y -= 10;
       titreSection("Demande de rendez-vous");
       para(
@@ -192,9 +351,9 @@ export default function CompromisPage({ input, onReset }: { input: DocumentInput
       );
       para("Je vous remercie par avance pour votre retour.", { gap: 12 });
       para("Cordialement,", { gap: 4 });
-      para(`${input.negociateur || "L'équipe transaction"}`, { font: timesB, size: 11, gap: 0 });
+      para(`${d.negociateur || "L'équipe transaction"}`, { font: timesB, size: 11, gap: 0 });
       para(
-        `CENTURY 21 Icaza Immobilier${input.negociateurTel ? ` · ${input.negociateurTel}` : ""}${input.negociateurEmail ? ` · ${input.negociateurEmail}` : ""}`,
+        `CENTURY 21 Icaza Immobilier${d.negociateurTel ? ` · ${d.negociateurTel}` : ""}${d.negociateurEmail ? ` · ${d.negociateurEmail}` : ""}`,
         { size: 10, couleur: gris, gap: 0 },
       );
 
@@ -247,7 +406,7 @@ export default function CompromisPage({ input, onReset }: { input: DocumentInput
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `Dossier compromis - ${(input.compromisObjetBien || "dossier").replace(/[\\/:*?"<>|]/g, "-")}.pdf`;
+      a.download = `Dossier compromis - ${(d.compromisObjetBien || "dossier").replace(/[\\/:*?"<>|]/g, "-")}.pdf`;
       a.click();
       URL.revokeObjectURL(url);
       if (erreurs.length) {
@@ -260,11 +419,207 @@ export default function CompromisPage({ input, onReset }: { input: DocumentInput
     }
   };
 
+  // ================= MODE SAISIE =================
+  if (mode === "saisie") {
+    return (
+      <div>
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+          <h2 className="text-2xl font-bold text-navy">Demande de compromis au notaire</h2>
+          <button onClick={onReset} className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-600 transition hover:bg-slate-100">
+            ← Documents
+          </button>
+        </div>
+
+        <div className="mb-4 grid gap-4 sm:grid-cols-2">
+          <ZonePieces titre="Pièces du dossier VENDEUR (PDF)" pieces={piecesVendeur} setter={setPiecesVendeur} ajouter={ajouterPieces} />
+          <ZonePieces titre="Pièces du dossier ACQUÉREUR (PDF)" pieces={piecesAcquereur} setter={setPiecesAcquereur} ajouter={ajouterPieces} />
+          <div className="flex flex-wrap items-center gap-3 sm:col-span-2">
+            <button
+              type="button"
+              onClick={() => void preRemplir()}
+              disabled={iaEnCours}
+              className="rounded-xl bg-navy px-5 py-2.5 text-sm font-bold text-white shadow-md shadow-navy/25 transition hover:bg-navy-deep disabled:opacity-60"
+            >
+              {iaEnCours ? "✨ Lecture des pièces en cours…" : "✨ Pré-remplir les champs avec l'IA (lit les pièces PDF)"}
+            </button>
+            <span className="text-xs text-slate-500">
+              L&apos;IA lit les pièces (identité, taxe foncière, offre, mandat…) et remplit les champs vides — rien n&apos;est inventé.
+            </span>
+          </div>
+          {iaMessage && (
+            <p className={`rounded-lg border p-3 text-sm sm:col-span-2 ${iaMessage.startsWith("✓") ? "border-green-200 bg-green-50 text-green-700" : "border-amber-200 bg-amber-50 text-amber-700"}`}>
+              {iaMessage}
+            </p>
+          )}
+        </div>
+
+        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+          <SousTitre>Le bien</SousTitre>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Champ label="Résidence / adresse du bien *" className="sm:col-span-2">
+              <input className={inputCls} value={donnees.compromisObjetBien ?? ""} onChange={(e) => set("compromisObjetBien", e.target.value)} placeholder="Résidence Le Canal – Bâtiment SD4 – 13500 Martigues" />
+            </Champ>
+            <Champ label="Numéro(s) de lot">
+              <input className={inputCls} value={donnees.cLot ?? ""} onChange={(e) => set("cLot", e.target.value)} placeholder="8" />
+            </Champ>
+            <Champ label="Tantièmes des parties communes">
+              <input className={inputCls} value={donnees.cTantiemes ?? ""} onChange={(e) => set("cTantiemes", e.target.value)} placeholder="46/1000èmes de la propriété du sol et des parties communes générales" />
+            </Champ>
+            <Champ label="Composition du bien (étage, pièces, annexes)" className="sm:col-span-2">
+              <textarea rows={2} className={inputCls} value={donnees.cBienDescription ?? ""} onChange={(e) => set("cBienDescription", e.target.value)} placeholder="Un appartement situé au deuxième étage, porte de droite, composé de : entrée, WC, séjour, cuisine, salle de bains, deux chambres, cellier, placards et une loggia." />
+            </Champ>
+          </div>
+
+          <SousTitre>Vendeur(s)</SousTitre>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Champ label="Nom(s) complet(s) *">
+              <input className={inputCls} value={donnees.cVendeurNoms ?? ""} onChange={(e) => set("cVendeurNoms", e.target.value)} placeholder="Monsieur Patrice VELLA et Madame Cindy LEQUESNE, son épouse" />
+            </Champ>
+            <Champ label="Profession(s)">
+              <input className={inputCls} value={donnees.cVendeurProfessions ?? ""} onChange={(e) => set("cVendeurProfessions", e.target.value)} placeholder="électricien / employée en restauration" />
+            </Champ>
+            <Champ label="Adresse">
+              <input className={inputCls} value={donnees.cVendeurAdresse ?? ""} onChange={(e) => set("cVendeurAdresse", e.target.value)} placeholder="ensemble Résidence Le Canal – Bâtiment SD4 – 13500 Martigues" />
+            </Champ>
+            <Champ label="Naissances (dates et lieux)">
+              <input className={inputCls} value={donnees.cVendeurNaissances ?? ""} onChange={(e) => set("cVendeurNaissances", e.target.value)} placeholder="M. VELLA à Martigues (13500) le 12/07/1984 — Mme LEQUESNE à Marignane (13700) le 24/09/1986" />
+            </Champ>
+            <Champ label="Téléphone">
+              <input className={inputCls} inputMode="tel" value={donnees.cVendeurTel ?? ""} onChange={(e) => set("cVendeurTel", e.target.value)} placeholder="06 13 89 37 24" />
+            </Champ>
+            <Champ label="Email">
+              <input className={inputCls} inputMode="email" value={donnees.cVendeurEmail ?? ""} onChange={(e) => set("cVendeurEmail", e.target.value)} placeholder="email@exemple.fr" />
+            </Champ>
+          </div>
+
+          <SousTitre>Acquéreur</SousTitre>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Champ label="Nom complet *">
+              <input className={inputCls} value={donnees.cAcqNom ?? ""} onChange={(e) => set("cAcqNom", e.target.value)} placeholder="Madame CASQUEL épouse YASSIN Marie-Christine" />
+            </Champ>
+            <Champ label="Naissance (date et lieu)">
+              <input className={inputCls} value={donnees.cAcqNaissance ?? ""} onChange={(e) => set("cAcqNaissance", e.target.value)} placeholder="née le 16 septembre 1957 à Marseille" />
+            </Champ>
+            <Champ label="Nationalité et profession">
+              <input className={inputCls} value={donnees.cAcqProfession ?? ""} onChange={(e) => set("cAcqProfession", e.target.value)} placeholder="de nationalité française, retraitée" />
+            </Champ>
+            <Champ label="Adresse">
+              <input className={inputCls} value={donnees.cAcqAdresse ?? ""} onChange={(e) => set("cAcqAdresse", e.target.value)} placeholder="Résidence Paradis Parc – 13500 Martigues" />
+            </Champ>
+            <Champ label="Téléphone">
+              <input className={inputCls} inputMode="tel" value={donnees.cAcqTel ?? ""} onChange={(e) => set("cAcqTel", e.target.value)} placeholder="06 63 69 93 71" />
+            </Champ>
+            <Champ label="Email">
+              <input className={inputCls} inputMode="email" value={donnees.cAcqEmail ?? ""} onChange={(e) => set("cAcqEmail", e.target.value)} placeholder="email@exemple.fr" />
+            </Champ>
+          </div>
+
+          <SousTitre>Notaire vendeur</SousTitre>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <Champ label="Nom">
+              <input className={inputCls} value={donnees.cNotVNom ?? ""} onChange={(e) => set("cNotVNom", e.target.value)} placeholder="Maître Mathieu TORRES" />
+            </Champ>
+            <Champ label="Étude">
+              <input className={inputCls} value={donnees.cNotVEtude ?? ""} onChange={(e) => set("cNotVEtude", e.target.value)} placeholder="Omega Notaires" />
+            </Champ>
+            <Champ label="Adresse">
+              <input className={inputCls} value={donnees.cNotVAdresse ?? ""} onChange={(e) => set("cNotVAdresse", e.target.value)} placeholder="Avenue Jean Moulin – 13500 Martigues" />
+            </Champ>
+            <Champ label="Tél / email">
+              <input className={inputCls} value={donnees.cNotVTel ?? ""} onChange={(e) => set("cNotVTel", e.target.value)} placeholder="04 42 80 70 00 · contact@omega-notaires.fr" />
+            </Champ>
+          </div>
+
+          <SousTitre>Notaire acquéreur</SousTitre>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <Champ label="Nom">
+              <input className={inputCls} value={donnees.cNotANom ?? ""} onChange={(e) => set("cNotANom", e.target.value)} placeholder="Maître PASQUIER" />
+            </Champ>
+            <Champ label="Étude">
+              <input className={inputCls} value={donnees.cNotAEtude ?? ""} onChange={(e) => set("cNotAEtude", e.target.value)} placeholder="Office notarial" />
+            </Champ>
+            <Champ label="Adresse">
+              <input className={inputCls} value={donnees.cNotAAdresse ?? ""} onChange={(e) => set("cNotAAdresse", e.target.value)} placeholder="13220 Châteauneuf-les-Martigues" />
+            </Champ>
+            <Champ label="Tél / email">
+              <input className={inputCls} value={donnees.cNotATel ?? ""} onChange={(e) => set("cNotATel", e.target.value)} placeholder="04 42 76 20 00 · office.13105@notaires.fr" />
+            </Champ>
+          </div>
+
+          <SousTitre>Conditions de la vente</SousTitre>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <Champ label="Prix de vente (€ FAI)">
+              <input type="number" className={inputCls} value={donnees.cPrixVente ?? ""} onChange={(e) => set("cPrixVente", num(e.target.value))} placeholder="155000" />
+            </Champ>
+            <Champ label="Honoraires d'agence (€ TTC)">
+              <input type="number" className={inputCls} value={donnees.cHonoraires ?? ""} onChange={(e) => set("cHonoraires", num(e.target.value))} placeholder="7000" />
+            </Champ>
+            <Champ label="Paiement">
+              <select className={inputCls} value={donnees.cPaiement ?? ""} onChange={(e) => set("cPaiement", e.target.value)}>
+                <option value="">—</option>
+                <option>Paiement comptant du prix de vente</option>
+                <option>Financement par prêt bancaire</option>
+              </select>
+            </Champ>
+            <Champ label="Condition suspensive">
+              <select className={inputCls} value={donnees.cCondSuspensive ?? ""} onChange={(e) => set("cCondSuspensive", e.target.value)}>
+                <option value="">—</option>
+                <option>Absence de condition suspensive de financement</option>
+                <option>Sous condition suspensive d&apos;obtention de prêt</option>
+              </select>
+            </Champ>
+          </div>
+
+          <SousTitre>Pièces transmises (listées dans la lettre)</SousTitre>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Champ label="Dossier vendeur (une pièce par ligne)">
+              <textarea rows={5} className={inputCls} value={donnees.compromisPiecesVendeur ?? ""} onChange={(e) => set("compromisPiecesVendeur", e.target.value)} />
+            </Champ>
+            <Champ label="Dossier acquéreur (une pièce par ligne)">
+              <textarea rows={5} className={inputCls} value={donnees.compromisPiecesAcquereur ?? ""} onChange={(e) => set("compromisPiecesAcquereur", e.target.value)} />
+            </Champ>
+          </div>
+
+          <SousTitre>Signature</SousTitre>
+          <div className="grid gap-4 sm:grid-cols-3">
+            <Champ label="Négociateur">
+              <input className={inputCls} value={donnees.negociateur ?? ""} onChange={(e) => set("negociateur", e.target.value)} placeholder="Votre nom" />
+            </Champ>
+            <Champ label="Téléphone">
+              <input className={inputCls} inputMode="tel" value={donnees.negociateurTel ?? ""} onChange={(e) => set("negociateurTel", e.target.value)} placeholder="06 12 34 56 78" />
+            </Champ>
+            <Champ label="Email">
+              <input className={inputCls} inputMode="email" value={donnees.negociateurEmail ?? ""} onChange={(e) => set("negociateurEmail", e.target.value)} placeholder="prenom.nom@century21.fr" />
+            </Champ>
+          </div>
+
+          {saisieErreur && (
+            <p className="mt-5 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">{saisieErreur}</p>
+          )}
+
+          <div className="mt-8 flex justify-end">
+            <button
+              type="button"
+              onClick={genererLettre}
+              className="rounded-xl bg-copper px-7 py-2.5 text-sm font-bold text-white shadow-md shadow-copper/30 transition hover:brightness-110"
+            >
+              ✦ Générer la lettre →
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ================= MODE APERÇU =================
   return (
     <div>
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3 print:hidden">
         <h2 className="text-2xl font-bold text-navy">Demande de compromis au notaire</h2>
         <div className="flex items-center gap-2">
+          <button onClick={() => setMode("saisie")} className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-600 transition hover:bg-slate-100">
+            ← Modifier la saisie
+          </button>
           <button onClick={() => window.print()} className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-600 transition hover:bg-slate-100">
             🖨 Imprimer la lettre
           </button>
@@ -305,16 +660,16 @@ export default function CompromisPage({ input, onReset }: { input: DocumentInput
             <p style={{ marginBottom: 10 }}>Maître,</p>
             <p style={{ marginBottom: 12, textAlign: "justify" }}>
               Je me permets de revenir vers vous afin de convenir d&rsquo;une date pour la signature du compromis
-              de vente relatif au bien situé <b>{input.compromisObjetBien || "—"}</b>, dont les éléments sont
+              de vente relatif au bien situé <b>{d.compromisObjetBien || "—"}</b>, dont les éléments sont
               détaillés ci-dessous.
             </p>
 
             <p style={{ fontWeight: 700, marginBottom: 4 }}>Identification du bien vendu</p>
-            {lignes(input.compromisBien).map((l, i) => (<p key={i} style={{ marginBottom: 2 }}>{l}</p>))}
+            {lignes(d.compromisBien).map((l, i) => (<p key={i} style={{ marginBottom: 2 }}>{l}</p>))}
             <p style={{ fontWeight: 700, margin: "12px 0 4px" }}>Vendeurs</p>
-            {lignes(input.compromisVendeurs).map((l, i) => (<p key={i} style={{ marginBottom: 2 }}>{l}</p>))}
+            {lignes(d.compromisVendeurs).map((l, i) => (<p key={i} style={{ marginBottom: 2 }}>{l}</p>))}
             <p style={{ fontWeight: 700, margin: "12px 0 4px" }}>Acquéreur</p>
-            {lignes(input.compromisAcquereur).map((l, i) => (<p key={i} style={{ marginBottom: 2 }}>{l}</p>))}
+            {lignes(d.compromisAcquereur).map((l, i) => (<p key={i} style={{ marginBottom: 2 }}>{l}</p>))}
           </div>
 
           <PiedC21 />
@@ -325,23 +680,23 @@ export default function CompromisPage({ input, onReset }: { input: DocumentInput
           <div style={{ marginTop: 18 }}>
             <p style={{ fontWeight: 700, marginBottom: 4 }}>Représentation notariale</p>
             <p style={{ fontWeight: 700, marginBottom: 2 }}>Notaire vendeur :</p>
-            {lignes(input.compromisNotaireVendeur).map((l, i) => (<p key={i} style={{ marginBottom: 2 }}>{l}</p>))}
+            {lignes(d.compromisNotaireVendeur).map((l, i) => (<p key={i} style={{ marginBottom: 2 }}>{l}</p>))}
             <p style={{ fontWeight: 700, margin: "8px 0 2px" }}>Notaire acquéreur :</p>
-            {lignes(input.compromisNotaireAcquereur).map((l, i) => (<p key={i} style={{ marginBottom: 2 }}>{l}</p>))}
+            {lignes(d.compromisNotaireAcquereur).map((l, i) => (<p key={i} style={{ marginBottom: 2 }}>{l}</p>))}
 
             <p style={{ fontWeight: 700, margin: "12px 0 4px" }}>Conditions de la vente</p>
             <ul style={{ paddingLeft: 18, marginBottom: 4 }}>
-              {lignes(input.compromisConditions).map((l, i) => (<li key={i} style={{ marginBottom: 2 }}>{l}</li>))}
+              {lignes(d.compromisConditions).map((l, i) => (<li key={i} style={{ marginBottom: 2 }}>{l}</li>))}
             </ul>
 
             <p style={{ fontWeight: 700, margin: "12px 0 4px" }}>Pièces transmises</p>
             <p style={{ fontWeight: 700, marginBottom: 2 }}>Dossier vendeur :</p>
             <ul style={{ paddingLeft: 18, marginBottom: 6 }}>
-              {lignes(input.compromisPiecesVendeur).map((l, i) => (<li key={i} style={{ marginBottom: 2 }}>{l}</li>))}
+              {lignes(d.compromisPiecesVendeur).map((l, i) => (<li key={i} style={{ marginBottom: 2 }}>{l}</li>))}
             </ul>
             <p style={{ fontWeight: 700, marginBottom: 2 }}>Dossier acquéreur :</p>
             <ul style={{ paddingLeft: 18, marginBottom: 6 }}>
-              {lignes(input.compromisPiecesAcquereur).map((l, i) => (<li key={i} style={{ marginBottom: 2 }}>{l}</li>))}
+              {lignes(d.compromisPiecesAcquereur).map((l, i) => (<li key={i} style={{ marginBottom: 2 }}>{l}</li>))}
             </ul>
 
             <p style={{ fontWeight: 700, margin: "12px 0 4px" }}>Demande de rendez-vous</p>
@@ -355,11 +710,11 @@ export default function CompromisPage({ input, onReset }: { input: DocumentInput
             </p>
             <p style={{ marginBottom: 14 }}>Je vous remercie par avance pour votre retour.</p>
             <p style={{ marginBottom: 4 }}>Cordialement,</p>
-            <p style={{ fontWeight: 700 }}>{input.negociateur || "L'équipe transaction"}</p>
+            <p style={{ fontWeight: 700 }}>{d.negociateur || "L'équipe transaction"}</p>
             <p style={{ fontSize: "10pt", color: "#666" }}>
               CENTURY 21 Icaza Immobilier
-              {input.negociateurTel ? ` · ${input.negociateurTel}` : ""}
-              {input.negociateurEmail ? ` · ${input.negociateurEmail}` : ""}
+              {d.negociateurTel ? ` · ${d.negociateurTel}` : ""}
+              {d.negociateurEmail ? ` · ${d.negociateurEmail}` : ""}
             </p>
           </div>
           <PiedC21 />
