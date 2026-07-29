@@ -220,6 +220,9 @@ function LoadingOverlay({ status }: { status: string }) {
 export default function Home() {
   const [input, setInput] = useState<PropertyInput>(initialInput);
   const [step, setStep] = useState(0);
+  // Accueil à deux univers : Estimation (les 4 missions) et Génération de
+  // documents (menu des documents de l'agence)
+  const [univers, setUnivers] = useState<"" | "estimation" | "documents">("");
   // Mission audit : la saisie se limite au client + lien de l'annonce —
   // l'IA extrait la fiche du bien depuis l'annonce elle-même
   const auditMode = (input.mission ?? "vente") === "audit";
@@ -419,11 +422,11 @@ export default function Home() {
             </div>
             <div>
               <h1 className="text-lg font-bold leading-tight">Estimation IA</h1>
-              <p className="text-xs text-slate-300">Avis de valeur pour l&apos;équipe commerciale</p>
+              <p className="text-xs text-slate-300">Estimations &amp; documents pour l&apos;équipe commerciale</p>
             </div>
           </div>
           <div className="hidden gap-2 sm:flex">
-            {["Ventes réelles DVF", "Concurrence web", "Invendus +90 j"].map((s) => (
+            {["Ventes réelles DVF", "Observatoire des loyers", "Dossiers Century 21"].map((s) => (
               <span key={s} className="rounded-full border border-white/20 px-3 py-1 text-xs text-slate-200">
                 {s}
               </span>
@@ -437,6 +440,50 @@ export default function Home() {
           <Report result={result} input={input} onReset={() => { setResult(null); setStep(0); }} />
         ) : (
           <>
+            {univers === "" && (
+              <div className="mb-8 grid gap-4 sm:grid-cols-2 print:hidden">
+                <button
+                  type="button"
+                  onClick={() => setUnivers("estimation")}
+                  className="group rounded-3xl border-2 border-slate-200 bg-white p-8 text-left shadow-sm transition hover:border-copper hover:shadow-lg"
+                >
+                  <div className="mb-3 text-4xl">📊</div>
+                  <div className="text-xl font-bold text-navy">Estimation</div>
+                  <p className="mt-1 text-sm text-slate-500">
+                    Avis de valeur vente, audit de commercialisation, estimation locative,
+                    bien vendu loué — dossiers Century 21 générés par l'IA.
+                  </p>
+                  <span className="mt-4 inline-block rounded-lg bg-navy px-4 py-2 text-sm font-semibold text-white transition group-hover:bg-navy-deep">
+                    Choisir une estimation →
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setUnivers("documents")}
+                  className="group rounded-3xl border-2 border-slate-200 bg-white p-8 text-left shadow-sm transition hover:border-copper hover:shadow-lg"
+                >
+                  <div className="mb-3 text-4xl">📄</div>
+                  <div className="text-xl font-bold text-navy">Génération de documents</div>
+                  <p className="mt-1 text-sm text-slate-500">
+                    Les documents de l'agence rédigés par l'IA : annonces, courriers,
+                    comptes rendus… prêts à imprimer.
+                  </p>
+                  <span className="mt-4 inline-block rounded-lg bg-copper px-4 py-2 text-sm font-semibold text-white transition group-hover:brightness-110">
+                    Choisir un document →
+                  </span>
+                </button>
+              </div>
+            )}
+
+            {univers === "estimation" && (
+            <>
+            <button
+              type="button"
+              onClick={() => setUnivers("")}
+              className="mb-4 rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-100 print:hidden"
+            >
+              ← Accueil
+            </button>
             <div className="mb-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4 print:hidden">
               {(
                 [
@@ -1033,7 +1080,54 @@ export default function Home() {
                 )}
               </div>
             </div>
+            </>
+            )}
 
+            {univers === "documents" && (
+              <>
+                <button
+                  type="button"
+                  onClick={() => setUnivers("")}
+                  className="mb-4 rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-100 print:hidden"
+                >
+                  ← Accueil
+                </button>
+                <h2 className="mb-1 text-xl font-bold text-navy">Génération de documents</h2>
+                <p className="mb-6 text-sm text-slate-500">
+                  Choisissez le document à générer : l'IA le rédige à partir des informations
+                  saisies, au format de l'agence, prêt à imprimer.
+                </p>
+                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                  {(
+                    [
+                      ["📣", "Texte d'annonce", "Annonce complète du bien : titre accrocheur + texte optimisé portails"],
+                      ["🗒️", "Compte rendu de visite", "Retour de visite structuré à envoyer au propriétaire"],
+                      ["✉️", "Courrier de prospection", "Courrier ou e-mail de pige pour rentrer des mandats"],
+                      ["📝", "Bon de visite", "Bon de visite à faire signer avant chaque visite"],
+                    ] as const
+                  ).map(([icon, titre, texte]) => (
+                    <div
+                      key={titre}
+                      className="relative rounded-2xl border-2 border-dashed border-slate-200 bg-white p-4 text-left opacity-75"
+                    >
+                      <span className="absolute right-3 top-3 rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-slate-500">
+                        Bientôt
+                      </span>
+                      <div className="mb-1 text-2xl">{icon}</div>
+                      <div className="text-sm font-bold text-navy">{titre}</div>
+                      <div className="mt-0.5 text-xs text-slate-500">{texte}</div>
+                    </div>
+                  ))}
+                </div>
+                <div className="mt-6 rounded-xl border border-copper/40 bg-copper-soft/40 p-4 text-sm text-slate-700">
+                  <span className="font-semibold text-navy">Section en préparation.</span>{" "}
+                  Le menu est en place — indiquez à l'équipe technique quels documents activer
+                  en premier et les informations qu'ils doivent contenir.
+                </div>
+              </>
+            )}
+
+            {univers === "" && (
             <section className="mt-8 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8 print:hidden">
                 <div className="mb-4 flex items-center justify-between">
                   <div>
@@ -1121,6 +1215,7 @@ export default function Home() {
                   </>
                 )}
               </section>
+            )}
           </>
         )}
       </main>
