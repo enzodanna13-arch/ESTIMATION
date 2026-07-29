@@ -34,7 +34,7 @@ const BILAN_SYSTEM = `Tu es un négociateur immobilier expérimenté d'une agenc
 STRUCTURE IMPOSÉE des blocs :
 1. { texte: formule d'appel (« Madame, Monsieur [nom], ») + 1 paragraphe : rappel du bien, du prix de présentation actuel et de la période couverte par ce bilan }
 2. { titre: "L'activité de la période", items: les chiffres et actions FOURNIS dans la fiche (visites réalisées, contacts / demandes, diffusion et actions menées) — un item par fait, rien d'inventé }
-3. { titre: "Ce que disent les visites", items: la synthèse des comptes rendus fournis — les points qui séduisent d'un côté, les objections RÉCURRENTES de l'autre, formulées avec tact mais sans les édulcorer }
+3. { titre: "Ce que disent les visites", items: la synthèse des comptes rendus fournis (texte de la fiche ET/OU pièces PDF jointes) — les points qui séduisent d'un côté, les objections RÉCURRENTES de l'autre, formulées avec tact mais sans les édulcorer }
 4. { titre: "Notre analyse", texte: 1 à 2 paragraphes — ce que ce niveau d'activité et ces retours signifient par rapport au marché (rythme de visites, positionnement prix perçu) }
 5. { titre: "Nos recommandations", items: recommandations concrètes et hiérarchisées (dont l'ajustement de prix si un prix conseillé est fourni) }
 6. { titre: "La suite", texte: proposition d'un point ensemble + formule de politesse }
@@ -132,21 +132,32 @@ function parseJsonLoose(text: string): Record<string, unknown> {
 export async function generateDocument(
   input: DocumentInput,
   onProgress: (label: string) => void = () => {},
+  crPdfs: { nom: string; data: string }[] = [],
 ): Promise<DocumentResult> {
   const client = new Anthropic();
   const model = process.env.ESTIMATION_MODEL ?? "claude-opus-4-8";
-  onProgress("Rédaction du document par l'IA…");
+  onProgress(crPdfs.length ? "Lecture des comptes rendus PDF…" : "Rédaction du document par l'IA…");
+  // Comptes rendus de visite téléversés (bilan) : joints en pièces PDF que
+  // l'IA lit directement avant de rédiger sa synthèse
+  const content: Anthropic.ContentBlockParam[] = crPdfs.map((f) => ({
+    type: "document" as const,
+    source: { type: "base64" as const, media_type: "application/pdf" as const, data: f.data },
+    title: f.nom,
+  }));
+  content.push({
+    type: "text",
+    text: `# FICHE DU DOCUMENT À RÉDIGER\n${buildDocText(input)}${
+      crPdfs.length
+        ? `\n\nLes ${crPdfs.length} pièce(s) PDF jointe(s) sont les COMPTES RENDUS DES VISITES de la période : lis-les et synthétise-les (points qui séduisent / objections récurrentes) — n'invente aucune visite.`
+        : ""
+    }\n\n# SCHÉMA JSON DE LA RÉPONSE (respecte-le exactement)\n${JSON.stringify(DOC_SCHEMA)}`,
+  });
   const stream = client.messages.stream({
     model,
     max_tokens: 4000,
     system: SYSTEMS[input.docType] ?? SYSTEMS.annonce!,
     output_config: { effort: "medium" },
-    messages: [
-      {
-        role: "user",
-        content: `# FICHE DU DOCUMENT À RÉDIGER\n${buildDocText(input)}\n\n# SCHÉMA JSON DE LA RÉPONSE (respecte-le exactement)\n${JSON.stringify(DOC_SCHEMA)}`,
-      },
-    ],
+    messages: [{ role: "user", content }],
   });
   const message = await stream.finalMessage();
   if (message.stop_reason === "refusal") throw new Error("Requête refusée par les garde-fous du modèle");

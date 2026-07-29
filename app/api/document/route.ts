@@ -15,15 +15,19 @@ export async function POST(request: Request) {
   if (!checkHistoryPassword(request)) {
     return Response.json({ error: "Accès réservé — mot de passe requis" }, { status: 401 });
   }
-  let body: DocumentInput;
+  let body: DocumentInput & { crPdfs?: { nom: string; data: string }[] };
   try {
-    body = (await request.json()) as DocumentInput;
+    body = (await request.json()) as DocumentInput & { crPdfs?: { nom: string; data: string }[] };
   } catch {
     return Response.json({ error: "Corps de requête invalide" }, { status: 400 });
   }
-  if (!body.docType || !["annonce", "crv", "prospection"].includes(body.docType)) {
+  if (!body.docType || !["annonce", "crv", "prospection", "bilan"].includes(body.docType)) {
     return Response.json({ error: "Type de document inconnu" }, { status: 400 });
   }
+  // Comptes rendus de visite téléversés en PDF (bilan) : transmis à l'IA
+  // pour analyse, jamais stockés côté serveur
+  const crPdfs = (body.crPdfs ?? []).slice(0, 10);
+  delete body.crPdfs;
   if (!process.env.ANTHROPIC_API_KEY) {
     return Response.json(
       { error: "La génération de documents nécessite le moteur IA (clé non configurée)" },
@@ -37,7 +41,7 @@ export async function POST(request: Request) {
       const send = (obj: unknown) => controller.enqueue(encoder.encode(JSON.stringify(obj) + "\n"));
       const heartbeat = setInterval(() => send({ type: "ping" }), 8000);
       try {
-        const doc = await generateDocument(body, (label: string) => send({ type: "status", label }));
+        const doc = await generateDocument(body, (label: string) => send({ type: "status", label }), crPdfs);
         send({ type: "result", data: { doc } });
       } catch (err) {
         send({ type: "error", error: err instanceof Error ? err.message : "Erreur inattendue" });

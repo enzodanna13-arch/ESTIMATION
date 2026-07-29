@@ -247,6 +247,19 @@ export default function Home() {
     compromisPiecesAcquereur: "Offre d'achat acceptée et signée\nPièce d'identité",
   });
   const [docResult, setDocResult] = useState<DocumentResult | null>(null);
+  // Bilan de commercialisation : comptes rendus de visite téléversés en PDF
+  // (lus par l'IA à la génération, jamais stockés)
+  const [bilanPdfs, setBilanPdfs] = useState<{ nom: string; taille: number; data: string }[]>([]);
+  const ajouterBilanPdfs = async (files: FileList | null) => {
+    if (!files) return;
+    for (const f of Array.from(files)) {
+      if (!f.name.toLowerCase().endsWith(".pdf")) continue;
+      const buf = new Uint8Array(await f.arrayBuffer());
+      let bin = "";
+      for (let i = 0; i < buf.length; i += 0x8000) bin += String.fromCharCode(...buf.subarray(i, i + 0x8000));
+      setBilanPdfs((prev) => [...prev, { nom: f.name, taille: f.size, data: btoa(bin) }]);
+    }
+  };
   const setD = <K extends keyof DocumentInput>(key: K, value: DocumentInput[K]) =>
     setDocInput((prev) => ({ ...prev, [key]: value }));
   // Mission audit : la saisie se limite au client + lien de l'annonce —
@@ -494,8 +507,8 @@ export default function Home() {
     }
     if (docType === "bilan") {
       if (!docInput.clientNom?.trim()) return "Renseignez le propriétaire destinataire du bilan.";
-      if (!docInput.bilanNbVisites && !docInput.bilanComptesRendus?.trim())
-        return "Indiquez au moins l'activité de la période : nombre de visites ou comptes rendus collés.";
+      if (bilanPdfs.length === 0 && !docInput.bilanNbVisites && !docInput.bilanComptesRendus?.trim())
+        return "Ajoutez les comptes rendus de visite en PDF (ou indiquez au moins le nombre de visites).";
     }
     if (docType === "preetatdate") {
       if (!docInput.notaireNom?.trim()) return "Renseignez le nom de l'étude notariale destinataire.";
@@ -534,7 +547,20 @@ export default function Home() {
     try {
       // La photo reste côté client (affichage) — inutile de l'envoyer à l'IA
       const { negociateurPhoto: _photo, ...docSansPhoto } = docInput;
-      const res = await streamPhase({ ...docSansPhoto, docType }, "/api/document");
+      // Bilan : joindre les comptes rendus PDF (les plus légers d'abord,
+      // sous la limite d'envoi serveur ~4,5 Mo)
+      let crPdfs: { nom: string; data: string }[] | undefined;
+      if (docType === "bilan" && bilanPdfs.length > 0) {
+        const triees = [...bilanPdfs].sort((a, b) => a.taille - b.taille);
+        let total = 0;
+        crPdfs = [];
+        for (const p of triees) {
+          if (total + p.taille > 3_800_000) continue;
+          total += p.taille;
+          crPdfs.push({ nom: p.nom, data: p.data });
+        }
+      }
+      const res = await streamPhase({ ...docSansPhoto, docType, ...(crPdfs ? { crPdfs } : {}) }, "/api/document");
       setDocResult(res.doc as DocumentResult);
       sauverDocument(res.doc as DocumentResult);
       window.scrollTo({ top: 0, behavior: "smooth" });
@@ -1425,8 +1451,39 @@ export default function Home() {
                         <Field label="Prix recommandé par vous (€) — l'IA ne l'invente jamais">
                           <input type="number" className={inputCls} value={docInput.bilanPrixRecommande ?? ""} onChange={(e) => setD("bilanPrixRecommande", num(e.target.value))} placeholder="229000 — vide : pas de baisse" />
                         </Field>
-                        <Field label="Comptes rendus des visites de la période (collez-les — l'IA les synthétise)" className="sm:col-span-3">
-                          <textarea rows={6} className={inputCls} value={docInput.bilanComptesRendus ?? ""} onChange={(e) => setD("bilanComptesRendus", e.target.value)} placeholder={"Visite 1 (M. X, 10/07) : a aimé la luminosité, trouve la SDB à refaire, prix jugé élevé…\nVisite 2 (Mme Y, 17/07) : …\n(un compte rendu par visite)"} />
+                        <div className="sm:col-span-3">
+                          <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">
+                            Comptes rendus de visite en PDF * — l&apos;IA les lit, les analyse et rédige la conclusion
+                          </span>
+                          <div className="rounded-2xl border border-slate-200 bg-white p-4">
+                            <label className="block cursor-pointer rounded-xl border-2 border-dashed border-slate-300 p-3 text-center text-xs font-semibold text-slate-500 transition hover:border-copper hover:text-copper">
+                              + Ajouter les comptes rendus (PDF)
+                              <input
+                                type="file"
+                                accept="application/pdf"
+                                multiple
+                                className="hidden"
+                                onChange={(e) => { void ajouterBilanPdfs(e.target.files); e.target.value = ""; }}
+                              />
+                            </label>
+                            {bilanPdfs.length > 0 && (
+                              <ul className="mt-2 space-y-1">
+                                {bilanPdfs.map((p, i) => (
+                                  <li key={i} className="flex items-center justify-between gap-2 rounded-lg bg-slate-50 px-3 py-1.5 text-xs text-slate-700">
+                                    <span className="truncate">📄 {p.nom} <span className="text-slate-400">({Math.round(p.taille / 1024)} Ko)</span></span>
+                                    <button type="button" onClick={() => setBilanPdfs((prev) => prev.filter((_, j) => j !== i))} className="text-slate-400 hover:text-red-600">✕</button>
+                                  </li>
+                                ))}
+                              </ul>
+                            )}
+                            <p className="mt-2 text-xs text-slate-400">
+                              Astuce : les comptes rendus générés par l&apos;outil s&apos;impriment en PDF — déposez-les ici tels quels.
+                              Ils sont transmis à l&apos;IA pour analyse, jamais stockés sur un serveur.
+                            </p>
+                          </div>
+                        </div>
+                        <Field label="Notes complémentaires (facultatif — retours non couverts par les PDF)" className="sm:col-span-3">
+                          <textarea rows={2} className={inputCls} value={docInput.bilanComptesRendus ?? ""} onChange={(e) => setD("bilanComptesRendus", e.target.value)} placeholder="Visite du 22/07 sans compte rendu écrit : couple retraité, a trouvé le jardin trop grand à entretenir…" />
                         </Field>
                         <Field label="Actions de commercialisation menées" className="sm:col-span-3">
                           <textarea rows={2} className={inputCls} value={docInput.bilanActions ?? ""} onChange={(e) => setD("bilanActions", e.target.value)} placeholder="Diffusion SeLoger, Leboncoin, Bien'ici et century21.fr · remontée en tête de liste le 20/07 · panneau posé · 2 relances du fichier acquéreurs" />
