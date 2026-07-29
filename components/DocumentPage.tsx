@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import FactureCommission from "@/components/FactureCommission";
 import PreEtatDate from "@/components/PreEtatDate";
 import type { DocumentInput, DocumentResult } from "@/lib/docTypes";
 import { DOC_LABELS } from "@/lib/docTypes";
@@ -52,6 +53,11 @@ export default function DocumentPage({
   // (papier à en-tête C21) — généré sans IA
   if (preetatdate) {
     return <PreEtatDate input={input} onReset={onReset} />;
+  }
+
+  // Facture de commission : modèle fixe de l'agence (RIB figé) — sans IA
+  if (input.docType === "facture") {
+    return <FactureCommission input={input} onReset={onReset} />;
   }
 
   // Texte d'annonce : pas de page PDF — un rendu texte à copier-coller

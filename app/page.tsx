@@ -239,6 +239,8 @@ export default function Home() {
     notaireNom: "", notaireAdresse1: "", notaireAdresse2: "",
     copropriete: "", vosRef: "", numeroLot: "", nomDossier: "",
     prixHT: 316.67, numeroDevis: "",
+    factureNumero: "", factureClientNom: "", factureClientAdresse: "",
+    factureBien: "", factureNotaire: "", commissionTTC: null, factureRef: "",
   });
   const [docResult, setDocResult] = useState<DocumentResult | null>(null);
   const setD = <K extends keyof DocumentInput>(key: K, value: DocumentInput[K]) =>
@@ -445,6 +447,12 @@ export default function Home() {
       if (!docInput.numeroLot?.trim()) return "Renseignez le(s) numéro(s) de lot.";
       if (!docInput.nomDossier?.trim()) return "Renseignez le nom du dossier (ligne DOSSIER du devis).";
     }
+    if (docType === "facture") {
+      if (!docInput.factureNumero?.trim()) return "Renseignez le numéro de facture.";
+      if (!docInput.factureClientNom?.trim()) return "Renseignez le client facturé.";
+      if (!docInput.factureNotaire?.trim()) return "Renseignez le notaire chargé du dossier.";
+      if (!docInput.commissionTTC || docInput.commissionTTC <= 0) return "Renseignez le montant de la commission TTC.";
+    }
     return null;
   };
 
@@ -454,10 +462,10 @@ export default function Home() {
       setError(invalid);
       return;
     }
-    // Devis pré-état daté : modèle fixe — généré instantanément, sans IA
-    if (docType === "preetatdate") {
+    // Modèles fixes (devis pré-état daté, facture) : générés sans IA
+    if (docType === "preetatdate" || docType === "facture") {
       setError(null);
-      setDocResult({ titre: "Devis pré-état daté", objet: "", blocs: [] });
+      setDocResult({ titre: DOC_LABELS[docType].titre, objet: "", blocs: [] });
       window.scrollTo({ top: 0, behavior: "smooth" });
       return;
     }
@@ -1272,6 +1280,37 @@ export default function Home() {
                       </div>
                     )}
 
+                    {docType === "facture" && (
+                      <div className="mb-4 grid gap-4 sm:grid-cols-2">
+                        <Field label="Numéro de facture *">
+                          <input className={inputCls} value={docInput.factureNumero ?? ""} onChange={(e) => setD("factureNumero", e.target.value)} placeholder="T28.2025" />
+                        </Field>
+                        <Field label="Réf. de la ligne (initiales négociateur)">
+                          <input className={inputCls} value={docInput.factureRef ?? ""} onChange={(e) => setD("factureRef", e.target.value)} placeholder="JBC" />
+                        </Field>
+                        <Field label="Client facturé *">
+                          <input className={inputCls} value={docInput.factureClientNom ?? ""} onChange={(e) => setD("factureClientNom", e.target.value)} placeholder="Monsieur Garibian Paul" />
+                        </Field>
+                        <Field label="Adresse du client">
+                          <input className={inputCls} value={docInput.factureClientAdresse ?? ""} onChange={(e) => setD("factureClientAdresse", e.target.value)} placeholder="274 che du plan d'arles biver 13120 gardannes" />
+                        </Field>
+                        <Field label="Bien concerné (affiché dans la description)" className="sm:col-span-2">
+                          <input className={inputCls} value={docInput.factureBien ?? ""} onChange={(e) => setD("factureBien", e.target.value)} placeholder="Appartement T3 — 12 quai Brescon, 13500 Martigues (facultatif)" />
+                        </Field>
+                        <Field label="Notaire chargé du dossier * (affiché « Maitre … »)">
+                          <input className={inputCls} value={docInput.factureNotaire ?? ""} onChange={(e) => setD("factureNotaire", e.target.value)} placeholder="DEGRANDI / KEMLER" />
+                        </Field>
+                        <Field label="Montant de la commission TTC (€) *">
+                          <input type="number" className={inputCls} value={docInput.commissionTTC ?? ""} onChange={(e) => setD("commissionTTC", num(e.target.value))} placeholder="10000" />
+                        </Field>
+                        <div className="rounded-xl border border-copper/40 bg-copper-soft/40 p-3 text-xs text-slate-600 sm:col-span-2">
+                          <b className="text-navy">Modèle exact de l'agence :</b> mise en page, RIB et mentions
+                          reproduits à l'identique — HT et TVA 20 % calculés depuis le TTC
+                          (ex. 10 000 € TTC → 8 333 HT / 1 667 TVA). Généré instantanément, sans IA.
+                        </div>
+                      </div>
+                    )}
+
                     {docType === "preetatdate" && (
                       <div className="mb-4 grid gap-4 sm:grid-cols-2">
                         <Field label="Étude notariale destinataire *">
@@ -1309,7 +1348,7 @@ export default function Home() {
                       </div>
                     )}
 
-                    {docType !== "preetatdate" && (
+                    {docType !== "preetatdate" && docType !== "facture" && (
                     <div className="grid gap-4 sm:grid-cols-3">
                       <Field label="Négociateur (signature)">
                         <input className={inputCls} value={docInput.negociateur} onChange={(e) => setD("negociateur", e.target.value)} placeholder="Votre nom" />

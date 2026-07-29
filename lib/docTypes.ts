@@ -1,6 +1,6 @@
 // Génération de documents : types partagés client/serveur
 
-export type DocType = "annonce" | "crv" | "prospection" | "preetatdate";
+export type DocType = "annonce" | "crv" | "prospection" | "preetatdate" | "facture";
 
 export const DOC_LABELS: Record<DocType, { titre: string; icone: string; description: string }> = {
   annonce: {
@@ -22,6 +22,11 @@ export const DOC_LABELS: Record<DocType, { titre: string; icone: string; descrip
     titre: "Devis pré-état daté",
     icone: "📑",
     description: "Pack documents Art. 54 Loi ALUR — courrier au notaire + devis, papier à en-tête",
+  },
+  facture: {
+    titre: "Facture de commission",
+    icone: "🧾",
+    description: "Honoraires de transaction — modèle exact de l'agence avec RIB",
   },
 };
 
@@ -63,6 +68,14 @@ export interface DocumentInput {
   nomDossier?: string; // ex. FABRES (ligne DOSSIER du devis)
   prixHT?: number | null; // prix de la prestation en € HT
   numeroDevis?: string; // ex. DE27072026 (généré depuis la date si vide)
+  // Facture de commission (générée sans IA — modèle fixe de l'agence)
+  factureNumero?: string; // ex. T28.2025
+  factureClientNom?: string; // ex. Monsieur Garibian Paul
+  factureClientAdresse?: string; // adresse complète du client facturé
+  factureBien?: string; // désignation du bien vendu (optionnel)
+  factureNotaire?: string; // ex. DEGRANDI / KEMLER (affiché « Maitre … »)
+  commissionTTC?: number | null; // montant de la commission TTC (€)
+  factureRef?: string; // réf. de la ligne (ex. initiales du négociateur)
   // Toutes missions
   instructionsIA?: string;
 }
