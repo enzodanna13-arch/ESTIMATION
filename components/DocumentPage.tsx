@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import PreEtatDate from "@/components/PreEtatDate";
 import type { DocumentInput, DocumentResult } from "@/lib/docTypes";
 import { DOC_LABELS } from "@/lib/docTypes";
 
@@ -30,6 +31,7 @@ export default function DocumentPage({
   const today = new Date().toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });
   const label = DOC_LABELS[input.docType]?.titre ?? "Document";
   const annonce = input.docType === "annonce";
+  const preetatdate = input.docType === "preetatdate";
   const [copie, setCopie] = useState<string | null>(null);
   const copier = async (cle: string, texte: string) => {
     try {
@@ -45,6 +47,12 @@ export default function DocumentPage({
   const toutLeTexte = doc.blocs
     .map((b) => [b.titre ? `${b.titre.toUpperCase()}` : "", blocEnTexte(b)].filter(Boolean).join("\n"))
     .join("\n\n");
+
+  // Devis pré-état daté : modèle fixe du syndic, reproduit fidèlement
+  // (papier à en-tête C21) — généré sans IA
+  if (preetatdate) {
+    return <PreEtatDate input={input} onReset={onReset} />;
+  }
 
   // Texte d'annonce : pas de page PDF — un rendu texte à copier-coller
   // directement dans les portails (SeLoger, Leboncoin…)

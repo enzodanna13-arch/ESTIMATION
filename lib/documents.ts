@@ -30,7 +30,7 @@ const DOC_SCHEMA = {
 const STYLE_COMMUN = `STYLE : français impeccable, professionnel et chaleureux — l'image d'une agence CENTURY 21 haut de gamme. Phrases courtes, aucune faute, aucun superlatif creux (« magnifique », « coup de cœur assuré »), aucune promesse irréaliste. Le document doit tenir sur UNE page A4 : sois dense et précis, pas bavard.
 FORMAT DE SORTIE (impératif) : réponds EXCLUSIVEMENT par un objet JSON valide conforme au schéma fourni — aucun texte autour.`;
 
-const SYSTEMS: Record<DocType, string> = {
+const SYSTEMS: Partial<Record<DocType, string>> = {
   annonce: `Tu es le meilleur rédacteur d'annonces immobilières de France. Tu rédiges l'ANNONCE COMPLÈTE d'un bien à partir de sa fiche.
 STRUCTURE IMPOSÉE des blocs :
 1. { titre: "Titre de l'annonce", texte: le titre accrocheur, 60 à 80 caractères, qui donne envie de cliquer — commence par l'atout n°1 du bien, pas par « À vendre » }
@@ -112,7 +112,7 @@ export async function generateDocument(
   const stream = client.messages.stream({
     model,
     max_tokens: 4000,
-    system: SYSTEMS[input.docType],
+    system: SYSTEMS[input.docType] ?? SYSTEMS.annonce!,
     output_config: { effort: "medium" },
     messages: [
       {

@@ -236,6 +236,9 @@ export default function Home() {
     clientNom: "", dateVisite: "", profilAcquereur: "", pointsAimes: "",
     objections: "", avisPrix: "", suite: "",
     cible: "", contexte: "", instructionsIA: "",
+    notaireNom: "", notaireAdresse1: "", notaireAdresse2: "",
+    copropriete: "", vosRef: "", numeroLot: "", nomDossier: "",
+    prixHT: 316.67, numeroDevis: "",
   });
   const [docResult, setDocResult] = useState<DocumentResult | null>(null);
   const setD = <K extends keyof DocumentInput>(key: K, value: DocumentInput[K]) =>
@@ -436,6 +439,12 @@ export default function Home() {
     if (docType === "prospection") {
       if (!docInput.contexte?.trim()) return "Décrivez le contexte de la prospection (bien repéré, vente récente…).";
     }
+    if (docType === "preetatdate") {
+      if (!docInput.notaireNom?.trim()) return "Renseignez le nom de l'étude notariale destinataire.";
+      if (!docInput.copropriete?.trim()) return "Renseignez le nom de la copropriété.";
+      if (!docInput.numeroLot?.trim()) return "Renseignez le(s) numéro(s) de lot.";
+      if (!docInput.nomDossier?.trim()) return "Renseignez le nom du dossier (ligne DOSSIER du devis).";
+    }
     return null;
   };
 
@@ -443,6 +452,13 @@ export default function Home() {
     const invalid = docValid();
     if (invalid) {
       setError(invalid);
+      return;
+    }
+    // Devis pré-état daté : modèle fixe — généré instantanément, sans IA
+    if (docType === "preetatdate") {
+      setError(null);
+      setDocResult({ titre: "Devis pré-état daté", objet: "", blocs: [] });
+      window.scrollTo({ top: 0, behavior: "smooth" });
       return;
     }
     setLoading(true);
@@ -1256,6 +1272,44 @@ export default function Home() {
                       </div>
                     )}
 
+                    {docType === "preetatdate" && (
+                      <div className="mb-4 grid gap-4 sm:grid-cols-2">
+                        <Field label="Étude notariale destinataire *">
+                          <input className={inputCls} value={docInput.notaireNom ?? ""} onChange={(e) => setD("notaireNom", e.target.value)} placeholder="Les Notaires de la Manufacture" />
+                        </Field>
+                        <Field label="Adresse de l'étude (n° et voie)">
+                          <input className={inputCls} value={docInput.notaireAdresse1 ?? ""} onChange={(e) => setD("notaireAdresse1", e.target.value)} placeholder="7 Avenue de l'Europe" />
+                        </Field>
+                        <Field label="Code postal et ville de l'étude">
+                          <input className={inputCls} value={docInput.notaireAdresse2 ?? ""} onChange={(e) => setD("notaireAdresse2", e.target.value)} placeholder="92310 SEVRES" />
+                        </Field>
+                        <Field label="Copropriété *">
+                          <input className={inputCls} value={docInput.copropriete ?? ""} onChange={(e) => setD("copropriete", e.target.value)} placeholder="Le Domaine de la Mer" />
+                        </Field>
+                        <Field label="Vos réf. (dossier)">
+                          <input className={inputCls} value={docInput.vosRef ?? ""} onChange={(e) => setD("vosRef", e.target.value)} placeholder="FABRES/SCI L'ESTAQUE" />
+                        </Field>
+                        <Field label="Numéro(s) de lot *">
+                          <input className={inputCls} value={docInput.numeroLot ?? ""} onChange={(e) => setD("numeroLot", e.target.value)} placeholder="81 — ou : 81 et 82" />
+                        </Field>
+                        <Field label="Nom du dossier (ligne DOSSIER du devis) *">
+                          <input className={inputCls} value={docInput.nomDossier ?? ""} onChange={(e) => setD("nomDossier", e.target.value)} placeholder="FABRES" />
+                        </Field>
+                        <Field label="Prix de la prestation (€ HT)">
+                          <input type="number" step="0.01" className={inputCls} value={docInput.prixHT ?? ""} onChange={(e) => setD("prixHT", num(e.target.value))} placeholder="316.67" />
+                        </Field>
+                        <Field label="Numéro de devis (vide = automatique DE + date)">
+                          <input className={inputCls} value={docInput.numeroDevis ?? ""} onChange={(e) => setD("numeroDevis", e.target.value)} placeholder="DE27072026" />
+                        </Field>
+                        <div className="rounded-xl border border-copper/40 bg-copper-soft/40 p-3 text-xs text-slate-600 sm:col-span-2">
+                          <b className="text-navy">Modèle fixe du syndic :</b> le courrier au notaire (loi ALUR, tableau
+                          des documents) et la lettre-devis sont générés à l'identique du modèle de l'agence —
+                          TVA 20 % et total TTC calculés automatiquement. Généré instantanément, sans IA.
+                        </div>
+                      </div>
+                    )}
+
+                    {docType !== "preetatdate" && (
                     <div className="grid gap-4 sm:grid-cols-3">
                       <Field label="Négociateur (signature)">
                         <input className={inputCls} value={docInput.negociateur} onChange={(e) => setD("negociateur", e.target.value)} placeholder="Votre nom" />
@@ -1270,6 +1324,7 @@ export default function Home() {
                         <textarea rows={2} className={inputCls} value={docInput.instructionsIA ?? ""} onChange={(e) => setD("instructionsIA", e.target.value)} placeholder="Ex. ton très haut de gamme · insiste sur la vue · courrier plutôt court…" />
                       </Field>
                     </div>
+                    )}
 
                     {error && (
                       <p className="mt-5 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</p>

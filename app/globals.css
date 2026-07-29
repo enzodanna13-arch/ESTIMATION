@@ -258,6 +258,25 @@ body {
    compacte pour tenir sur une page, et fin de document insécable
    (signature + pied ensemble, jamais orphelins) */
 .dossier .page-doc { font-size: 10.2pt; line-height: 1.5; }
+/* Papier à en-tête C21 (devis pré-état daté) : marges fidèles au modèle
+   du syndic et corps en serif */
+.dossier .page-c21 {
+  padding: 12mm 15mm 8mm;
+  font-family: Cambria, Georgia, "Times New Roman", serif;
+  font-size: 11pt;
+  line-height: 1.45;
+}
+/* Les tableaux du papier C21 gardent leur style bureautique : pas
+   d'habillage doré du dossier d'estimation */
+.dossier .page-c21 table { margin: 0; }
+.dossier .page-c21 th,
+.dossier .page-c21 td {
+  text-transform: none;
+  letter-spacing: 0;
+  color: #000;
+  font-family: inherit;
+}
+.dossier .page-c21 tr { border: none; }
 .dossier .page-doc .fin-doc { break-inside: avoid; page-break-inside: avoid; }
 
 @media print {
@@ -284,6 +303,9 @@ body {
     padding: 22mm 20mm 18mm !important;
     break-after: auto;
     page-break-after: auto;
+  }
+  .dossier .page.page-c21 {
+    padding: 12mm 15mm 8mm !important;
   }
   .dossier .page + .page {
     break-before: page;
