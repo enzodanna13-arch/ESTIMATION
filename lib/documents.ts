@@ -30,6 +30,19 @@ const DOC_SCHEMA = {
 const STYLE_COMMUN = `STYLE : français impeccable, professionnel et chaleureux — l'image d'une agence CENTURY 21 haut de gamme. Phrases courtes, aucune faute, aucun superlatif creux (« magnifique », « coup de cœur assuré »), aucune promesse irréaliste. Le document doit tenir sur UNE page A4 : sois dense et précis, pas bavard.
 FORMAT DE SORTIE (impératif) : réponds EXCLUSIVEMENT par un objet JSON valide conforme au schéma fourni — aucun texte autour.`;
 
+const BILAN_SYSTEM = `Tu es un négociateur immobilier expérimenté d'une agence CENTURY 21. Tu rédiges le BILAN DE COMMERCIALISATION remis au PROPRIÉTAIRE toutes les 3 semaines — un point d'étape CONCRET et honnête sur ce qui s'est passé, pour décider ensemble de la suite.
+STRUCTURE IMPOSÉE des blocs :
+1. { texte: formule d'appel (« Madame, Monsieur [nom], ») + 1 paragraphe : rappel du bien, du prix de présentation actuel et de la période couverte par ce bilan }
+2. { titre: "L'activité de la période", items: les chiffres et actions FOURNIS dans la fiche (visites réalisées, contacts / demandes, diffusion et actions menées) — un item par fait, rien d'inventé }
+3. { titre: "Ce que disent les visites", items: la synthèse des comptes rendus fournis — les points qui séduisent d'un côté, les objections RÉCURRENTES de l'autre, formulées avec tact mais sans les édulcorer }
+4. { titre: "Notre analyse", texte: 1 à 2 paragraphes — ce que ce niveau d'activité et ces retours signifient par rapport au marché (rythme de visites, positionnement prix perçu) }
+5. { titre: "Nos recommandations", items: recommandations concrètes et hiérarchisées (dont l'ajustement de prix si un prix conseillé est fourni) }
+6. { titre: "La suite", texte: proposition d'un point ensemble + formule de politesse }
+RÈGLE PRIX (impérative) : le prix conseillé est décidé par le NÉGOCIATEUR et fourni dans la fiche. S'il est fourni, recommande ce chiffre EXACT et argumente-le à partir des retours de visites — ne propose JAMAIS un autre montant. S'il n'est PAS fourni, ne recommande AUCUN chiffre : parle du positionnement sans montant.
+- N'invente RIEN : uniquement les chiffres, actions et retours fournis.
+- titre = "Bilan de commercialisation — [adresse ou bien]" ; objet = "Point de commercialisation [période]".
+${STYLE_COMMUN}`;
+
 const SYSTEMS: Partial<Record<DocType, string>> = {
   annonce: `Tu es le meilleur rédacteur d'annonces immobilières de France. Tu rédiges l'ANNONCE COMPLÈTE d'un bien à partir de sa fiche.
 STRUCTURE IMPOSÉE des blocs :
@@ -60,6 +73,8 @@ STRUCTURE IMPOSÉE des blocs :
 - titre = "Courrier de prospection — [cible]" ; objet = accroche courte du courrier (ex. « Et si vous connaissiez la vraie valeur de votre bien ? »).
 - Ton : confraternel si le bien est en vente par une autre agence, jamais de dénigrement.
 ${STYLE_COMMUN}`,
+
+  bilan: BILAN_SYSTEM,
 };
 
 function buildDocText(input: DocumentInput): string {
@@ -88,6 +103,18 @@ function buildDocText(input: DocumentInput): string {
   p("Suite envisagée", input.suite);
   p("Destinataire de la prospection", input.cible);
   p("Contexte de la prospection", input.contexte);
+  p("En commercialisation depuis", input.bilanDebut);
+  p("Période couverte par ce bilan", input.bilanPeriode);
+  p("Visites réalisées sur la période", input.bilanNbVisites);
+  p("Contacts / demandes de renseignements", input.bilanNbContacts);
+  p("Actions de commercialisation menées", input.bilanActions);
+  p(
+    "PRIX CONSEILLÉ PAR LE NÉGOCIATEUR (à recommander tel quel, sans le modifier)",
+    input.bilanPrixRecommande ? `${input.bilanPrixRecommande} €` : "",
+  );
+  if (input.bilanComptesRendus?.trim()) {
+    l.push(`\nCOMPTES RENDUS DES VISITES DE LA PÉRIODE (à synthétiser) :\n${input.bilanComptesRendus.trim()}`);
+  }
   if (input.instructionsIA?.trim()) {
     l.push(`\nINSTRUCTIONS PARTICULIÈRES DU NÉGOCIATEUR (à respecter) :\n${input.instructionsIA.trim()}`);
   }

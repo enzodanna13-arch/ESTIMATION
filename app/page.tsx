@@ -460,6 +460,7 @@ export default function Home() {
     if (docType === "annonce") return [docInput.typeBien, docInput.ville].filter(Boolean).join(" — ");
     if (docType === "crv") return docInput.clientNom ?? "";
     if (docType === "prospection") return docInput.cible || (docInput.contexte ?? "").slice(0, 50);
+    if (docType === "bilan") return [docInput.clientNom, docInput.bilanPeriode].filter(Boolean).join(" — ");
     if (docType === "preetatdate") return `Dossier ${docInput.nomDossier ?? ""} — ${docInput.copropriete ?? ""}`;
     if (docType === "facture") return `${docInput.factureNumero ?? ""} — ${docInput.factureClientNom ?? ""}`;
     if (docType === "compromis") return docInput.compromisObjetBien ?? "";
@@ -490,6 +491,11 @@ export default function Home() {
     }
     if (docType === "prospection") {
       if (!docInput.contexte?.trim()) return "Décrivez le contexte de la prospection (bien repéré, vente récente…).";
+    }
+    if (docType === "bilan") {
+      if (!docInput.clientNom?.trim()) return "Renseignez le propriétaire destinataire du bilan.";
+      if (!docInput.bilanNbVisites && !docInput.bilanComptesRendus?.trim())
+        return "Indiquez au moins l'activité de la période : nombre de visites ou comptes rendus collés.";
     }
     if (docType === "preetatdate") {
       if (!docInput.notaireNom?.trim()) return "Renseignez le nom de l'étude notariale destinataire.";
@@ -1389,6 +1395,41 @@ export default function Home() {
                         </Field>
                         <Field label="Suite envisagée">
                           <input className={inputCls} value={docInput.suite ?? ""} onChange={(e) => setD("suite", e.target.value)} placeholder="Souhaite une seconde visite avec ses parents / réfléchit / abandon" />
+                        </Field>
+                      </div>
+                    )}
+
+                    {docType === "bilan" && (
+                      <div className="mb-4 grid gap-4 sm:grid-cols-3">
+                        <Field label="Propriétaire destinataire *">
+                          <input className={inputCls} value={docInput.clientNom ?? ""} onChange={(e) => setD("clientNom", e.target.value)} placeholder="M. et Mme Dupont" />
+                        </Field>
+                        <Field label="Bien (adresse ou description)" className="sm:col-span-2">
+                          <input className={inputCls} value={docInput.adresse ?? ""} onChange={(e) => setD("adresse", e.target.value)} placeholder="Appartement T3 de 67 m², 12 quai Brescon, 13500 Martigues" />
+                        </Field>
+                        <Field label="Prix de présentation actuel (€)">
+                          <input type="number" className={inputCls} value={docInput.prix ?? ""} onChange={(e) => setD("prix", num(e.target.value))} placeholder="239000" />
+                        </Field>
+                        <Field label="En commercialisation depuis">
+                          <input className={inputCls} value={docInput.bilanDebut ?? ""} onChange={(e) => setD("bilanDebut", e.target.value)} placeholder="le 15 juin 2026" />
+                        </Field>
+                        <Field label="Période couverte par ce bilan">
+                          <input className={inputCls} value={docInput.bilanPeriode ?? ""} onChange={(e) => setD("bilanPeriode", e.target.value)} placeholder="du 8 au 29 juillet 2026" />
+                        </Field>
+                        <Field label="Visites réalisées sur la période *">
+                          <input type="number" className={inputCls} value={docInput.bilanNbVisites ?? ""} onChange={(e) => setD("bilanNbVisites", num(e.target.value))} placeholder="4" />
+                        </Field>
+                        <Field label="Contacts / demandes de renseignements">
+                          <input type="number" className={inputCls} value={docInput.bilanNbContacts ?? ""} onChange={(e) => setD("bilanNbContacts", num(e.target.value))} placeholder="11" />
+                        </Field>
+                        <Field label="Prix recommandé par vous (€) — l'IA ne l'invente jamais">
+                          <input type="number" className={inputCls} value={docInput.bilanPrixRecommande ?? ""} onChange={(e) => setD("bilanPrixRecommande", num(e.target.value))} placeholder="229000 — vide : pas de baisse" />
+                        </Field>
+                        <Field label="Comptes rendus des visites de la période (collez-les — l'IA les synthétise)" className="sm:col-span-3">
+                          <textarea rows={6} className={inputCls} value={docInput.bilanComptesRendus ?? ""} onChange={(e) => setD("bilanComptesRendus", e.target.value)} placeholder={"Visite 1 (M. X, 10/07) : a aimé la luminosité, trouve la SDB à refaire, prix jugé élevé…\nVisite 2 (Mme Y, 17/07) : …\n(un compte rendu par visite)"} />
+                        </Field>
+                        <Field label="Actions de commercialisation menées" className="sm:col-span-3">
+                          <textarea rows={2} className={inputCls} value={docInput.bilanActions ?? ""} onChange={(e) => setD("bilanActions", e.target.value)} placeholder="Diffusion SeLoger, Leboncoin, Bien'ici et century21.fr · remontée en tête de liste le 20/07 · panneau posé · 2 relances du fichier acquéreurs" />
                         </Field>
                       </div>
                     )}

@@ -1,6 +1,6 @@
 // Génération de documents : types partagés client/serveur
 
-export type DocType = "annonce" | "crv" | "prospection" | "preetatdate" | "facture" | "compromis";
+export type DocType = "annonce" | "crv" | "prospection" | "bilan" | "preetatdate" | "facture" | "compromis";
 
 export const DOC_LABELS: Record<DocType, { titre: string; icone: string; description: string }> = {
   annonce: {
@@ -17,6 +17,11 @@ export const DOC_LABELS: Record<DocType, { titre: string; icone: string; descrip
     titre: "Courrier de prospection",
     icone: "✉️",
     description: "Courrier ou e-mail de pige pour rentrer des mandats",
+  },
+  bilan: {
+    titre: "Bilan de commercialisation",
+    icone: "📈",
+    description: "Point client des 3 semaines : visites, retours, recommandations et prix conseillé",
   },
   preetatdate: {
     titre: "Devis pré-état daté",
@@ -64,6 +69,14 @@ export interface DocumentInput {
   // Courrier de prospection
   cible?: string; // destinataire (propriétaire du 12 rue X, habitants du quartier…)
   contexte?: string; // pige : annonce PAP repérée, vente récente dans la rue…
+  // Bilan de commercialisation (point client toutes les 3 semaines)
+  bilanDebut?: string; // date de mise en commercialisation
+  bilanPeriode?: string; // période couverte (ex. « du 8 au 29 juillet 2026 »)
+  bilanNbVisites?: number | null; // nombre de visites réalisées sur la période
+  bilanNbContacts?: number | null; // appels / demandes de renseignements
+  bilanComptesRendus?: string; // comptes rendus de visites collés — l'IA les synthétise
+  bilanActions?: string; // actions menées : portails, panneau, mailing, boost…
+  bilanPrixRecommande?: number | null; // prix conseillé — saisi par le NÉGOCIATEUR, jamais par l'IA
   // Devis pré-état daté (généré sans IA — modèle fixe du syndic)
   notaireNom?: string;
   notaireAdresse1?: string; // n° et voie

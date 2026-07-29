@@ -119,15 +119,23 @@ export default function DocumentPage({
     );
   }
 
-  const specs: [string, string][] = annonce
-    ? ([
-        input.typeBien ? ["Type", input.typeBien.charAt(0).toUpperCase() + input.typeBien.slice(1)] : null,
-        input.surface ? ["Surface", `${input.surface} m²`] : null,
-        input.nbPieces ? ["Pièces", String(input.nbPieces)] : null,
-        input.prix ? ["Prix", `${int.format(input.prix)} €`] : null,
-        input.dpe ? ["DPE", input.dpe] : null,
-      ].filter(Boolean) as [string, string][])
-    : [];
+  const specs: [string, string][] =
+    input.docType === "bilan"
+      ? ([
+          input.bilanNbVisites ? ["Visites", String(input.bilanNbVisites)] : null,
+          input.bilanNbContacts ? ["Contacts", String(input.bilanNbContacts)] : null,
+          input.prix ? ["Prix affiché", `${int.format(input.prix)} €`] : null,
+          input.bilanPrixRecommande ? ["Prix recommandé ★", `${int.format(input.bilanPrixRecommande)} €`] : null,
+        ].filter(Boolean) as [string, string][])
+      : annonce
+        ? ([
+            input.typeBien ? ["Type", input.typeBien.charAt(0).toUpperCase() + input.typeBien.slice(1)] : null,
+            input.surface ? ["Surface", `${input.surface} m²`] : null,
+            input.nbPieces ? ["Pièces", String(input.nbPieces)] : null,
+            input.prix ? ["Prix", `${int.format(input.prix)} €`] : null,
+            input.dpe ? ["DPE", input.dpe] : null,
+          ].filter(Boolean) as [string, string][])
+        : [];
 
   return (
     <div>
