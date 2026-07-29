@@ -1,4 +1,5 @@
 import { generateDocument } from "@/lib/documents";
+import { checkHistoryPassword } from "@/lib/historyAuth";
 import type { DocumentInput } from "@/lib/docTypes";
 
 export const maxDuration = 300;
@@ -10,6 +11,10 @@ export const dynamic = "force-dynamic";
  * l'estimation (statuts de progression + résultat).
  */
 export async function POST(request: Request) {
+  // Accès réservé à l'équipe : même mot de passe que l'ensemble de l'outil
+  if (!checkHistoryPassword(request)) {
+    return Response.json({ error: "Accès réservé — mot de passe requis" }, { status: 401 });
+  }
   let body: DocumentInput;
   try {
     body = (await request.json()) as DocumentInput;

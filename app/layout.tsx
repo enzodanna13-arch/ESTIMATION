@@ -25,7 +25,7 @@ const manrope = Manrope({
 });
 
 export const metadata: Metadata = {
-  title: "Estimation IA — Avis de valeur immobilier",
+  title: "IA Century21-Icazaimmobilier",
   description:
     "Outil d'estimation immobilière pour équipes commerciales : croisement DVF, concurrence active et invendus +90 jours, avec analyse IA des photos.",
 };
