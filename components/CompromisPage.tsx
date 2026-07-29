@@ -331,11 +331,11 @@ export default function CompromisPage({
           page.drawImage(imgSceau, { x: 468, y: A4[1] - 112.5, width: 84.5, height: 107.5 });
         }
         let yy = A4[1] - 60;
-        page.drawText("Icaza Immobilier", { x: M, y: yy, size: 10, font: helv, color: gris });
+        page.drawText("Icaza Immobilier", { x: M, y: yy, size: 10.5, font: helv, color: or });
         yy -= 13;
-        page.drawText("32 avenue de la Paix", { x: M, y: yy, size: 9, font: times, color: noir });
-        yy -= 12;
-        page.drawText("13500 Martigues", { x: M, y: yy, size: 9, font: times, color: noir });
+        page.drawText("32 avenue de la Paix", { x: M, y: yy, size: 8.5, font: helv, color: noir });
+        yy -= 11;
+        page.drawText("13500 Martigues", { x: M, y: yy, size: 8.5, font: helv, color: noir });
         y = yy - 26;
       };
 

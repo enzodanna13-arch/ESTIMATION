@@ -20,12 +20,13 @@ const SANS = 'Arial, "Helvetica Neue", sans-serif';
 
 export function EnTete() {
   return (
-    <div style={{ minHeight: "26mm" }}>
+    <div style={{ minHeight: "26mm", fontFamily: SANS }}>
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img src="/c21/wordmark.png" alt="CENTURY 21" style={{ width: "30.5mm", display: "block", marginTop: "1mm" }} />
-      <div style={{ fontSize: "10pt", marginTop: "2mm", fontFamily: SERIF, lineHeight: 1.45 }}>
+      <div style={{ color: OR_CLAIR, fontSize: "10.5pt", marginTop: "1.2mm", letterSpacing: "0.02em" }}>
         Icaza Immobilier
-        <br />
+      </div>
+      <div style={{ fontSize: "8.5pt", marginTop: "1.2mm", lineHeight: 1.5, color: "#000" }}>
         32 avenue de la Paix
         <br />
         13500 Martigues

@@ -265,6 +265,9 @@ body {
   font-family: Cambria, Georgia, "Times New Roman", serif;
   font-size: 11pt;
   line-height: 1.45;
+  /* Papier à en-tête officiel : blanc pur, comme les modèles de l'agence
+     (le crème du dossier d'estimation créait un halo autour du sceau) */
+  background: #fff;
 }
 /* Les tableaux du papier C21 gardent leur style bureautique : pas
    d'habillage doré du dossier d'estimation */

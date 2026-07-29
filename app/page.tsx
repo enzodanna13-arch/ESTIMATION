@@ -557,12 +557,31 @@ export default function Home() {
               <p className="text-xs text-slate-300">Estimations &amp; documents pour l&apos;équipe commerciale</p>
             </div>
           </div>
-          <div className="hidden gap-2 sm:flex">
-            {["Ventes réelles DVF", "Observatoire des loyers", "Dossiers Century 21"].map((s) => (
-              <span key={s} className="rounded-full border border-white/20 px-3 py-1 text-xs text-slate-200">
-                {s}
-              </span>
-            ))}
+          <div className="flex items-center gap-2">
+            <div className="hidden gap-2 lg:flex">
+              {["Ventes réelles DVF", "Observatoire des loyers", "Dossiers Century 21"].map((s) => (
+                <span key={s} className="rounded-full border border-white/20 px-3 py-1 text-xs text-slate-200">
+                  {s}
+                </span>
+              ))}
+            </div>
+            {!historyLocked && (
+              <button
+                type="button"
+                onClick={() => {
+                  setResult(null);
+                  setStep(0);
+                  setDocResult(null);
+                  setDocType("");
+                  setUnivers("");
+                  setError(null);
+                  window.scrollTo({ top: 0, behavior: "smooth" });
+                }}
+                className="rounded-lg bg-copper px-4 py-2 text-sm font-bold text-white shadow-md shadow-black/20 transition hover:brightness-110"
+              >
+                🏠 Accueil
+              </button>
+            )}
           </div>
         </div>
       </header>
