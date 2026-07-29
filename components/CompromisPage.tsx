@@ -430,9 +430,15 @@ export default function CompromisPage({
           </button>
         </div>
 
+        <div className="mb-4 rounded-2xl border border-copper/40 bg-copper-soft/40 p-4 text-sm text-slate-700">
+          <b className="text-navy">En 4 étapes :</b> 1️⃣ ajoutez les PDF du dossier (vendeur et acquéreur) ·
+          2️⃣ cliquez « ✨ Pré-remplir avec l'IA » (elle lit les pièces et remplit les champs) ·
+          3️⃣ vérifiez et complétez les champs · 4️⃣ générez la lettre, puis téléchargez le dossier complet.
+        </div>
+
         <div className="mb-4 grid gap-4 sm:grid-cols-2">
-          <ZonePieces titre="Pièces du dossier VENDEUR (PDF)" pieces={piecesVendeur} setter={setPiecesVendeur} ajouter={ajouterPieces} />
-          <ZonePieces titre="Pièces du dossier ACQUÉREUR (PDF)" pieces={piecesAcquereur} setter={setPiecesAcquereur} ajouter={ajouterPieces} />
+          <ZonePieces titre="1️⃣ Pièces du dossier VENDEUR (PDF)" pieces={piecesVendeur} setter={setPiecesVendeur} ajouter={ajouterPieces} />
+          <ZonePieces titre="1️⃣ Pièces du dossier ACQUÉREUR (PDF)" pieces={piecesAcquereur} setter={setPiecesAcquereur} ajouter={ajouterPieces} />
           <div className="flex flex-wrap items-center gap-3 sm:col-span-2">
             <button
               type="button"
@@ -440,7 +446,7 @@ export default function CompromisPage({
               disabled={iaEnCours}
               className="rounded-xl bg-navy px-5 py-2.5 text-sm font-bold text-white shadow-md shadow-navy/25 transition hover:bg-navy-deep disabled:opacity-60"
             >
-              {iaEnCours ? "✨ Lecture des pièces en cours…" : "✨ Pré-remplir les champs avec l'IA (lit les pièces PDF)"}
+              {iaEnCours ? "✨ Lecture des pièces en cours…" : "2️⃣ ✨ Pré-remplir les champs avec l'IA (lit les pièces PDF)"}
             </button>
             <span className="text-xs text-slate-500">
               L&apos;IA lit les pièces (identité, taxe foncière, offre, mandat…) et remplit les champs vides — rien n&apos;est inventé.
@@ -462,57 +468,72 @@ export default function CompromisPage({
             <Champ label="Numéro(s) de lot">
               <input className={inputCls} value={donnees.cLot ?? ""} onChange={(e) => set("cLot", e.target.value)} placeholder="8" />
             </Champ>
-            <Champ label="Tantièmes des parties communes">
-              <input className={inputCls} value={donnees.cTantiemes ?? ""} onChange={(e) => set("cTantiemes", e.target.value)} placeholder="46/1000èmes de la propriété du sol et des parties communes générales" />
-            </Champ>
-            <Champ label="Composition du bien (étage, pièces, annexes)" className="sm:col-span-2">
-              <textarea rows={2} className={inputCls} value={donnees.cBienDescription ?? ""} onChange={(e) => set("cBienDescription", e.target.value)} placeholder="Un appartement situé au deuxième étage, porte de droite, composé de : entrée, WC, séjour, cuisine, salle de bains, deux chambres, cellier, placards et une loggia." />
+            <Champ label="Composition du bien (étage, pièces, annexes)">
+              <textarea rows={2} className={inputCls} value={donnees.cBienDescription ?? ""} onChange={(e) => set("cBienDescription", e.target.value)} placeholder="Appartement au deuxième étage, porte de droite : entrée, WC, séjour, cuisine, salle de bains, deux chambres, cellier, placards, loggia." />
             </Champ>
           </div>
+          <details className="mt-2">
+            <summary className="cursor-pointer text-xs font-semibold text-slate-500 hover:text-copper">+ Détails facultatifs du bien (tantièmes)</summary>
+            <div className="mt-3 grid gap-4 sm:grid-cols-2">
+              <Champ label="Tantièmes des parties communes" className="sm:col-span-2">
+                <input className={inputCls} value={donnees.cTantiemes ?? ""} onChange={(e) => set("cTantiemes", e.target.value)} placeholder="46/1000èmes de la propriété du sol et des parties communes générales" />
+              </Champ>
+            </div>
+          </details>
 
           <SousTitre>Vendeur(s)</SousTitre>
           <div className="grid gap-4 sm:grid-cols-2">
             <Champ label="Nom(s) complet(s) *">
               <input className={inputCls} value={donnees.cVendeurNoms ?? ""} onChange={(e) => set("cVendeurNoms", e.target.value)} placeholder="Monsieur Patrice VELLA et Madame Cindy LEQUESNE, son épouse" />
             </Champ>
-            <Champ label="Profession(s)">
-              <input className={inputCls} value={donnees.cVendeurProfessions ?? ""} onChange={(e) => set("cVendeurProfessions", e.target.value)} placeholder="électricien / employée en restauration" />
-            </Champ>
-            <Champ label="Adresse">
-              <input className={inputCls} value={donnees.cVendeurAdresse ?? ""} onChange={(e) => set("cVendeurAdresse", e.target.value)} placeholder="ensemble Résidence Le Canal – Bâtiment SD4 – 13500 Martigues" />
-            </Champ>
-            <Champ label="Naissances (dates et lieux)">
-              <input className={inputCls} value={donnees.cVendeurNaissances ?? ""} onChange={(e) => set("cVendeurNaissances", e.target.value)} placeholder="M. VELLA à Martigues (13500) le 12/07/1984 — Mme LEQUESNE à Marignane (13700) le 24/09/1986" />
-            </Champ>
             <Champ label="Téléphone">
               <input className={inputCls} inputMode="tel" value={donnees.cVendeurTel ?? ""} onChange={(e) => set("cVendeurTel", e.target.value)} placeholder="06 13 89 37 24" />
             </Champ>
-            <Champ label="Email">
-              <input className={inputCls} inputMode="email" value={donnees.cVendeurEmail ?? ""} onChange={(e) => set("cVendeurEmail", e.target.value)} placeholder="email@exemple.fr" />
-            </Champ>
           </div>
+          <details className="mt-2" open={Boolean(donnees.cVendeurProfessions || donnees.cVendeurAdresse || donnees.cVendeurNaissances || donnees.cVendeurEmail)}>
+            <summary className="cursor-pointer text-xs font-semibold text-slate-500 hover:text-copper">+ Détails vendeur(s) : professions, adresse, naissances, email (l'IA les remplit depuis les pièces)</summary>
+            <div className="mt-3 grid gap-4 sm:grid-cols-2">
+              <Champ label="Profession(s)">
+                <input className={inputCls} value={donnees.cVendeurProfessions ?? ""} onChange={(e) => set("cVendeurProfessions", e.target.value)} placeholder="électricien / employée en restauration" />
+              </Champ>
+              <Champ label="Adresse">
+                <input className={inputCls} value={donnees.cVendeurAdresse ?? ""} onChange={(e) => set("cVendeurAdresse", e.target.value)} placeholder="ensemble Résidence Le Canal – Bâtiment SD4 – 13500 Martigues" />
+              </Champ>
+              <Champ label="Naissances (dates et lieux)">
+                <input className={inputCls} value={donnees.cVendeurNaissances ?? ""} onChange={(e) => set("cVendeurNaissances", e.target.value)} placeholder="M. VELLA à Martigues (13500) le 12/07/1984 — Mme LEQUESNE à Marignane (13700) le 24/09/1986" />
+              </Champ>
+              <Champ label="Email">
+                <input className={inputCls} inputMode="email" value={donnees.cVendeurEmail ?? ""} onChange={(e) => set("cVendeurEmail", e.target.value)} placeholder="email@exemple.fr" />
+              </Champ>
+            </div>
+          </details>
 
           <SousTitre>Acquéreur</SousTitre>
           <div className="grid gap-4 sm:grid-cols-2">
             <Champ label="Nom complet *">
               <input className={inputCls} value={donnees.cAcqNom ?? ""} onChange={(e) => set("cAcqNom", e.target.value)} placeholder="Madame CASQUEL épouse YASSIN Marie-Christine" />
             </Champ>
-            <Champ label="Naissance (date et lieu)">
-              <input className={inputCls} value={donnees.cAcqNaissance ?? ""} onChange={(e) => set("cAcqNaissance", e.target.value)} placeholder="née le 16 septembre 1957 à Marseille" />
-            </Champ>
-            <Champ label="Nationalité et profession">
-              <input className={inputCls} value={donnees.cAcqProfession ?? ""} onChange={(e) => set("cAcqProfession", e.target.value)} placeholder="de nationalité française, retraitée" />
-            </Champ>
-            <Champ label="Adresse">
-              <input className={inputCls} value={donnees.cAcqAdresse ?? ""} onChange={(e) => set("cAcqAdresse", e.target.value)} placeholder="Résidence Paradis Parc – 13500 Martigues" />
-            </Champ>
             <Champ label="Téléphone">
               <input className={inputCls} inputMode="tel" value={donnees.cAcqTel ?? ""} onChange={(e) => set("cAcqTel", e.target.value)} placeholder="06 63 69 93 71" />
             </Champ>
-            <Champ label="Email">
-              <input className={inputCls} inputMode="email" value={donnees.cAcqEmail ?? ""} onChange={(e) => set("cAcqEmail", e.target.value)} placeholder="email@exemple.fr" />
-            </Champ>
           </div>
+          <details className="mt-2" open={Boolean(donnees.cAcqNaissance || donnees.cAcqProfession || donnees.cAcqAdresse || donnees.cAcqEmail)}>
+            <summary className="cursor-pointer text-xs font-semibold text-slate-500 hover:text-copper">+ Détails acquéreur : naissance, profession, adresse, email (l'IA les remplit depuis les pièces)</summary>
+            <div className="mt-3 grid gap-4 sm:grid-cols-2">
+              <Champ label="Naissance (date et lieu)">
+                <input className={inputCls} value={donnees.cAcqNaissance ?? ""} onChange={(e) => set("cAcqNaissance", e.target.value)} placeholder="née le 16 septembre 1957 à Marseille" />
+              </Champ>
+              <Champ label="Nationalité et profession">
+                <input className={inputCls} value={donnees.cAcqProfession ?? ""} onChange={(e) => set("cAcqProfession", e.target.value)} placeholder="de nationalité française, retraitée" />
+              </Champ>
+              <Champ label="Adresse">
+                <input className={inputCls} value={donnees.cAcqAdresse ?? ""} onChange={(e) => set("cAcqAdresse", e.target.value)} placeholder="Résidence Paradis Parc – 13500 Martigues" />
+              </Champ>
+              <Champ label="Email">
+                <input className={inputCls} inputMode="email" value={donnees.cAcqEmail ?? ""} onChange={(e) => set("cAcqEmail", e.target.value)} placeholder="email@exemple.fr" />
+              </Champ>
+            </div>
+          </details>
 
           <SousTitre>Notaire vendeur</SousTitre>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -570,15 +591,17 @@ export default function CompromisPage({
             </Champ>
           </div>
 
-          <SousTitre>Pièces transmises (listées dans la lettre)</SousTitre>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Champ label="Dossier vendeur (une pièce par ligne)">
-              <textarea rows={5} className={inputCls} value={donnees.compromisPiecesVendeur ?? ""} onChange={(e) => set("compromisPiecesVendeur", e.target.value)} />
-            </Champ>
-            <Champ label="Dossier acquéreur (une pièce par ligne)">
-              <textarea rows={5} className={inputCls} value={donnees.compromisPiecesAcquereur ?? ""} onChange={(e) => set("compromisPiecesAcquereur", e.target.value)} />
-            </Champ>
-          </div>
+          <details className="mt-5">
+            <summary className="cursor-pointer text-sm font-bold uppercase tracking-wide text-navy">Pièces transmises listées dans la lettre (pré-remplies — cliquez pour modifier)</summary>
+            <div className="mt-3 grid gap-4 sm:grid-cols-2">
+              <Champ label="Dossier vendeur (une pièce par ligne)">
+                <textarea rows={5} className={inputCls} value={donnees.compromisPiecesVendeur ?? ""} onChange={(e) => set("compromisPiecesVendeur", e.target.value)} />
+              </Champ>
+              <Champ label="Dossier acquéreur (une pièce par ligne)">
+                <textarea rows={5} className={inputCls} value={donnees.compromisPiecesAcquereur ?? ""} onChange={(e) => set("compromisPiecesAcquereur", e.target.value)} />
+              </Champ>
+            </div>
+          </details>
 
           <SousTitre>Signature</SousTitre>
           <div className="grid gap-4 sm:grid-cols-3">
@@ -603,7 +626,7 @@ export default function CompromisPage({
               onClick={genererLettre}
               className="rounded-xl bg-copper px-7 py-2.5 text-sm font-bold text-white shadow-md shadow-copper/30 transition hover:brightness-110"
             >
-              ✦ Générer la lettre →
+              4️⃣ ✦ Générer la lettre →
             </button>
           </div>
         </div>
