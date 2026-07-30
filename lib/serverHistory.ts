@@ -429,6 +429,83 @@ export async function getVisiteImageServer(id: string, imgId: string): Promise<A
   }
 }
 
+// ---------------------------------------------------------------------------
+// VEILLE CONCURRENTE PAR LIEN : le négociateur colle l'URL d'UNE annonce
+// d'agence concurrente ; on en extrait titre/prix/photo (métadonnées
+// publiques de la page) et on suit la baisse de prix dans le temps. Ciblé
+// (annonce par annonce), pas de moissonnage de catalogue. Protégé par mot
+// de passe. Métas versionnés comme les dossiers clients.
+// ---------------------------------------------------------------------------
+
+export interface ConcurrentListing {
+  id: string;
+  createdAt: number;
+  updatedAt: number;
+  url: string;
+  titre: string;
+  prix: number | null;
+  image: string; // URL og:image distante (référencée, non stockée)
+  ville: string;
+  source: string; // nom de domaine (agence)
+  negociateur: string;
+  note: string;
+  historiquePrix: { date: number; prix: number }[];
+}
+
+const CONC_META_PREFIX = "concurrents/meta/";
+
+async function putConcurrent(c: ConcurrentListing): Promise<void> {
+  const nom = `${CONC_META_PREFIX}${c.id}~${c.updatedAt}.json`;
+  await put(nom, JSON.stringify(c), { access: "public", addRandomSuffix: false, contentType: "application/json" });
+  const { blobs } = await list({ prefix: `${CONC_META_PREFIX}${c.id}~`, limit: 100 });
+  const vieilles = blobs.filter((b) => b.pathname !== nom).map((b) => b.url);
+  if (vieilles.length > 0) await del(vieilles);
+}
+
+export async function saveConcurrentServer(c: ConcurrentListing): Promise<void> {
+  await putConcurrent(c);
+}
+
+export async function listConcurrentsServer(): Promise<ConcurrentListing[]> {
+  const { blobs } = await list({ prefix: CONC_META_PREFIX, limit: 1000 });
+  const parId = new Map<string, { url: string; ts: number }>();
+  for (const b of blobs) {
+    const nom = b.pathname.slice(b.pathname.lastIndexOf("/") + 1);
+    const id = nom.split("~")[0];
+    const ts = derniereVersion(b.pathname);
+    const cur = parId.get(id);
+    if (!cur || ts > cur.ts) parId.set(id, { url: b.url, ts });
+  }
+  const metas = await Promise.all(
+    [...parId.values()].map(async ({ url }) => {
+      try {
+        const res = await fetch(url, { cache: "no-store" });
+        return res.ok ? ((await res.json()) as ConcurrentListing) : null;
+      } catch {
+        return null;
+      }
+    }),
+  );
+  return metas.filter((m): m is ConcurrentListing => m !== null).sort((a, b) => b.updatedAt - a.updatedAt);
+}
+
+export async function getConcurrentServer(id: string): Promise<ConcurrentListing | null> {
+  const { blobs } = await list({ prefix: `${CONC_META_PREFIX}${safeId(id)}~`, limit: 100 });
+  if (blobs.length === 0) return null;
+  const dernier = blobs.reduce((a, b) => (derniereVersion(b.pathname) > derniereVersion(a.pathname) ? b : a));
+  try {
+    const res = await fetch(dernier.url, { cache: "no-store" });
+    return res.ok ? ((await res.json()) as ConcurrentListing) : null;
+  } catch {
+    return null;
+  }
+}
+
+export async function deleteConcurrentServer(id: string): Promise<void> {
+  const { blobs } = await list({ prefix: `${CONC_META_PREFIX}${safeId(id)}~`, limit: 100 });
+  if (blobs.length > 0) await del(blobs.map((b) => b.url));
+}
+
 export async function deleteVisiteImageServer(id: string, imgId: string): Promise<VisiteVirtuelle | null> {
   const v = await getVisiteServer(id);
   if (!v) return null;
