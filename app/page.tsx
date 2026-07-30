@@ -279,6 +279,19 @@ export default function Home() {
   const [printOnOpen, setPrintOnOpen] = useState(false);
 
   const [docHistory, setDocHistory] = useState<DocHistoryMeta[]>([]);
+  // Espace Historiques : sous-menu ouvert (estimations ou un type de
+  // document) et recherche dans la section
+  const [histoSection, setHistoSection] = useState<"" | "estimations" | DocType>("");
+  const [histoQ, setHistoQ] = useState("");
+  const histoQt = histoQ.trim().toLowerCase();
+  const historyAffiche = history.filter(
+    (h) => !histoQt || [h.client, h.bien, h.ville, h.negociateur].join(" ").toLowerCase().includes(histoQt),
+  );
+  const docHistoryAffiche = docHistory.filter(
+    (h) =>
+      h.docType === histoSection &&
+      (!histoQt || [h.titre, h.reference, h.negociateur].join(" ").toLowerCase().includes(histoQt)),
+  );
 
   const refreshHistory = () => {
     listEstimations()
@@ -722,7 +735,7 @@ export default function Home() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => setUnivers("historique")}
+                  onClick={() => { setHistoSection(""); setHistoQ(""); setUnivers("historique"); }}
                   className="group rounded-3xl border-2 border-slate-200 bg-white p-8 text-left shadow-sm transition hover:border-copper hover:shadow-lg"
                 >
                   <div className="mb-3 text-4xl">🗂️</div>
@@ -1706,16 +1719,66 @@ export default function Home() {
             )}
 
             {univers === "historique" && (
-              <button
-                type="button"
-                onClick={() => setUnivers("")}
-                className="mb-4 rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-100 print:hidden"
-              >
-                ← Accueil
-              </button>
+              <div className="mb-4 flex flex-wrap items-center gap-3 print:hidden">
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (histoSection) {
+                      setHistoSection("");
+                      setHistoQ("");
+                    } else setUnivers("");
+                  }}
+                  className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-100"
+                >
+                  {histoSection ? "← Historiques" : "← Accueil"}
+                </button>
+                {histoSection && (
+                  <input
+                    className={`${inputCls} w-full max-w-md`}
+                    value={histoQ}
+                    onChange={(e) => setHistoQ(e.target.value)}
+                    placeholder="🔎 Rechercher : client, bien, ville, négociateur…"
+                  />
+                )}
+              </div>
             )}
 
-            {univers === "historique" && (
+            {univers === "historique" && histoSection === "" && (
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 print:hidden">
+                <button
+                  type="button"
+                  onClick={() => setHistoSection("estimations")}
+                  className="rounded-2xl border border-slate-200 bg-white p-5 text-left shadow-sm transition hover:-translate-y-0.5 hover:border-copper hover:shadow-md"
+                >
+                  <div className="mb-1 flex items-center justify-between">
+                    <span className="text-2xl">📊</span>
+                    <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-semibold text-slate-600">
+                      {history.length}
+                    </span>
+                  </div>
+                  <div className="text-sm font-bold text-navy">Estimations</div>
+                  <div className="mt-0.5 text-xs text-slate-500">Avis de valeur, audits, locatif, bien loué</div>
+                </button>
+                {(Object.keys(DOC_LABELS) as DocType[]).map((t) => (
+                  <button
+                    key={t}
+                    type="button"
+                    onClick={() => setHistoSection(t)}
+                    className="rounded-2xl border border-slate-200 bg-white p-5 text-left shadow-sm transition hover:-translate-y-0.5 hover:border-copper hover:shadow-md"
+                  >
+                    <div className="mb-1 flex items-center justify-between">
+                      <span className="text-2xl">{DOC_LABELS[t].icone}</span>
+                      <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-semibold text-slate-600">
+                        {docHistory.filter((h) => h.docType === t).length}
+                      </span>
+                    </div>
+                    <div className="text-sm font-bold text-navy">{DOC_LABELS[t].titre}</div>
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {univers === "historique" && histoSection === "estimations" && (
             <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8 print:hidden">
                 <div className="mb-4 flex items-center justify-between">
                   <div>
@@ -1726,7 +1789,7 @@ export default function Home() {
                   </div>
                   {!historyLocked && (
                     <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
-                      {history.length} dossier{history.length > 1 ? "s" : ""}
+                      {historyAffiche.length} dossier{historyAffiche.length > 1 ? "s" : ""}
                     </span>
                   )}
                 </div>
@@ -1750,12 +1813,14 @@ export default function Home() {
                     </button>
                     {historyError && <span className="text-sm text-red-600">{historyError}</span>}
                   </div>
-                ) : history.length === 0 ? (
-                  <p className="text-sm text-slate-500">Aucune estimation enregistrée pour le moment.</p>
+                ) : historyAffiche.length === 0 ? (
+                  <p className="text-sm text-slate-500">
+                    {histoQt ? "Aucune estimation ne correspond à cette recherche." : "Aucune estimation enregistrée pour le moment."}
+                  </p>
                 ) : (
                   <>
                 <ul className="divide-y divide-slate-100">
-                  {history.map((h) => (
+                  {historyAffiche.map((h) => (
                     <li key={h.id} className="flex flex-wrap items-center gap-3 py-3">
                       <div className="min-w-0 flex-1">
                         <p className="truncate text-sm font-semibold text-navy">
@@ -1805,24 +1870,28 @@ export default function Home() {
               </section>
             )}
 
-            {univers === "historique" && (
-              <section className="mt-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8 print:hidden">
+            {univers === "historique" && histoSection !== "" && histoSection !== "estimations" && (
+              <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8 print:hidden">
                 <div className="mb-4 flex items-center justify-between">
                   <div>
-                    <h2 className="text-lg font-bold text-navy">📄 Historique des documents</h2>
+                    <h2 className="text-lg font-bold text-navy">
+                      {DOC_LABELS[histoSection as DocType]?.icone} Historique — {DOC_LABELS[histoSection as DocType]?.titre}
+                    </h2>
                     <p className="text-xs text-slate-500">
-                      Tous les documents générés par l&apos;équipe — annonces, courriers, devis, factures, compromis.
+                      Tous les documents de ce type générés par l&apos;équipe.
                     </p>
                   </div>
                   <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
-                    {docHistory.length} document{docHistory.length > 1 ? "s" : ""}
+                    {docHistoryAffiche.length} document{docHistoryAffiche.length > 1 ? "s" : ""}
                   </span>
                 </div>
-                {docHistory.length === 0 ? (
-                  <p className="text-sm text-slate-500">Aucun document généré pour le moment.</p>
+                {docHistoryAffiche.length === 0 ? (
+                  <p className="text-sm text-slate-500">
+                    {histoQt ? "Aucun document ne correspond à cette recherche." : "Aucun document de ce type pour le moment."}
+                  </p>
                 ) : (
                   <ul className="divide-y divide-slate-100">
-                    {docHistory.map((h) => (
+                    {docHistoryAffiche.map((h) => (
                       <li key={h.id} className="flex flex-wrap items-center gap-3 py-3">
                         <div className="min-w-0 flex-1">
                           <p className="truncate text-sm font-semibold text-navy">
