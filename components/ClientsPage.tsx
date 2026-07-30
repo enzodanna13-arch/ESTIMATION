@@ -180,10 +180,13 @@ async function fichierEnB64(f: File): Promise<string> {
 // ---------------------------------------------------------------------------
 export function SelecteurPiecesClient({
   categorieParDefaut,
+  precocher,
   onAjouter,
   onFermer,
 }: {
   categorieParDefaut: string;
+  /** Règle de pré-cochage des pièces (défaut : catégorie === categorieParDefaut) */
+  precocher?: (p: PieceClient) => boolean;
   onAjouter: (pieces: { nom: string; taille: number; data: string }[]) => void;
   onFermer: () => void;
 }) {
@@ -200,7 +203,8 @@ export function SelecteurPiecesClient({
 
   const ouvrir = (d: ClientDossier) => {
     setDossier(d);
-    setCoches(new Set(d.pieces.filter((p) => p.categorie === categorieParDefaut).map((p) => p.fileId)));
+    const regle = precocher ?? ((p: PieceClient) => p.categorie === categorieParDefaut);
+    setCoches(new Set(d.pieces.filter(regle).map((p) => p.fileId)));
   };
 
   const importer = async () => {

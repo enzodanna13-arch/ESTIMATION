@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { SelecteurPiecesClient } from "@/components/ClientsPage";
 import { EnTete, PiedC21 } from "@/components/PreEtatDate";
 import type { DocumentInput } from "@/lib/docTypes";
 import { getHistoryKey } from "@/lib/history";
@@ -130,16 +131,32 @@ function bufToB64(buf: ArrayBuffer): string {
   return btoa(bin);
 }
 
+function b64ToBuf(b64: string): ArrayBuffer {
+  const bin = atob(b64);
+  const bytes = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+  return bytes.buffer;
+}
+
+// Pièces pré-cochées lors de l'import depuis un dossier client
+const PRECOCHE_VENDEUR = new Set([
+  "Titre de propriété", "Mandat", "Pièce d'identité", "Diagnostics",
+  "Taxe foncière", "PV d'AG", "Appel de fonds", "Tracfin",
+]);
+const PRECOCHE_ACQUEREUR = new Set(["Pièce d'identité", "Offre d'achat"]);
+
 function ZonePieces({
   titre,
   pieces,
   setter,
   ajouter,
+  onImporter,
 }: {
   titre: string;
   pieces: Piece[];
   setter: React.Dispatch<React.SetStateAction<Piece[]>>;
   ajouter: (files: FileList | null, setter: React.Dispatch<React.SetStateAction<Piece[]>>) => Promise<void>;
+  onImporter?: () => void;
 }) {
   return (
     <div className="rounded-2xl border border-slate-200 bg-white p-4">
@@ -147,10 +164,21 @@ function ZonePieces({
         <h4 className="text-sm font-bold text-navy">{titre}</h4>
         <span className="text-xs text-slate-400">{pieces.length} PDF</span>
       </div>
-      <label className="block cursor-pointer rounded-xl border-2 border-dashed border-slate-300 p-3 text-center text-xs font-semibold text-slate-500 transition hover:border-copper hover:text-copper">
-        + Ajouter des PDF
-        <input type="file" accept="application/pdf" multiple className="hidden" onChange={(e) => { void ajouter(e.target.files, setter); e.target.value = ""; }} />
-      </label>
+      <div className={onImporter ? "grid gap-2 sm:grid-cols-2" : ""}>
+        <label className="block cursor-pointer rounded-xl border-2 border-dashed border-slate-300 p-3 text-center text-xs font-semibold text-slate-500 transition hover:border-copper hover:text-copper">
+          + Ajouter des PDF
+          <input type="file" accept="application/pdf" multiple className="hidden" onChange={(e) => { void ajouter(e.target.files, setter); e.target.value = ""; }} />
+        </label>
+        {onImporter && (
+          <button
+            type="button"
+            onClick={onImporter}
+            className="rounded-xl border-2 border-dashed border-copper/60 p-3 text-center text-xs font-semibold text-copper transition hover:border-copper hover:bg-copper-soft/30"
+          >
+            📁 Importer du dossier client
+          </button>
+        )}
+      </div>
       {pieces.length > 0 && (
         <ul className="mt-2 space-y-1">
           {pieces.map((p, i) => (
@@ -181,6 +209,8 @@ export default function CompromisPage({
   const [mode, setMode] = useState<"saisie" | "apercu">(dejaRempli ? "apercu" : "saisie");
   const [piecesVendeur, setPiecesVendeur] = useState<Piece[]>([]);
   const [piecesAcquereur, setPiecesAcquereur] = useState<Piece[]>([]);
+  // Import de pièces depuis un dossier client : cible en cours (ou null)
+  const [importPour, setImportPour] = useState<"vendeur" | "acquereur" | null>(null);
   const [fusionEnCours, setFusionEnCours] = useState(false);
   const [fusionErreur, setFusionErreur] = useState<string | null>(null);
   const [iaEnCours, setIaEnCours] = useState(false);
@@ -202,6 +232,21 @@ export default function CompromisPage({
       setter((prev) => [...prev, { nom: f.name, taille: f.size, data }]);
     }
   };
+
+  // Panneau d'import depuis un dossier client (vendeur ou acquéreur)
+  const panneauImport = importPour && (
+    <div className="sm:col-span-2">
+      <SelecteurPiecesClient
+        categorieParDefaut={importPour === "vendeur" ? "Titre de propriété" : "Pièce d'identité"}
+        precocher={(p) => (importPour === "vendeur" ? PRECOCHE_VENDEUR : PRECOCHE_ACQUEREUR).has(p.categorie)}
+        onAjouter={(pieces) => {
+          const setter = importPour === "vendeur" ? setPiecesVendeur : setPiecesAcquereur;
+          setter((prev) => [...prev, ...pieces.map((p) => ({ nom: p.nom, taille: p.taille, data: b64ToBuf(p.data) }))]);
+        }}
+        onFermer={() => setImportPour(null)}
+      />
+    </div>
+  );
 
   // ---- Pré-remplissage des champs par l'IA à partir des pièces PDF ----
   const preRemplir = async () => {
@@ -519,8 +564,9 @@ export default function CompromisPage({
         </div>
 
         <div className="mb-4 grid gap-4 sm:grid-cols-2">
-          <ZonePieces titre="1️⃣ Pièces du dossier VENDEUR (PDF)" pieces={piecesVendeur} setter={setPiecesVendeur} ajouter={ajouterPieces} />
-          <ZonePieces titre="1️⃣ Pièces du dossier ACQUÉREUR (PDF)" pieces={piecesAcquereur} setter={setPiecesAcquereur} ajouter={ajouterPieces} />
+          <ZonePieces titre="1️⃣ Pièces du dossier VENDEUR (PDF)" pieces={piecesVendeur} setter={setPiecesVendeur} ajouter={ajouterPieces} onImporter={() => setImportPour("vendeur")} />
+          <ZonePieces titre="1️⃣ Pièces du dossier ACQUÉREUR (PDF)" pieces={piecesAcquereur} setter={setPiecesAcquereur} ajouter={ajouterPieces} onImporter={() => setImportPour("acquereur")} />
+          {panneauImport}
           <div className="flex flex-wrap items-center gap-3 sm:col-span-2">
             <button
               type="button"
@@ -796,8 +842,9 @@ export default function CompromisPage({
       </div>
 
       <div className="mb-4 grid gap-4 sm:grid-cols-2 print:hidden">
-        <ZonePieces titre="Pièces du dossier VENDEUR" pieces={piecesVendeur} setter={setPiecesVendeur} ajouter={ajouterPieces} />
-        <ZonePieces titre="Pièces du dossier ACQUÉREUR" pieces={piecesAcquereur} setter={setPiecesAcquereur} ajouter={ajouterPieces} />
+        <ZonePieces titre="Pièces du dossier VENDEUR" pieces={piecesVendeur} setter={setPiecesVendeur} ajouter={ajouterPieces} onImporter={() => setImportPour("vendeur")} />
+        <ZonePieces titre="Pièces du dossier ACQUÉREUR" pieces={piecesAcquereur} setter={setPiecesAcquereur} ajouter={ajouterPieces} onImporter={() => setImportPour("acquereur")} />
+        {panneauImport}
         <p className="text-xs text-slate-500 sm:col-span-2">
           Le « dossier complet » = la lettre ci-dessous + une page de garde « Pièces du dossier vendeur » suivie
           de tous ses PDF, puis « Pièces du dossier acquéreur » et les siens — en un seul fichier PDF, prêt à
