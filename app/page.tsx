@@ -814,14 +814,14 @@ export default function Home() {
                   onClick={() => setUnivers("visites")}
                   className="group rounded-3xl border-2 border-slate-200 bg-white p-8 text-left shadow-sm transition hover:border-copper hover:shadow-lg"
                 >
-                  <div className="mb-3 text-4xl">🎥</div>
-                  <div className="text-xl font-bold text-navy">Visites virtuelles</div>
+                  <div className="mb-3 text-4xl">🎬</div>
+                  <div className="text-xl font-bold text-navy">Montage vidéo</div>
                   <p className="mt-1 text-sm text-slate-500">
-                    Déposez vos prises de vue Insta360 (photos 360°) — la visite navigable
-                    se génère automatiquement, avec un lien à envoyer aux clients.
+                    Visite virtuelle 360° (Insta360) avec lien de partage, ou montage vidéo
+                    classique du bien à partir des photos — prêt pour vos Reels.
                   </p>
                   <span className="mt-4 inline-block rounded-lg bg-copper px-4 py-2 text-sm font-semibold text-white transition group-hover:brightness-110">
-                    Ouvrir les visites →
+                    Ouvrir le montage vidéo →
                   </span>
                 </button>
                 <button

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import MontageVideo from "@/components/MontageVideo";
 import Visite360 from "@/components/Visite360";
 import {
   addVisiteScene,
@@ -84,6 +85,7 @@ async function telechargerVisiteHtml(v: VisiteVirtuelle): Promise<void> {
 }
 
 export default function VisitesPage({ onRetour }: { onRetour: () => void }) {
+  const [mode, setMode] = useState<"virtuelle" | "montage">("virtuelle");
   const [visites, setVisites] = useState<VisiteVirtuelle[] | null>(null);
   const [ouverte, setOuverte] = useState<VisiteVirtuelle | null>(null);
   const [creation, setCreation] = useState(false);
@@ -168,6 +170,37 @@ export default function VisitesPage({ onRetour }: { onRetour: () => void }) {
       /* presse-papiers indisponible */
     }
   };
+
+  // Barre d'onglets : visite virtuelle 360° ↔ montage vidéo classique
+  const Onglets = () => (
+    <div className="mb-4 flex gap-2">
+      <button onClick={() => setMode("virtuelle")} className={`rounded-full px-4 py-1.5 text-sm font-bold transition ${mode === "virtuelle" ? "bg-navy text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`}>
+        🌐 Visite virtuelle 360°
+      </button>
+      <button onClick={() => { setMode("montage"); setOuverte(null); }} className={`rounded-full px-4 py-1.5 text-sm font-bold transition ${mode === "montage" ? "bg-navy text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`}>
+        🎬 Montage vidéo (réseaux sociaux)
+      </button>
+    </div>
+  );
+
+  // ---------- Montage vidéo classique ----------
+  if (mode === "montage") {
+    return (
+      <div>
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2 className="text-2xl font-bold text-navy">🎬 Montage vidéo</h2>
+            <p className="text-sm text-slate-500">Une vidéo animée du bien à partir des photos — pour vos Reels et posts, sans visite 360°.</p>
+          </div>
+          <button onClick={onRetour} className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-600 transition hover:bg-slate-100">
+            ← Accueil
+          </button>
+        </div>
+        <Onglets />
+        <MontageVideo />
+      </div>
+    );
+  }
 
   // ---------- Vue d'une visite ----------
   if (ouverte) {
@@ -269,8 +302,8 @@ export default function VisitesPage({ onRetour }: { onRetour: () => void }) {
     <div>
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 className="text-2xl font-bold text-navy">🎥 Visites virtuelles</h2>
-          <p className="text-sm text-slate-500">Déposez vos prises de vue Insta360 — la visite 360° se génère automatiquement, avec un lien à envoyer aux clients.</p>
+          <h2 className="text-2xl font-bold text-navy">🎬 Montage vidéo</h2>
+          <p className="text-sm text-slate-500">Visite virtuelle 360° (prises de vue Insta360) ou montage vidéo classique du bien pour les réseaux sociaux.</p>
         </div>
         <div className="flex items-center gap-2">
           <button onClick={onRetour} className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-600 transition hover:bg-slate-100">
@@ -281,6 +314,7 @@ export default function VisitesPage({ onRetour }: { onRetour: () => void }) {
           </button>
         </div>
       </div>
+      <Onglets />
 
       {creation && (
         <div className="mb-4 grid gap-3 rounded-2xl border border-copper/40 bg-copper-soft/30 p-4 sm:grid-cols-3">
