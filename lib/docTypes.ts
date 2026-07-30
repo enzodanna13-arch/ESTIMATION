@@ -153,6 +153,17 @@ export interface DocumentInput {
   instructionsIA?: string;
 }
 
+// Catégories des pièces d'un dossier client (partagées client/serveur)
+export const CATEGORIES_PIECES = [
+  "Compte rendu de visite",
+  "Mandat",
+  "Pièce d'identité",
+  "Diagnostics",
+  "Taxe foncière",
+  "Offre d'achat",
+  "Autre",
+] as const;
+
 export interface DocumentBloc {
   titre?: string;
   texte?: string; // paragraphes séparés par \n

@@ -5,6 +5,7 @@ import ComparablesEditor from "@/components/ComparablesEditor";
 import DocumentPage from "@/components/DocumentPage";
 import Report from "@/components/Report";
 import { DOC_LABELS, type DocType, type DocumentInput, type DocumentResult } from "@/lib/docTypes";
+import ClientsPage, { SelecteurPiecesClient } from "@/components/ClientsPage";
 import { deleteDocument, deleteEstimation, getDocument, getEstimation, getHistoryKey, HistoryLockedError, listDocuments, listEstimations, saveDocument, setHistoryKey, type DocHistoryMeta, type HistoryMeta } from "@/lib/history";
 import { loyerNetAnnuel, prixParRendement, RENDEMENT_NET_BAS, RENDEMENT_NET_HAUT } from "@/lib/rendement";
 import { surfaceDependancesHabitables, surfaceHabitableTotale } from "@/lib/surfaces";
@@ -224,7 +225,7 @@ export default function Home() {
   const [step, setStep] = useState(0);
   // Accueil à deux univers : Estimation (les 4 missions) et Génération de
   // documents (menu des documents de l'agence)
-  const [univers, setUnivers] = useState<"" | "estimation" | "documents">("");
+  const [univers, setUnivers] = useState<"" | "estimation" | "documents" | "clients">("");
   // Génération de documents : type choisi, saisie et résultat
   const [docType, setDocType] = useState<DocType | "">("");
   const [docInput, setDocInput] = useState<DocumentInput>({
@@ -250,6 +251,7 @@ export default function Home() {
   // Bilan de commercialisation : comptes rendus de visite téléversés en PDF
   // (lus par l'IA à la génération, jamais stockés)
   const [bilanPdfs, setBilanPdfs] = useState<{ nom: string; taille: number; data: string }[]>([]);
+  const [bilanImportOuvert, setBilanImportOuvert] = useState(false);
   const ajouterBilanPdfs = async (files: FileList | null) => {
     if (!files) return;
     for (const f of Array.from(files)) {
@@ -669,8 +671,10 @@ export default function Home() {
           />
         ) : (
           <>
+            {univers === "clients" && <ClientsPage onRetour={() => setUnivers("")} />}
+
             {univers === "" && (
-              <div className="mb-8 grid gap-4 sm:grid-cols-2 print:hidden">
+              <div className="mb-8 grid gap-4 sm:grid-cols-3 print:hidden">
                 <button
                   type="button"
                   onClick={() => setUnivers("estimation")}
@@ -699,6 +703,21 @@ export default function Home() {
                   </p>
                   <span className="mt-4 inline-block rounded-lg bg-copper px-4 py-2 text-sm font-semibold text-white transition group-hover:brightness-110">
                     Choisir un document →
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setUnivers("clients")}
+                  className="group rounded-3xl border-2 border-slate-200 bg-white p-8 text-left shadow-sm transition hover:border-copper hover:shadow-lg"
+                >
+                  <div className="mb-3 text-4xl">📁</div>
+                  <div className="text-xl font-bold text-navy">Dossiers clients</div>
+                  <p className="mt-1 text-sm text-slate-500">
+                    Toutes les pièces PDF de vos clients au même endroit : comptes rendus,
+                    mandat, diagnostics… avec recherche, et réutilisables dans les documents.
+                  </p>
+                  <span className="mt-4 inline-block rounded-lg bg-navy px-4 py-2 text-sm font-semibold text-white transition group-hover:bg-navy-deep">
+                    Ouvrir les dossiers →
                   </span>
                 </button>
               </div>
@@ -1456,16 +1475,34 @@ export default function Home() {
                             Comptes rendus de visite en PDF * — l&apos;IA les lit, les analyse et rédige la conclusion
                           </span>
                           <div className="rounded-2xl border border-slate-200 bg-white p-4">
-                            <label className="block cursor-pointer rounded-xl border-2 border-dashed border-slate-300 p-3 text-center text-xs font-semibold text-slate-500 transition hover:border-copper hover:text-copper">
-                              + Ajouter les comptes rendus (PDF)
-                              <input
-                                type="file"
-                                accept="application/pdf"
-                                multiple
-                                className="hidden"
-                                onChange={(e) => { void ajouterBilanPdfs(e.target.files); e.target.value = ""; }}
-                              />
-                            </label>
+                            <div className="grid gap-2 sm:grid-cols-2">
+                              <label className="block cursor-pointer rounded-xl border-2 border-dashed border-slate-300 p-3 text-center text-xs font-semibold text-slate-500 transition hover:border-copper hover:text-copper">
+                                + Ajouter les comptes rendus (PDF)
+                                <input
+                                  type="file"
+                                  accept="application/pdf"
+                                  multiple
+                                  className="hidden"
+                                  onChange={(e) => { void ajouterBilanPdfs(e.target.files); e.target.value = ""; }}
+                                />
+                              </label>
+                              <button
+                                type="button"
+                                onClick={() => setBilanImportOuvert(!bilanImportOuvert)}
+                                className="rounded-xl border-2 border-dashed border-copper/60 p-3 text-center text-xs font-semibold text-copper transition hover:border-copper hover:bg-copper-soft/30"
+                              >
+                                📁 Importer depuis un dossier client
+                              </button>
+                            </div>
+                            {bilanImportOuvert && (
+                              <div className="mt-3">
+                                <SelecteurPiecesClient
+                                  categorieParDefaut="Compte rendu de visite"
+                                  onAjouter={(pieces) => setBilanPdfs((prev) => [...prev, ...pieces])}
+                                  onFermer={() => setBilanImportOuvert(false)}
+                                />
+                              </div>
+                            )}
                             {bilanPdfs.length > 0 && (
                               <ul className="mt-2 space-y-1">
                                 {bilanPdfs.map((p, i) => (
