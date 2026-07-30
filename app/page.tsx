@@ -489,6 +489,7 @@ export default function Home() {
     if (docType === "crv") return docInput.clientNom ?? "";
     if (docType === "prospection") return docInput.cible || (docInput.contexte ?? "").slice(0, 50);
     if (docType === "bilan") return [docInput.clientNom, docInput.bilanPeriode].filter(Boolean).join(" — ");
+    if (docType === "bonvisite") return [docInput.bvAcquereur, docInput.bvBien].filter(Boolean).join(" — ");
     if (docType === "preetatdate") return `Dossier ${docInput.nomDossier ?? ""} — ${docInput.copropriete ?? ""}`;
     if (docType === "facture") return `${docInput.factureNumero ?? ""} — ${docInput.factureClientNom ?? ""}`;
     if (docType === "compromis") return docInput.compromisObjetBien ?? "";
@@ -520,6 +521,12 @@ export default function Home() {
     if (docType === "prospection") {
       if (!docInput.contexte?.trim()) return "Décrivez le contexte de la prospection (bien repéré, vente récente…).";
     }
+    if (docType === "bonvisite") {
+      if (!docInput.bvBien?.trim()) return "Renseignez le bien concerné.";
+      if (!docInput.bvMandat?.trim()) return "Renseignez le numéro du mandat.";
+      if (!docInput.bvAcquereur?.trim()) return "Renseignez le nom et prénom du client acquéreur.";
+      if (!docInput.bvVendeur?.trim()) return "Renseignez le nom et prénom du vendeur.";
+    }
     if (docType === "bilan") {
       if (!docInput.clientNom?.trim()) return "Renseignez le propriétaire destinataire du bilan.";
       if (bilanPdfs.length === 0 && !docInput.bilanNbVisites && !docInput.bilanComptesRendus?.trim())
@@ -546,8 +553,8 @@ export default function Home() {
       setError(invalid);
       return;
     }
-    // Modèles fixes (devis pré-état daté, facture) : générés sans IA
-    if (docType === "preetatdate" || docType === "facture") {
+    // Modèles fixes (devis pré-état daté, facture, bon de visite) : sans IA
+    if (docType === "preetatdate" || docType === "facture" || docType === "bonvisite") {
       setError(null);
       const docFixe = { titre: DOC_LABELS[docType].titre, objet: "", blocs: [] };
       setDocResult(docFixe);
@@ -1396,14 +1403,6 @@ export default function Home() {
                           <div className="mt-0.5 text-xs text-slate-500">{DOC_LABELS[t].description}</div>
                         </button>
                       ))}
-                      <div className="relative rounded-2xl border-2 border-dashed border-slate-200 bg-white p-4 text-left opacity-75">
-                        <span className="absolute right-3 top-3 rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-slate-500">
-                          Bientôt
-                        </span>
-                        <div className="mb-1 text-2xl">📝</div>
-                        <div className="text-sm font-bold text-navy">Bon de visite</div>
-                        <div className="mt-0.5 text-xs text-slate-500">Bon de visite à faire signer avant chaque visite</div>
-                      </div>
                     </div>
                   </>
                 )}
@@ -1469,6 +1468,32 @@ export default function Home() {
                         <Field label="Suite envisagée">
                           <input className={inputCls} value={docInput.suite ?? ""} onChange={(e) => setD("suite", e.target.value)} placeholder="Souhaite une seconde visite avec ses parents / réfléchit / abandon" />
                         </Field>
+                      </div>
+                    )}
+
+                    {docType === "bonvisite" && (
+                      <div className="mb-4 grid gap-4 sm:grid-cols-2">
+                        <Field label="Bien concerné (adresse / description) *" className="sm:col-span-2">
+                          <input className={inputCls} value={docInput.bvBien ?? ""} onChange={(e) => setD("bvBien", e.target.value)} placeholder="Appartement T3 — 12 quai Brescon, 13500 Martigues" />
+                        </Field>
+                        <Field label="Numéro du mandat *">
+                          <input className={inputCls} value={docInput.bvMandat ?? ""} onChange={(e) => setD("bvMandat", e.target.value)} placeholder="4521" />
+                        </Field>
+                        <Field label="Date de la visite">
+                          <input className={inputCls} value={docInput.dateVisite ?? ""} onChange={(e) => setD("dateVisite", e.target.value)} placeholder="le 30 juillet 2026 à 15 h" />
+                        </Field>
+                        <Field label="Client acquéreur — nom et prénom *">
+                          <input className={inputCls} value={docInput.bvAcquereur ?? ""} onChange={(e) => setD("bvAcquereur", e.target.value)} placeholder="Madame Marie-Christine CASQUEL" />
+                        </Field>
+                        <Field label="Vendeur — nom et prénom *">
+                          <input className={inputCls} value={docInput.bvVendeur ?? ""} onChange={(e) => setD("bvVendeur", e.target.value)} placeholder="Monsieur Patrice VELLA" />
+                        </Field>
+                        <div className="rounded-xl border border-copper/40 bg-copper-soft/40 p-3 text-xs text-slate-600 sm:col-span-2">
+                          <b className="text-navy">Textes de loi inclus automatiquement :</b> engagement du visiteur
+                          envers l&apos;agence, références à la loi Hoguet (n° 70-9 du 2 janvier 1970) et son décret
+                          d&apos;application, article 1240 du Code civil, et mention que le bon ne constitue pas un
+                          mandat. Généré instantanément, sans IA.
+                        </div>
                       </div>
                     )}
 

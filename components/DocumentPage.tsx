@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import BonVisite from "@/components/BonVisite";
 import CompromisPage from "@/components/CompromisPage";
 import FactureCommission from "@/components/FactureCommission";
 import PreEtatDate from "@/components/PreEtatDate";
@@ -64,6 +65,11 @@ export default function DocumentPage({
   // Facture de commission : modèle fixe de l'agence (RIB figé) — sans IA
   if (input.docType === "facture") {
     return <FactureCommission input={input} onReset={onReset} />;
+  }
+
+  // Bon de visite : texte légal fixe (loi Hoguet, art. 1240 C. civ.) — sans IA
+  if (input.docType === "bonvisite") {
+    return <BonVisite input={input} onReset={onReset} />;
   }
 
   // Demande de compromis : lettre + fusion des pièces PDF — sans IA

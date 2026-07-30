@@ -1,6 +1,6 @@
 // Génération de documents : types partagés client/serveur
 
-export type DocType = "annonce" | "crv" | "prospection" | "bilan" | "preetatdate" | "facture" | "compromis";
+export type DocType = "annonce" | "crv" | "prospection" | "bilan" | "bonvisite" | "preetatdate" | "facture" | "compromis";
 
 export const DOC_LABELS: Record<DocType, { titre: string; icone: string; description: string }> = {
   annonce: {
@@ -22,6 +22,11 @@ export const DOC_LABELS: Record<DocType, { titre: string; icone: string; descrip
     titre: "Bilan de commercialisation",
     icone: "📈",
     description: "Point client des 3 semaines : visites, retours, recommandations et prix conseillé",
+  },
+  bonvisite: {
+    titre: "Bon de visite",
+    icone: "📝",
+    description: "Reconnaissance de visite signée par l'acquéreur — textes de loi inclus, sans IA",
   },
   preetatdate: {
     titre: "Devis pré-état daté",
@@ -69,6 +74,11 @@ export interface DocumentInput {
   // Courrier de prospection
   cible?: string; // destinataire (propriétaire du 12 rue X, habitants du quartier…)
   contexte?: string; // pige : annonce PAP repérée, vente récente dans la rue…
+  // Bon de visite (généré sans IA — texte légal fixe)
+  bvBien?: string; // bien concerné (adresse / description)
+  bvMandat?: string; // numéro du mandat
+  bvAcquereur?: string; // nom et prénom du client acquéreur
+  bvVendeur?: string; // nom et prénom du vendeur
   // Bilan de commercialisation (point client toutes les 3 semaines)
   bilanDebut?: string; // date de mise en commercialisation
   bilanPeriode?: string; // période couverte (ex. « du 8 au 29 juillet 2026 »)
