@@ -112,9 +112,12 @@ export default function BonVisite({ input, onReset }: { input: DocumentInput; on
   const dateStr = new Date().toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });
   const dateVisite = input.dateVisite?.trim() || `le ${dateStr}`;
   const acquereur = input.bvAcquereur || "……………………………………";
-  const vendeur = input.bvVendeur || "……………………………………";
-  const mandat = input.bvMandat || "…………";
-  const bien = input.bvBien || "……………………………………………………";
+  // Un ou plusieurs biens visités (repli sur les anciens champs mono-bien)
+  const biensSaisis = (input.bvBiens ?? []).filter((b) => b.bien?.trim() || b.mandat?.trim() || b.vendeur?.trim());
+  const biens = biensSaisis.length
+    ? biensSaisis
+    : [{ bien: input.bvBien || "……………………………………………………", mandat: input.bvMandat || "…………", vendeur: input.bvVendeur || "……………………………………" }];
+  const multi = biens.length > 1;
 
   return (
     <div>
@@ -139,13 +142,10 @@ export default function BonVisite({ input, onReset }: { input: DocumentInput; on
             <div style={{ fontSize: "10pt", color: "#555", marginTop: 2 }}>Reconnaissance de visite — Martigues, le {dateStr}</div>
           </div>
 
-          {/* Cadre récapitulatif */}
+          {/* Récapitulatif acquéreur + date */}
           <table style={{ width: "100%", borderCollapse: "collapse", marginTop: 10, fontFamily: SANS, fontSize: "10.5pt" }}>
             <tbody>
               {[
-                ["Bien concerné", bien],
-                ["Mandat", `N° ${mandat}`],
-                ["Vendeur", vendeur],
                 ["Client acquéreur (visiteur)", acquereur],
                 ["Date de la visite", dateVisite],
               ].map(([k, v]) => (
@@ -157,16 +157,43 @@ export default function BonVisite({ input, onReset }: { input: DocumentInput; on
             </tbody>
           </table>
 
+          {/* Tableau du/des bien(s) visité(s) */}
+          <div style={{ fontFamily: SANS, fontWeight: 700, fontSize: "9.5pt", marginTop: 10, marginBottom: 3 }}>
+            {multi ? `Bien(s) visité(s) — ${biens.length}` : "Bien visité"}
+          </div>
+          <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: SANS, fontSize: "10pt" }}>
+            <thead>
+              <tr>
+                {multi && <th style={{ border: "1px solid #000", padding: "3px 6px", width: "6%", fontWeight: 700 }}>N°</th>}
+                <th style={{ border: "1px solid #000", padding: "3px 8px", textAlign: "left", fontWeight: 700 }}>Bien concerné</th>
+                <th style={{ border: "1px solid #000", padding: "3px 8px", width: "16%", fontWeight: 700 }}>Mandat</th>
+                <th style={{ border: "1px solid #000", padding: "3px 8px", width: "26%", textAlign: "left", fontWeight: 700 }}>Vendeur</th>
+              </tr>
+            </thead>
+            <tbody>
+              {biens.map((b, i) => (
+                <tr key={i}>
+                  {multi && <td style={{ border: "1px solid #000", padding: "3px 6px", textAlign: "center" }}>{i + 1}</td>}
+                  <td style={{ border: "1px solid #000", padding: "3px 8px" }}>{b.bien || "—"}</td>
+                  <td style={{ border: "1px solid #000", padding: "3px 8px" }}>N° {b.mandat || "…"}</td>
+                  <td style={{ border: "1px solid #000", padding: "3px 8px" }}>{b.vendeur || "—"}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+
           {/* Engagement du visiteur */}
           <div style={{ marginTop: 10, textAlign: "justify" }}>
             <p style={{ marginBottom: 8 }}>
-              Je soussigné(e) <b>{acquereur}</b>, reconnais avoir visité {dateVisite}, par l&rsquo;intermédiaire du
-              cabinet <b>CENTURY 21 Icaza Immobilier</b>, le bien désigné ci-dessus, proposé à la vente en vertu du
-              mandat n°&nbsp;<b>{mandat}</b> confié par <b>{vendeur}</b>.
+              Je soussigné(e) <b>{acquereur}</b>,{" "}
+              {multi
+                ? `reconnais avoir visité ${dateVisite}, par l’intermédiaire du cabinet CENTURY 21 Icaza Immobilier, les biens désignés ci-dessus, proposés à la vente en vertu des mandats correspondants confiés par leur(s) propriétaire(s) respectif(s).`
+                : `reconnais avoir visité ${dateVisite}, par l’intermédiaire du cabinet CENTURY 21 Icaza Immobilier, le bien désigné ci-dessus, proposé à la vente en vertu du mandat n° ${biens[0].mandat} confié par ${biens[0].vendeur}.`}
             </p>
             <p style={{ marginBottom: 6 }}>
-              Je reconnais que ce bien m&rsquo;a été présenté par l&rsquo;entremise du cabinet CENTURY 21 Icaza
-              Immobilier et je m&rsquo;engage en conséquence :
+              {multi
+                ? "Je reconnais que ces biens m’ont été présentés par l’entremise du cabinet CENTURY 21 Icaza Immobilier et je m’engage en conséquence, pour chacun d’eux :"
+                : "Je reconnais que ce bien m’a été présenté par l’entremise du cabinet CENTURY 21 Icaza Immobilier et je m’engage en conséquence :"}
             </p>
             <ul style={{ paddingLeft: 20, marginBottom: 8 }}>
               <li style={{ marginBottom: 3 }}>

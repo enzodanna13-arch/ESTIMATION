@@ -80,10 +80,11 @@ export interface DocumentInput {
   cible?: string; // destinataire (propriétaire du 12 rue X, habitants du quartier…)
   contexte?: string; // pige : annonce PAP repérée, vente récente dans la rue…
   // Bon de visite (généré sans IA — texte légal fixe)
-  bvBien?: string; // bien concerné (adresse / description)
-  bvMandat?: string; // numéro du mandat
-  bvAcquereur?: string; // nom et prénom du client acquéreur
-  bvVendeur?: string; // nom et prénom du vendeur
+  bvBien?: string; // bien concerné (adresse / description) — repli mono-bien
+  bvMandat?: string; // numéro du mandat — repli mono-bien
+  bvVendeur?: string; // nom et prénom du vendeur — repli mono-bien
+  bvBiens?: { bien: string; mandat: string; vendeur: string }[]; // plusieurs biens visités
+  bvAcquereur?: string; // nom et prénom du client acquéreur (commun à tous)
   // Bilan de commercialisation (point client toutes les 3 semaines)
   bilanDebut?: string; // date de mise en commercialisation
   bilanPeriode?: string; // période couverte (ex. « du 8 au 29 juillet 2026 »)

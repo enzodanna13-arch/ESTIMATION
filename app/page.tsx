@@ -567,10 +567,9 @@ export default function Home() {
       if (!docInput.contexte?.trim()) return "Décrivez le contexte de la prospection (bien repéré, vente récente…).";
     }
     if (docType === "bonvisite") {
-      if (!docInput.bvBien?.trim()) return "Renseignez le bien concerné.";
-      if (!docInput.bvMandat?.trim()) return "Renseignez le numéro du mandat.";
       if (!docInput.bvAcquereur?.trim()) return "Renseignez le nom et prénom du client acquéreur.";
-      if (!docInput.bvVendeur?.trim()) return "Renseignez le nom et prénom du vendeur.";
+      const biens = docInput.bvBiens?.length ? docInput.bvBiens : [{ bien: docInput.bvBien ?? "", mandat: docInput.bvMandat ?? "", vendeur: docInput.bvVendeur ?? "" }];
+      if (!biens.some((b) => b.bien?.trim())) return "Renseignez au moins un bien visité (adresse / description).";
     }
     if (docType === "bilan") {
       if (!docInput.clientNom?.trim()) return "Renseignez le propriétaire destinataire du bilan.";
@@ -1614,27 +1613,51 @@ export default function Home() {
                     )}
 
                     {docType === "bonvisite" && (
-                      <div className="mb-4 grid gap-4 sm:grid-cols-2">
-                        <Field label="Bien concerné (adresse / description) *" className="sm:col-span-2">
-                          <input className={inputCls} value={docInput.bvBien ?? ""} onChange={(e) => setD("bvBien", e.target.value)} placeholder="Appartement T3 — 12 quai Brescon, 13500 Martigues" />
-                        </Field>
-                        <Field label="Numéro du mandat *">
-                          <input className={inputCls} value={docInput.bvMandat ?? ""} onChange={(e) => setD("bvMandat", e.target.value)} placeholder="4521" />
-                        </Field>
-                        <Field label="Date de la visite">
-                          <input className={inputCls} value={docInput.dateVisite ?? ""} onChange={(e) => setD("dateVisite", e.target.value)} placeholder="le 30 juillet 2026 à 15 h" />
-                        </Field>
-                        <Field label="Client acquéreur — nom et prénom *">
-                          <input className={inputCls} value={docInput.bvAcquereur ?? ""} onChange={(e) => setD("bvAcquereur", e.target.value)} placeholder="Madame Marie-Christine CASQUEL" />
-                        </Field>
-                        <Field label="Vendeur — nom et prénom *">
-                          <input className={inputCls} value={docInput.bvVendeur ?? ""} onChange={(e) => setD("bvVendeur", e.target.value)} placeholder="Monsieur Patrice VELLA" />
-                        </Field>
-                        <div className="rounded-xl border border-copper/40 bg-copper-soft/40 p-3 text-xs text-slate-600 sm:col-span-2">
+                      <div className="mb-4">
+                        <div className="grid gap-4 sm:grid-cols-2">
+                          <Field label="Client acquéreur — nom et prénom *">
+                            <input className={inputCls} value={docInput.bvAcquereur ?? ""} onChange={(e) => setD("bvAcquereur", e.target.value)} placeholder="Madame Marie-Christine CASQUEL" />
+                          </Field>
+                          <Field label="Date de la visite">
+                            <input className={inputCls} value={docInput.dateVisite ?? ""} onChange={(e) => setD("dateVisite", e.target.value)} placeholder="le 30 juillet 2026" />
+                          </Field>
+                        </div>
+
+                        {(() => {
+                          const biens = docInput.bvBiens?.length
+                            ? docInput.bvBiens
+                            : [{ bien: docInput.bvBien ?? "", mandat: docInput.bvMandat ?? "", vendeur: docInput.bvVendeur ?? "" }];
+                          const setBiens = (next: { bien: string; mandat: string; vendeur: string }[]) =>
+                            setDocInput((prev) => ({ ...prev, bvBiens: next, bvBien: next[0]?.bien ?? "", bvMandat: next[0]?.mandat ?? "", bvVendeur: next[0]?.vendeur ?? "" }));
+                          return (
+                            <div className="mt-4">
+                              <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">Bien(s) visité(s) avec cet acquéreur *</span>
+                              <div className="space-y-2">
+                                {biens.map((b, i) => (
+                                  <div key={i} className="grid gap-2 sm:grid-cols-[1fr_130px_1fr_auto]">
+                                    <input className={inputCls} value={b.bien} onChange={(e) => setBiens(biens.map((x, j) => (j === i ? { ...x, bien: e.target.value } : x)))} placeholder={`Bien ${i + 1} — T3, 12 quai Brescon, Martigues`} />
+                                    <input className={inputCls} value={b.mandat} onChange={(e) => setBiens(biens.map((x, j) => (j === i ? { ...x, mandat: e.target.value } : x)))} placeholder="Mandat n° 4521" />
+                                    <input className={inputCls} value={b.vendeur} onChange={(e) => setBiens(biens.map((x, j) => (j === i ? { ...x, vendeur: e.target.value } : x)))} placeholder="Vendeur — M. VELLA" />
+                                    {biens.length > 1 && (
+                                      <button type="button" onClick={() => setBiens(biens.filter((_, j) => j !== i))} className="rounded-lg border border-slate-300 px-2.5 text-xs text-slate-500 hover:bg-slate-100" aria-label="Retirer ce bien">✕</button>
+                                    )}
+                                  </div>
+                                ))}
+                              </div>
+                              {biens.length < 12 && (
+                                <button type="button" onClick={() => setBiens([...biens, { bien: "", mandat: "", vendeur: "" }])} className="mt-2 rounded-lg border border-dashed border-copper px-3 py-1.5 text-xs font-semibold text-copper transition hover:bg-copper-soft/40">
+                                  + Ajouter un bien visité
+                                </button>
+                              )}
+                            </div>
+                          );
+                        })()}
+
+                        <div className="mt-4 rounded-xl border border-copper/40 bg-copper-soft/40 p-3 text-xs text-slate-600">
                           <b className="text-navy">Textes de loi inclus automatiquement :</b> engagement du visiteur
-                          envers l&apos;agence, références à la loi Hoguet (n° 70-9 du 2 janvier 1970) et son décret
-                          d&apos;application, article 1240 du Code civil, et mention que le bon ne constitue pas un
-                          mandat. Généré instantanément, sans IA.
+                          envers l&apos;agence pour <b>chaque bien</b> listé, références à la loi Hoguet (n° 70-9 du
+                          2 janvier 1970) et son décret d&apos;application, article 1240 du Code civil, et mention que le
+                          bon ne constitue pas un mandat. Généré instantanément, sans IA.
                         </div>
                       </div>
                     )}
