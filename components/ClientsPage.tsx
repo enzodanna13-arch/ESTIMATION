@@ -27,6 +27,7 @@ const dateFr = (t: number) => new Date(t).toLocaleDateString("fr-FR");
 
 const CATEGORIE_COULEURS: Record<string, string> = {
   "Compte rendu de visite": "bg-copper-soft/60 text-copper",
+  "Titre de propriété": "bg-emerald-50 text-emerald-700",
   Mandat: "bg-blue-50 text-blue-700",
   "Pièce d'identité": "bg-violet-50 text-violet-700",
   Tracfin: "bg-red-50 text-red-700",
@@ -149,8 +150,8 @@ async function telechargerRapportPdf(dossiers: ClientDossier[]): Promise<void> {
       y -= 8;
     }
   }
-  ligne("Pièces attendues pour un dossier complet : mandat, pièce d'identité, Tracfin, diagnostics,", { size: 8, couleur: gris, gap: 0 });
-  ligne("taxe foncière, bon de visite — et, pour un bien en copropriété, PV d'AG et appel de fonds.", { size: 8, couleur: gris });
+  ligne("Documents obligatoires pour un dossier complet : titre de propriété, pièce d'identité,", { size: 8, couleur: gris, gap: 0 });
+  ligne("mandat, diagnostics, Tracfin.", { size: 8, couleur: gris });
 
   if (imgBandeau) {
     for (const pg of pages) pg.drawImage(imgBandeau, { x: 14, y: 20, width: 512, height: 56 });
@@ -411,9 +412,9 @@ export default function ClientsPage({ onRetour }: { onRetour: () => void }) {
                   );
                 })}
               </div>
-              {manquantes.some((m) => m.copro) && (
-                <p className="mt-2 text-xs text-slate-500">PV d&apos;AG et appel de fonds ne sont attendus que pour un bien en copropriété.</p>
-              )}
+              <p className="mt-2 text-xs text-slate-500">
+                Documents obligatoires : titre de propriété, pièce d&apos;identité, mandat, diagnostics, Tracfin.
+              </p>
             </div>
           );
         })()}
@@ -538,7 +539,7 @@ export default function ClientsPage({ onRetour }: { onRetour: () => void }) {
             </ul>
           )}
           <p className="mt-3 text-xs text-slate-400">
-            Pièces attendues : mandat, pièce d&apos;identité, Tracfin, diagnostics, taxe foncière, bon de visite — et, en copropriété, PV d&apos;AG et appel de fonds.
+            Documents obligatoires : titre de propriété, pièce d&apos;identité, mandat, diagnostics, Tracfin.
           </p>
         </div>
       )}
