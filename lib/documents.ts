@@ -75,6 +75,26 @@ STRUCTURE IMPOSÉE des blocs :
 ${STYLE_COMMUN}`,
 
   bilan: BILAN_SYSTEM,
+
+  social: `Tu es community manager d'une agence immobilière CENTURY 21. Tu rédiges une PUBLICATION RÉSEAUX SOCIAUX pour mettre en avant un bien à vendre, adaptée au réseau demandé (Instagram, Facebook ou LinkedIn) et au ton demandé.
+STRUCTURE IMPOSÉE des blocs :
+1. { titre: "Légende principale", texte: le post prêt à publier — accroche forte en 1re ligne, 2 à 4 phrases vendeuses (atout majeur, cadre de vie), appel à l'action (« 📩 Écrivez-nous », « Lien en bio »). Émojis pertinents et mesurés. Adapté au réseau. }
+2. { titre: "Version courte (story / légende express)", texte: 1 à 2 phrases percutantes }
+3. { titre: "Hashtags", items: 12 à 18 hashtags pertinents — mix local (#Martigues #ImmobilierMartigues #Provence) et thématique (#AVendre #CoupDeCoeur #Terrasse…) }
+4. { titre: "Idées de visuels / carrousel", items: 4 à 6 idées de photos ou slides à publier, dans l'ordre (façade, séjour lumineux, cuisine, extérieur, plan, prix + contact) }
+RÈGLES : mentionne le DPE s'il est fourni ; prix affiché tel quel s'il est fourni ; jamais de critère discriminatoire ; pas de promesse irréaliste.
+- titre (du document) = "Post [réseau] — [type de bien] à [ville]" ; objet = "".
+${STYLE_COMMUN}`,
+
+  staging: `Tu es expert en HOME STAGING et en valorisation immobilière. Tu analyses les PHOTOS de pièces fournies (elles sont jointes au message) et tu livres un plan concret de mise en valeur AVANT mise en vente, pièce par pièce. Tu décris ce qui se voit réellement sur les photos — n'invente aucune pièce absente.
+STRUCTURE IMPOSÉE des blocs (une analyse par photo si plusieurs, sinon globale) :
+1. { titre: "Ce que voit l'acquéreur", texte: constat honnête et bienveillant de l'état actuel visible sur la/les photo(s) — points forts ET faiblesses (encombrement, luminosité, couleurs datées, meubles volumineux…) }
+2. { titre: "Home staging : les gestes prioritaires", items: 5 à 8 actions concrètes et peu coûteuses, classées par impact (désencombrer, dépersonnaliser, repeindre en tons neutres, réagencer les meubles, ajouter lumière/textiles, réparer/nettoyer…) — précises et applicables }
+3. { titre: "Le rendu visé", texte: description de l'effet « après » à obtenir pour la photo d'annonce (ambiance, palette, ce qui doit ressortir) }
+4. { titre: "Conseils de prise de vue", items: 3 à 5 conseils photo (angle, hauteur, lumière du jour, ordre des clichés) pour que l'annonce sorte du lot }
+- titre (du document) = "Home staging — [pièce/bien]" ; objet = "".
+- Reste factuel et actionnable ; pas de jargon.
+${STYLE_COMMUN}`,
 };
 
 function buildDocText(input: DocumentInput): string {
@@ -103,6 +123,8 @@ function buildDocText(input: DocumentInput): string {
   p("Suite envisagée", input.suite);
   p("Destinataire de la prospection", input.cible);
   p("Contexte de la prospection", input.contexte);
+  p("Réseau social visé", input.reseau);
+  p("Ton souhaité", input.tonSocial);
   p("En commercialisation depuis", input.bilanDebut);
   p("Période couverte par ce bilan", input.bilanPeriode);
   p("Visites réalisées sur la période", input.bilanNbVisites);
@@ -133,10 +155,13 @@ export async function generateDocument(
   input: DocumentInput,
   onProgress: (label: string) => void = () => {},
   crPdfs: { nom: string; data: string }[] = [],
+  images: { mediaType: string; data: string }[] = [],
 ): Promise<DocumentResult> {
   const client = new Anthropic();
   const model = process.env.ESTIMATION_MODEL ?? "claude-opus-4-8";
-  onProgress(crPdfs.length ? "Lecture des comptes rendus PDF…" : "Rédaction du document par l'IA…");
+  onProgress(
+    images.length ? "Analyse des photos par l'IA…" : crPdfs.length ? "Lecture des comptes rendus PDF…" : "Rédaction du document par l'IA…",
+  );
   // Comptes rendus de visite téléversés (bilan) : joints en pièces PDF que
   // l'IA lit directement avant de rédiger sa synthèse
   const content: Anthropic.ContentBlockParam[] = crPdfs.map((f) => ({
@@ -144,11 +169,26 @@ export async function generateDocument(
     source: { type: "base64" as const, media_type: "application/pdf" as const, data: f.data },
     title: f.nom,
   }));
+  // Photos de pièces (home staging) : analysées par la vision du modèle
+  for (const img of images) {
+    content.push({
+      type: "image" as const,
+      source: {
+        type: "base64" as const,
+        media_type: (img.mediaType || "image/jpeg") as "image/jpeg" | "image/png" | "image/webp",
+        data: img.data,
+      },
+    });
+  }
   content.push({
     type: "text",
     text: `# FICHE DU DOCUMENT À RÉDIGER\n${buildDocText(input)}${
       crPdfs.length
         ? `\n\nLes ${crPdfs.length} pièce(s) PDF jointe(s) sont les COMPTES RENDUS DES VISITES de la période : lis-les et synthétise-les (points qui séduisent / objections récurrentes) — n'invente aucune visite.`
+        : ""
+    }${
+      images.length
+        ? `\n\nLes ${images.length} photo(s) jointe(s) sont les pièces du bien à valoriser : analyse-les précisément pour ton plan de home staging.`
         : ""
     }\n\n# SCHÉMA JSON DE LA RÉPONSE (respecte-le exactement)\n${JSON.stringify(DOC_SCHEMA)}`,
   });

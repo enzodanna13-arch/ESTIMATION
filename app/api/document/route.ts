@@ -15,19 +15,22 @@ export async function POST(request: Request) {
   if (!checkHistoryPassword(request)) {
     return Response.json({ error: "Accès réservé — mot de passe requis" }, { status: 401 });
   }
-  let body: DocumentInput & { crPdfs?: { nom: string; data: string }[] };
+  type Extra = { crPdfs?: { nom: string; data: string }[]; images?: { mediaType: string; data: string }[] };
+  let body: DocumentInput & Extra;
   try {
-    body = (await request.json()) as DocumentInput & { crPdfs?: { nom: string; data: string }[] };
+    body = (await request.json()) as DocumentInput & Extra;
   } catch {
     return Response.json({ error: "Corps de requête invalide" }, { status: 400 });
   }
-  if (!body.docType || !["annonce", "crv", "prospection", "bilan"].includes(body.docType)) {
+  if (!body.docType || !["annonce", "social", "staging", "crv", "prospection", "bilan"].includes(body.docType)) {
     return Response.json({ error: "Type de document inconnu" }, { status: 400 });
   }
-  // Comptes rendus de visite téléversés en PDF (bilan) : transmis à l'IA
-  // pour analyse, jamais stockés côté serveur
+  // Comptes rendus de visite téléversés en PDF (bilan) et photos (home
+  // staging) : transmis à l'IA pour analyse, jamais stockés côté serveur
   const crPdfs = (body.crPdfs ?? []).slice(0, 10);
+  const images = (body.images ?? []).slice(0, 6);
   delete body.crPdfs;
+  delete body.images;
   if (!process.env.ANTHROPIC_API_KEY) {
     return Response.json(
       { error: "La génération de documents nécessite le moteur IA (clé non configurée)" },
@@ -41,7 +44,7 @@ export async function POST(request: Request) {
       const send = (obj: unknown) => controller.enqueue(encoder.encode(JSON.stringify(obj) + "\n"));
       const heartbeat = setInterval(() => send({ type: "ping" }), 8000);
       try {
-        const doc = await generateDocument(body, (label: string) => send({ type: "status", label }), crPdfs);
+        const doc = await generateDocument(body, (label: string) => send({ type: "status", label }), crPdfs, images);
         send({ type: "result", data: { doc } });
       } catch (err) {
         send({ type: "error", error: err instanceof Error ? err.message : "Erreur inattendue" });

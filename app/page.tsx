@@ -253,6 +253,20 @@ export default function Home() {
   // (lus par l'IA à la génération, jamais stockés)
   const [bilanPdfs, setBilanPdfs] = useState<{ nom: string; taille: number; data: string }[]>([]);
   const [bilanImportOuvert, setBilanImportOuvert] = useState(false);
+  // Home staging : photos de pièces (compressées, envoyées à la vision IA)
+  const [stagingImages, setStagingImages] = useState<{ mediaType: string; data: string; nom: string }[]>([]);
+  const ajouterStagingPhotos = async (files: FileList | null) => {
+    if (!files) return;
+    for (const f of Array.from(files)) {
+      if (!f.type.startsWith("image/")) continue;
+      try {
+        const p = await compressImage(f);
+        setStagingImages((prev) => [...prev, { mediaType: p.mediaType, data: p.data, nom: f.name }]);
+      } catch {
+        setError("Impossible de traiter une des photos.");
+      }
+    }
+  };
   const ajouterBilanPdfs = async (files: FileList | null) => {
     if (!files) return;
     for (const f of Array.from(files)) {
@@ -487,6 +501,8 @@ export default function Home() {
 
   const docReference = (): string => {
     if (docType === "annonce") return [docInput.typeBien, docInput.ville].filter(Boolean).join(" — ");
+    if (docType === "social") return [docInput.reseau, docInput.typeBien, docInput.ville].filter(Boolean).join(" — ");
+    if (docType === "staging") return [docInput.typeBien || "Bien", docInput.ville].filter(Boolean).join(" — ");
     if (docType === "crv") return docInput.clientNom ?? "";
     if (docType === "prospection") return docInput.cible || (docInput.contexte ?? "").slice(0, 50);
     if (docType === "bilan") return [docInput.clientNom, docInput.bilanPeriode].filter(Boolean).join(" — ");
@@ -514,6 +530,13 @@ export default function Home() {
   const docValid = (): string | null => {
     if (docType === "annonce") {
       if (!docInput.surface || !docInput.ville?.trim()) return "Renseignez au minimum la surface et la ville du bien.";
+    }
+    if (docType === "social") {
+      if (!docInput.typeBien && !docInput.ville?.trim() && !docInput.atouts?.trim())
+        return "Renseignez au minimum le type de bien, la ville ou les atouts.";
+    }
+    if (docType === "staging") {
+      if (stagingImages.length === 0) return "Ajoutez au moins une photo de pièce à valoriser.";
     }
     if (docType === "crv") {
       if (!docInput.clientNom?.trim()) return "Renseignez le nom du propriétaire destinataire.";
@@ -583,7 +606,17 @@ export default function Home() {
           crPdfs.push({ nom: p.nom, data: p.data });
         }
       }
-      const res = await streamPhase({ ...docSansPhoto, docType, ...(crPdfs ? { crPdfs } : {}) }, "/api/document");
+      // Home staging : joindre les photos de pièces
+      const images = docType === "staging" ? stagingImages.map((i) => ({ mediaType: i.mediaType, data: i.data })) : undefined;
+      // Post social : honorer la sélection par défaut (Instagram / dynamique)
+      const socialDefaults =
+        docType === "social"
+          ? { reseau: docInput.reseau || "Instagram", tonSocial: docInput.tonSocial || "dynamique" }
+          : {};
+      const res = await streamPhase(
+        { ...docSansPhoto, ...socialDefaults, docType, ...(crPdfs ? { crPdfs } : {}), ...(images ? { images } : {}) },
+        "/api/document",
+      );
       setDocResult(res.doc as DocumentResult);
       sauverDocument(res.doc as DocumentResult);
       window.scrollTo({ top: 0, behavior: "smooth" });
@@ -1430,6 +1463,69 @@ export default function Home() {
                       {DOC_LABELS[docType].icone} {DOC_LABELS[docType].titre}
                     </h2>
                     <p className="mb-6 text-sm text-slate-500">{DOC_LABELS[docType].description}.</p>
+
+                    {docType === "staging" && (
+                      <div className="mb-4">
+                        <div className="mb-3 rounded-xl border border-copper/40 bg-copper-soft/40 p-3 text-xs text-slate-600">
+                          <b className="text-navy">Home staging par l&apos;IA :</b> déposez les photos des pièces (séjour,
+                          cuisine…). L&apos;IA les analyse et livre un <b>plan de mise en valeur</b> pièce par pièce
+                          (désencombrer, repeindre, réagencer) + conseils de prise de vue. Note : l&apos;IA
+                          <b> analyse</b> vos photos et vous guide — elle ne génère pas une image retouchée.
+                        </div>
+                        <div className="rounded-2xl border border-slate-200 bg-white p-4">
+                          <label className="block cursor-pointer rounded-xl border-2 border-dashed border-slate-300 p-3 text-center text-xs font-semibold text-slate-500 transition hover:border-copper hover:text-copper">
+                            + Ajouter des photos de pièces
+                            <input type="file" accept="image/*" multiple className="hidden" onChange={(e) => { void ajouterStagingPhotos(e.target.files); e.target.value = ""; }} />
+                          </label>
+                          {stagingImages.length > 0 && (
+                            <div className="mt-3 flex flex-wrap gap-2">
+                              {stagingImages.map((im, i) => (
+                                <div key={i} className="relative">
+                                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                                  <img src={`data:${im.mediaType};base64,${im.data}`} alt="" className="h-20 w-28 rounded-lg border border-slate-200 object-cover" />
+                                  <button type="button" onClick={() => setStagingImages((prev) => prev.filter((_, j) => j !== i))} className="absolute -right-2 -top-2 h-5 w-5 rounded-full bg-red-600 text-xs font-bold text-white">✕</button>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                        <div className="mt-3 grid gap-4 sm:grid-cols-2">
+                          <Field label="Type de bien (contexte, option.)">
+                            <input className={inputCls} value={docInput.typeBien ?? ""} onChange={(e) => setD("typeBien", e.target.value)} placeholder="Appartement T3" />
+                          </Field>
+                          <Field label="Ville (option.)">
+                            <input className={inputCls} value={docInput.ville ?? ""} onChange={(e) => setD("ville", e.target.value)} placeholder="Martigues" />
+                          </Field>
+                        </div>
+                      </div>
+                    )}
+
+                    {docType === "social" && (
+                      <div className="mb-4 grid gap-4 sm:grid-cols-3">
+                        <Select label="Réseau" value={docInput.reseau ?? "Instagram"} onChange={(v) => setD("reseau", v)} options={["Instagram", "Facebook", "LinkedIn"]} />
+                        <Select label="Ton" value={docInput.tonSocial ?? "dynamique"} onChange={(v) => setD("tonSocial", v)} options={["dynamique", "élégant", "familial", "haut de gamme", "chaleureux"]} />
+                        <Select label="Type de bien" value={docInput.typeBien ?? "appartement"} onChange={(v) => setD("typeBien", v)} options={["appartement", "maison", "terrain", "immeuble", "local"]} />
+                        <Field label="Surface (m²)">
+                          <input type="number" className={inputCls} value={docInput.surface ?? ""} onChange={(e) => setD("surface", num(e.target.value))} placeholder="74" />
+                        </Field>
+                        <Field label="Pièces">
+                          <input type="number" className={inputCls} value={docInput.nbPieces ?? ""} onChange={(e) => setD("nbPieces", num(e.target.value))} placeholder="3" />
+                        </Field>
+                        <Field label="Ville *">
+                          <input className={inputCls} value={docInput.ville ?? ""} onChange={(e) => setD("ville", e.target.value)} placeholder="Martigues" />
+                        </Field>
+                        <Field label="Quartier">
+                          <input className={inputCls} value={docInput.quartier ?? ""} onChange={(e) => setD("quartier", e.target.value)} placeholder="Jonquières" />
+                        </Field>
+                        <Field label="Prix affiché (€)">
+                          <input type="number" className={inputCls} value={docInput.prix ?? ""} onChange={(e) => setD("prix", num(e.target.value))} placeholder="329000" />
+                        </Field>
+                        <Select label="DPE" value={docInput.dpe ?? ""} onChange={(v) => setD("dpe", v)} options={["", "A", "B", "C", "D", "E", "F", "G"]} />
+                        <Field label="Atouts à mettre en avant" className="sm:col-span-3">
+                          <textarea rows={2} className={inputCls} value={docInput.atouts ?? ""} onChange={(e) => setD("atouts", e.target.value)} placeholder="Terrasse vue mer, cuisine équipée, garage, proche port et écoles…" />
+                        </Field>
+                      </div>
+                    )}
 
                     {docType === "annonce" && (
                       <div className="mb-4 grid gap-4 sm:grid-cols-3">

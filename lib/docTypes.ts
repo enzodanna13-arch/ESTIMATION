@@ -1,12 +1,22 @@
 // Génération de documents : types partagés client/serveur
 
-export type DocType = "annonce" | "crv" | "prospection" | "bilan" | "bonvisite" | "preetatdate" | "facture" | "compromis";
+export type DocType = "annonce" | "social" | "staging" | "crv" | "prospection" | "bilan" | "bonvisite" | "preetatdate" | "facture" | "compromis";
 
 export const DOC_LABELS: Record<DocType, { titre: string; icone: string; description: string }> = {
   annonce: {
     titre: "Texte d'annonce",
     icone: "📣",
     description: "Annonce complète du bien : titre accrocheur + texte optimisé portails",
+  },
+  social: {
+    titre: "Post réseaux sociaux",
+    icone: "📱",
+    description: "Légende Instagram / Facebook + hashtags + idées de visuels, prêts à publier",
+  },
+  staging: {
+    titre: "Home staging IA",
+    icone: "🛋️",
+    description: "L'IA analyse vos photos et livre un plan de mise en valeur pièce par pièce",
   },
   crv: {
     titre: "Compte rendu de visite",
@@ -159,6 +169,9 @@ export interface DocumentInput {
   cHonoraires?: number | null; // € TTC
   cPaiement?: string; // Paiement comptant / prêt…
   cCondSuspensive?: string;
+  // Post réseaux sociaux
+  reseau?: string; // Instagram / Facebook / LinkedIn
+  tonSocial?: string; // dynamique, élégant, familial…
   // Toutes missions
   instructionsIA?: string;
 }

@@ -35,7 +35,8 @@ export default function DocumentPage({
 }) {
   const today = new Date().toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });
   const label = DOC_LABELS[input.docType]?.titre ?? "Document";
-  const annonce = input.docType === "annonce";
+  // Annonce et post réseaux sociaux : rendu texte à copier-coller
+  const annonce = input.docType === "annonce" || input.docType === "social";
   const preetatdate = input.docType === "preetatdate";
   const [copie, setCopie] = useState<string | null>(null);
   const copier = async (cle: string, texte: string) => {
