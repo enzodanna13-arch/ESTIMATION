@@ -155,14 +155,33 @@ export interface DocumentInput {
 
 // Catégories des pièces d'un dossier client (partagées client/serveur)
 export const CATEGORIES_PIECES = [
-  "Compte rendu de visite",
   "Mandat",
   "Pièce d'identité",
+  "Tracfin",
   "Diagnostics",
   "Taxe foncière",
+  "PV d'AG",
+  "Appel de fonds",
+  "Bon de visite",
+  "Compte rendu de visite",
+  "Bilan de commercialisation",
   "Offre d'achat",
   "Autre",
 ] as const;
+
+// Analyse de complétude d'un dossier de vente : pièces ATTENDUES pour que
+// le dossier soit administrativement complet. PV d'AG et appel de fonds ne
+// concernent que la copropriété — signalés comme tels dans l'analyse.
+export const PIECES_ATTENDUES: { categorie: string; copro?: boolean }[] = [
+  { categorie: "Mandat" },
+  { categorie: "Pièce d'identité" },
+  { categorie: "Tracfin" },
+  { categorie: "Diagnostics" },
+  { categorie: "Taxe foncière" },
+  { categorie: "Bon de visite" },
+  { categorie: "PV d'AG", copro: true },
+  { categorie: "Appel de fonds", copro: true },
+];
 
 export interface DocumentBloc {
   titre?: string;

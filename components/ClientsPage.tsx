@@ -13,6 +13,7 @@ import {
   type ClientDossier,
   type PieceClient,
 } from "@/lib/clients";
+import { PIECES_ATTENDUES } from "@/lib/docTypes";
 
 // Dossiers clients partagés : chaque négociateur y range toutes les pièces
 // PDF d'un client (comptes rendus de visite, mandat, diagnostics…), les
@@ -28,11 +29,33 @@ const CATEGORIE_COULEURS: Record<string, string> = {
   "Compte rendu de visite": "bg-copper-soft/60 text-copper",
   Mandat: "bg-blue-50 text-blue-700",
   "Pièce d'identité": "bg-violet-50 text-violet-700",
+  Tracfin: "bg-red-50 text-red-700",
   Diagnostics: "bg-green-50 text-green-700",
   "Taxe foncière": "bg-amber-50 text-amber-700",
+  "PV d'AG": "bg-cyan-50 text-cyan-700",
+  "Appel de fonds": "bg-teal-50 text-teal-700",
+  "Bon de visite": "bg-indigo-50 text-indigo-700",
+  "Bilan de commercialisation": "bg-orange-50 text-orange-700",
   "Offre d'achat": "bg-rose-50 text-rose-700",
   Autre: "bg-slate-100 text-slate-600",
 };
+
+/** Analyse de complétude : pièces attendues absentes du dossier. */
+function piecesManquantes(d: ClientDossier): { categorie: string; copro?: boolean }[] {
+  const presentes = new Set(d.pieces.map((p) => p.categorie));
+  return PIECES_ATTENDUES.filter((a) => !presentes.has(a.categorie));
+}
+
+function BadgeCompletude({ d }: { d: ClientDossier }) {
+  const manquantes = piecesManquantes(d);
+  return manquantes.length === 0 ? (
+    <span className="rounded-full bg-green-100 px-2 py-0.5 text-[11px] font-bold text-green-700">✓ Complet</span>
+  ) : (
+    <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-bold text-amber-700">
+      {manquantes.length} manquant{manquantes.length > 1 ? "s" : ""}
+    </span>
+  );
+}
 
 function Badge({ categorie }: { categorie: string }) {
   return (
@@ -189,6 +212,7 @@ export default function ClientsPage({ onRetour }: { onRetour: () => void }) {
   const [categorie, setCategorie] = useState<string>(CATEGORIES_PIECES[0]);
   const [busy, setBusy] = useState(false);
   const [erreur, setErreur] = useState<string | null>(null);
+  const [rapportOuvert, setRapportOuvert] = useState(false);
 
   const recharger = () => listClients().then(setDossiers).catch(() => setDossiers([]));
   useEffect(() => {
@@ -269,6 +293,38 @@ export default function ClientsPage({ onRetour }: { onRetour: () => void }) {
           </div>
         </div>
 
+        {(() => {
+          const manquantes = piecesManquantes(ouvert);
+          return (
+            <div className={`mb-4 rounded-2xl border p-4 ${manquantes.length === 0 ? "border-green-200 bg-green-50/60" : "border-amber-200 bg-amber-50/60"}`}>
+              <div className="mb-2 flex items-center gap-2">
+                <h3 className="text-sm font-bold text-navy">
+                  {manquantes.length === 0
+                    ? "✅ Dossier complet — toutes les pièces attendues sont présentes"
+                    : `⚠️ Dossier incomplet — ${manquantes.length} pièce${manquantes.length > 1 ? "s" : ""} attendue${manquantes.length > 1 ? "s" : ""} manquante${manquantes.length > 1 ? "s" : ""}`}
+                </h3>
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {PIECES_ATTENDUES.map((a) => {
+                  const ok = !manquantes.some((m) => m.categorie === a.categorie);
+                  return (
+                    <span
+                      key={a.categorie}
+                      className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${ok ? "bg-green-100 text-green-700" : "bg-white text-amber-700 ring-1 ring-amber-300"}`}
+                    >
+                      {ok ? "✓" : "✗"} {a.categorie}
+                      {a.copro ? " (copro)" : ""}
+                    </span>
+                  );
+                })}
+              </div>
+              {manquantes.some((m) => m.copro) && (
+                <p className="mt-2 text-xs text-slate-500">PV d&apos;AG et appel de fonds ne sont attendus que pour un bien en copropriété.</p>
+              )}
+            </div>
+          );
+        })()}
+
         <div className="mb-4 rounded-2xl border border-slate-200 bg-white p-4">
           <div className="flex flex-wrap items-end gap-3">
             <label className="block">
@@ -331,11 +387,58 @@ export default function ClientsPage({ onRetour }: { onRetour: () => void }) {
           <button onClick={onRetour} className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-600 transition hover:bg-slate-100">
             ← Accueil
           </button>
+          <button onClick={() => setRapportOuvert(!rapportOuvert)} className="rounded-lg border border-copper bg-white px-4 py-1.5 text-sm font-bold text-copper transition hover:bg-copper-soft/40">
+            📋 Rapport des documents manquants
+          </button>
           <button onClick={() => setCreation(!creation)} className="rounded-lg bg-copper px-4 py-1.5 text-sm font-bold text-white transition hover:brightness-110">
             + Nouveau dossier client
           </button>
         </div>
       </div>
+
+      {rapportOuvert && dossiers !== null && (
+        <div className="mb-4 rounded-2xl border border-copper/40 bg-white p-5 shadow-sm">
+          <div className="mb-3 flex items-center justify-between">
+            <h3 className="text-sm font-bold uppercase tracking-wide text-navy">📋 Rapport de complétude des dossiers</h3>
+            <span className="text-xs text-slate-500">
+              {dossiers.filter((d) => piecesManquantes(d).length === 0).length} complet{dossiers.filter((d) => piecesManquantes(d).length === 0).length > 1 ? "s" : ""} ·{" "}
+              {dossiers.filter((d) => piecesManquantes(d).length > 0).length} incomplet{dossiers.filter((d) => piecesManquantes(d).length > 0).length > 1 ? "s" : ""}
+            </span>
+          </div>
+          {dossiers.length === 0 ? (
+            <p className="text-sm text-slate-400">Aucun dossier client.</p>
+          ) : (
+            <ul className="divide-y divide-slate-100">
+              {[...dossiers]
+                .sort((a, b) => piecesManquantes(b).length - piecesManquantes(a).length)
+                .map((d) => {
+                  const manquantes = piecesManquantes(d);
+                  return (
+                    <li key={d.id} className="flex flex-wrap items-center gap-2 py-2.5">
+                      <button onClick={() => setOuvert(d)} className="min-w-40 text-left text-sm font-semibold text-navy hover:text-copper">
+                        {d.nom}
+                      </button>
+                      <BadgeCompletude d={d} />
+                      {manquantes.length > 0 && (
+                        <span className="flex flex-wrap gap-1">
+                          {manquantes.map((m) => (
+                            <span key={m.categorie} className="rounded-full bg-amber-50 px-2 py-0.5 text-[11px] font-semibold text-amber-700 ring-1 ring-amber-200">
+                              ✗ {m.categorie}
+                              {m.copro ? " (copro)" : ""}
+                            </span>
+                          ))}
+                        </span>
+                      )}
+                    </li>
+                  );
+                })}
+            </ul>
+          )}
+          <p className="mt-3 text-xs text-slate-400">
+            Pièces attendues : mandat, pièce d&apos;identité, Tracfin, diagnostics, taxe foncière, bon de visite — et, en copropriété, PV d&apos;AG et appel de fonds.
+          </p>
+        </div>
+      )}
 
       {creation && (
         <div className="mb-4 grid gap-3 rounded-2xl border border-copper/40 bg-copper-soft/30 p-4 sm:grid-cols-4">
@@ -367,8 +470,11 @@ export default function ClientsPage({ onRetour }: { onRetour: () => void }) {
             >
               <div className="mb-1 flex items-center justify-between">
                 <span className="text-lg">📁</span>
-                <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-semibold text-slate-600">
-                  {d.pieces.length} pièce{d.pieces.length > 1 ? "s" : ""}
+                <span className="flex items-center gap-1.5">
+                  <BadgeCompletude d={d} />
+                  <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-semibold text-slate-600">
+                    {d.pieces.length} pièce{d.pieces.length > 1 ? "s" : ""}
+                  </span>
                 </span>
               </div>
               <div className="text-sm font-bold text-navy">{d.nom}</div>
