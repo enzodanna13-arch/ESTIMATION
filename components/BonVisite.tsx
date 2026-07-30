@@ -17,8 +17,9 @@ const SANS = 'Arial, "Helvetica Neue", sans-serif';
  *  du trait reste). */
 function PadSignature({ label, image, onSign }: { label: string; image: string | null; onSign: (dataUrl: string | null) => void }) {
   const ref = useRef<HTMLCanvasElement | null>(null);
-  const dessine = useRef(false);
-  const vide = useRef(true);
+  const dessine = useRef(false); // trait en cours (entre pointerdown et pointerup)
+  const aTrace = useRef(false); // au moins un trait présent sur le pad
+  const [pret, setPret] = useState(false); // active le bouton « Valider »
 
   const pos = (e: React.PointerEvent) => {
     const c = ref.current!;
@@ -42,18 +43,24 @@ function PadSignature({ label, image, onSign }: { label: string; image: string |
     const { x, y } = pos(e);
     ctx.lineTo(x, y);
     ctx.stroke();
-    vide.current = false;
+    if (!aTrace.current) {
+      aTrace.current = true;
+      setPret(true);
+    }
   };
+  // Lever le doigt TERMINE le trait seulement — ça ne valide pas la signature :
+  // on peut lever et redessiner autant de fois qu'on veut.
   const up = () => {
-    if (!dessine.current) return;
     dessine.current = false;
-    if (!vide.current) onSign(ref.current!.toDataURL("image/png"));
   };
   const effacer = () => {
     const c = ref.current!;
     c.getContext("2d")!.clearRect(0, 0, c.width, c.height);
-    vide.current = true;
-    onSign(null);
+    aTrace.current = false;
+    setPret(false);
+  };
+  const valider = () => {
+    if (aTrace.current) onSign(ref.current!.toDataURL("image/png"));
   };
 
   return (
@@ -63,11 +70,11 @@ function PadSignature({ label, image, onSign }: { label: string; image: string |
         <>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={image} alt="Signature" style={{ height: "46px", marginTop: 5, display: "block" }} />
-          <button type="button" onClick={effacer} className="mt-1 text-[11px] text-slate-400 hover:text-red-600 print:hidden">Effacer</button>
+          <button type="button" onClick={() => onSign(null)} className="mt-1 text-[11px] text-slate-400 hover:text-red-600 print:hidden">Recommencer la signature</button>
         </>
       ) : (
         <div className="print:hidden">
-          <div style={{ fontSize: "8.5pt", color: "#555" }}>Signez ci-dessous</div>
+          <div style={{ fontSize: "8.5pt", color: "#555" }}>Signez ci-dessous (vous pouvez lever le doigt et continuer)</div>
           <canvas
             ref={ref}
             width={360}
@@ -78,6 +85,14 @@ function PadSignature({ label, image, onSign }: { label: string; image: string |
             onPointerLeave={up}
             style={{ width: "100%", height: 60, border: "1px dashed #b4975b", borderRadius: 6, marginTop: 5, touchAction: "none", cursor: "crosshair" }}
           />
+          <div className="mt-1.5 flex items-center gap-2">
+            <button type="button" onClick={valider} disabled={!pret} className="rounded-lg bg-copper px-3 py-1 text-[11px] font-bold text-white transition hover:brightness-110 disabled:opacity-40">
+              ✓ Valider la signature
+            </button>
+            <button type="button" onClick={effacer} disabled={!pret} className="rounded-lg border border-slate-300 px-2.5 py-1 text-[11px] text-slate-500 transition hover:bg-slate-100 disabled:opacity-40">
+              Effacer
+            </button>
+          </div>
         </div>
       )}
       {/* Emplacement papier si non signé */}
