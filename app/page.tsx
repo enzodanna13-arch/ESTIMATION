@@ -225,7 +225,7 @@ export default function Home() {
   const [step, setStep] = useState(0);
   // Accueil à deux univers : Estimation (les 4 missions) et Génération de
   // documents (menu des documents de l'agence)
-  const [univers, setUnivers] = useState<"" | "estimation" | "documents" | "clients">("");
+  const [univers, setUnivers] = useState<"" | "estimation" | "documents" | "clients" | "historique">("");
   // Génération de documents : type choisi, saisie et résultat
   const [docType, setDocType] = useState<DocType | "">("");
   const [docInput, setDocInput] = useState<DocumentInput>({
@@ -674,7 +674,7 @@ export default function Home() {
             {univers === "clients" && <ClientsPage onRetour={() => setUnivers("")} />}
 
             {univers === "" && (
-              <div className="mb-8 grid gap-4 sm:grid-cols-3 print:hidden">
+              <div className="mb-8 grid gap-4 sm:grid-cols-2 print:hidden">
                 <button
                   type="button"
                   onClick={() => setUnivers("estimation")}
@@ -718,6 +718,21 @@ export default function Home() {
                   </p>
                   <span className="mt-4 inline-block rounded-lg bg-navy px-4 py-2 text-sm font-semibold text-white transition group-hover:bg-navy-deep">
                     Ouvrir les dossiers →
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setUnivers("historique")}
+                  className="group rounded-3xl border-2 border-slate-200 bg-white p-8 text-left shadow-sm transition hover:border-copper hover:shadow-lg"
+                >
+                  <div className="mb-3 text-4xl">🗂️</div>
+                  <div className="text-xl font-bold text-navy">Historiques</div>
+                  <p className="mt-1 text-sm text-slate-500">
+                    Toutes les estimations et tous les documents générés par l'équipe —
+                    consulter, télécharger, supprimer.
+                  </p>
+                  <span className="mt-4 inline-block rounded-lg bg-copper px-4 py-2 text-sm font-semibold text-white transition group-hover:brightness-110">
+                    Ouvrir les historiques →
                   </span>
                 </button>
               </div>
@@ -1690,8 +1705,18 @@ export default function Home() {
               </>
             )}
 
-                        {univers === "" && (
-            <section className="mt-8 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8 print:hidden">
+            {univers === "historique" && (
+              <button
+                type="button"
+                onClick={() => setUnivers("")}
+                className="mb-4 rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-100 print:hidden"
+              >
+                ← Accueil
+              </button>
+            )}
+
+            {univers === "historique" && (
+            <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8 print:hidden">
                 <div className="mb-4 flex items-center justify-between">
                   <div>
                     <h2 className="text-lg font-bold text-navy">🔒 Historique des estimations</h2>
@@ -1780,7 +1805,7 @@ export default function Home() {
               </section>
             )}
 
-            {univers === "" && (
+            {univers === "historique" && (
               <section className="mt-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8 print:hidden">
                 <div className="mb-4 flex items-center justify-between">
                   <div>
