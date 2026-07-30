@@ -253,6 +253,45 @@ export default function Home() {
   // (lus par l'IA à la génération, jamais stockés)
   const [bilanPdfs, setBilanPdfs] = useState<{ nom: string; taille: number; data: string }[]>([]);
   const [bilanImportOuvert, setBilanImportOuvert] = useState(false);
+  // Post réseaux sociaux : photos du bien pour fabriquer le carrousel
+  const [socialPhotos, setSocialPhotos] = useState<string[]>([]);
+  const [carrouselBusy, setCarrouselBusy] = useState(false);
+  const ajouterSocialPhotos = async (files: FileList | null) => {
+    if (!files) return;
+    for (const f of Array.from(files)) {
+      if (!f.type.startsWith("image/")) continue;
+      try {
+        const p = await compressImage(f);
+        setSocialPhotos((prev) => [...prev, `data:${p.mediaType};base64,${p.data}`]);
+      } catch {
+        setError("Impossible de traiter une des photos.");
+      }
+    }
+  };
+  const genererCarrousel = async () => {
+    if (socialPhotos.length === 0) return setError("Ajoutez au moins une photo du bien.");
+    setCarrouselBusy(true);
+    setError(null);
+    try {
+      const { telechargerCarrousel } = await import("@/lib/carrousel");
+      const accroche = docResult?.blocs?.[0]?.texte?.split("\n")[0];
+      await telechargerCarrousel({
+        photos: socialPhotos,
+        typeBien: docInput.typeBien,
+        surface: docInput.surface,
+        nbPieces: docInput.nbPieces,
+        ville: docInput.ville,
+        prix: docInput.prix,
+        accroche,
+        negociateur: docInput.negociateur,
+        negociateurTel: docInput.negociateurTel,
+      });
+    } catch {
+      setError("Génération du carrousel impossible.");
+    } finally {
+      setCarrouselBusy(false);
+    }
+  };
   const ajouterBilanPdfs = async (files: FileList | null) => {
     if (!files) return;
     for (const f of Array.from(files)) {
@@ -1483,6 +1522,37 @@ export default function Home() {
                         <Field label="Atouts à mettre en avant" className="sm:col-span-3">
                           <textarea rows={2} className={inputCls} value={docInput.atouts ?? ""} onChange={(e) => setD("atouts", e.target.value)} placeholder="Terrasse vue mer, cuisine équipée, garage, proche port et écoles…" />
                         </Field>
+                        <div className="sm:col-span-3">
+                          <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">Photos du bien — pour fabriquer le carrousel à publier</span>
+                          <div className="rounded-2xl border border-slate-200 bg-white p-4">
+                            <div className="flex flex-wrap items-center gap-3">
+                              <label className="cursor-pointer rounded-xl border-2 border-dashed border-slate-300 px-4 py-2.5 text-xs font-semibold text-slate-500 transition hover:border-copper hover:text-copper">
+                                + Ajouter des photos
+                                <input type="file" accept="image/*" multiple className="hidden" onChange={(e) => { void ajouterSocialPhotos(e.target.files); e.target.value = ""; }} />
+                              </label>
+                              <button
+                                type="button"
+                                onClick={() => void genererCarrousel()}
+                                disabled={carrouselBusy || socialPhotos.length === 0}
+                                className="rounded-xl bg-navy px-5 py-2.5 text-xs font-bold text-white transition hover:bg-navy-deep disabled:opacity-50"
+                              >
+                                {carrouselBusy ? "Création…" : "🖼️ Télécharger le carrousel (ZIP)"}
+                              </button>
+                              <span className="text-xs text-slate-400">Couverture habillée C21 + vos photos + slide contact, en images carrées 1080 prêtes à poster.</span>
+                            </div>
+                            {socialPhotos.length > 0 && (
+                              <div className="mt-3 flex flex-wrap gap-2">
+                                {socialPhotos.map((src, i) => (
+                                  <div key={i} className="relative">
+                                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                                    <img src={src} alt="" className="h-20 w-20 rounded-lg border border-slate-200 object-cover" />
+                                    <button type="button" onClick={() => setSocialPhotos((prev) => prev.filter((_, j) => j !== i))} className="absolute -right-2 -top-2 h-5 w-5 rounded-full bg-red-600 text-xs font-bold text-white">✕</button>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        </div>
                       </div>
                     )}
 
