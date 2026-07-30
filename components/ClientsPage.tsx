@@ -73,6 +73,99 @@ function filtrer(dossiers: ClientDossier[], q: string): ClientDossier[] {
   );
 }
 
+/** Rapport de complétude en PDF (pdf-lib, généré sur le poste — papier à
+ *  en-tête C21 avec wordmark, sceau et bandeau officiels). */
+async function telechargerRapportPdf(dossiers: ClientDossier[]): Promise<void> {
+  const { PDFDocument, StandardFonts, rgb } = await import("pdf-lib");
+  const pdf = await PDFDocument.create();
+  const helv = await pdf.embedFont(StandardFonts.Helvetica);
+  const helvB = await pdf.embedFont(StandardFonts.HelveticaBold);
+  const A4: [number, number] = [595.28, 841.89];
+  const M = 57;
+  const noir = rgb(0, 0, 0);
+  const gris = rgb(0.45, 0.45, 0.45);
+  const or = rgb(0.706, 0.592, 0.357);
+  const ambre = rgb(0.72, 0.45, 0.05);
+  const vert = rgb(0.13, 0.55, 0.25);
+
+  const chargerPng = async (url: string) => {
+    try {
+      const r = await fetch(url);
+      if (!r.ok) return null;
+      return await pdf.embedPng(await r.arrayBuffer());
+    } catch {
+      return null;
+    }
+  };
+  const [imgWordmark, imgSceau, imgBandeau] = await Promise.all([
+    chargerPng("/c21/wordmark.png"),
+    chargerPng("/c21/sceau.png"),
+    chargerPng("/c21/bandeau.png"),
+  ]);
+
+  let page = pdf.addPage(A4);
+  const pages = [page];
+  let y = 0;
+
+  const enTete = () => {
+    if (imgWordmark) page.drawImage(imgWordmark, { x: M, y: A4[1] - 44, width: 86.5, height: 10 });
+    else page.drawText("CENTURY 21", { x: M, y: A4[1] - 46, size: 14, font: helvB, color: or });
+    if (imgSceau) page.drawImage(imgSceau, { x: 468, y: A4[1] - 112.5, width: 84.5, height: 107.5 });
+    page.drawText("Icaza Immobilier", { x: M, y: A4[1] - 60, size: 10.5, font: helv, color: or });
+    page.drawText("32 avenue de la Paix — 13500 Martigues", { x: M, y: A4[1] - 73, size: 8.5, font: helv, color: noir });
+    y = A4[1] - 130;
+  };
+  const nouvellePage = () => {
+    page = pdf.addPage(A4);
+    pages.push(page);
+    enTete();
+  };
+  const ligne = (texte: string, opts: { font?: typeof helv; size?: number; couleur?: ReturnType<typeof rgb>; indent?: number; gap?: number } = {}) => {
+    if (y < 100) nouvellePage();
+    page.drawText(texte, { x: M + (opts.indent ?? 0), y, size: opts.size ?? 10.5, font: opts.font ?? helv, color: opts.couleur ?? noir });
+    y -= (opts.size ?? 10.5) * 1.45 + (opts.gap ?? 0);
+  };
+
+  enTete();
+  const dateStr = new Date().toLocaleDateString("fr-FR");
+  ligne("Rapport de complétude des dossiers clients", { font: helvB, size: 15, gap: 4 });
+  const complets = dossiers.filter((d) => piecesManquantes(d).length === 0).length;
+  ligne(`Édité le ${dateStr} — ${dossiers.length} dossier${dossiers.length > 1 ? "s" : ""} : ${complets} complet${complets > 1 ? "s" : ""}, ${dossiers.length - complets} incomplet${dossiers.length - complets > 1 ? "s" : ""}.`, { size: 9.5, couleur: gris, gap: 10 });
+
+  const tries = [...dossiers].sort((a, b) => piecesManquantes(b).length - piecesManquantes(a).length);
+  for (const d of tries) {
+    const manquantes = piecesManquantes(d);
+    if (y < 150) nouvellePage();
+    ligne(d.nom, { font: helvB, size: 11.5, gap: 1 });
+    const sousTitre = [d.bien, d.negociateur].filter(Boolean).join(" · ");
+    if (sousTitre) ligne(sousTitre, { size: 9, couleur: gris, gap: 1 });
+    if (manquantes.length === 0) {
+      ligne(`Dossier complet — ${d.pieces.length} pièce${d.pieces.length > 1 ? "s" : ""} au dossier.`, { size: 10, couleur: vert, gap: 8 });
+    } else {
+      ligne(`${manquantes.length} document${manquantes.length > 1 ? "s" : ""} manquant${manquantes.length > 1 ? "s" : ""} (${d.pieces.length} pièce${d.pieces.length > 1 ? "s" : ""} au dossier) :`, { size: 10, couleur: ambre, gap: 2 });
+      for (const m of manquantes) {
+        ligne(`—  ${m.categorie}${m.copro ? " (si copropriété)" : ""}`, { size: 10, indent: 14, couleur: ambre });
+      }
+      y -= 8;
+    }
+  }
+  ligne("Pièces attendues pour un dossier complet : mandat, pièce d'identité, Tracfin, diagnostics,", { size: 8, couleur: gris, gap: 0 });
+  ligne("taxe foncière, bon de visite — et, pour un bien en copropriété, PV d'AG et appel de fonds.", { size: 8, couleur: gris });
+
+  if (imgBandeau) {
+    for (const pg of pages) pg.drawImage(imgBandeau, { x: 14, y: 20, width: 512, height: 56 });
+  }
+
+  const octets = await pdf.save();
+  const blob = new Blob([new Uint8Array(octets)], { type: "application/pdf" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `Rapport documents manquants - ${dateStr.replace(/\//g, "-")}.pdf`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 async function fichierEnB64(f: File): Promise<string> {
   const buf = new Uint8Array(await f.arrayBuffer());
   let bin = "";
@@ -398,11 +491,21 @@ export default function ClientsPage({ onRetour }: { onRetour: () => void }) {
 
       {rapportOuvert && dossiers !== null && (
         <div className="mb-4 rounded-2xl border border-copper/40 bg-white p-5 shadow-sm">
-          <div className="mb-3 flex items-center justify-between">
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
             <h3 className="text-sm font-bold uppercase tracking-wide text-navy">📋 Rapport de complétude des dossiers</h3>
-            <span className="text-xs text-slate-500">
-              {dossiers.filter((d) => piecesManquantes(d).length === 0).length} complet{dossiers.filter((d) => piecesManquantes(d).length === 0).length > 1 ? "s" : ""} ·{" "}
-              {dossiers.filter((d) => piecesManquantes(d).length > 0).length} incomplet{dossiers.filter((d) => piecesManquantes(d).length > 0).length > 1 ? "s" : ""}
+            <span className="flex items-center gap-3">
+              <span className="text-xs text-slate-500">
+                {dossiers.filter((d) => piecesManquantes(d).length === 0).length} complet{dossiers.filter((d) => piecesManquantes(d).length === 0).length > 1 ? "s" : ""} ·{" "}
+                {dossiers.filter((d) => piecesManquantes(d).length > 0).length} incomplet{dossiers.filter((d) => piecesManquantes(d).length > 0).length > 1 ? "s" : ""}
+              </span>
+              <button
+                type="button"
+                onClick={() => { setBusy(true); void telechargerRapportPdf(dossiers).catch(() => setErreur("Génération du PDF impossible")).finally(() => setBusy(false)); }}
+                disabled={busy || dossiers.length === 0}
+                className="rounded-lg bg-copper px-3 py-1.5 text-xs font-bold text-white transition hover:brightness-110 disabled:opacity-50"
+              >
+                {busy ? "Génération…" : "⬇ Télécharger le rapport (PDF)"}
+              </button>
             </span>
           </div>
           {dossiers.length === 0 ? (
