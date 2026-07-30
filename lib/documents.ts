@@ -86,15 +86,6 @@ RÈGLES : mentionne le DPE s'il est fourni ; prix affiché tel quel s'il est fou
 - titre (du document) = "Post [réseau] — [type de bien] à [ville]" ; objet = "".
 ${STYLE_COMMUN}`,
 
-  staging: `Tu es expert en HOME STAGING et en valorisation immobilière. Tu analyses les PHOTOS de pièces fournies (elles sont jointes au message) et tu livres un plan concret de mise en valeur AVANT mise en vente, pièce par pièce. Tu décris ce qui se voit réellement sur les photos — n'invente aucune pièce absente.
-STRUCTURE IMPOSÉE des blocs (une analyse par photo si plusieurs, sinon globale) :
-1. { titre: "Ce que voit l'acquéreur", texte: constat honnête et bienveillant de l'état actuel visible sur la/les photo(s) — points forts ET faiblesses (encombrement, luminosité, couleurs datées, meubles volumineux…) }
-2. { titre: "Home staging : les gestes prioritaires", items: 5 à 8 actions concrètes et peu coûteuses, classées par impact (désencombrer, dépersonnaliser, repeindre en tons neutres, réagencer les meubles, ajouter lumière/textiles, réparer/nettoyer…) — précises et applicables }
-3. { titre: "Le rendu visé", texte: description de l'effet « après » à obtenir pour la photo d'annonce (ambiance, palette, ce qui doit ressortir) }
-4. { titre: "Conseils de prise de vue", items: 3 à 5 conseils photo (angle, hauteur, lumière du jour, ordre des clichés) pour que l'annonce sorte du lot }
-- titre (du document) = "Home staging — [pièce/bien]" ; objet = "".
-- Reste factuel et actionnable ; pas de jargon.
-${STYLE_COMMUN}`,
 };
 
 function buildDocText(input: DocumentInput): string {

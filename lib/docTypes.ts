@@ -1,6 +1,6 @@
 // Génération de documents : types partagés client/serveur
 
-export type DocType = "annonce" | "social" | "staging" | "crv" | "prospection" | "bilan" | "bonvisite" | "preetatdate" | "facture" | "compromis";
+export type DocType = "annonce" | "social" | "crv" | "prospection" | "bilan" | "bonvisite" | "preetatdate" | "facture" | "compromis";
 
 export const DOC_LABELS: Record<DocType, { titre: string; icone: string; description: string }> = {
   annonce: {
@@ -12,11 +12,6 @@ export const DOC_LABELS: Record<DocType, { titre: string; icone: string; descrip
     titre: "Post réseaux sociaux",
     icone: "📱",
     description: "Légende Instagram / Facebook + hashtags + idées de visuels, prêts à publier",
-  },
-  staging: {
-    titre: "Home staging IA",
-    icone: "🛋️",
-    description: "L'IA analyse vos photos et livre un plan de mise en valeur pièce par pièce",
   },
   crv: {
     titre: "Compte rendu de visite",

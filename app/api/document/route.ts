@@ -22,7 +22,7 @@ export async function POST(request: Request) {
   } catch {
     return Response.json({ error: "Corps de requête invalide" }, { status: 400 });
   }
-  if (!body.docType || !["annonce", "social", "staging", "crv", "prospection", "bilan"].includes(body.docType)) {
+  if (!body.docType || !["annonce", "social", "crv", "prospection", "bilan"].includes(body.docType)) {
     return Response.json({ error: "Type de document inconnu" }, { status: 400 });
   }
   // Comptes rendus de visite téléversés en PDF (bilan) et photos (home
