@@ -1,5 +1,6 @@
 "use client";
 
+import { useRef, useState } from "react";
 import { EnTete, PiedC21 } from "@/components/PreEtatDate";
 import type { DocumentInput } from "@/lib/docTypes";
 
@@ -7,10 +8,92 @@ import type { DocumentInput } from "@/lib/docTypes";
 // papier à en-tête CENTURY 21. Document fixe généré SANS IA : seules les
 // informations du dossier changent, les textes légaux sont inclus
 // automatiquement (loi Hoguet, article 1240 du Code civil).
+// Signature électronique SIMPLE (manuscrite numérisée) directement à l'écran.
 
 const SANS = 'Arial, "Helvetica Neue", sans-serif';
 
+/** Pad de signature manuscrite : on signe à la souris/au doigt, l'image est
+ *  remontée au parent. Masqué à l'impression une fois signé (seule l'image
+ *  du trait reste). */
+function PadSignature({ label, image, onSign }: { label: string; image: string | null; onSign: (dataUrl: string | null) => void }) {
+  const ref = useRef<HTMLCanvasElement | null>(null);
+  const dessine = useRef(false);
+  const vide = useRef(true);
+
+  const pos = (e: React.PointerEvent) => {
+    const c = ref.current!;
+    const r = c.getBoundingClientRect();
+    return { x: ((e.clientX - r.left) / r.width) * c.width, y: ((e.clientY - r.top) / r.height) * c.height };
+  };
+  const down = (e: React.PointerEvent) => {
+    const ctx = ref.current!.getContext("2d")!;
+    dessine.current = true;
+    const { x, y } = pos(e);
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    (e.target as HTMLElement).setPointerCapture(e.pointerId);
+  };
+  const move = (e: React.PointerEvent) => {
+    if (!dessine.current) return;
+    const ctx = ref.current!.getContext("2d")!;
+    ctx.lineWidth = 2.5;
+    ctx.lineCap = "round";
+    ctx.strokeStyle = "#0c1b2a";
+    const { x, y } = pos(e);
+    ctx.lineTo(x, y);
+    ctx.stroke();
+    vide.current = false;
+  };
+  const up = () => {
+    if (!dessine.current) return;
+    dessine.current = false;
+    if (!vide.current) onSign(ref.current!.toDataURL("image/png"));
+  };
+  const effacer = () => {
+    const c = ref.current!;
+    c.getContext("2d")!.clearRect(0, 0, c.width, c.height);
+    vide.current = true;
+    onSign(null);
+  };
+
+  return (
+    <div>
+      <div style={{ fontWeight: 700, marginBottom: 2 }}>{label}</div>
+      {image ? (
+        <>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={image} alt="Signature" style={{ height: "46px", marginTop: 5, display: "block" }} />
+          <button type="button" onClick={effacer} className="mt-1 text-[11px] text-slate-400 hover:text-red-600 print:hidden">Effacer</button>
+        </>
+      ) : (
+        <div className="print:hidden">
+          <div style={{ fontSize: "8.5pt", color: "#555" }}>Signez ci-dessous</div>
+          <canvas
+            ref={ref}
+            width={360}
+            height={90}
+            onPointerDown={down}
+            onPointerMove={move}
+            onPointerUp={up}
+            onPointerLeave={up}
+            style={{ width: "100%", height: 60, border: "1px dashed #b4975b", borderRadius: 6, marginTop: 5, touchAction: "none", cursor: "crosshair" }}
+          />
+        </div>
+      )}
+      {/* Emplacement papier si non signé */}
+      {!image && <div className="hidden print:block" style={{ border: "1px solid #999", height: 46, marginTop: 5 }} />}
+    </div>
+  );
+}
+
 export default function BonVisite({ input, onReset }: { input: DocumentInput; onReset: () => void }) {
+  const [sigAcq, setSigAcq] = useState<string | null>(null);
+  const [sigNego, setSigNego] = useState<string | null>(null);
+  const [signeLe, setSigneLe] = useState<string | null>(null);
+  const marquerSignature = (setter: (v: string | null) => void) => (v: string | null) => {
+    setter(v);
+    if (v) setSigneLe(new Date().toLocaleString("fr-FR"));
+  };
   const dateStr = new Date().toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });
   const dateVisite = input.dateVisite?.trim() || `le ${dateStr}`;
   const acquereur = input.bvAcquereur || "……………………………………";
@@ -105,19 +188,22 @@ export default function BonVisite({ input, onReset }: { input: DocumentInput; on
             et n&rsquo;ouvre pas droit, à lui seul, à rémunération du cabinet.
           </div>
 
-          {/* Signatures */}
+          {/* Signatures électroniques (manuscrites numérisées) */}
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24, marginTop: 10, fontFamily: SANS, fontSize: "10pt" }}>
             <div>
-              <div style={{ fontWeight: 700, marginBottom: 2 }}>Le client acquéreur</div>
-              <div style={{ fontSize: "8.5pt", color: "#555" }}>« Lu et approuvé », date et signature</div>
-              <div style={{ border: "1px solid #999", height: 46, marginTop: 5 }} />
+              <div style={{ fontSize: "8.5pt", color: "#555", marginBottom: 2 }}>« Lu et approuvé »</div>
+              <PadSignature label="Le client acquéreur" image={sigAcq} onSign={marquerSignature(setSigAcq)} />
             </div>
             <div>
-              <div style={{ fontWeight: 700, marginBottom: 2 }}>Pour CENTURY 21 Icaza Immobilier</div>
-              <div style={{ fontSize: "8.5pt", color: "#555" }}>{input.negociateur || "Le négociateur"}{input.negociateurTel ? ` · ${input.negociateurTel}` : ""}</div>
-              <div style={{ border: "1px solid #999", height: 46, marginTop: 5 }} />
+              <div style={{ fontSize: "8.5pt", color: "#555", marginBottom: 2 }}>{input.negociateur || "Le négociateur"}{input.negociateurTel ? ` · ${input.negociateurTel}` : ""}</div>
+              <PadSignature label="Pour CENTURY 21 Icaza Immobilier" image={sigNego} onSign={marquerSignature(setSigNego)} />
             </div>
           </div>
+          {signeLe && (
+            <div style={{ marginTop: 8, fontSize: "7.5pt", color: "#666", fontFamily: SANS }}>
+              Signé électroniquement le {signeLe} — signature manuscrite numérisée valant preuve du consentement des parties.
+            </div>
+          )}
 
           <PiedC21 />
         </section>
