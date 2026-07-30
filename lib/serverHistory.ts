@@ -308,6 +308,138 @@ export async function getClientFileServer(id: string, fileId: string): Promise<A
   }
 }
 
+// ---------------------------------------------------------------------------
+// VISITES VIRTUELLES 360° : prises de vue équirectangulaires (Insta360…)
+// déposées par les négociateurs — une scène par pièce. La LECTURE d'une
+// visite est publique (lien de partage client, id aléatoire non devinable) ;
+// création, ajout de scènes et suppression restent protégées par le mot de
+// passe d'équipe. Métas versionnés comme les dossiers clients.
+// ---------------------------------------------------------------------------
+
+export interface SceneVisite {
+  imgId: string;
+  nom: string; // nom de la pièce (Séjour, Cuisine…)
+  createdAt: number;
+}
+
+export interface VisiteVirtuelle {
+  id: string;
+  createdAt: number;
+  updatedAt: number;
+  bien: string; // désignation du bien
+  negociateur: string;
+  scenes: SceneVisite[];
+}
+
+const VISITE_META_PREFIX = "visites/meta/";
+const VISITE_IMG_PREFIX = "visites/img/";
+
+async function putVisiteMeta(v: VisiteVirtuelle): Promise<void> {
+  const nom = `${VISITE_META_PREFIX}${v.id}~${v.updatedAt}.json`;
+  await put(nom, JSON.stringify(v), {
+    access: "public",
+    addRandomSuffix: false,
+    contentType: "application/json",
+  });
+  const { blobs } = await list({ prefix: `${VISITE_META_PREFIX}${v.id}~`, limit: 100 });
+  const anciennes = blobs.filter((b) => b.pathname !== nom).map((b) => b.url);
+  if (anciennes.length > 0) await del(anciennes);
+}
+
+export async function saveVisiteServer(v: VisiteVirtuelle): Promise<void> {
+  await putVisiteMeta(v);
+}
+
+export async function listVisitesServer(): Promise<VisiteVirtuelle[]> {
+  const { blobs } = await list({ prefix: VISITE_META_PREFIX, limit: 1000 });
+  const parId = new Map<string, { url: string; ts: number }>();
+  for (const b of blobs) {
+    const nom = b.pathname.slice(b.pathname.lastIndexOf("/") + 1);
+    const id = nom.split("~")[0];
+    const ts = derniereVersion(b.pathname);
+    const cur = parId.get(id);
+    if (!cur || ts > cur.ts) parId.set(id, { url: b.url, ts });
+  }
+  const metas = await Promise.all(
+    [...parId.values()].map(async ({ url }) => {
+      try {
+        const res = await fetch(url, { cache: "no-store" });
+        return res.ok ? ((await res.json()) as VisiteVirtuelle) : null;
+      } catch {
+        return null;
+      }
+    }),
+  );
+  return metas
+    .filter((m): m is VisiteVirtuelle => m !== null)
+    .sort((a, b) => b.updatedAt - a.updatedAt);
+}
+
+export async function getVisiteServer(id: string): Promise<VisiteVirtuelle | null> {
+  const { blobs } = await list({ prefix: `${VISITE_META_PREFIX}${safeId(id)}~`, limit: 100 });
+  if (blobs.length === 0) return null;
+  const dernier = blobs.reduce((a, b) => (derniereVersion(b.pathname) > derniereVersion(a.pathname) ? b : a));
+  try {
+    const res = await fetch(dernier.url, { cache: "no-store" });
+    return res.ok ? ((await res.json()) as VisiteVirtuelle) : null;
+  } catch {
+    return null;
+  }
+}
+
+export async function deleteVisiteServer(id: string): Promise<void> {
+  const safe = safeId(id);
+  const [meta, imgs] = await Promise.all([
+    list({ prefix: `${VISITE_META_PREFIX}${safe}~`, limit: 100 }),
+    list({ prefix: `${VISITE_IMG_PREFIX}${safe}/`, limit: 1000 }),
+  ]);
+  const urls = [...meta.blobs, ...imgs.blobs].map((b) => b.url);
+  if (urls.length > 0) await del(urls);
+}
+
+export async function addVisiteImageServer(
+  id: string,
+  scene: { nom: string; data: string },
+): Promise<VisiteVirtuelle | null> {
+  const v = await getVisiteServer(id);
+  if (!v) return null;
+  const imgId = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+  await put(`${VISITE_IMG_PREFIX}${v.id}/${imgId}.jpg`, Buffer.from(scene.data, "base64"), {
+    access: "public",
+    addRandomSuffix: false,
+    contentType: "image/jpeg",
+  });
+  v.scenes.push({ imgId, nom: scene.nom, createdAt: Date.now() });
+  v.updatedAt = Date.now();
+  await putVisiteMeta(v);
+  return v;
+}
+
+export async function getVisiteImageServer(id: string, imgId: string): Promise<ArrayBuffer | null> {
+  const { blobs } = await list({
+    prefix: `${VISITE_IMG_PREFIX}${safeId(id)}/${safeId(imgId)}.jpg`,
+    limit: 1,
+  });
+  if (blobs.length === 0) return null;
+  try {
+    const res = await fetch(blobs[0].url, { cache: "no-store" });
+    return res.ok ? await res.arrayBuffer() : null;
+  } catch {
+    return null;
+  }
+}
+
+export async function deleteVisiteImageServer(id: string, imgId: string): Promise<VisiteVirtuelle | null> {
+  const v = await getVisiteServer(id);
+  if (!v) return null;
+  const { blobs } = await list({ prefix: `${VISITE_IMG_PREFIX}${v.id}/${safeId(imgId)}.jpg`, limit: 1 });
+  if (blobs.length > 0) await del(blobs.map((b) => b.url));
+  v.scenes = v.scenes.filter((s) => s.imgId !== imgId);
+  v.updatedAt = Date.now();
+  await putVisiteMeta(v);
+  return v;
+}
+
 export async function deleteClientFileServer(id: string, fileId: string): Promise<ClientDossier | null> {
   const dossier = await getClientServer(id);
   if (!dossier) return null;

@@ -6,6 +6,7 @@ import DocumentPage from "@/components/DocumentPage";
 import Report from "@/components/Report";
 import { DOC_LABELS, type DocType, type DocumentInput, type DocumentResult } from "@/lib/docTypes";
 import ClientsPage, { SelecteurPiecesClient } from "@/components/ClientsPage";
+import VisitesPage from "@/components/VisitesPage";
 import { deleteDocument, deleteEstimation, getDocument, getEstimation, getHistoryKey, HistoryLockedError, listDocuments, listEstimations, saveDocument, setHistoryKey, type DocHistoryMeta, type HistoryMeta } from "@/lib/history";
 import { loyerNetAnnuel, prixParRendement, RENDEMENT_NET_BAS, RENDEMENT_NET_HAUT } from "@/lib/rendement";
 import { surfaceDependancesHabitables, surfaceHabitableTotale } from "@/lib/surfaces";
@@ -225,7 +226,7 @@ export default function Home() {
   const [step, setStep] = useState(0);
   // Accueil à deux univers : Estimation (les 4 missions) et Génération de
   // documents (menu des documents de l'agence)
-  const [univers, setUnivers] = useState<"" | "estimation" | "documents" | "clients" | "historique">("");
+  const [univers, setUnivers] = useState<"" | "estimation" | "documents" | "clients" | "historique" | "visites">("");
   // Génération de documents : type choisi, saisie et résultat
   const [docType, setDocType] = useState<DocType | "">("");
   const [docInput, setDocInput] = useState<DocumentInput>({
@@ -692,9 +693,10 @@ export default function Home() {
         ) : (
           <>
             {univers === "clients" && <ClientsPage onRetour={() => setUnivers("")} />}
+            {univers === "visites" && <VisitesPage onRetour={() => setUnivers("")} />}
 
             {univers === "" && (
-              <div className="mb-8 grid gap-4 sm:grid-cols-2 print:hidden">
+              <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 print:hidden">
                 <button
                   type="button"
                   onClick={() => setUnivers("estimation")}
@@ -738,6 +740,21 @@ export default function Home() {
                   </p>
                   <span className="mt-4 inline-block rounded-lg bg-navy px-4 py-2 text-sm font-semibold text-white transition group-hover:bg-navy-deep">
                     Ouvrir les dossiers →
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setUnivers("visites")}
+                  className="group rounded-3xl border-2 border-slate-200 bg-white p-8 text-left shadow-sm transition hover:border-copper hover:shadow-lg"
+                >
+                  <div className="mb-3 text-4xl">🎥</div>
+                  <div className="text-xl font-bold text-navy">Visites virtuelles</div>
+                  <p className="mt-1 text-sm text-slate-500">
+                    Déposez vos prises de vue Insta360 (photos 360°) — la visite navigable
+                    se génère automatiquement, avec un lien à envoyer aux clients.
+                  </p>
+                  <span className="mt-4 inline-block rounded-lg bg-copper px-4 py-2 text-sm font-semibold text-white transition group-hover:brightness-110">
+                    Ouvrir les visites →
                   </span>
                 </button>
                 <button
