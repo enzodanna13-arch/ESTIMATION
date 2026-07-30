@@ -45,7 +45,7 @@ export async function getInseeCodes(codePostal: string): Promise<string[]> {
  * millésime. Couvre l'intégralité du code postal (commune entière), là où
  * les recherches par quartier peuvent manquer de comparables.
  */
-async function fetchOfficialDvf(insee: string, year: number, typeLocal: string): Promise<DvfSale[]> {
+export async function fetchOfficialDvf(insee: string, year: number, typeLocal: string): Promise<DvfSale[]> {
   const dep = insee.startsWith("97") ? insee.slice(0, 3) : insee.slice(0, 2);
   const res = await fetchWithTimeout(`${DVF_FILES}/${year}/communes/${dep}/${insee}.csv`, 15000);
   if (!res) return [];
