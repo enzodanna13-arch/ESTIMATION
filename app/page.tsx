@@ -3,10 +3,12 @@
 import { useEffect, useState } from "react";
 import ComparablesEditor from "@/components/ComparablesEditor";
 import DocumentPage from "@/components/DocumentPage";
+import MandatForm from "@/components/MandatForm";
 import Report from "@/components/Report";
 import { DOC_LABELS, type DocType, type DocumentInput, type DocumentResult } from "@/lib/docTypes";
 import ClientsPage, { SelecteurPiecesClient } from "@/components/ClientsPage";
 import VisitesPage from "@/components/VisitesPage";
+import RegistrePage from "@/components/RegistrePage";
 import { deleteDocument, deleteEstimation, getDocument, getEstimation, getHistoryKey, HistoryLockedError, listDocuments, listEstimations, saveDocument, setHistoryKey, type DocHistoryMeta, type HistoryMeta } from "@/lib/history";
 import { loyerNetAnnuel, prixParRendement, RENDEMENT_NET_BAS, RENDEMENT_NET_HAUT } from "@/lib/rendement";
 import { surfaceDependancesHabitables, surfaceHabitableTotale } from "@/lib/surfaces";
@@ -226,7 +228,7 @@ export default function Home() {
   const [step, setStep] = useState(0);
   // Accueil à deux univers : Estimation (les 4 missions) et Génération de
   // documents (menu des documents de l'agence)
-  const [univers, setUnivers] = useState<"" | "estimation" | "documents" | "clients" | "historique" | "visites">("");
+  const [univers, setUnivers] = useState<"" | "estimation" | "documents" | "clients" | "historique" | "visites" | "registre">("");
   // Génération de documents : type choisi, saisie et résultat
   const [docType, setDocType] = useState<DocType | "">("");
   const [docInput, setDocInput] = useState<DocumentInput>({
@@ -534,6 +536,7 @@ export default function Home() {
     if (docType === "preetatdate") return `Dossier ${docInput.nomDossier ?? ""} — ${docInput.copropriete ?? ""}`;
     if (docType === "facture") return `${docInput.factureNumero ?? ""} — ${docInput.factureClientNom ?? ""}`;
     if (docType === "compromis") return docInput.compromisObjetBien ?? "";
+    if (docType === "mandat") return [docInput.mandatNumero ? `N° ${docInput.mandatNumero}` : "", (docInput.mandatMandant ?? "").split("\n")[0]].filter(Boolean).join(" — ");
     return "";
   };
 
@@ -588,6 +591,10 @@ export default function Home() {
       if (!docInput.factureNotaire?.trim()) return "Renseignez le notaire chargé du dossier.";
       if (!docInput.commissionTTC || docInput.commissionTTC <= 0) return "Renseignez le montant de la commission TTC.";
     }
+    if (docType === "mandat") {
+      if (!docInput.mandatMandant?.trim()) return "Renseignez l'état civil du mandant (nom, prénom, adresse…).";
+      if (!docInput.mandatBien?.trim()) return "Renseignez la désignation du bien à vendre.";
+    }
     return null;
   };
 
@@ -598,7 +605,7 @@ export default function Home() {
       return;
     }
     // Modèles fixes (devis pré-état daté, facture, bon de visite) : sans IA
-    if (docType === "preetatdate" || docType === "facture" || docType === "bonvisite") {
+    if (docType === "preetatdate" || docType === "facture" || docType === "bonvisite" || docType === "mandat") {
       setError(null);
       const docFixe = { titre: DOC_LABELS[docType].titre, objet: "", blocs: [] };
       setDocResult(docFixe);
@@ -746,6 +753,8 @@ export default function Home() {
             {univers === "clients" && <ClientsPage onRetour={() => setUnivers("")} />}
             {univers === "visites" && <VisitesPage onRetour={() => setUnivers("")} />}
 
+            {univers === "registre" && <RegistrePage onRetour={() => setUnivers("")} />}
+
             {univers === "" && (
               <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 print:hidden">
                 <button
@@ -795,6 +804,21 @@ export default function Home() {
                 </button>
                 <button
                   type="button"
+                  onClick={() => { setDocType("mandat"); setDocResult(null); setUnivers("documents"); }}
+                  className="group rounded-3xl border-2 border-slate-200 bg-white p-8 text-left shadow-sm transition hover:border-copper hover:shadow-lg"
+                >
+                  <div className="mb-3 text-4xl">🖊️</div>
+                  <div className="text-xl font-bold text-navy">Mandat de vente + DPI</div>
+                  <p className="mt-1 text-sm text-slate-500">
+                    Mandat simple et Document Précontractuel d'Information au modèle exact de
+                    l'agence — pré-remplissage IA depuis la pièce d'identité et le titre de propriété.
+                  </p>
+                  <span className="mt-4 inline-block rounded-lg bg-copper px-4 py-2 text-sm font-semibold text-white transition group-hover:brightness-110">
+                    Remplir un mandat →
+                  </span>
+                </button>
+                <button
+                  type="button"
                   onClick={() => setUnivers("clients")}
                   className="group rounded-3xl border-2 border-slate-200 bg-white p-8 text-left shadow-sm transition hover:border-copper hover:shadow-lg"
                 >
@@ -806,6 +830,21 @@ export default function Home() {
                   </p>
                   <span className="mt-4 inline-block rounded-lg bg-navy px-4 py-2 text-sm font-semibold text-white transition group-hover:bg-navy-deep">
                     Ouvrir les dossiers →
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setUnivers("registre")}
+                  className="group rounded-3xl border-2 border-slate-200 bg-white p-8 text-left shadow-sm transition hover:border-copper hover:shadow-lg"
+                >
+                  <div className="mb-3 text-4xl">📞</div>
+                  <div className="text-xl font-bold text-navy">Registre des appels</div>
+                  <p className="mt-1 text-sm text-slate-500">
+                    Le registre de l'assistante : consigner chaque appel, mail et passage agence,
+                    rechercher, et extraire les données (Excel/CSV). Votre historique est déjà importé.
+                  </p>
+                  <span className="mt-4 inline-block rounded-lg bg-navy px-4 py-2 text-sm font-semibold text-white transition group-hover:bg-navy-deep">
+                    Ouvrir le registre →
                   </span>
                 </button>
                 <button
@@ -1662,6 +1701,10 @@ export default function Home() {
                       </div>
                     )}
 
+                    {docType === "mandat" && (
+                      <MandatForm docInput={docInput} setD={setD} setDocInput={setDocInput} />
+                    )}
+
                     {docType === "bilan" && (
                       <div className="mb-4 grid gap-4 sm:grid-cols-3">
                         <Field label="Propriétaire destinataire *">
@@ -1828,7 +1871,7 @@ export default function Home() {
                       </div>
                     )}
 
-                    {docType !== "preetatdate" && docType !== "facture" && (
+                    {docType !== "preetatdate" && docType !== "facture" && docType !== "mandat" && (
                     <div className="grid gap-4 sm:grid-cols-3">
                       <Field label="Négociateur (signature)">
                         <input className={inputCls} value={docInput.negociateur} onChange={(e) => setD("negociateur", e.target.value)} placeholder="Votre nom" />

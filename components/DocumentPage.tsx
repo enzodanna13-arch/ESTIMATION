@@ -4,6 +4,7 @@ import { useState } from "react";
 import BonVisite from "@/components/BonVisite";
 import CompromisPage from "@/components/CompromisPage";
 import FactureCommission from "@/components/FactureCommission";
+import MandatVente from "@/components/MandatVente";
 import PreEtatDate from "@/components/PreEtatDate";
 import type { DocumentInput, DocumentResult } from "@/lib/docTypes";
 import { DOC_LABELS } from "@/lib/docTypes";
@@ -71,6 +72,11 @@ export default function DocumentPage({
   // Bon de visite : texte légal fixe (loi Hoguet, art. 1240 C. civ.) — sans IA
   if (input.docType === "bonvisite") {
     return <BonVisite input={input} onReset={onReset} />;
+  }
+
+  // Mandat simple de vente + DPI : modèle fixe de l'agence — sans IA
+  if (input.docType === "mandat") {
+    return <MandatVente input={input} onReset={onReset} />;
   }
 
   // Demande de compromis : lettre + fusion des pièces PDF — sans IA

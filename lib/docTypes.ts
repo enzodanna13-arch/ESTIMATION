@@ -1,6 +1,6 @@
 // Génération de documents : types partagés client/serveur
 
-export type DocType = "annonce" | "social" | "crv" | "prospection" | "bilan" | "bonvisite" | "preetatdate" | "facture" | "compromis";
+export type DocType = "annonce" | "social" | "crv" | "prospection" | "bilan" | "bonvisite" | "mandat" | "preetatdate" | "facture" | "compromis";
 
 export const DOC_LABELS: Record<DocType, { titre: string; icone: string; description: string }> = {
   annonce: {
@@ -32,6 +32,11 @@ export const DOC_LABELS: Record<DocType, { titre: string; icone: string; descrip
     titre: "Bon de visite",
     icone: "📝",
     description: "Reconnaissance de visite signée par l'acquéreur — textes de loi inclus, sans IA",
+  },
+  mandat: {
+    titre: "Mandat de vente + DPI",
+    icone: "🖊️",
+    description: "Mandat simple + Document Précontractuel d'Information — modèle exact de l'agence, pré-remplissage IA depuis pièce d'identité et titre de propriété",
   },
   preetatdate: {
     titre: "Devis pré-état daté",
@@ -93,6 +98,16 @@ export interface DocumentInput {
   bilanComptesRendus?: string; // comptes rendus de visites collés — l'IA les synthétise
   bilanActions?: string; // actions menées : portails, panneau, mailing, boost…
   bilanPrixRecommande?: number | null; // prix conseillé — saisi par le NÉGOCIATEUR, jamais par l'IA
+  // Mandat simple de vente + DPI (généré sans IA — modèle fixe de l'agence,
+  // seuls les champs variables sont remplis ; pré-remplissables par l'IA à
+  // partir de la pièce d'identité et du titre de propriété)
+  mandatNumero?: string; // n° de mandat
+  mandatMandant?: string; // état civil complet du/des mandant(s) — multi-lignes
+  mandatBien?: string; // désignation du bien à vendre — multi-lignes
+  mandatPrix?: number | null; // prix de présentation (€)
+  mandatHonoraires?: number | null; // honoraires TTC à la charge vendeur (€)
+  mandatLieu?: string; // lieu de signature (défaut Martigues)
+  mandatDate?: string; // date de signature (texte libre)
   // Devis pré-état daté (généré sans IA — modèle fixe du syndic)
   notaireNom?: string;
   notaireAdresse1?: string; // n° et voie
