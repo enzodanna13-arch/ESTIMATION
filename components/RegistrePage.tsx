@@ -303,56 +303,51 @@ export default function RegistrePage({ onRetour }: { onRetour: () => void }) {
           </div>
 
           {/* Tableau (hauteur limitée + en-tête collant : plus besoin de scroller toute la page) */}
-          <div className="max-h-[65vh] overflow-auto rounded-2xl border border-slate-200 bg-white">
-            <table className="w-full min-w-[960px] text-left text-xs">
-              <thead className="sticky top-0 z-10 bg-slate-100 text-[11px] uppercase tracking-wide text-slate-500 shadow-sm">
-                <tr>
-                  {recherche && <th className="px-2 py-2 font-semibold">Mois</th>}
-                  {REGISTRE_COLONNES.map((c) => (
-                    <th key={c.cle} className="px-2 py-2 font-semibold">{c.label}</th>
-                  ))}
-                  <th className="px-2 py-2" />
-                </tr>
-              </thead>
-              <tbody>
-                {visibles.map((l) => (
-                  <tr key={l._key} className={`border-t border-slate-100 align-top ${l._seed ? "" : "bg-copper-soft/20"}`}>
-                    {recherche && <td className="px-2 py-1.5 whitespace-nowrap text-[10px] uppercase text-slate-400">{l.mois}</td>}
-                    <td className="px-2 py-1.5 whitespace-nowrap">{formatDate(l.date)}</td>
-                    <td className="px-2 py-1.5 whitespace-nowrap">{l.jour}</td>
-                    <td className="px-2 py-1.5 whitespace-nowrap">{l.origine}</td>
-                    <td className="px-2 py-1.5 whitespace-nowrap font-medium">{l.destinataire}</td>
-                    <td className="px-2 py-1.5">{l.nom}</td>
-                    <td className="px-2 py-1.5 whitespace-nowrap">{l.telephone}</td>
-                    <td className="px-2 py-1.5">{l.mail}</td>
-                    <td className="px-2 py-1.5">{l.refBien}</td>
-                    <td className="px-2 py-1.5 min-w-[220px] max-w-[340px]">
-                      {l.message ? (
-                        <button type="button" onClick={() => setApercu(l)} className="line-clamp-2 text-left text-slate-700 hover:text-copper" title="Voir la note complète">
-                          {l.message}
-                        </button>
-                      ) : null}
-                    </td>
-                    <td className="px-2 py-1.5 min-w-[140px] max-w-[240px]"><span className="line-clamp-2">{l.traitement}</span></td>
-                    <td className="px-2 py-1.5 whitespace-nowrap">{l.finalise}</td>
-                    <td className="px-2 py-1.5">
-                      <div className="flex items-center justify-end gap-1.5 whitespace-nowrap">
-                        <button type="button" onClick={() => setApercu(l)} className="rounded px-1.5 py-0.5 text-slate-400 hover:bg-slate-100 hover:text-navy" title="Voir la fiche complète">👁</button>
-                        <button type="button" onClick={() => copierLigne(l)} className="rounded px-1.5 py-0.5 text-slate-400 hover:bg-slate-100 hover:text-copper" title="Copier la ligne">
-                          {copie === l._key ? "✓" : "📋"}
-                        </button>
-                        {!l._seed && (
-                          <button type="button" onClick={() => supprimer(l)} className="rounded px-1.5 py-0.5 text-slate-300 hover:bg-red-50 hover:text-red-600" title="Supprimer">✕</button>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-                {visibles.length === 0 && (
-                  <tr><td colSpan={13} className="px-4 py-8 text-center text-slate-400">Aucun appel.</td></tr>
-                )}
-              </tbody>
-            </table>
+          <div className="space-y-2">
+            {visibles.map((l) => {
+              const aTraiterLigne = !l.traitement.trim() && !l.finalise.trim();
+              return (
+                <div key={l._key} className={`rounded-xl border p-3 shadow-sm transition hover:shadow-md ${l._seed ? "border-slate-200 bg-white" : "border-copper/40 bg-copper-soft/20"}`}>
+                  {/* Ligne 1 : date / origine / négociateur + actions */}
+                  <div className="mb-1.5 flex flex-wrap items-center gap-2 text-xs">
+                    <span className="rounded-md bg-navy px-2 py-0.5 font-semibold text-white">{formatDate(l.date) || l.jour || "—"}</span>
+                    {recherche && <span className="rounded-md bg-slate-100 px-2 py-0.5 font-semibold uppercase text-slate-500">{l.mois}</span>}
+                    {l.origine && <span className="rounded-md bg-slate-100 px-2 py-0.5 text-slate-600">{l.origine}</span>}
+                    {l.destinataire && <span className="rounded-md bg-copper-soft px-2 py-0.5 font-semibold text-copper">👤 {l.destinataire}</span>}
+                    {aTraiterLigne ? (
+                      <span className="rounded-md bg-amber-100 px-2 py-0.5 font-semibold text-amber-700">À traiter</span>
+                    ) : l.finalise.trim() ? (
+                      <span className="rounded-md bg-emerald-100 px-2 py-0.5 font-semibold text-emerald-700">✓ {l.finalise}</span>
+                    ) : null}
+                    <div className="ml-auto flex items-center gap-1">
+                      <button type="button" onClick={() => setApercu(l)} className="rounded px-1.5 py-0.5 text-slate-400 hover:bg-slate-100 hover:text-navy" title="Voir la fiche complète">👁</button>
+                      <button type="button" onClick={() => copierLigne(l)} className="rounded px-1.5 py-0.5 text-slate-400 hover:bg-slate-100 hover:text-copper" title="Copier la ligne">{copie === l._key ? "✓" : "📋"}</button>
+                      {!l._seed && <button type="button" onClick={() => supprimer(l)} className="rounded px-1.5 py-0.5 text-slate-300 hover:bg-red-50 hover:text-red-600" title="Supprimer">✕</button>}
+                    </div>
+                  </div>
+                  {/* Ligne 2 : nom + coordonnées */}
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-sm">
+                    {l.nom && <span className="font-bold text-navy">{l.nom}</span>}
+                    {l.telephone && <a href={`tel:${l.telephone.replace(/[^0-9+]/g, "")}`} className="text-slate-600 hover:text-copper">📞 {l.telephone}</a>}
+                    {l.mail && <a href={`mailto:${l.mail}`} className="text-slate-600 hover:text-copper">✉ {l.mail}</a>}
+                    {l.refBien && <span className="text-slate-500">🏠 {l.refBien}</span>}
+                  </div>
+                  {/* Ligne 3 : message */}
+                  {l.message && (
+                    <button type="button" onClick={() => setApercu(l)} className="mt-1 line-clamp-2 w-full text-left text-sm text-slate-700 hover:text-copper" title="Voir la note complète">
+                      💬 {l.message}
+                    </button>
+                  )}
+                  {/* Ligne 4 : traitement */}
+                  {l.traitement.trim() && (
+                    <div className="mt-1 line-clamp-1 text-xs text-slate-500">↳ <span className="font-semibold">Traitement :</span> {l.traitement}</div>
+                  )}
+                </div>
+              );
+            })}
+            {visibles.length === 0 && (
+              <div className="rounded-xl border border-slate-200 bg-white px-4 py-10 text-center text-slate-400">Aucun appel.</div>
+            )}
           </div>
 
           {/* Pagination (bas) */}
