@@ -98,7 +98,9 @@ export default function RegistrePage({ onRetour }: { onRetour: () => void }) {
       base = base.filter((l) => l.mois?.toUpperCase() === moisActif);
     }
     if (aTraiter) base = base.filter((l) => !l.traitement.trim() && !l.finalise.trim());
-    return base;
+    // Les appels les plus récents (les derniers consignés) remontent en haut :
+    // le fichier est en ordre chronologique croissant, donc on l'inverse.
+    return [...base].reverse();
   }, [toutes, recherche, moisActif, aTraiter]);
 
   // Pagination : 50 appels par page pour ne pas avoir une page interminable
