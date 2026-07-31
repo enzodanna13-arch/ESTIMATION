@@ -54,6 +54,7 @@ export default function RegistrePage({ onRetour }: { onRetour: () => void }) {
   const [formOuvert, setFormOuvert] = useState(false);
   const [apercu, setApercu] = useState<Ligne | null>(null); // fiche détail (notes complètes)
   const [copie, setCopie] = useState<string | null>(null); // clé de la ligne copiée
+  const [page, setPage] = useState(1); // pagination du tableau
 
   useEffect(() => {
     (async () => {
@@ -100,9 +101,15 @@ export default function RegistrePage({ onRetour }: { onRetour: () => void }) {
     return base;
   }, [toutes, recherche, moisActif, aTraiter]);
 
-  const PLAFOND = 600;
-  const tronque = lignesAffichees.length > PLAFOND;
-  const visibles = tronque ? lignesAffichees.slice(0, PLAFOND) : lignesAffichees;
+  // Pagination : 50 appels par page pour ne pas avoir une page interminable
+  const PAR_PAGE = 50;
+  const totalPages = Math.max(1, Math.ceil(lignesAffichees.length / PAR_PAGE));
+  const pageSure = Math.min(page, totalPages);
+  const visibles = lignesAffichees.slice((pageSure - 1) * PAR_PAGE, pageSure * PAR_PAGE);
+  // Revenir à la page 1 quand on change de mois / recherche / filtre
+  useEffect(() => {
+    setPage(1);
+  }, [moisActif, recherche, aTraiter]);
 
   const set = (k: keyof typeof champsVides, v: string) => setForm((p) => ({ ...p, [k]: v }));
 
@@ -279,16 +286,26 @@ export default function RegistrePage({ onRetour }: { onRetour: () => void }) {
             </div>
           )}
 
-          {/* Compteur */}
-          <div className="mb-2 text-xs text-slate-500">
-            {recherche ? `${lignesAffichees.length} résultat(s) pour « ${q} »` : `${lignesAffichees.length} appel(s) — ${moisActif}`}
-            {tronque && ` (affichage des ${PLAFOND} premiers — affinez la recherche ou exportez pour tout voir)`}
+          {/* Compteur + pagination (haut) */}
+          <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+            <div className="text-xs text-slate-500">
+              {recherche ? `${lignesAffichees.length} résultat(s) pour « ${q} »` : `${lignesAffichees.length} appel(s) — ${moisActif}`}
+            </div>
+            {totalPages > 1 && (
+              <div className="flex items-center gap-1.5 text-xs">
+                <button type="button" disabled={pageSure <= 1} onClick={() => setPage(1)} className="rounded border border-slate-200 px-2 py-1 text-slate-600 hover:bg-slate-100 disabled:opacity-40" title="Première page">«</button>
+                <button type="button" disabled={pageSure <= 1} onClick={() => setPage((p) => Math.max(1, p - 1))} className="rounded border border-slate-200 px-2.5 py-1 font-semibold text-slate-600 hover:bg-slate-100 disabled:opacity-40">‹ Précédent</button>
+                <span className="px-1 font-semibold text-navy">Page {pageSure} / {totalPages}</span>
+                <button type="button" disabled={pageSure >= totalPages} onClick={() => setPage((p) => Math.min(totalPages, p + 1))} className="rounded border border-slate-200 px-2.5 py-1 font-semibold text-slate-600 hover:bg-slate-100 disabled:opacity-40">Suivant ›</button>
+                <button type="button" disabled={pageSure >= totalPages} onClick={() => setPage(totalPages)} className="rounded border border-slate-200 px-2 py-1 text-slate-600 hover:bg-slate-100 disabled:opacity-40" title="Dernière page">»</button>
+              </div>
+            )}
           </div>
 
-          {/* Tableau */}
-          <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white">
-            <table className="w-full min-w-[900px] text-left text-xs">
-              <thead className="bg-slate-50 text-[11px] uppercase tracking-wide text-slate-500">
+          {/* Tableau (hauteur limitée + en-tête collant : plus besoin de scroller toute la page) */}
+          <div className="max-h-[65vh] overflow-auto rounded-2xl border border-slate-200 bg-white">
+            <table className="w-full min-w-[960px] text-left text-xs">
+              <thead className="sticky top-0 z-10 bg-slate-100 text-[11px] uppercase tracking-wide text-slate-500 shadow-sm">
                 <tr>
                   {recherche && <th className="px-2 py-2 font-semibold">Mois</th>}
                   {REGISTRE_COLONNES.map((c) => (
@@ -337,8 +354,18 @@ export default function RegistrePage({ onRetour }: { onRetour: () => void }) {
               </tbody>
             </table>
           </div>
+
+          {/* Pagination (bas) */}
+          {totalPages > 1 && (
+            <div className="mt-3 flex items-center justify-center gap-1.5 text-xs">
+              <button type="button" disabled={pageSure <= 1} onClick={() => { setPage((p) => Math.max(1, p - 1)); window.scrollTo({ top: 0, behavior: "smooth" }); }} className="rounded border border-slate-200 bg-white px-3 py-1.5 font-semibold text-slate-600 hover:bg-slate-100 disabled:opacity-40">‹ Précédent</button>
+              <span className="px-2 font-semibold text-navy">Page {pageSure} / {totalPages}</span>
+              <button type="button" disabled={pageSure >= totalPages} onClick={() => { setPage((p) => Math.min(totalPages, p + 1)); window.scrollTo({ top: 0, behavior: "smooth" }); }} className="rounded border border-slate-200 bg-white px-3 py-1.5 font-semibold text-slate-600 hover:bg-slate-100 disabled:opacity-40">Suivant ›</button>
+            </div>
+          )}
+
           <p className="mt-2 text-xs text-slate-400">
-            Astuce : cliquez sur un message ou sur 👁 pour lire la note complète, et sur 📋 pour copier la ligne. Les
+            Astuce : {totalPages > 1 ? "naviguez par pages (50 appels/page), " : ""}cliquez sur un message ou sur 👁 pour lire la note complète, et sur 📋 pour copier la ligne. Les
             lignes sur fond cuivré sont les appels saisis dans l&apos;outil (modifiables) ; les autres proviennent de
             l&apos;import de votre registre Excel (lecture seule).
           </p>
