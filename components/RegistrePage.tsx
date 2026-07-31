@@ -30,6 +30,8 @@ function formatDate(d?: string): string {
 
 // Ordre chronologique des mois pour le tri (le plus récent en premier)
 const MOIS_ORDRE = ["JANVIER", "FEVRIER", "FÉVRIER", "MARS", "AVRIL", "MAI", "JUIN", "JUILLET", "AOUT", "AOÛT", "SEPTEMBRE", "OCTOBRE", "NOVEMBRE", "DECEMBRE", "DÉCEMBRE"];
+// Noms « propres » des 12 mois pour créer un nouveau mois
+const MOIS_NOMS = ["JANVIER", "FEVRIER", "MARS", "AVRIL", "MAI", "JUIN", "JUILLET", "AOUT", "SEPTEMBRE", "OCTOBRE", "NOVEMBRE", "DECEMBRE"];
 function rangMois(m: string): number {
   const up = m.toUpperCase();
   const annee = parseInt((up.match(/20\d\d/) ?? ["0"])[0], 10);
@@ -55,6 +57,10 @@ export default function RegistrePage({ onRetour }: { onRetour: () => void }) {
   const [apercu, setApercu] = useState<Ligne | null>(null); // fiche détail (notes complètes)
   const [copie, setCopie] = useState<string | null>(null); // clé de la ligne copiée
   const [page, setPage] = useState(1); // pagination du tableau
+  const [moisAjoutes, setMoisAjoutes] = useState<string[]>([]); // mois créés à la main
+  const [ajoutMoisOuvert, setAjoutMoisOuvert] = useState(false);
+  const [nouveauMoisNom, setNouveauMoisNom] = useState("");
+  const [nouveauMoisAnnee, setNouveauMoisAnnee] = useState("");
 
   useEffect(() => {
     (async () => {
@@ -72,12 +78,13 @@ export default function RegistrePage({ onRetour }: { onRetour: () => void }) {
     return [...a, ...b];
   }, [seed, news]);
 
-  // Liste des mois (récent → ancien)
+  // Liste des mois (récent → ancien), incluant les mois ajoutés à la main
   const mois = useMemo(() => {
     const set = new Set<string>();
     for (const l of toutes) if (l.mois) set.add(l.mois.toUpperCase());
+    for (const m of moisAjoutes) set.add(m.toUpperCase());
     return [...set].sort((x, y) => rangMois(y) - rangMois(x));
-  }, [toutes]);
+  }, [toutes, moisAjoutes]);
 
   // Mois actif par défaut = le plus récent
   useEffect(() => {
@@ -145,6 +152,20 @@ export default function RegistrePage({ onRetour }: { onRetour: () => void }) {
     if (!confirm("Supprimer cet appel ?")) return;
     const ok = await deleteAppel(l.mois, l.id);
     if (ok) setNews((p) => p.filter((e) => e.id !== l.id));
+  };
+
+  // Créer un nouveau mois (onglet) et s'y positionner
+  const ajouterMois = () => {
+    const nom = nouveauMoisNom.trim().toUpperCase();
+    const annee = nouveauMoisAnnee.trim();
+    if (!nom || !/^\d{4}$/.test(annee)) return;
+    const cle = `${nom} ${annee}`;
+    if (!mois.includes(cle)) setMoisAjoutes((p) => [...p, cle]);
+    setMoisActif(cle);
+    setAjoutMoisOuvert(false);
+    setNouveauMoisNom("");
+    setNouveauMoisAnnee("");
+    setFormOuvert(true); // ouvrir directement la saisie d'un appel
   };
 
   // Texte lisible d'un appel (pour copier une ligne en un clic)
@@ -233,7 +254,7 @@ export default function RegistrePage({ onRetour }: { onRetour: () => void }) {
 
           {/* Onglets mois (masqués en recherche) */}
           {!recherche && (
-            <div className="mb-3 flex flex-wrap gap-1.5">
+            <div className="mb-3 flex flex-wrap items-center gap-1.5">
               {mois.map((m) => (
                 <button
                   key={m}
@@ -244,6 +265,35 @@ export default function RegistrePage({ onRetour }: { onRetour: () => void }) {
                   {m}
                 </button>
               ))}
+              <button
+                type="button"
+                onClick={() => setAjoutMoisOuvert(!ajoutMoisOuvert)}
+                className="rounded-full border border-dashed border-copper px-3 py-1 text-xs font-bold text-copper transition hover:bg-copper-soft/40"
+                title="Créer un nouveau mois"
+              >
+                + Mois
+              </button>
+            </div>
+          )}
+
+          {/* Sélecteur de nouveau mois */}
+          {!recherche && ajoutMoisOuvert && (
+            <div className="mb-3 flex flex-wrap items-end gap-2 rounded-xl border border-copper/40 bg-copper-soft/30 p-3">
+              <label className="text-xs font-semibold text-slate-600">
+                Mois
+                <select className={`${inputCls} mt-1`} value={nouveauMoisNom} onChange={(e) => setNouveauMoisNom(e.target.value)}>
+                  <option value="">— choisir —</option>
+                  {MOIS_NOMS.map((m) => <option key={m} value={m}>{m}</option>)}
+                </select>
+              </label>
+              <label className="text-xs font-semibold text-slate-600">
+                Année
+                <input type="number" min="2020" max="2100" className={`${inputCls} mt-1 w-28`} value={nouveauMoisAnnee} onChange={(e) => setNouveauMoisAnnee(e.target.value)} placeholder="2026" />
+              </label>
+              <button type="button" onClick={ajouterMois} disabled={!nouveauMoisNom || !/^\d{4}$/.test(nouveauMoisAnnee.trim())} className="rounded-lg bg-navy px-4 py-2 text-sm font-bold text-white transition hover:bg-navy-deep disabled:opacity-50">
+                Créer le mois
+              </button>
+              <button type="button" onClick={() => setAjoutMoisOuvert(false)} className="rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-500 hover:bg-slate-100">Annuler</button>
             </div>
           )}
 
