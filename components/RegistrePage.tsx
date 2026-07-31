@@ -17,9 +17,16 @@ const inputCls =
 type Ligne = AppelEntry & { _seed?: boolean; _key: string };
 
 const champsVides = {
-  jour: "", origine: "appel entrant", destinataire: "", nom: "", telephone: "",
+  date: "", jour: "", origine: "appel entrant", destinataire: "", nom: "", telephone: "",
   mail: "", refBien: "", message: "", traitement: "", finalise: "",
 };
+
+// AAAA-MM-JJ → JJ/MM/AAAA (pour l'affichage), sinon renvoie tel quel
+function formatDate(d?: string): string {
+  if (!d) return "";
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(d);
+  return m ? `${m[3]}/${m[2]}/${m[1]}` : d;
+}
 
 // Ordre chronologique des mois pour le tri (le plus récent en premier)
 const MOIS_ORDRE = ["JANVIER", "FEVRIER", "FÉVRIER", "MARS", "AVRIL", "MAI", "JUIN", "JUILLET", "AOUT", "AOÛT", "SEPTEMBRE", "OCTOBRE", "NOVEMBRE", "DECEMBRE", "DÉCEMBRE"];
@@ -45,6 +52,8 @@ export default function RegistrePage({ onRetour }: { onRetour: () => void }) {
   const [envoi, setEnvoi] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [formOuvert, setFormOuvert] = useState(false);
+  const [apercu, setApercu] = useState<Ligne | null>(null); // fiche détail (notes complètes)
+  const [copie, setCopie] = useState<string | null>(null); // clé de la ligne copiée
 
   useEffect(() => {
     (async () => {
@@ -127,6 +136,35 @@ export default function RegistrePage({ onRetour }: { onRetour: () => void }) {
     if (!confirm("Supprimer cet appel ?")) return;
     const ok = await deleteAppel(l.mois, l.id);
     if (ok) setNews((p) => p.filter((e) => e.id !== l.id));
+  };
+
+  // Texte lisible d'un appel (pour copier une ligne en un clic)
+  const ligneEnTexte = (l: Ligne): string =>
+    [
+      ["Date", formatDate(l.date) || l.jour],
+      ["Mois", l.mois],
+      ["Origine", l.origine],
+      ["Destinataire", l.destinataire],
+      ["Nom", l.nom],
+      ["Téléphone", l.telephone],
+      ["Mail", l.mail],
+      ["Réf. bien", l.refBien],
+      ["Message", l.message],
+      ["Traitement", l.traitement],
+      ["Finalisé", l.finalise],
+    ]
+      .filter(([, v]) => v && v.trim())
+      .map(([k, v]) => `${k} : ${v}`)
+      .join("\n");
+
+  const copierLigne = async (l: Ligne) => {
+    try {
+      await navigator.clipboard.writeText(ligneEnTexte(l));
+      setCopie(l._key);
+      setTimeout(() => setCopie((c) => (c === l._key ? null : c)), 1800);
+    } catch {
+      /* presse-papiers indisponible */
+    }
   };
 
   const exporter = (portee: "mois" | "tout") => {
@@ -218,6 +256,7 @@ export default function RegistrePage({ onRetour }: { onRetour: () => void }) {
                 Nouvel appel — enregistré dans <span className="uppercase">{moisActif || mois[0]}</span>
               </div>
               <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+                <input type="date" className={inputCls} value={form.date} onChange={(e) => set("date", e.target.value)} title="Date de l'appel" />
                 <input className={inputCls} value={form.jour} onChange={(e) => set("jour", e.target.value)} placeholder="Jour (ex. lundi 3)" />
                 <select className={inputCls} value={form.origine} onChange={(e) => set("origine", e.target.value)}>
                   {["appel entrant", "appel sortant", "mail", "passage agence", "sms", "autre"].map((o) => <option key={o}>{o}</option>)}
@@ -262,6 +301,7 @@ export default function RegistrePage({ onRetour }: { onRetour: () => void }) {
                 {visibles.map((l) => (
                   <tr key={l._key} className={`border-t border-slate-100 align-top ${l._seed ? "" : "bg-copper-soft/20"}`}>
                     {recherche && <td className="px-2 py-1.5 whitespace-nowrap text-[10px] uppercase text-slate-400">{l.mois}</td>}
+                    <td className="px-2 py-1.5 whitespace-nowrap">{formatDate(l.date)}</td>
                     <td className="px-2 py-1.5 whitespace-nowrap">{l.jour}</td>
                     <td className="px-2 py-1.5 whitespace-nowrap">{l.origine}</td>
                     <td className="px-2 py-1.5 whitespace-nowrap font-medium">{l.destinataire}</td>
@@ -269,27 +309,79 @@ export default function RegistrePage({ onRetour }: { onRetour: () => void }) {
                     <td className="px-2 py-1.5 whitespace-nowrap">{l.telephone}</td>
                     <td className="px-2 py-1.5">{l.mail}</td>
                     <td className="px-2 py-1.5">{l.refBien}</td>
-                    <td className="px-2 py-1.5 min-w-[200px]">{l.message}</td>
-                    <td className="px-2 py-1.5 min-w-[140px]">{l.traitement}</td>
+                    <td className="px-2 py-1.5 min-w-[220px] max-w-[340px]">
+                      {l.message ? (
+                        <button type="button" onClick={() => setApercu(l)} className="line-clamp-2 text-left text-slate-700 hover:text-copper" title="Voir la note complète">
+                          {l.message}
+                        </button>
+                      ) : null}
+                    </td>
+                    <td className="px-2 py-1.5 min-w-[140px] max-w-[240px]"><span className="line-clamp-2">{l.traitement}</span></td>
                     <td className="px-2 py-1.5 whitespace-nowrap">{l.finalise}</td>
-                    <td className="px-2 py-1.5 text-right">
-                      {!l._seed && (
-                        <button type="button" onClick={() => supprimer(l)} className="text-slate-300 hover:text-red-600" title="Supprimer">✕</button>
-                      )}
+                    <td className="px-2 py-1.5">
+                      <div className="flex items-center justify-end gap-1.5 whitespace-nowrap">
+                        <button type="button" onClick={() => setApercu(l)} className="rounded px-1.5 py-0.5 text-slate-400 hover:bg-slate-100 hover:text-navy" title="Voir la fiche complète">👁</button>
+                        <button type="button" onClick={() => copierLigne(l)} className="rounded px-1.5 py-0.5 text-slate-400 hover:bg-slate-100 hover:text-copper" title="Copier la ligne">
+                          {copie === l._key ? "✓" : "📋"}
+                        </button>
+                        {!l._seed && (
+                          <button type="button" onClick={() => supprimer(l)} className="rounded px-1.5 py-0.5 text-slate-300 hover:bg-red-50 hover:text-red-600" title="Supprimer">✕</button>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))}
                 {visibles.length === 0 && (
-                  <tr><td colSpan={12} className="px-4 py-8 text-center text-slate-400">Aucun appel.</td></tr>
+                  <tr><td colSpan={13} className="px-4 py-8 text-center text-slate-400">Aucun appel.</td></tr>
                 )}
               </tbody>
             </table>
           </div>
           <p className="mt-2 text-xs text-slate-400">
-            Les lignes sur fond cuivré sont les appels saisis dans l&apos;outil (modifiables). Les autres proviennent de
+            Astuce : cliquez sur un message ou sur 👁 pour lire la note complète, et sur 📋 pour copier la ligne. Les
+            lignes sur fond cuivré sont les appels saisis dans l&apos;outil (modifiables) ; les autres proviennent de
             l&apos;import de votre registre Excel (lecture seule).
           </p>
         </>
+      )}
+
+      {/* Fiche détail d'un appel (notes complètes) */}
+      {apercu && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-navy-deep/70 p-4 backdrop-blur-sm" onClick={() => setApercu(null)}>
+          <div className="max-h-[85vh] w-full max-w-lg overflow-auto rounded-2xl bg-white p-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
+            <div className="mb-3 flex items-start justify-between gap-3">
+              <div>
+                <div className="text-lg font-bold text-navy">{apercu.nom || "Appel"}</div>
+                <div className="text-xs text-slate-500">{[formatDate(apercu.date) || apercu.jour, apercu.mois, apercu.origine].filter(Boolean).join(" · ")}</div>
+              </div>
+              <button type="button" onClick={() => setApercu(null)} className="rounded-lg border border-slate-200 px-2.5 py-1 text-sm text-slate-500 hover:bg-slate-100">✕</button>
+            </div>
+            <dl className="space-y-2 text-sm">
+              {([
+                ["Destinataire", apercu.destinataire],
+                ["Téléphone", apercu.telephone],
+                ["Mail", apercu.mail],
+                ["Réf. bien", apercu.refBien],
+                ["Message", apercu.message],
+                ["Traitement de la demande", apercu.traitement],
+                ["Finalisé", apercu.finalise],
+              ] as [string, string][])
+                .filter(([, v]) => v && v.trim())
+                .map(([k, v]) => (
+                  <div key={k}>
+                    <dt className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">{k}</dt>
+                    <dd className="whitespace-pre-wrap text-slate-800">{v}</dd>
+                  </div>
+                ))}
+            </dl>
+            <div className="mt-4 flex items-center gap-2">
+              <button type="button" onClick={() => copierLigne(apercu)} className="rounded-lg bg-copper px-4 py-1.5 text-sm font-bold text-white transition hover:brightness-110">
+                {copie === apercu._key ? "✓ Copié" : "📋 Copier la fiche"}
+              </button>
+              <button type="button" onClick={() => setApercu(null)} className="rounded-lg border border-slate-300 px-4 py-1.5 text-sm font-medium text-slate-600 hover:bg-slate-100">Fermer</button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

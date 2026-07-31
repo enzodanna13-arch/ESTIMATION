@@ -32,6 +32,7 @@ export async function POST(request: Request) {
       id: nettoyer(b.id) || `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
       createdAt: typeof b.createdAt === "number" ? b.createdAt : Date.now(),
       mois,
+      date: nettoyer(b.date),
       jour: nettoyer(b.jour),
       origine: nettoyer(b.origine),
       destinataire: nettoyer(b.destinataire),

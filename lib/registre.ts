@@ -10,6 +10,7 @@ const headers = () => ({ "x-history-key": getHistoryKey() });
 
 // Colonnes du registre, dans l'ordre du fichier de l'agence
 export const REGISTRE_COLONNES: { cle: keyof AppelEntry; label: string }[] = [
+  { cle: "date", label: "Date" },
   { cle: "jour", label: "Jour" },
   { cle: "origine", label: "Origine appel" },
   { cle: "destinataire", label: "Destinataire" },

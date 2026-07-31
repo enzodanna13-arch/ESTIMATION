@@ -10,6 +10,7 @@ export interface AppelEntry {
   id: string;
   createdAt: number;
   mois: string; // ex. « AVRIL 2026 » (regroupement, majuscules)
+  date?: string; // date réelle de l'appel (AAAA-MM-JJ), facultative
   jour: string; // ex. « lundi 2 »
   origine: string; // appel entrant, mail, passage agence…
   destinataire: string; // négociateur / initiales
