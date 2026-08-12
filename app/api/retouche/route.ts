@@ -34,16 +34,14 @@ function construirePrompt(req: EditRequest): { prompt: string; negative: string 
   }
   const style = STYLES_DECO.find((s) => s.id === req.style);
   const room = ROOM_TYPES.find((r) => r.id === req.roomType);
-  const styleFrag = req.style === "auto" || !style
-    ? "the most fitting interior design style for this room"
-    : style.prompt;
-  const roomFrag = room ? room.prompt : "tasteful furniture adapted to the room";
+  const styleFrag = req.style === "auto" || !style ? "a tasteful style that best fits this room" : style.prompt;
+  const roomFrag = room ? room.prompt : "furniture adapted to the room";
   return {
     prompt:
-      `Virtually stage this empty room as a ${roomFrag}. Style: ${styleFrag}. ` +
-      "Photorealistic real-estate home staging. Respect the exact room dimensions, perspective, windows, doors, openings and existing architecture. " +
-      "Do not modify the structure, walls, floor or ceiling. Natural lighting, professional listing photo.",
-    negative: "changed architecture, extra windows, extra doors, distortion, people, text, watermark, unrealistic",
+      `Add furniture and decoration to this exact room to stage it as a ${roomFrag}, in ${styleFrag}. ` +
+      "CRITICAL: keep the existing room strictly identical to the input photo — do NOT change the walls, wall colour, flooring, floor material, ceiling, windows, doors, staircase, radiators, mouldings, kitchen, lighting, camera angle, framing or perspective. " +
+      "ONLY add furniture and decor objects, placed realistically within the real dimensions and openings. The result must be the SAME real room as the photo, simply furnished — photorealistic, nothing else altered.",
+    negative: "changed architecture, repainted walls, different floor, extra windows, extra doors, distortion, people, text, watermark, unrealistic",
   };
 }
 
@@ -84,7 +82,12 @@ async function viaReplicate(req: EditRequest, prompt: string): Promise<EditResul
 async function viaBfl(req: EditRequest, prompt: string): Promise<EditResult> {
   const key = process.env.BFL_API_KEY;
   if (!key) return { ok: false, notConfigured: true, error: "BFL_API_KEY non défini." };
-  const modele = process.env.BFL_MODEL || "flux-kontext-pro"; // ou flux-kontext-max
+  // Le meublage exige une préservation stricte de la pièce → modèle « max »
+  // (meilleur suivi d'instructions) ; les autres actions restent en « pro ».
+  const modele =
+    req.action === "virtualStaging"
+      ? process.env.BFL_MODEL_STAGING || "flux-kontext-max"
+      : process.env.BFL_MODEL || "flux-kontext-pro";
   const base = process.env.BFL_API_BASE || "https://api.bfl.ai";
 
   const create = await fetch(`${base}/v1/${modele}`, {
