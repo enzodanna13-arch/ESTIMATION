@@ -69,6 +69,42 @@ async function viaReplicate(req: EditRequest, prompt: string): Promise<EditResul
   return { ok: true, provider: "replicate", image: { mediaType: bin.headers.get("content-type") ?? "image/png", data: buf.toString("base64") } };
 }
 
+// ---- Fournisseur Black Forest Labs — FLUX Kontext (édition par instruction) ----
+async function viaBfl(req: EditRequest, prompt: string): Promise<EditResult> {
+  const key = process.env.BFL_API_KEY;
+  if (!key) return { ok: false, notConfigured: true, error: "BFL_API_KEY non défini." };
+  const modele = process.env.BFL_MODEL || "flux-kontext-pro"; // ou flux-kontext-max
+  const base = process.env.BFL_API_BASE || "https://api.bfl.ai";
+
+  const create = await fetch(`${base}/v1/${modele}`, {
+    method: "POST",
+    headers: { "x-key": key, "content-type": "application/json", accept: "application/json" },
+    body: JSON.stringify({ prompt, input_image: req.image.data, output_format: "jpeg", safety_tolerance: 2 }),
+  });
+  if (create.status === 402) return { ok: false, error: "Crédits BFL insuffisants — rechargez le compte Black Forest Labs." };
+  if (create.status === 401 || create.status === 403) return { ok: false, error: "Clé BFL refusée." };
+  if (!create.ok) return { ok: false, error: `BFL: ${create.status}` };
+  const cj = (await create.json()) as { id?: string; polling_url?: string };
+  const pollUrl = cj.polling_url || (cj.id ? `${base}/v1/get_result?id=${cj.id}` : null);
+  if (!pollUrl) return { ok: false, error: "BFL: réponse invalide." };
+
+  const debut = Date.now();
+  while (Date.now() - debut < 270_000) {
+    await new Promise((r) => setTimeout(r, 2000));
+    const pr = await fetch(pollUrl, { headers: { "x-key": key, accept: "application/json" } });
+    const pj = (await pr.json()) as { status: string; result?: { sample?: string } };
+    if (pj.status === "Ready" && pj.result?.sample) {
+      const bin = await fetch(pj.result.sample);
+      const buf = Buffer.from(await bin.arrayBuffer());
+      return { ok: true, provider: "bfl", image: { mediaType: "image/jpeg", data: buf.toString("base64") } };
+    }
+    if (["Error", "Failed", "Content Moderated", "Request Moderated"].includes(pj.status)) {
+      return { ok: false, error: `BFL: ${pj.status}` };
+    }
+  }
+  return { ok: false, error: "BFL: délai dépassé." };
+}
+
 // ---- Fournisseur HTTP générique ----
 async function viaHttp(req: EditRequest, prompt: string): Promise<EditResult> {
   const endpoint = process.env.IMAGE_EDIT_ENDPOINT;
@@ -109,7 +145,7 @@ export async function POST(request: Request) {
         ok: false,
         notConfigured: true,
         error:
-          "Le moteur IA de génération d'images n'est pas encore connecté. L'espace est prêt : définissez IMAGE_EDIT_PROVIDER (replicate ou http) et les clés associées pour activer « Vider la pièce » et « Meubler ».",
+          "Le moteur IA de génération d'images n'est pas encore connecté. L'espace est prêt : définissez IMAGE_EDIT_PROVIDER (bfl, replicate ou http) et les clés associées pour activer « Vider la pièce » et « Meubler ».",
       } satisfies EditResult,
       { status: 501 },
     );
@@ -117,7 +153,10 @@ export async function POST(request: Request) {
 
   const { prompt } = construirePrompt(req);
   try {
-    const result = fournisseur === "replicate" ? await viaReplicate(req, prompt) : await viaHttp(req, prompt);
+    const result =
+      fournisseur === "bfl" ? await viaBfl(req, prompt)
+      : fournisseur === "replicate" ? await viaReplicate(req, prompt)
+      : await viaHttp(req, prompt);
     return Response.json(result, { status: result.ok ? 200 : result.notConfigured ? 501 : 502 });
   } catch (err) {
     console.error("Retouche IA — échec :", err);
