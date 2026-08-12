@@ -10,6 +10,7 @@ import {
   getClientFileB64,
   listClients,
   telechargerClientFile,
+  updateClient,
   type ClientDossier,
   type PieceClient,
 } from "@/lib/clients";
@@ -323,6 +324,7 @@ export default function ClientsPage({ onRetour }: { onRetour: () => void }) {
   const [busy, setBusy] = useState(false);
   const [erreur, setErreur] = useState<string | null>(null);
   const [rapportOuvert, setRapportOuvert] = useState(false);
+  const [edit, setEdit] = useState<{ nom: string; prenom: string; tel: string; email: string; bien: string; nego: string } | null>(null);
 
   const recharger = () => listClients().then(setDossiers).catch(() => setDossiers([]));
   useEffect(() => {
@@ -385,6 +387,19 @@ export default function ClientsPage({ onRetour }: { onRetour: () => void }) {
     void recharger();
   };
 
+  const enregistrerEdit = async () => {
+    if (!ouvert || !edit) return;
+    if (!edit.nom.trim()) return setErreur("Le nom du client est requis.");
+    setBusy(true); setErreur(null);
+    const maj = await updateClient(ouvert.id, {
+      nom: edit.nom.trim(), prenom: edit.prenom.trim(), tel: edit.tel.trim(),
+      email: edit.email.trim(), bien: edit.bien.trim(), negociateur: edit.nego.trim(),
+    });
+    setBusy(false);
+    if (!maj) return setErreur("Enregistrement impossible.");
+    setOuvert(maj); setEdit(null); void recharger();
+  };
+
   // ---------- Fiche acquéreur / investisseur (CRM) ----------
   if (ouvert && (ouvert.typeClient === "acquereur" || ouvert.typeClient === "investisseur")) {
     return (
@@ -402,9 +417,9 @@ export default function ClientsPage({ onRetour }: { onRetour: () => void }) {
       <div>
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h2 className="text-2xl font-bold text-navy">📁 {ouvert.nom}</h2>
+            <h2 className="text-2xl font-bold text-navy">📁 {[ouvert.prenom, ouvert.nom].filter(Boolean).join(" ") || ouvert.nom}</h2>
             <p className="text-sm text-slate-500">
-              {[ouvert.bien, ouvert.negociateur && `Négociateur : ${ouvert.negociateur}`, `créé le ${dateFr(ouvert.createdAt)}`]
+              {[ouvert.bien, ouvert.tel, ouvert.email, ouvert.negociateur && `Négociateur : ${ouvert.negociateur}`, `créé le ${dateFr(ouvert.createdAt)}`]
                 .filter(Boolean)
                 .join(" · ")}
             </p>
@@ -413,11 +428,32 @@ export default function ClientsPage({ onRetour }: { onRetour: () => void }) {
             <button onClick={() => setOuvert(null)} className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-600 transition hover:bg-slate-100">
               ← Tous les dossiers
             </button>
+            <button onClick={() => setEdit({ nom: ouvert.nom, prenom: ouvert.prenom ?? "", tel: ouvert.tel ?? "", email: ouvert.email ?? "", bien: ouvert.bien, nego: ouvert.negociateur })} className="rounded-lg border border-copper bg-white px-3 py-1.5 text-sm font-bold text-copper transition hover:bg-copper-soft/40">
+              ✏️ Modifier la fiche
+            </button>
             <button onClick={() => void supprimerDossier()} className="rounded-lg border border-red-200 bg-white px-3 py-1.5 text-sm font-medium text-red-600 transition hover:bg-red-50">
               Supprimer le dossier
             </button>
           </div>
         </div>
+
+        {edit && (
+          <div className="mb-4 rounded-2xl border border-copper/40 bg-copper-soft/30 p-4">
+            <div className="mb-2 text-sm font-bold text-navy">Modifier la fiche du client</div>
+            <div className="grid gap-3 sm:grid-cols-3">
+              <input className={inputCls} value={edit.nom} onChange={(e) => setEdit({ ...edit, nom: e.target.value })} placeholder="Nom *" />
+              <input className={inputCls} value={edit.prenom} onChange={(e) => setEdit({ ...edit, prenom: e.target.value })} placeholder="Prénom" />
+              <input className={inputCls} value={edit.nego} onChange={(e) => setEdit({ ...edit, nego: e.target.value })} placeholder="Négociateur" />
+              <input className={inputCls} value={edit.tel} onChange={(e) => setEdit({ ...edit, tel: e.target.value })} placeholder="Téléphone" />
+              <input className={inputCls} value={edit.email} onChange={(e) => setEdit({ ...edit, email: e.target.value })} placeholder="Email" />
+              <input className={inputCls} value={edit.bien} onChange={(e) => setEdit({ ...edit, bien: e.target.value })} placeholder="Bien concerné" />
+            </div>
+            <div className="mt-3 flex items-center gap-2">
+              <button onClick={() => void enregistrerEdit()} disabled={busy} className="rounded-lg bg-copper px-4 py-1.5 text-sm font-bold text-white transition hover:brightness-110 disabled:opacity-50">{busy ? "Enregistrement…" : "Enregistrer"}</button>
+              <button onClick={() => setEdit(null)} className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm text-slate-600 hover:bg-slate-100">Annuler</button>
+            </div>
+          </div>
+        )}
 
         {(() => {
           const manquantes = piecesManquantes(ouvert);

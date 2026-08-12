@@ -57,6 +57,7 @@ export default function AcquereurFiche({ dossier, onRetour, onSaved }: { dossier
     timeline: dossier.timeline ?? [],
   });
   const [rIdx, setRIdx] = useState(0);
+  const [villesText, setVillesText] = useState("");
   const [dirty, setDirty] = useState(false);
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
@@ -70,6 +71,15 @@ export default function AcquereurFiche({ dossier, onRetour, onSaved }: { dossier
     setDirty(true);
   };
   const toggle = (arr: string[], id: string) => (arr.includes(id) ? arr.filter((x) => x !== id) : [...arr, id]);
+
+  // La saisie des villes est libre (espaces permis : « Port de Bouc ») ;
+  // le tableau normalisé n'est reconstruit qu'à partir du texte, pas à
+  // chaque frappe — sinon le trim empêcherait de taper un espace.
+  useEffect(() => { setVillesText((d.recherches?.[rIdx]?.villes ?? []).join(", ")); }, [rIdx]); // eslint-disable-line react-hooks/exhaustive-deps
+  const majVilles = (txt: string) => {
+    setVillesText(txt);
+    setRecherche({ villes: txt.split(",").map((v) => v.trim()).filter(Boolean) });
+  };
 
   const completude = useMemo(() => completudeDossier(d), [d]);
   const estInvest = d.typeClient === "investisseur";
@@ -172,7 +182,7 @@ export default function AcquereurFiche({ dossier, onRetour, onSaved }: { dossier
 
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             <Champ label="Libellé de la recherche"><input className={inputCls} value={recherche.libelle} onChange={(e) => setRecherche({ libelle: e.target.value })} placeholder="Résidence principale…" /></Champ>
-            <Champ label="Ville(s) recherchée(s)" essentiel className="lg:col-span-2"><input className={inputCls} value={recherche.villes.join(", ")} onChange={(e) => setRecherche({ villes: e.target.value.split(",").map((v) => v.trim()).filter(Boolean) })} placeholder="Martigues, Saint-Mitre-les-Remparts" /></Champ>
+            <Champ label="Ville(s) recherchée(s) — séparées par une virgule" essentiel className="lg:col-span-2"><input className={inputCls} value={villesText} onChange={(e) => majVilles(e.target.value)} placeholder="Port de Bouc, Saint-Mitre-les-Remparts, Martigues" /></Champ>
             <Champ label="Secteurs / quartiers"><input className={inputCls} value={recherche.secteurs} onChange={(e) => setRecherche({ secteurs: e.target.value })} placeholder="Côte Bleue, Ferrières…" /></Champ>
             <Champ label="Rayon (km)"><input type="number" className={inputCls} value={recherche.rayonKm ?? ""} onChange={(e) => setRecherche({ rayonKm: e.target.value ? +e.target.value : null })} /></Champ>
             <Champ label="Statut recherche"><label className="flex items-center gap-2 py-2 text-sm"><input type="checkbox" checked={recherche.actif !== false} onChange={(e) => setRecherche({ actif: e.target.checked })} /> Recherche active</label></Champ>
