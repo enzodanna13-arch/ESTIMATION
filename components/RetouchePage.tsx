@@ -121,14 +121,14 @@ export default function RetouchePage({ onRetour }: { onRetour: () => void }) {
     // Base : pour meubler/vider on part de la version courante affichée
     const base = courant.image;
     const messages: Record<EditAction, string> = {
-      enhance: "Amélioration de la photo…",
+      enhance: "Rendu professionnel de la photo…",
       emptyRoom: "Suppression du mobilier et reconstruction…",
       virtualStaging: "Aménagement virtuel de la pièce…",
     };
     setTraitement({ action, progress: 6, message: messages[action] });
     const timer = setInterval(() => {
-      setTraitement((t) => (t ? { ...t, progress: Math.min(t.progress + (action === "enhance" ? 22 : 7), 92) } : t));
-    }, action === "enhance" ? 120 : 900);
+      setTraitement((t) => (t ? { ...t, progress: Math.min(t.progress + 7, 92) } : t));
+    }, 900);
 
     let result;
     if (action === "enhance") result = await imageEditingService.enhanceImage(base);
@@ -276,7 +276,7 @@ export default function RetouchePage({ onRetour }: { onRetour: () => void }) {
                 {!traitement && (
                   <div className="rounded-2xl border border-slate-200 bg-white p-4">
                     <div className="flex flex-wrap gap-2">
-                      <button type="button" onClick={() => lancer("enhance")} className="rounded-xl bg-copper px-4 py-2.5 text-sm font-bold text-white shadow-sm transition hover:brightness-110">✨ Embellir la photo</button>
+                      <button type="button" onClick={() => lancer("enhance")} className="rounded-xl bg-copper px-4 py-2.5 text-sm font-bold text-white shadow-sm transition hover:brightness-110">✨ Embellir (rendu pro)</button>
                       <button type="button" onClick={() => lancer("emptyRoom")} className="rounded-xl border border-navy bg-navy px-4 py-2.5 text-sm font-bold text-white transition hover:bg-navy-deep">🪑 Vider la pièce</button>
                       <button type="button" onClick={() => setStagingOuvert(!stagingOuvert)} className="rounded-xl border-2 border-copper px-4 py-2.5 text-sm font-bold text-copper transition hover:bg-copper-soft/40">🛋 Meubler virtuellement</button>
                       <div className="ml-auto flex flex-wrap gap-2">

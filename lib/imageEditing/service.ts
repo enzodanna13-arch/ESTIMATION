@@ -27,8 +27,18 @@ async function appelServeur(req: EditRequest): Promise<EditResult> {
 }
 
 export const imageEditingService = {
-  // Amélioration automatique (locale, temps réel)
+  // Amélioration « qualité photographe » : d'abord le moteur IA (rendu pro),
+  // repli automatique sur le traitement local instantané si l'IA n'est pas
+  // disponible ou échoue — ainsi « Embellir » fonctionne toujours.
   async enhanceImage(image: ImageData, options?: EnhanceOptions): Promise<EditResult> {
+    const ia = await appelServeur({ action: "enhance", image });
+    if (ia.ok && ia.image) return ia;
+    const local = await enhanceLocal(image, options);
+    return local.ok ? { ...local, provider: "local-enhance (repli)" } : local;
+  },
+
+  // Amélioration locale uniquement (instantanée, sans coût)
+  async enhanceLocalOnly(image: ImageData, options?: EnhanceOptions): Promise<EditResult> {
     return enhanceLocal(image, options);
   },
 

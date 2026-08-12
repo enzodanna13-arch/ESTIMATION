@@ -12,6 +12,17 @@ export const dynamic = "force-dynamic";
 // Sans configuration : réponse 501 « non configuré » (l'UI l'indique proprement).
 
 function construirePrompt(req: EditRequest): { prompt: string; negative: string } {
+  if (req.action === "enhance") {
+    return {
+      prompt:
+        "Professionally retouch this real estate photo so it looks shot by a top real-estate photographer. " +
+        "Improve exposure and dynamic range for a bright, airy, well-lit result; balance the white balance to neutral; " +
+        "make colours natural and true to life; boost clarity and sharpness; recover detail in shadows and in the windows; " +
+        "straighten and correct vertical lines and perspective; clean, crisp, magazine-quality listing photo. " +
+        "Do NOT add, remove or move any furniture, object, architecture or structure — keep it photorealistic and faithful to the real property.",
+      negative: "added furniture, removed furniture, changed architecture, distortion, oversaturated, HDR halos, text, watermark, unrealistic",
+    };
+  }
   if (req.action === "emptyRoom") {
     return {
       prompt:
@@ -134,7 +145,7 @@ export async function POST(request: Request) {
   } catch {
     return Response.json({ ok: false, error: "Requête invalide" } satisfies EditResult, { status: 400 });
   }
-  if (!req.image?.data || (req.action !== "emptyRoom" && req.action !== "virtualStaging")) {
+  if (!req.image?.data || (req.action !== "emptyRoom" && req.action !== "virtualStaging" && req.action !== "enhance")) {
     return Response.json({ ok: false, error: "Paramètres manquants" } satisfies EditResult, { status: 400 });
   }
 
