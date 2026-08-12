@@ -1,7 +1,10 @@
 // Client des DOSSIERS CLIENTS partagés : création, recherche, pièces PDF.
 // Tout passe par l'API protégée par le mot de passe d'équipe.
 
-export type { ClientDossier, PieceClient } from "./serverHistory";
+export type {
+  ClientDossier, PieceClient, TypeClient, RechercheImmo,
+  FinancementClient, InvestissementClient, TimelineEvent,
+} from "./serverHistory";
 export { CATEGORIES_PIECES } from "./docTypes";
 import type { ClientDossier } from "./serverHistory";
 import { getHistoryKey } from "./history";
@@ -16,8 +19,23 @@ export async function listClients(): Promise<ClientDossier[]> {
   return body.dossiers ?? [];
 }
 
-export async function createClient(d: { nom: string; bien: string; negociateur: string }): Promise<ClientDossier | null> {
+export async function createClient(d: {
+  nom: string; bien: string; negociateur: string;
+  typeClient?: string; prenom?: string; tel?: string; email?: string;
+}): Promise<ClientDossier | null> {
   const res = await fetch("/api/clients", { method: "POST", headers: jsonHeaders(), body: JSON.stringify(d) });
+  if (!res.ok) return null;
+  const body = (await res.json()) as { dossier?: ClientDossier };
+  return body.dossier ?? null;
+}
+
+/** Met à jour la fiche d'un dossier (acquéreur / investisseur). */
+export async function updateClient(id: string, patch: Partial<ClientDossier>): Promise<ClientDossier | null> {
+  const res = await fetch(`/api/clients/${encodeURIComponent(id)}`, {
+    method: "PUT",
+    headers: jsonHeaders(),
+    body: JSON.stringify(patch),
+  });
   if (!res.ok) return null;
   const body = (await res.json()) as { dossier?: ClientDossier };
   return body.dossier ?? null;

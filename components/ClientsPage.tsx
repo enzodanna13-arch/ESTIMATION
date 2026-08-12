@@ -14,6 +14,8 @@ import {
   type PieceClient,
 } from "@/lib/clients";
 import { PIECES_ATTENDUES } from "@/lib/docTypes";
+import AcquereurFiche from "@/components/AcquereurFiche";
+import { STATUTS_RECHERCHE, STATUT_COULEURS, resumeRecherche } from "@/lib/acquereurs";
 
 // Dossiers clients partagés : chaque négociateur y range toutes les pièces
 // PDF d'un client (comptes rendus de visite, mandat, diagnostics…), les
@@ -70,9 +72,13 @@ function filtrer(dossiers: ClientDossier[], q: string): ClientDossier[] {
   const t = q.trim().toLowerCase();
   if (!t) return dossiers;
   return dossiers.filter((d) =>
-    [d.nom, d.bien, d.negociateur, ...d.pieces.map((p) => p.nom)].join(" ").toLowerCase().includes(t),
+    [d.nom, d.prenom, d.bien, d.negociateur, d.tel, d.email, d.statut,
+      ...(d.recherches ?? []).flatMap((r) => [...r.villes, r.secteurs]),
+      ...d.pieces.map((p) => p.nom)]
+      .filter(Boolean).join(" ").toLowerCase().includes(t),
   );
 }
+const typeDe = (d: ClientDossier) => d.typeClient ?? "vendeur";
 
 /** Rapport de complétude en PDF (pdf-lib, généré sur le poste — papier à
  *  en-tête C21 avec wordmark, sceau et bandeau officiels). */
@@ -305,9 +311,15 @@ export default function ClientsPage({ onRetour }: { onRetour: () => void }) {
   const [ouvert, setOuvert] = useState<ClientDossier | null>(null);
   const [creation, setCreation] = useState(false);
   const [nom, setNom] = useState("");
+  const [prenom, setPrenom] = useState("");
+  const [tel, setTel] = useState("");
+  const [email, setEmail] = useState("");
   const [bien, setBien] = useState("");
   const [nego, setNego] = useState("");
+  const [typeCreation, setTypeCreation] = useState<"vendeur" | "acquereur" | "investisseur">("acquereur");
   const [categorie, setCategorie] = useState<string>(CATEGORIES_PIECES[0]);
+  const [filtreType, setFiltreType] = useState<"" | "vendeur" | "acquereur" | "investisseur">("");
+  const [filtreStatut, setFiltreStatut] = useState("");
   const [busy, setBusy] = useState(false);
   const [erreur, setErreur] = useState<string | null>(null);
   const [rapportOuvert, setRapportOuvert] = useState(false);
@@ -317,17 +329,22 @@ export default function ClientsPage({ onRetour }: { onRetour: () => void }) {
     void recharger();
   }, []);
 
-  const resultats = useMemo(() => filtrer(dossiers ?? [], q), [dossiers, q]);
+  const resultats = useMemo(() => {
+    let base = filtrer(dossiers ?? [], q);
+    if (filtreType) base = base.filter((d) => typeDe(d) === filtreType);
+    if (filtreStatut) base = base.filter((d) => (d.statut ?? "") === filtreStatut);
+    return base;
+  }, [dossiers, q, filtreType, filtreStatut]);
 
   const creer = async () => {
     if (!nom.trim()) return setErreur("Le nom du client est requis.");
     setBusy(true);
     setErreur(null);
-    const d = await createClient({ nom, bien, negociateur: nego });
+    const d = await createClient({ nom, bien, negociateur: nego, typeClient: typeCreation, prenom, tel, email });
     setBusy(false);
     if (!d) return setErreur("Création impossible — réessayez.");
     setCreation(false);
-    setNom(""); setBien(""); setNego("");
+    setNom(""); setPrenom(""); setTel(""); setEmail(""); setBien(""); setNego("");
     setOuvert(d);
     void recharger();
   };
@@ -368,7 +385,18 @@ export default function ClientsPage({ onRetour }: { onRetour: () => void }) {
     void recharger();
   };
 
-  // ---------- Vue dossier ouvert ----------
+  // ---------- Fiche acquéreur / investisseur (CRM) ----------
+  if (ouvert && (ouvert.typeClient === "acquereur" || ouvert.typeClient === "investisseur")) {
+    return (
+      <AcquereurFiche
+        dossier={ouvert}
+        onRetour={() => { setOuvert(null); void recharger(); }}
+        onSaved={(d) => { setOuvert(d); void recharger(); }}
+      />
+    );
+  }
+
+  // ---------- Vue dossier ouvert (vendeur : pièces) ----------
   if (ouvert) {
     return (
       <div>
@@ -549,18 +577,45 @@ export default function ClientsPage({ onRetour }: { onRetour: () => void }) {
       )}
 
       {creation && (
-        <div className="mb-4 grid gap-3 rounded-2xl border border-copper/40 bg-copper-soft/30 p-4 sm:grid-cols-4">
-          <input className={inputCls} value={nom} onChange={(e) => setNom(e.target.value)} placeholder="Nom du client * (M. et Mme Dupont)" />
-          <input className={inputCls} value={bien} onChange={(e) => setBien(e.target.value)} placeholder="Bien (T3, 12 quai Brescon, Martigues)" />
-          <input className={inputCls} value={nego} onChange={(e) => setNego(e.target.value)} placeholder="Négociateur" />
-          <button onClick={() => void creer()} disabled={busy} className="rounded-lg bg-navy px-4 py-2 text-sm font-bold text-white transition hover:bg-navy-deep disabled:opacity-50">
-            {busy ? "Création…" : "Créer le dossier"}
-          </button>
-          {erreur && <p className="rounded-lg border border-red-200 bg-red-50 p-2 text-sm text-red-700 sm:col-span-4">{erreur}</p>}
+        <div className="mb-4 rounded-2xl border border-copper/40 bg-copper-soft/30 p-4">
+          <div className="mb-3 flex flex-wrap gap-1.5">
+            {([["acquereur", "🔑 Acquéreur"], ["investisseur", "📈 Investisseur"], ["vendeur", "🏠 Vendeur"]] as const).map(([t, l]) => (
+              <button key={t} type="button" onClick={() => setTypeCreation(t)} className={`rounded-full px-3 py-1 text-sm font-semibold transition ${typeCreation === t ? "bg-navy text-white" : "border border-slate-200 bg-white text-slate-600 hover:bg-slate-100"}`}>{l}</button>
+            ))}
+          </div>
+          {typeCreation === "vendeur" ? (
+            <div className="grid gap-3 sm:grid-cols-4">
+              <input className={inputCls} value={nom} onChange={(e) => setNom(e.target.value)} placeholder="Nom du client * (M. et Mme Dupont)" />
+              <input className={inputCls} value={bien} onChange={(e) => setBien(e.target.value)} placeholder="Bien (T3, 12 quai Brescon, Martigues)" />
+              <input className={inputCls} value={nego} onChange={(e) => setNego(e.target.value)} placeholder="Négociateur" />
+              <button onClick={() => void creer()} disabled={busy} className="rounded-lg bg-navy px-4 py-2 text-sm font-bold text-white transition hover:bg-navy-deep disabled:opacity-50">{busy ? "Création…" : "Créer le dossier"}</button>
+            </div>
+          ) : (
+            <div className="grid gap-3 sm:grid-cols-3">
+              <input className={inputCls} value={nom} onChange={(e) => setNom(e.target.value)} placeholder="Nom *" />
+              <input className={inputCls} value={prenom} onChange={(e) => setPrenom(e.target.value)} placeholder="Prénom" />
+              <input className={inputCls} value={nego} onChange={(e) => setNego(e.target.value)} placeholder="Négociateur en charge" />
+              <input className={inputCls} value={tel} onChange={(e) => setTel(e.target.value)} placeholder="Téléphone" />
+              <input className={inputCls} value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email" />
+              <button onClick={() => void creer()} disabled={busy} className="rounded-lg bg-copper px-4 py-2 text-sm font-bold text-white transition hover:brightness-110 disabled:opacity-50">{busy ? "Création…" : "Créer et remplir la fiche"}</button>
+              <p className="text-xs text-slate-500 sm:col-span-3">Vous renseignerez ensuite le projet de recherche, le financement et les documents — le rapprochement avec les biens se fait automatiquement.</p>
+            </div>
+          )}
+          {erreur && <p className="mt-2 rounded-lg border border-red-200 bg-red-50 p-2 text-sm text-red-700">{erreur}</p>}
         </div>
       )}
 
-      <input className={`${inputCls} mb-4`} value={q} onChange={(e) => setQ(e.target.value)} placeholder="🔎 Rechercher un dossier : nom du client, bien, négociateur, nom d'une pièce…" />
+      <input className={`${inputCls} mb-2`} value={q} onChange={(e) => setQ(e.target.value)} placeholder="🔎 Rechercher : nom, prénom, ville recherchée, négociateur, pièce…" />
+      <div className="mb-4 flex flex-wrap items-center gap-1.5 text-xs">
+        <span className="text-slate-400">Type :</span>
+        {([["", "Tous"], ["acquereur", "🔑 Acquéreurs"], ["investisseur", "📈 Investisseurs"], ["vendeur", "🏠 Vendeurs"]] as const).map(([t, l]) => (
+          <button key={t} type="button" onClick={() => setFiltreType(t)} className={`rounded-full px-2.5 py-1 font-semibold ${filtreType === t ? "bg-copper text-white" : "border border-slate-200 bg-white text-slate-600"}`}>{l}</button>
+        ))}
+        <select className="ml-2 rounded-lg border border-slate-200 bg-white px-2 py-1" value={filtreStatut} onChange={(e) => setFiltreStatut(e.target.value)}>
+          <option value="">Tous statuts</option>
+          {STATUTS_RECHERCHE.map((s) => <option key={s}>{s}</option>)}
+        </select>
+      </div>
 
       {dossiers === null ? (
         <p className="p-4 text-sm text-slate-400">Chargement des dossiers…</p>
@@ -570,28 +625,33 @@ export default function ClientsPage({ onRetour }: { onRetour: () => void }) {
         </p>
       ) : (
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {resultats.map((d) => (
-            <button
-              key={d.id}
-              onClick={() => setOuvert(d)}
-              className="rounded-2xl border border-slate-200 bg-white p-4 text-left shadow-sm transition hover:-translate-y-0.5 hover:border-copper hover:shadow-md"
-            >
-              <div className="mb-1 flex items-center justify-between">
-                <span className="text-lg">📁</span>
-                <span className="flex items-center gap-1.5">
-                  <BadgeCompletude d={d} />
-                  <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-semibold text-slate-600">
-                    {d.pieces.length} pièce{d.pieces.length > 1 ? "s" : ""}
+          {resultats.map((d) => {
+            const t = typeDe(d);
+            const acq = t === "acquereur" || t === "investisseur";
+            return (
+              <button
+                key={d.id}
+                onClick={() => setOuvert(d)}
+                className="rounded-2xl border border-slate-200 bg-white p-4 text-left shadow-sm transition hover:-translate-y-0.5 hover:border-copper hover:shadow-md"
+              >
+                <div className="mb-1 flex items-center justify-between">
+                  <span className={`rounded-full px-2 py-0.5 text-[11px] font-bold ${t === "investisseur" ? "bg-violet-100 text-violet-700" : t === "acquereur" ? "bg-blue-100 text-blue-700" : "bg-slate-100 text-slate-600"}`}>
+                    {t === "investisseur" ? "📈 Investisseur" : t === "acquereur" ? "🔑 Acquéreur" : "🏠 Vendeur"}
                   </span>
-                </span>
-              </div>
-              <div className="text-sm font-bold text-navy">{d.nom}</div>
-              {d.bien && <div className="mt-0.5 truncate text-xs text-slate-500">{d.bien}</div>}
-              <div className="mt-1 text-xs text-slate-400">
-                {[d.negociateur, `mis à jour le ${dateFr(d.updatedAt)}`].filter(Boolean).join(" · ")}
-              </div>
-            </button>
-          ))}
+                  {acq ? (
+                    d.statut && <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${STATUT_COULEURS[d.statut] ?? "bg-slate-100 text-slate-600"}`}>{d.statut}</span>
+                  ) : (
+                    <BadgeCompletude d={d} />
+                  )}
+                </div>
+                <div className="text-sm font-bold text-navy">{[d.prenom, d.nom].filter(Boolean).join(" ") || d.nom}</div>
+                <div className="mt-0.5 truncate text-xs text-slate-500">{acq ? resumeRecherche(d) : d.bien}</div>
+                <div className="mt-1 text-xs text-slate-400">
+                  {[d.negociateur, acq ? `${d.pieces.length} doc.` : `${d.pieces.length} pièce${d.pieces.length > 1 ? "s" : ""}`, `maj ${dateFr(d.updatedAt)}`].filter(Boolean).join(" · ")}
+                </div>
+              </button>
+            );
+          })}
         </div>
       )}
     </div>

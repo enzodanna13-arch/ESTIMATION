@@ -19,7 +19,7 @@ export async function POST(request: Request) {
   if (!checkHistoryPassword(request)) {
     return Response.json({ error: "Accès réservé — mot de passe requis" }, { status: 401 });
   }
-  let body: { nom?: string; bien?: string; negociateur?: string };
+  let body: { nom?: string; bien?: string; negociateur?: string; typeClient?: string; prenom?: string; tel?: string; email?: string };
   try {
     body = (await request.json()) as typeof body;
   } catch {
@@ -28,6 +28,7 @@ export async function POST(request: Request) {
   if (!body.nom?.trim()) {
     return Response.json({ error: "Le nom du client est requis" }, { status: 400 });
   }
+  const type = body.typeClient === "acquereur" || body.typeClient === "investisseur" ? body.typeClient : "vendeur";
   const dossier: ClientDossier = {
     id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
     createdAt: Date.now(),
@@ -36,6 +37,17 @@ export async function POST(request: Request) {
     bien: (body.bien ?? "").trim(),
     negociateur: (body.negociateur ?? "").trim(),
     pieces: [],
+    typeClient: type,
+    ...(type !== "vendeur"
+      ? {
+          prenom: (body.prenom ?? "").trim(),
+          tel: (body.tel ?? "").trim(),
+          email: (body.email ?? "").trim(),
+          statut: "Nouveau",
+          recherches: [],
+          timeline: [{ id: `${Date.now()}`, date: Date.now(), type: "statut", texte: "Dossier créé", auteur: (body.negociateur ?? "").trim() || "—" }],
+        }
+      : {}),
   };
   try {
     await saveClientServer(dossier);

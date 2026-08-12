@@ -180,14 +180,93 @@ export interface PieceClient {
   createdAt: number;
 }
 
+export type TypeClient = "vendeur" | "acquereur" | "investisseur";
+
+// Une recherche immobilière (un même client peut en avoir plusieurs :
+// résidence principale + investissement locatif, par exemple).
+export interface RechercheImmo {
+  id: string;
+  libelle: string;
+  actif: boolean;
+  villes: string[];
+  secteurs: string;
+  rayonKm: number | null;
+  typesBien: string[]; // appartement | maison | immeuble | terrain | local | garage | autre
+  budgetMin: number | null;
+  budgetMax: number | null;
+  surfaceMin: number | null;
+  surfaceIdeale: number | null;
+  piecesMin: number | null;
+  chambresMin: number | null;
+  etage: string;
+  ascenseur: "oui" | "non" | "indiff";
+  exterieurs: string[]; // terrasse | balcon | jardin
+  garage: boolean;
+  stationnement: boolean;
+  cave: boolean;
+  piscine: boolean;
+  travaux: "oui" | "non" | "indiff"; // travaux acceptés ?
+  etatRecherche: string[]; // ancien | recent | neuf
+  dpeMin: string;
+  indispensables: string;
+  secondaires: string;
+  redhibitoires: string;
+  commentaires: string;
+}
+
+export interface FinancementClient {
+  budgetMax: number | null;
+  apport: number | null;
+  montantFinancement: number | null;
+  financementValide: "oui" | "non" | "encours";
+  banque: string;
+  courtier: string;
+  accordPrincipe: boolean;
+  dateAccord: string;
+  capaciteEmprunt: number | null;
+  mensualiteMax: number | null;
+}
+
+export interface InvestissementClient {
+  objectifs: string[]; // locative | deficit_foncier | meublee | lmnp | immeuble_rapport | achat_revente | autre
+  rendementMin: number | null;
+  loyerCible: number | null;
+  rentabiliteBrute: number | null;
+  cashflowMin: number | null;
+  typeLocation: string;
+  dureeProjet: string;
+}
+
+export interface TimelineEvent {
+  id: string;
+  date: number;
+  type: string; // appel | email | rdv | visite | bien_propose | retour | offre | criteres | document | statut | note
+  texte: string;
+  auteur: string;
+}
+
 export interface ClientDossier {
   id: string;
   createdAt: number;
   updatedAt: number;
   nom: string; // nom du client
-  bien: string; // bien concerné
+  bien: string; // bien concerné (vendeur) / résumé du projet (acquéreur)
   negociateur: string;
   pieces: PieceClient[];
+  // --- CRM acquéreur / investisseur (tous facultatifs : les dossiers
+  // vendeurs existants restent valides sans ces champs) ---
+  typeClient?: TypeClient; // absent = vendeur (rétrocompatibilité)
+  prenom?: string;
+  tel?: string;
+  email?: string;
+  adresseActuelle?: string;
+  statut?: string; // Nouveau | À qualifier | Recherche active | …
+  derniereInteraction?: number;
+  notes?: string;
+  recherches?: RechercheImmo[];
+  financement?: FinancementClient;
+  investissement?: InvestissementClient;
+  timeline?: TimelineEvent[];
 }
 
 const CLIENT_META_PREFIX = "clients/meta/";
