@@ -11,6 +11,7 @@ import VisitesPage from "@/components/VisitesPage";
 import RegistrePage from "@/components/RegistrePage";
 import RetouchePage from "@/components/RetouchePage";
 import LeadsPage from "@/components/LeadsPage";
+import DashboardPage from "@/components/DashboardPage";
 import { deleteDocument, deleteEstimation, getDocument, getEstimation, getHistoryKey, HistoryLockedError, listDocuments, listEstimations, saveDocument, setHistoryKey, type DocHistoryMeta, type HistoryMeta } from "@/lib/history";
 import { loyerNetAnnuel, prixParRendement, RENDEMENT_NET_BAS, RENDEMENT_NET_HAUT } from "@/lib/rendement";
 import { surfaceDependancesHabitables, surfaceHabitableTotale } from "@/lib/surfaces";
@@ -231,7 +232,7 @@ export default function Home() {
   const [step, setStep] = useState(0);
   // Accueil à deux univers : Estimation (les 4 missions) et Génération de
   // documents (menu des documents de l'agence)
-  const [univers, setUnivers] = useState<"" | "estimation" | "documents" | "clients" | "historique" | "visites" | "registre" | "retouche" | "leads">("");
+  const [univers, setUnivers] = useState<"" | "estimation" | "documents" | "clients" | "historique" | "visites" | "registre" | "retouche" | "leads" | "dashboard">("");
   const [sauvegarde, setSauvegarde] = useState<"idle" | "encours" | "erreur">("idle");
   const [sauvegardeMsg, setSauvegardeMsg] = useState<string | null>(null);
 
@@ -778,15 +779,31 @@ export default function Home() {
             {univers === "retouche" && <RetouchePage onRetour={() => setUnivers("")} />}
 
             {univers === "leads" && <LeadsPage onRetour={() => setUnivers("")} />}
+            {univers === "dashboard" && <DashboardPage onRetour={() => setUnivers("")} />}
 
             {univers === "" && (
               <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 print:hidden">
                 <button
                   type="button"
+                  onClick={() => setUnivers("dashboard")}
+                  className="group rounded-3xl border-2 border-navy bg-navy p-8 text-left shadow-sm transition hover:shadow-lg"
+                >
+                  <div className="mb-3 text-4xl">📊</div>
+                  <div className="text-xl font-bold text-white">Tableau de bord</div>
+                  <p className="mt-1 text-sm text-slate-300">
+                    Vos statistiques en un coup d'œil (leads, conversion, dossiers, mandats, CA potentiel)
+                    et le pipeline commercial visuel des leads et acquéreurs.
+                  </p>
+                  <span className="mt-4 inline-block rounded-lg bg-copper px-4 py-2 text-sm font-semibold text-white transition group-hover:brightness-110">
+                    Ouvrir le tableau de bord →
+                  </span>
+                </button>
+                <button
+                  type="button"
                   onClick={() => setUnivers("estimation")}
                   className="group rounded-3xl border-2 border-slate-200 bg-white p-8 text-left shadow-sm transition hover:border-copper hover:shadow-lg"
                 >
-                  <div className="mb-3 text-4xl">📊</div>
+                  <div className="mb-3 text-4xl">🏠</div>
                   <div className="text-xl font-bold text-navy">Estimation</div>
                   <p className="mt-1 text-sm text-slate-500">
                     Avis de valeur vente, audit de commercialisation, estimation locative,
