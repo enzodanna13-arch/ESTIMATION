@@ -9,30 +9,42 @@ export const dynamic = "force-dynamic";
 // champs attendus sans le forcer à recommencer.
 function extraireChamps(body: Record<string, unknown>): Partial<Lead> {
   const norm = (s: string) => s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, "");
-  const idx: { k: string; v: string }[] = [];
+  const idx: { k: string; orig: string; v: string }[] = [];
   for (const [k, v] of Object.entries(body)) {
     if (v == null) continue;
-    idx.push({ k: norm(k), v: typeof v === "string" ? v : String(v) });
+    idx.push({ k: norm(k), orig: k, v: typeof v === "string" ? v : String(v) });
   }
+  // trouver() consomme la clé trouvée ; ce qui reste (non consommé) est
+  // conservé et ajouté au message → aucun champ mappé n'est perdu.
+  const consumed = new Set<string>();
   const trouver = (...motifs: string[]) => {
-    for (const m of motifs) { const f = idx.find((e) => e.k.includes(m)); if (f && f.v.trim()) return f.v.trim(); }
+    for (const m of motifs) {
+      const f = idx.find((e) => !consumed.has(e.k) && e.k.includes(m));
+      if (f && f.v.trim()) { consumed.add(f.k); return f.v.trim(); }
+    }
     return "";
   };
   const budgetTxt = trouver("budget", "prix");
   const budgetNum = budgetTxt ? Number(budgetTxt.replace(/[^0-9.]/g, "")) : NaN;
-  const message = [trouver("message", "projet", "recherche", "commentaire", "demande"), trouver("typedebien", "typebien")]
-    .filter(Boolean).join(" — ");
+  const nom = trouver("nom", "fullname", "name", "lastname");
+  const prenom = trouver("prenom", "firstname");
+  const tel = trouver("tel", "telephone", "phone", "mobile", "portable");
+  const email = trouver("email", "mail", "courriel");
+  const ville = trouver("villedubien", "ville", "city", "commune", "secteur");
+  const campagne = trouver("campagne", "campaign");
+  const source = trouver("source");
+  const typeProjet = trouver("typeprojet") || "acquereur";
+  const messageDirect = trouver("message", "projet", "recherche", "commentaire", "demande");
+  // Tous les autres champs mappés (type de bien, délai de vente, DPE…) sont
+  // conservés dans le message, avec leur libellé d'origine.
+  const extras = idx
+    .filter((e) => !consumed.has(e.k) && e.v.trim() && !/dummydata/i.test(e.v))
+    .map((e) => `${e.orig} : ${e.v.trim()}`);
+  const message = [messageDirect, ...extras].filter(Boolean).join(" · ");
   return {
-    nom: trouver("nom", "fullname", "name", "lastname"),
-    prenom: trouver("prenom", "firstname"),
-    tel: trouver("tel", "telephone", "phone", "mobile", "portable"),
-    email: trouver("email", "mail", "courriel"),
-    ville: trouver("villedubien", "ville", "city", "commune", "secteur"),
+    nom, prenom, tel, email, ville,
     budget: Number.isFinite(budgetNum) && budgetNum > 0 ? budgetNum : null,
-    campagne: trouver("campagne", "campaign"),
-    message,
-    typeProjet: trouver("typeprojet") || "acquereur",
-    source: trouver("source"),
+    campagne, message, typeProjet, source,
   };
 }
 
