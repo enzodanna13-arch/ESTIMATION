@@ -379,9 +379,9 @@ export default function ClientsPage({ onRetour }: { onRetour: () => void }) {
     void recharger();
   };
 
-  const supprimerDossier = async () => {
+  const supprimerDossier = async (sansConfirmation = false) => {
     if (!ouvert) return;
-    if (!confirm(`Supprimer le dossier « ${ouvert.nom} » et TOUTES ses pièces ? Cette action est définitive.`)) return;
+    if (!sansConfirmation && !confirm(`Supprimer le dossier « ${ouvert.nom} » et TOUTES ses pièces ? Cette action est définitive.`)) return;
     await deleteClient(ouvert.id);
     setOuvert(null);
     void recharger();
@@ -407,6 +407,7 @@ export default function ClientsPage({ onRetour }: { onRetour: () => void }) {
         dossier={ouvert}
         onRetour={() => { setOuvert(null); void recharger(); }}
         onSaved={(d) => { setOuvert(d); void recharger(); }}
+        onSupprime={() => void supprimerDossier(true)}
       />
     );
   }

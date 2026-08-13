@@ -48,7 +48,7 @@ function Chips<T extends { id: string; label: string }>({ options, values, onTog
   );
 }
 
-export default function AcquereurFiche({ dossier, onRetour, onSaved }: { dossier: ClientDossier; onRetour: () => void; onSaved?: (d: ClientDossier) => void }) {
+export default function AcquereurFiche({ dossier, onRetour, onSaved, onSupprime }: { dossier: ClientDossier; onRetour: () => void; onSaved?: (d: ClientDossier) => void; onSupprime?: () => void }) {
   const [d, setD] = useState<ClientDossier>({
     ...dossier,
     recherches: dossier.recherches?.length ? dossier.recherches : [rechercheVide()],
@@ -142,6 +142,15 @@ export default function AcquereurFiche({ dossier, onRetour, onSaved }: { dossier
           <select className={`${inputCls} w-auto`} value={d.statut ?? "Nouveau"} onChange={(e) => { const ancien = d.statut; set({ statut: e.target.value }); if (ancien !== e.target.value) ajouterEvenement("statut", `Statut : ${e.target.value}`); }}>
             {STATUTS_RECHERCHE.map((s) => <option key={s}>{s}</option>)}
           </select>
+          {onSupprime && (
+            <button
+              type="button"
+              onClick={() => { if (confirm(`Supprimer définitivement le dossier « ${[d.prenom, d.nom].filter(Boolean).join(" ") || d.nom} » et toutes ses pièces ?`)) onSupprime(); }}
+              className="rounded-lg border border-red-200 bg-white px-3 py-1.5 text-sm font-medium text-red-600 transition hover:bg-red-50"
+            >
+              🗑 Supprimer
+            </button>
+          )}
         </div>
       </div>
 
