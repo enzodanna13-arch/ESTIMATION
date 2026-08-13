@@ -168,6 +168,31 @@ function FicheLead({ lead, onClose, onStatut, onSuivi, onPatch, onConvert, onDel
   const [texte, setTexte] = useState("");
   const [nego, setNego] = useState(lead.negociateur);
   const [notes, setNotes] = useState(lead.notes);
+  const [copie, setCopie] = useState(false);
+
+  const ficheEnTexte = (l: Lead): string =>
+    [
+      "🔔 NOUVEAU LEAD — " + (TYPES_PROJET_LEAD.find((t) => t.id === l.typeProjet)?.label ?? l.typeProjet),
+      "",
+      ["Nom", [l.prenom, l.nom].filter(Boolean).join(" ")],
+      ["Téléphone", l.tel],
+      ["Email", l.email],
+      ["Ville", l.ville],
+      l.budget != null ? ["Budget", `${int.format(l.budget)} €`] : null,
+      ["Demande", l.message],
+      ["Source", `${labelSource(l.source)}${l.campagne ? ` (${l.campagne})` : ""}`],
+      ["Statut", l.statut],
+      ["Reçu le", new Date(l.createdAt).toLocaleString("fr-FR")],
+    ]
+      .filter(Boolean)
+      .map((e) => (Array.isArray(e) ? (e[1] && String(e[1]).trim() ? `${e[0]} : ${e[1]}` : "") : e))
+      .filter((x) => x !== "")
+      .join("\n");
+
+  const copierFiche = async () => {
+    try { await navigator.clipboard.writeText(ficheEnTexte(lead)); setCopie(true); setTimeout(() => setCopie(false), 1800); } catch { /* presse-papiers indisponible */ }
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-navy-deep/70 p-4 backdrop-blur-sm" onClick={onClose}>
       <div className="max-h-[88vh] w-full max-w-2xl overflow-auto rounded-2xl bg-white p-5 shadow-xl" onClick={(e) => e.stopPropagation()}>
@@ -176,7 +201,10 @@ function FicheLead({ lead, onClose, onStatut, onSuivi, onPatch, onConvert, onDel
             <div className="text-lg font-bold text-navy">{[lead.prenom, lead.nom].filter(Boolean).join(" ") || "Lead"}</div>
             <div className="text-xs text-slate-500">{labelSource(lead.source)}{lead.campagne ? ` · ${lead.campagne}` : ""} · reçu le {new Date(lead.createdAt).toLocaleString("fr-FR")}</div>
           </div>
-          <button onClick={onClose} className="rounded-lg border border-slate-200 px-2 py-1 text-sm text-slate-500 hover:bg-slate-100">✕</button>
+          <div className="flex items-center gap-2">
+            <button onClick={() => void copierFiche()} className="rounded-lg bg-copper px-3 py-1.5 text-sm font-bold text-white transition hover:brightness-110">{copie ? "✓ Copié" : "📋 Copier la fiche"}</button>
+            <button onClick={onClose} className="rounded-lg border border-slate-200 px-2 py-1 text-sm text-slate-500 hover:bg-slate-100">✕</button>
+          </div>
         </div>
 
         <div className="grid gap-1.5 text-sm sm:grid-cols-2">
