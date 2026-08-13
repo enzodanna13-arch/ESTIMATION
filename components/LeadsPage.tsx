@@ -22,8 +22,14 @@ export default function LeadsPage({ onRetour }: { onRetour: () => void }) {
   const [config, setConfig] = useState(false);
   const [nouveau, setNouveau] = useState<Partial<Lead>>({ typeProjet: "acquereur", source: "manuel" });
 
-  const recharger = () => listLeads().then(setLeads).catch(() => setLeads([]));
-  useEffect(() => { void recharger(); }, []);
+  const [maj, setMaj] = useState(false);
+  const recharger = () => { setMaj(true); return listLeads().then(setLeads).catch(() => setLeads([])).finally(() => setTimeout(() => setMaj(false), 400)); };
+  useEffect(() => {
+    void recharger();
+    // Rafraîchissement automatique toutes les 30 s pour voir les nouveaux leads
+    const t = setInterval(() => { listLeads().then(setLeads).catch(() => {}); }, 30000);
+    return () => clearInterval(t);
+  }, []);
 
   const resultats = useMemo(() => {
     let base = leads ?? [];
@@ -84,6 +90,7 @@ export default function LeadsPage({ onRetour }: { onRetour: () => void }) {
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <button onClick={onRetour} className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-600 hover:bg-slate-100">← Accueil</button>
+          <button onClick={() => void recharger()} className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-semibold text-slate-600 hover:bg-slate-100">{maj ? "⏳ Actualisation…" : "🔄 Actualiser"}</button>
           <button onClick={() => setConfig(!config)} className="rounded-lg border border-copper bg-white px-3 py-1.5 text-sm font-bold text-copper hover:bg-copper-soft/40">🔌 Brancher mes campagnes</button>
           <button onClick={() => setCreation(!creation)} className="rounded-lg bg-copper px-4 py-1.5 text-sm font-bold text-white hover:brightness-110">+ Nouveau lead</button>
         </div>
