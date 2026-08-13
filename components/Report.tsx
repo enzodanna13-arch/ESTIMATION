@@ -217,8 +217,8 @@ export default function Report({
   const secReco = S();
   const hasPlusValue = Boolean(pv);
   const secPV = hasPlusValue ? S() : "";
-  const secRappro = S();
   const secSign = S();
+  const secRappro = S(); // en annexe, après la signature (masquée si < 2 acquéreurs)
   let pageNo = 1;
   const P = () => ++pageNo;
   const pgSynthese = P();
@@ -231,8 +231,8 @@ export default function Report({
   const pgAjust = hasAjust ? P() : 0;
   const pgReco = P();
   const pgPV = hasPlusValue ? P() : 0;
-  const pgRappro = P();
   const pgSign = P();
+  const pgRappro = P(); // dernière page (annexe)
 
   const footLeft = `${AGENCE.nom} ${AGENCE.enseigne} — ${AGENCE.adresse} · ${AGENCE.tel}`;
 
@@ -933,16 +933,6 @@ export default function Report({
 
         {/* ============ ARGUMENTAIRE & BON POUR ACCORD ============ */}
         <section className="page">
-          <PageHead page={pgRappro} label={docLabel} />
-          <SectionTitle idx={secRappro} title="Rapprochement acquéreurs" />
-          <p className="section-lead" style={{ marginBottom: 14 }}>
-            Notre fichier compte des acquéreurs et investisseurs en recherche active. Voici ceux
-            dont le projet correspond potentiellement à votre bien — un atout pour une vente rapide.
-          </p>
-          <RapprochementAcquereurs input={input} report={report} />
-        </section>
-
-        <section className="page">
           <PageHead page={pgSign} label={docLabel} />
           <SectionTitle idx={secSign} title="Argumentaire & accord" />
           <p className="section-lead" style={{ marginBottom: 14 }}>
@@ -1019,6 +1009,10 @@ export default function Report({
 
           <Foot left={`${footLeft} · ${AGENCE.site}`} right={`Réf. ${refDossier} · ${today}`} />
         </section>
+
+        {/* ANNEXE — Rapprochement acquéreurs : dernière page, masquée s'il y a
+            moins de 2 acquéreurs correspondants (le composant renvoie null). */}
+        <RapprochementAcquereurs input={input} report={report} page={pgRappro} secIdx={secRappro} label={docLabel} seuil={2} />
       </div>
     </div>
   );

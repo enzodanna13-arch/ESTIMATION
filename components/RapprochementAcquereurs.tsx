@@ -27,7 +27,12 @@ const COUL: Record<string, string> = { emerald: "bg-emerald-100 text-emerald-700
  * de la base et fait ressortir les profils susceptibles d'être intéressés.
  * Le négociateur choisit le niveau d'anonymisation (RGPD : anonyme par défaut).
  */
-export default function RapprochementAcquereurs({ input, report }: { input: PropertyInput; report: EstimationReport | null }) {
+export default function RapprochementAcquereurs({
+  input, report, page, secIdx, label = "Avis de valeur", seuil = 2,
+}: {
+  input: PropertyInput; report: EstimationReport | null;
+  page?: number; secIdx?: string; label?: string; seuil?: number;
+}) {
   const [dossiers, setDossiers] = useState<ClientDossier[] | null>(null);
   const [mode, setMode] = useState<Anonymisation>("anonyme");
 
@@ -39,16 +44,27 @@ export default function RapprochementAcquereurs({ input, report }: { input: Prop
     return rapprocherAcquereurs(bien, dossiers);
   }, [dossiers, input, report]);
 
-  if (dossiers === null) return null;
-  if (matches.length === 0) {
-    return (
-      <div className="print:hidden">
-        <p className="text-sm text-slate-400">Aucun acquéreur du fichier ne correspond pour l&apos;instant à ce bien. Créez des dossiers Acquéreur/Investisseur pour activer le rapprochement.</p>
-      </div>
-    );
-  }
+  // RÈGLE : la partie « Rapprochement acquéreurs » n'apparaît dans le dossier
+  // (et le PDF) que s'il y a AU MOINS `seuil` acquéreurs correspondants
+  // (2 par défaut). Sinon, rien ne s'affiche.
+  if (matches.length < seuil) return null;
 
   return (
+    <section className="page">
+      <div className="head">
+        <span className="c21">CENTURY 21</span>
+        <span className="pg">{label} · {String(page ?? 0).padStart(2, "0")}</span>
+      </div>
+      <div className="section-title">
+        {secIdx && <span className="idx">{secIdx}</span>}
+        <h2>Rapprochement acquéreurs</h2>
+      </div>
+      <hr className="rule-gold" />
+      <p className="section-lead" style={{ marginBottom: 14 }}>
+        Notre fichier compte des acquéreurs et investisseurs en recherche active. Voici ceux dont le projet
+        correspond potentiellement à votre bien — un atout pour une vente rapide.
+      </p>
+
     <div className="rapprochement">
       <div className="mb-2 flex flex-wrap items-center justify-between gap-2 print:block">
         <p className="text-sm font-semibold text-navy">
@@ -91,5 +107,6 @@ export default function RapprochementAcquereurs({ input, report }: { input: Prop
         Rapprochement automatique — score de compatibilité pondéré (localisation, budget, type, surface, pièces, critères). Présentation respectueuse des données personnelles (anonyme par défaut).
       </p>
     </div>
+    </section>
   );
 }
