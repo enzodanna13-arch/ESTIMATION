@@ -4,8 +4,9 @@ import { useEffect, useMemo, useState } from "react";
 import {
   addAppel,
   chargerSeed,
+  createMois,
   deleteAppel,
-  listAppels,
+  listRegistre,
   REGISTRE_COLONNES,
   type AppelEntry,
 } from "@/lib/registre";
@@ -64,16 +65,17 @@ export default function RegistrePage({ onRetour }: { onRetour: () => void }) {
   const [apercu, setApercu] = useState<Ligne | null>(null); // fiche détail (notes complètes)
   const [copie, setCopie] = useState<string | null>(null); // clé de la ligne copiée
   const [page, setPage] = useState(1); // pagination du tableau
-  const [moisAjoutes, setMoisAjoutes] = useState<string[]>([]); // mois créés à la main
+  const [moisAjoutes, setMoisAjoutes] = useState<string[]>([]); // mois créés (persistés côté serveur)
   const [ajoutMoisOuvert, setAjoutMoisOuvert] = useState(false);
   const [nouveauMoisNom, setNouveauMoisNom] = useState("");
   const [nouveauMoisAnnee, setNouveauMoisAnnee] = useState("");
 
   useEffect(() => {
     (async () => {
-      const [s, n] = await Promise.all([chargerSeed(), listAppels()]);
+      const [s, reg] = await Promise.all([chargerSeed(), listRegistre()]);
       setSeed(s.entrees);
-      setNews(n);
+      setNews(reg.entrees);
+      setMoisAjoutes(reg.mois.map((m) => m.toUpperCase())); // mois connus du serveur (dont les vides)
       setChargement(false);
     })();
   }, []);
@@ -165,13 +167,14 @@ export default function RegistrePage({ onRetour }: { onRetour: () => void }) {
     if (ok) setNews((p) => p.filter((e) => e.id !== l.id));
   };
 
-  // Créer un nouveau mois (onglet) et s'y positionner
+  // Créer un nouveau mois (onglet), le PERSISTER côté serveur et s'y positionner
   const ajouterMois = () => {
     const nom = nouveauMoisNom.trim().toUpperCase();
     const annee = nouveauMoisAnnee.trim();
     if (!nom || !/^\d{4}$/.test(annee)) return;
     const cle = `${nom} ${annee}`;
     if (!mois.includes(cle)) setMoisAjoutes((p) => [...p, cle]);
+    void createMois(cle); // enregistré → ne disparaît plus au rechargement
     setMoisActif(cle);
     setAjoutMoisOuvert(false);
     setNouveauMoisNom("");

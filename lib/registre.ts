@@ -41,15 +41,30 @@ export async function chargerSeed(): Promise<RegistreSeed> {
   return seedCache;
 }
 
-export async function listAppels(): Promise<AppelEntry[]> {
+// Appels + mois connus (dont les mois créés mais encore vides)
+export async function listRegistre(): Promise<{ entrees: AppelEntry[]; mois: string[] }> {
   try {
     const res = await fetch("/api/registre", { cache: "no-store", headers: headers() });
-    if (!res.ok) return [];
-    const body = (await res.json()) as { entries?: AppelEntry[] };
-    return body.entries ?? [];
+    if (!res.ok) return { entrees: [], mois: [] };
+    const body = (await res.json()) as { entries?: AppelEntry[]; mois?: string[] };
+    return { entrees: body.entries ?? [], mois: body.mois ?? [] };
   } catch {
-    return [];
+    return { entrees: [], mois: [] };
   }
+}
+
+export async function listAppels(): Promise<AppelEntry[]> {
+  return (await listRegistre()).entrees;
+}
+
+// Crée (et persiste) un mois vide
+export async function createMois(mois: string): Promise<boolean> {
+  const res = await fetch("/api/registre", {
+    method: "POST",
+    headers: { "content-type": "application/json", ...headers() },
+    body: JSON.stringify({ creerMois: true, mois }),
+  });
+  return res.ok;
 }
 
 export async function addAppel(entry: AppelEntry): Promise<boolean> {

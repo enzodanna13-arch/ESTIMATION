@@ -1,5 +1,5 @@
 import { checkHistoryPassword } from "@/lib/historyAuth";
-import { addAppelServer, deleteAppelServer, listAppelsServer, type AppelEntry } from "@/lib/serverRegistre";
+import { addAppelServer, creerMoisServer, deleteAppelServer, listRegistreServer, type AppelEntry } from "@/lib/serverRegistre";
 
 export const dynamic = "force-dynamic";
 
@@ -12,11 +12,11 @@ export async function GET(request: Request) {
     return Response.json({ error: "Accès réservé" }, { status: 401 });
   }
   try {
-    const entries = await listAppelsServer();
-    return Response.json({ entries });
+    const { entrees, mois } = await listRegistreServer();
+    return Response.json({ entries: entrees, mois });
   } catch (err) {
     console.error("Registre — lecture impossible :", err);
-    return Response.json({ entries: [] });
+    return Response.json({ entries: [], mois: [] });
   }
 }
 
@@ -25,9 +25,14 @@ export async function POST(request: Request) {
     return Response.json({ error: "Accès réservé" }, { status: 401 });
   }
   try {
-    const b = (await request.json()) as Partial<AppelEntry>;
+    const b = (await request.json()) as Partial<AppelEntry> & { creerMois?: boolean };
     const mois = nettoyer(b.mois).toUpperCase();
     if (!mois) return Response.json({ error: "Mois manquant" }, { status: 400 });
+    // Création d'un mois vide (persisté) — pour qu'il ne disparaisse pas au rechargement
+    if (b.creerMois) {
+      await creerMoisServer(mois);
+      return Response.json({ ok: true, mois });
+    }
     const entry: AppelEntry = {
       id: nettoyer(b.id) || `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
       createdAt: typeof b.createdAt === "number" ? b.createdAt : Date.now(),

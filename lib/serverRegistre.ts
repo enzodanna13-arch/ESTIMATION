@@ -88,6 +88,33 @@ export async function listAppelsServer(): Promise<AppelEntry[]> {
   return fichiers.filter((f): f is MoisFile => f !== null).flatMap((f) => f.entrees);
 }
 
+// Appels + liste des mois connus (y compris les mois créés mais encore vides)
+export async function listRegistreServer(): Promise<{ entrees: AppelEntry[]; mois: string[] }> {
+  const { blobs } = await list({ prefix: PREFIX, limit: 1000 });
+  const parMois = new Map<string, { url: string; ts: number }>();
+  for (const b of blobs) {
+    const nom = b.pathname.slice(b.pathname.lastIndexOf("/") + 1);
+    const cle = nom.split("~")[0];
+    const ts = versionDe(b.pathname);
+    const cur = parMois.get(cle);
+    if (!cur || ts > cur.ts) parMois.set(cle, { url: b.url, ts });
+  }
+  const fichiers = (
+    await Promise.all(
+      [...parMois.values()].map(async ({ url }) => {
+        try { const r = await fetch(url, { cache: "no-store" }); return r.ok ? ((await r.json()) as MoisFile) : null; } catch { return null; }
+      }),
+    )
+  ).filter((f): f is MoisFile => f !== null);
+  return { entrees: fichiers.flatMap((f) => f.entrees), mois: fichiers.map((f) => f.mois).filter(Boolean) };
+}
+
+// Crée un mois vide (persisté) s'il n'existe pas encore
+export async function creerMoisServer(mois: string): Promise<void> {
+  const courant = await fichierMois(mois);
+  if (!courant) await ecrireMois(mois, []);
+}
+
 // Ajoute un appel dans le fichier de son mois
 export async function addAppelServer(entry: AppelEntry): Promise<void> {
   const courant = await fichierMois(entry.mois);
