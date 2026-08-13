@@ -32,6 +32,13 @@ function formatDate(d?: string): string {
 const MOIS_ORDRE = ["JANVIER", "FEVRIER", "FÉVRIER", "MARS", "AVRIL", "MAI", "JUIN", "JUILLET", "AOUT", "AOÛT", "SEPTEMBRE", "OCTOBRE", "NOVEMBRE", "DECEMBRE", "DÉCEMBRE"];
 // Noms « propres » des 12 mois pour créer un nouveau mois
 const MOIS_NOMS = ["JANVIER", "FEVRIER", "MARS", "AVRIL", "MAI", "JUIN", "JUILLET", "AOUT", "SEPTEMBRE", "OCTOBRE", "NOVEMBRE", "DECEMBRE"];
+// « 2026-08-13 » → « AOUT 2026 » (classe l'appel dans le bon mois d'après sa date)
+function moisDepuisDate(d: string): string | null {
+  const m = /^(\d{4})-(\d{2})-\d{2}$/.exec((d || "").trim());
+  if (!m) return null;
+  const idx = parseInt(m[2], 10) - 1;
+  return idx >= 0 && idx < 12 ? `${MOIS_NOMS[idx]} ${m[1]}` : null;
+}
 function rangMois(m: string): number {
   const up = m.toUpperCase();
   const annee = parseInt((up.match(/20\d\d/) ?? ["0"])[0], 10);
@@ -129,10 +136,13 @@ export default function RegistrePage({ onRetour }: { onRetour: () => void }) {
     }
     setEnvoi(true);
     setMessage(null);
+    // Classement automatique par la DATE saisie (ex. une date d'août 2026 →
+    // « AOUT 2026 »), quel que soit l'onglet affiché. Sans date : mois actif.
+    const moisCible = moisDepuisDate(form.date) || moisActif || mois[0] || "";
     const entry: AppelEntry = {
       id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
       createdAt: Date.now(),
-      mois: moisActif || mois[0] || "",
+      mois: moisCible,
       ...form,
     };
     const ok = await addAppel(entry);
@@ -140,7 +150,8 @@ export default function RegistrePage({ onRetour }: { onRetour: () => void }) {
     if (ok) {
       setNews((p) => [...p, entry]);
       setForm({ ...champsVides });
-      setMessage("✓ Appel enregistré.");
+      setMoisActif(moisCible); // basculer sur le mois où l'appel a été rangé
+      setMessage(`✓ Appel enregistré dans ${moisCible}.`);
       setTimeout(() => setMessage(null), 2500);
     } else {
       setMessage("Enregistrement impossible — réessayez.");
