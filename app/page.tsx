@@ -15,6 +15,7 @@ import { deleteDocument, deleteEstimation, getDocument, getEstimation, getHistor
 import { loyerNetAnnuel, prixParRendement, RENDEMENT_NET_BAS, RENDEMENT_NET_HAUT } from "@/lib/rendement";
 import { surfaceDependancesHabitables, surfaceHabitableTotale } from "@/lib/surfaces";
 import { compressImage } from "@/lib/compressImage";
+import { telechargerSauvegarde } from "@/lib/backup";
 import type { EstimateResponse, PhotoInput, PropertyInput } from "@/lib/types";
 
 const initialInput: PropertyInput = {
@@ -231,6 +232,23 @@ export default function Home() {
   // Accueil à deux univers : Estimation (les 4 missions) et Génération de
   // documents (menu des documents de l'agence)
   const [univers, setUnivers] = useState<"" | "estimation" | "documents" | "clients" | "historique" | "visites" | "registre" | "retouche" | "leads">("");
+  const [sauvegarde, setSauvegarde] = useState<"idle" | "encours" | "erreur">("idle");
+  const [sauvegardeMsg, setSauvegardeMsg] = useState<string | null>(null);
+
+  const lancerSauvegarde = async () => {
+    setSauvegarde("encours");
+    setSauvegardeMsg("Préparation de la sauvegarde… (cela peut prendre jusqu'à une minute)");
+    try {
+      await telechargerSauvegarde();
+      setSauvegarde("idle");
+      setSauvegardeMsg("✓ Sauvegarde téléchargée.");
+      setTimeout(() => setSauvegardeMsg(null), 4000);
+    } catch (e) {
+      setSauvegarde("erreur");
+      setSauvegardeMsg(e instanceof Error ? e.message : "Sauvegarde impossible.");
+      setTimeout(() => { setSauvegarde("idle"); setSauvegardeMsg(null); }, 6000);
+    }
+  };
   // Génération de documents : type choisi, saisie et résultat
   const [docType, setDocType] = useState<DocType | "">("");
   const [docInput, setDocInput] = useState<DocumentInput>({
@@ -913,6 +931,30 @@ export default function Home() {
                     Ouvrir les historiques →
                   </span>
                 </button>
+              </div>
+            )}
+
+            {/* Sauvegarde complète (télécharge tout le contenu en .zip) */}
+            {univers === "" && (
+              <div className="mb-10 flex flex-wrap items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4 print:hidden">
+                <div className="mr-auto">
+                  <div className="text-sm font-bold text-navy">💾 Sauvegarde complète</div>
+                  <p className="text-xs text-slate-500">
+                    Télécharge un fichier .zip avec TOUT : dossiers clients (+ pièces PDF), estimations,
+                    documents générés, registre des appels, leads et visites. À faire régulièrement pour ne rien perdre.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => void lancerSauvegarde()}
+                  disabled={sauvegarde === "encours"}
+                  className="rounded-xl bg-navy px-5 py-2.5 text-sm font-bold text-white transition hover:bg-navy-deep disabled:opacity-50"
+                >
+                  {sauvegarde === "encours" ? "Sauvegarde en cours…" : "⬇ Télécharger la sauvegarde (.zip)"}
+                </button>
+                {sauvegardeMsg && (
+                  <span className={`w-full text-xs font-semibold ${sauvegarde === "erreur" ? "text-red-600" : "text-slate-600"}`}>{sauvegardeMsg}</span>
+                )}
               </div>
             )}
 
