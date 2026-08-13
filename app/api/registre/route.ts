@@ -1,5 +1,5 @@
 import { checkHistoryPassword } from "@/lib/historyAuth";
-import { addAppelServer, creerMoisServer, deleteAppelServer, listRegistreServer, type AppelEntry } from "@/lib/serverRegistre";
+import { addAppelServer, creerMoisServer, deleteAppelServer, listRegistreServer, reclasserParDateServer, type AppelEntry } from "@/lib/serverRegistre";
 
 export const dynamic = "force-dynamic";
 
@@ -25,7 +25,12 @@ export async function POST(request: Request) {
     return Response.json({ error: "Accès réservé" }, { status: 401 });
   }
   try {
-    const b = (await request.json()) as Partial<AppelEntry> & { creerMois?: boolean };
+    const b = (await request.json()) as Partial<AppelEntry> & { creerMois?: boolean; reclasser?: boolean };
+    // Reclassement automatique : range chaque appel dans le mois de sa date réelle
+    if (b.reclasser) {
+      const r = await reclasserParDateServer();
+      return Response.json({ ok: true, ...r });
+    }
     const mois = nettoyer(b.mois).toUpperCase();
     if (!mois) return Response.json({ error: "Mois manquant" }, { status: 400 });
     // Création d'un mois vide (persisté) — pour qu'il ne disparaisse pas au rechargement

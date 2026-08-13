@@ -7,6 +7,7 @@ import {
   createMois,
   deleteAppel,
   listRegistre,
+  reclasserParDate,
   REGISTRE_COLONNES,
   type AppelEntry,
 } from "@/lib/registre";
@@ -69,6 +70,7 @@ export default function RegistrePage({ onRetour }: { onRetour: () => void }) {
   const [ajoutMoisOuvert, setAjoutMoisOuvert] = useState(false);
   const [nouveauMoisNom, setNouveauMoisNom] = useState("");
   const [nouveauMoisAnnee, setNouveauMoisAnnee] = useState("");
+  const [reclassement, setReclassement] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -182,6 +184,25 @@ export default function RegistrePage({ onRetour }: { onRetour: () => void }) {
     setFormOuvert(true); // ouvrir directement la saisie d'un appel
   };
 
+  // Reclasse tous les appels dans le mois de leur DATE réelle (corrige les
+  // appels rangés dans le mauvais mois avant le classement automatique).
+  const reclasser = async () => {
+    if (!confirm("Reclasser tous les appels dans le mois correspondant à leur date ?")) return;
+    setReclassement(true);
+    setMessage(null);
+    const r = await reclasserParDate();
+    if (r) {
+      const reg = await listRegistre(); // recharger les appels reclassés
+      setNews(reg.entrees);
+      setMoisAjoutes(reg.mois.map((m) => m.toUpperCase()));
+      setMessage(r.deplaces > 0 ? `✓ ${r.deplaces} appel(s) reclassé(s) dans le bon mois.` : "✓ Tous les appels étaient déjà bien classés.");
+    } else {
+      setMessage("Reclassement impossible — réessayez.");
+    }
+    setReclassement(false);
+    setTimeout(() => setMessage(null), 3500);
+  };
+
   // Texte lisible d'un appel (pour copier une ligne en un clic)
   const ligneEnTexte = (l: Ligne): string =>
     [
@@ -287,6 +308,16 @@ export default function RegistrePage({ onRetour }: { onRetour: () => void }) {
               >
                 + Mois
               </button>
+              <button
+                type="button"
+                onClick={reclasser}
+                disabled={reclassement}
+                className="rounded-full border border-slate-300 bg-white px-3 py-1 text-xs font-semibold text-slate-600 transition hover:bg-slate-100 disabled:opacity-50"
+                title="Ranger chaque appel dans le mois correspondant à sa date"
+              >
+                {reclassement ? "Reclassement…" : "↔ Reclasser par date"}
+              </button>
+              {message && <span className="ml-1 text-xs font-semibold text-copper">{message}</span>}
             </div>
           )}
 

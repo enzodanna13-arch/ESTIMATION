@@ -26,6 +26,16 @@ export interface AppelEntry {
 const PREFIX = "registre/mois/";
 const safe = (s: string) => s.toUpperCase().replace(/[^A-Z0-9]+/g, "_").replace(/^_|_$/g, "");
 
+// Noms « propres » des 12 mois (pour classer un appel d'après sa date réelle)
+const MOIS_NOMS = ["JANVIER", "FEVRIER", "MARS", "AVRIL", "MAI", "JUIN", "JUILLET", "AOUT", "SEPTEMBRE", "OCTOBRE", "NOVEMBRE", "DECEMBRE"];
+// « 2026-08-13 » → « AOUT 2026 » (mois cible d'après la date), sinon null
+function moisDepuisDate(d?: string): string | null {
+  const m = /^(\d{4})-(\d{2})-\d{2}$/.exec((d || "").trim());
+  if (!m) return null;
+  const idx = parseInt(m[2], 10) - 1;
+  return idx >= 0 && idx < 12 ? `${MOIS_NOMS[idx]} ${m[1]}` : null;
+}
+
 interface MoisFile {
   mois: string;
   entrees: AppelEntry[];
@@ -120,6 +130,52 @@ export async function addAppelServer(entry: AppelEntry): Promise<void> {
   const courant = await fichierMois(entry.mois);
   const entrees = courant ? [...courant.data.entrees, entry] : [entry];
   await ecrireMois(entry.mois, entrees);
+}
+
+// Reclasse toutes les entrées saisies dans le bon mois d'après leur DATE
+// réelle (ex. un appel daté 2026-08-… rangé par erreur dans « AVRIL 2026 »
+// repart dans « AOUT 2026 »). Les appels sans date restent où ils sont ; les
+// mois vides déjà créés sont conservés. Renvoie le nombre d'appels déplacés.
+export async function reclasserParDateServer(): Promise<{ deplaces: number; total: number }> {
+  const { blobs } = await list({ prefix: PREFIX, limit: 1000 });
+  const parCle = new Map<string, { url: string; ts: number }>();
+  for (const b of blobs) {
+    const nom = b.pathname.slice(b.pathname.lastIndexOf("/") + 1);
+    const cle = nom.split("~")[0];
+    const ts = versionDe(b.pathname);
+    const cur = parCle.get(cle);
+    if (!cur || ts > cur.ts) parCle.set(cle, { url: b.url, ts });
+  }
+  const fichiers = (
+    await Promise.all(
+      [...parCle.values()].map(async ({ url }) => {
+        try { const r = await fetch(url, { cache: "no-store" }); return r.ok ? ((await r.json()) as MoisFile) : null; } catch { return null; }
+      }),
+    )
+  ).filter((f): f is MoisFile => f !== null);
+
+  // Ensemble des mois à réécrire = mois existants ∪ mois cibles (dates)
+  const buckets = new Map<string, AppelEntry[]>();
+  for (const f of fichiers) if (f.mois) buckets.set(f.mois.toUpperCase(), []);
+  let deplaces = 0;
+  let total = 0;
+  for (const f of fichiers) {
+    for (const e of f.entrees) {
+      total++;
+      const source = (e.mois || f.mois || "").toUpperCase();
+      const cible = (moisDepuisDate(e.date) || source).toUpperCase();
+      if (cible !== source) deplaces++;
+      if (!buckets.has(cible)) buckets.set(cible, []);
+      buckets.get(cible)!.push({ ...e, mois: cible });
+    }
+  }
+  if (deplaces === 0) return { deplaces: 0, total };
+  // Réécrit chaque mois (y compris les mois désormais vides, pour les conserver)
+  for (const [mois, entrees] of buckets) {
+    entrees.sort((a, b) => a.createdAt - b.createdAt);
+    await ecrireMois(mois, entrees);
+  }
+  return { deplaces, total };
 }
 
 // Supprime un appel (uniquement les entrées saisies dans l'outil)

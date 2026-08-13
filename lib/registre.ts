@@ -67,6 +67,22 @@ export async function createMois(mois: string): Promise<boolean> {
   return res.ok;
 }
 
+// Reclasse tous les appels dans le mois de leur date réelle. Renvoie le nombre
+// d'appels déplacés (ou null si l'opération a échoué).
+export async function reclasserParDate(): Promise<{ deplaces: number; total: number } | null> {
+  try {
+    const res = await fetch("/api/registre", {
+      method: "POST",
+      headers: { "content-type": "application/json", ...headers() },
+      body: JSON.stringify({ reclasser: true }),
+    });
+    if (!res.ok) return null;
+    return (await res.json()) as { deplaces: number; total: number };
+  } catch {
+    return null;
+  }
+}
+
 export async function addAppel(entry: AppelEntry): Promise<boolean> {
   const res = await fetch("/api/registre", {
     method: "POST",
