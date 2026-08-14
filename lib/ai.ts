@@ -37,9 +37,9 @@ const FINAL_SCHEMA = {
     base_mediane: { type: "number", description: "MÉDIANE DES PRIX ACTÉS des references_dvf sélectionnées, en euros — le prix médian TEL QUEL, sans transposition au m² ni à la surface du bien (0 si non calculable)" },
     prix_estime: { type: "number", description: "Cœur de fourchette en euros" },
     fourchette_basse: { type: "number", description: "= prix du scénario Vente rapide" },
-    fourchette_haute: { type: "number", description: "Haut de la fourchette présentée au client (4 à 6 % au-dessus de la basse, jamais au-delà de la meilleure vente actualisée)" },
+    fourchette_haute: { type: "number", description: "Haut de la fourchette présentée au client (« Prix plafond »), jamais au-delà de la meilleure vente comparable actualisée" },
     prix_m2: { type: "number" },
-    prix_presentation: { type: "number", description: "Prix affiché conseillé (= scénario Prix optimal) : LE MILIEU de la fourchette [basse → haute], arrondi vers le bas à un seuil attractif" },
+    prix_presentation: { type: "number", description: "Prix affiché conseillé (= scénario Prix optimal) : AU MOINS 25 000 € au-dessus de fourchette_basse (Vente rapide), jamais au sommet, arrondi vers le bas à un seuil attractif" },
     description_bien: { type: "string", description: "2 paragraphes professionnels et valorisants, adressés au client (« votre maison », « votre appartement »)" },
     indice_confiance: { type: "number", description: "0 à 100" },
     delai_vente_estime: { type: "string" },
@@ -72,7 +72,7 @@ const FINAL_SCHEMA = {
     impact_etat: { type: "number", description: "Impact de l'état en euros signés" },
     scenarios_prix: {
       type: "array",
-      description: "Exactement 3, prix croissants : Vente rapide (= fourchette_basse) < Prix optimal (= prix_presentation, LE MILIEU de la fourchette) < Prix plafond (le maximum réaliste, garde-fou interne)",
+      description: "Exactement 3, prix croissants : Vente rapide (= fourchette_basse) < Prix optimal (= prix_presentation) < Prix plafond (le maximum réaliste, garde-fou interne)",
       items: {
         type: "object",
         properties: {
@@ -204,10 +204,10 @@ RÈGLES :
   1. RÉFÉRENCES → si la fiche fournit une section « RÉFÉRENCES RETENUES », reprends-la TELLE QUELLE dans references_dvf (mêmes ventes, mêmes montants) et utilise la base_mediane IMPOSÉE : c'est ce qui garantit qu'un même dossier donne toujours le même calcul. Sinon, sélectionne 4 à 6 ventes réelles dans la liste DVF fournie, en appliquant la règle de PROXIMITÉ ci-dessous et des surfaces proches du bien (±25 %) — dès que la liste n'est pas vide, references_dvf ne doit JAMAIS être vide. Reporte l'adresse et la distance dans localisation/detail. Rédige analyse_dvf.
   2. BASE → base_mediane = la médiane des PRIX ACTÉS de ces références, telle quelle (le chiffre affiché sous le tableau des comparables du dossier) — ne la transpose NI au m² NI à la surface du bien.
   3. AJUSTEMENTS → liste les PLUS-VALUES (montants positifs : atouts réels — extérieur, DPE, état issu des photos, stationnement, annexes…) et les DÉCOTES (montants négatifs : défauts réels — nuisances, travaux…) dont la somme, depuis base_mediane, aboutit exactement à prix_estime. Chaque ligne est une caractéristique concrète, JAMAIS une correction technique abstraite. Si la surface du bien diffère sensiblement des références : une seule ligne « Surface supérieure/inférieure aux références (X m² vs Y m² médians) ». Ligne OBLIGATOIRE d'actualisation au marché actuel (voir règle prioritaire ci-dessous). GARDE-FOUS (dans les deux sens) : hors lignes de surface et d'actualisation, la somme des DÉCOTES ne doit pas excéder ~10 % de base_mediane (sauf défaut majeur objectif justifié), et la somme des PLUS-VALUES ne doit pas excéder ~8 % de base_mediane — SAUF présence d'ÉQUIPEMENT(S) DE VALEUR objectif(s) et justifié(s) (piscine enterrée/en dur, panneaux solaires/photovoltaïques…), auquel cas le total des plus-values peut légitimement atteindre ~12 à 15 %. Chaque facteur ne se compte qu'UNE fois dans un seul sens — ne cumule pas plusieurs lignes pour le même avantage (un simple jardin + terrasse + balcon = UN seul atout « extérieur »). EN REVANCHE, les ÉQUIPEMENTS DE VALEUR se chiffrent CHACUN sur sa PROPRE ligne dédiée, à leur apport réel au prix, et ne sont JAMAIS noyés dans un atout générique ni oubliés : piscine enterrée/en dur +3 à 6 % (piscine hors-sol : négligeable), panneaux solaires/photovoltaïques +2 à 4 %, climatisation réversible / véranda / garage fermé / dépendance aménagée / domotique / borne de recharge +1 à 3 % chacun. Pour le reste, reste sobre : un atout courant vaut 1 à 2 % de la base, un atout rare 3 à 4 % maximum. IMPÉRATIF : passe en revue les ÉQUIPEMENTS listés dans la fiche du bien ci-dessous et valorise explicitement chaque équipement de valeur qui y figure.
-  4. FOURCHETTE RESSERRÉE → fourchette_basse = le prix du scénario « Vente rapide » ; fourchette_haute = le HAUT de la fourchette présentée au client, avec un écart total de 4 à 6 % MAXIMUM et prix_estime entre les deux. Le prix de mise en marché conseillé (prix_presentation = scénario « Prix optimal ») se place TOUJOURS AU MILIEU de cette fourchette — jamais à son sommet —, arrondi vers le bas à un seuil attractif (ex. fourchette 349 000-365 000 → prix optimal 355 000). Le « Prix plafond » reste ton garde-fou interne : fourchette_haute ne dépasse jamais la meilleure vente comparable ACTUALISÉE. Justifie les deux bornes et le prix conseillé dans positionnement_marche (ventes de référence, actualisation, atouts/défauts).
+  4. FOURCHETTE → fourchette_basse = le prix du scénario « Vente rapide » ; fourchette_haute = le HAUT de la fourchette présentée au client (« Prix plafond »), prix_estime entre les deux. CONTRAINTE IMPÉRATIVE D'ÉCART : l'écart entre « Prix optimal » (prix_presentation) et « Vente rapide » (fourchette_basse) doit être d'AU MOINS 25 000 € — jamais moins. Si le calcul aboutit à un écart inférieur, ABAISSE « Vente rapide » (donc fourchette_basse) jusqu'à obtenir au minimum 25 000 € d'écart. Le prix de mise en marché conseillé (prix_presentation = « Prix optimal ») se place clairement au-dessus de « Vente rapide » (≥ 25 000 €) et jamais au sommet de la fourchette, arrondi vers le bas à un seuil attractif (ex. 355 000). Le « Prix plafond » reste ton garde-fou interne : fourchette_haute ne dépasse jamais la meilleure vente comparable ACTUALISÉE. Justifie les deux bornes et le prix conseillé dans positionnement_marche (ventes de référence, actualisation, atouts/défauts).
 - scenarios_prix : exactement 3 scénarios chiffrés, prix STRICTEMENT CROISSANTS :
-  1. « Vente rapide » — sous la fourchette, pour vendre en quelques semaines.
-  2. « Prix optimal » (= prix_presentation) — AU MILIEU de la fourchette [Vente rapide → fourchette_haute], arrondi vers le bas à un seuil attractif : le meilleur équilibre entre le prix obtenu et le délai de vente. C'est le prix de mise en marché conseillé.
+  1. « Vente rapide » — sous la fourchette, pour vendre en quelques semaines ; il est AU MOINS 25 000 € SOUS le « Prix optimal » (écart minimum impératif).
+  2. « Prix optimal » (= prix_presentation) — entre « Vente rapide » et « Prix plafond », au minimum 25 000 € au-dessus de « Vente rapide », arrondi vers le bas à un seuil attractif : le meilleur équilibre entre le prix obtenu et le délai de vente. C'est le prix de mise en marché conseillé.
   3. « Prix plafond » — le prix affiché MAXIMUM raisonnable : ce que le marché peut encore accepter pour ce bien (= le haut de la fourchette, jamais au-dessus de la meilleure vente comparable actualisée). Ce n'est PAS un plafond théorique gonflé : c'est le haut RÉALISTE — l'ancien « prix optimal ambitieux ».
 - PRIX PSYCHOLOGIQUES : arrondis prix_presentation et les 3 scénarios VERS LE BAS, à un seuil attractif en milliers ronds (ex. un calcul à 209 300 € s'affiche 209 000 € ou mieux 205 000 € s'il faut passer sous un seuil de recherche) — JAMAIS d'arrondi vers le haut.
 - argumentaire_vendeur : 3 à 5 points clés chiffrés ADRESSÉS DIRECTEMENT AU CLIENT (« votre bien », « vous »), DIGESTES : un point par ligne (séparés par \\n), chacun au format « Titre court — explication en 1 à 2 phrases maximum ». Si le prix souhaité par le client est renseigné, l'un des points le positionne avec pédagogie face aux ventes réelles actualisées.
@@ -740,6 +740,26 @@ ${JSON.stringify(schemaFor(mission))}`,
     baisses_annonce: str(r.baisses_annonce),
     recommandations_annonce: arr(r.recommandations_annonce),
   };
+  // Garantie déterministe (missions de VENTE uniquement, pas les loyers) :
+  // l'écart « Prix optimal » (prix_presentation) − « Vente rapide »
+  // (fourchette_basse) est d'au moins 25 000 €. Si l'IA propose moins, on
+  // abaisse la borne basse et on réaligne le scénario « Vente rapide ».
+  const ECART_MIN_VENTE = 25000;
+  const missionVente = mission === "vente" || mission === "audit";
+  if (missionVente && report.prix_presentation > 0 && report.fourchette_basse > 0
+      && report.prix_presentation - report.fourchette_basse < ECART_MIN_VENTE) {
+    const nouvelleBasse = Math.floor((report.prix_presentation - ECART_MIN_VENTE) / 1000) * 1000;
+    if (nouvelleBasse > 0) {
+      report.fourchette_basse = nouvelleBasse;
+      if (report.prix_estime < nouvelleBasse) report.prix_estime = nouvelleBasse;
+      const sc = report.scenarios_prix;
+      if (Array.isArray(sc) && sc.length) {
+        let idxMin = 0;
+        for (let i = 1; i < sc.length; i++) if (num(sc[i]?.prix) < num(sc[idxMin]?.prix)) idxMin = i;
+        if (sc[idxMin]) sc[idxMin].prix = nouvelleBasse;
+      }
+    }
+  }
   if (report.prix_estime <= 0 || report.fourchette_basse <= 0) {
     throw new Error("Réponse IA incomplète (prix manquants)");
   }
