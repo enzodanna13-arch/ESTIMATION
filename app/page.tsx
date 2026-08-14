@@ -12,6 +12,7 @@ import RegistrePage from "@/components/RegistrePage";
 import RetouchePage from "@/components/RetouchePage";
 import LeadsPage from "@/components/LeadsPage";
 import DashboardPage from "@/components/DashboardPage";
+import NegociateursPage from "@/components/NegociateursPage";
 import { deleteDocument, deleteEstimation, getDocument, getEstimation, getHistoryKey, HistoryLockedError, listDocuments, listEstimations, saveDocument, setHistoryKey, type DocHistoryMeta, type HistoryMeta } from "@/lib/history";
 import { loyerNetAnnuel, prixParRendement, RENDEMENT_NET_BAS, RENDEMENT_NET_HAUT } from "@/lib/rendement";
 import { surfaceDependancesHabitables, surfaceHabitableTotale } from "@/lib/surfaces";
@@ -232,7 +233,7 @@ export default function Home() {
   const [step, setStep] = useState(0);
   // Accueil à deux univers : Estimation (les 4 missions) et Génération de
   // documents (menu des documents de l'agence)
-  const [univers, setUnivers] = useState<"" | "estimation" | "documents" | "clients" | "historique" | "visites" | "registre" | "retouche" | "leads" | "dashboard">("");
+  const [univers, setUnivers] = useState<"" | "estimation" | "documents" | "clients" | "historique" | "visites" | "registre" | "retouche" | "leads" | "dashboard" | "negociateurs">("");
   const [sauvegarde, setSauvegarde] = useState<"idle" | "encours" | "erreur">("idle");
   const [sauvegardeMsg, setSauvegardeMsg] = useState<string | null>(null);
 
@@ -780,6 +781,7 @@ export default function Home() {
 
             {univers === "leads" && <LeadsPage onRetour={() => setUnivers("")} />}
             {univers === "dashboard" && <DashboardPage onRetour={() => setUnivers("")} />}
+            {univers === "negociateurs" && <NegociateursPage onRetour={() => setUnivers("")} />}
 
             {univers === "" && (
               <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 print:hidden">
@@ -796,6 +798,21 @@ export default function Home() {
                   </p>
                   <span className="mt-4 inline-block rounded-lg bg-copper px-4 py-2 text-sm font-semibold text-white transition group-hover:brightness-110">
                     Ouvrir le tableau de bord →
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setUnivers("negociateurs")}
+                  className="group rounded-3xl border-2 border-slate-200 bg-white p-8 text-left shadow-sm transition hover:border-copper hover:shadow-lg"
+                >
+                  <div className="mb-3 text-4xl">👔</div>
+                  <div className="text-xl font-bold text-navy">Suivi des négociateurs</div>
+                  <p className="mt-1 text-sm text-slate-500">
+                    L'activité de chaque négociateur, interconnectée : estimations, leads reçus/traités/convertis,
+                    appels, RDV, mandats et dossiers — par période, triable.
+                  </p>
+                  <span className="mt-4 inline-block rounded-lg bg-navy px-4 py-2 text-sm font-semibold text-white transition group-hover:bg-navy-deep">
+                    Voir l'activité →
                   </span>
                 </button>
                 <button
