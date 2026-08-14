@@ -274,6 +274,10 @@ function FicheLead({ lead, onClose, onStatut, onSuivi, onPatch, onConvert, onDel
   const [texte, setTexte] = useState("");
   const [nego, setNego] = useState(lead.negociateur);
   const [notes, setNotes] = useState(lead.notes);
+  const [prenom, setPrenom] = useState(lead.prenom);
+  const [nom, setNom] = useState(lead.nom);
+  const [tel, setTel] = useState(lead.tel);
+  const [email, setEmail] = useState(lead.email);
   const [copie, setCopie] = useState(false);
 
   const relanceISO = lead.relanceLe ? new Date(lead.relanceLe).toISOString().slice(0, 10) : "";
@@ -315,6 +319,22 @@ function FicheLead({ lead, onClose, onStatut, onSuivi, onPatch, onConvert, onDel
             <button onClick={() => void copierFiche()} className="rounded-lg bg-copper px-3 py-1.5 text-sm font-bold text-white transition hover:brightness-110">{copie ? "✓ Copié" : "📋 Copier la fiche"}</button>
             <button onClick={onClose} className="rounded-lg border border-slate-200 px-2 py-1 text-sm text-slate-500 hover:bg-slate-100">✕</button>
           </div>
+        </div>
+
+        {/* Identité + coordonnées éditables (souvent absentes des leads entrants) */}
+        <div className="mb-3 grid gap-2 rounded-lg border border-slate-200 bg-slate-50/60 p-2.5 sm:grid-cols-2">
+          <label className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">Prénom
+            <input className={`${inputCls} mt-0.5`} value={prenom} onChange={(e) => setPrenom(e.target.value)} onBlur={() => prenom !== lead.prenom && void onPatch(lead.id, { prenom })} placeholder="Prénom du client" />
+          </label>
+          <label className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">Nom
+            <input className={`${inputCls} mt-0.5`} value={nom} onChange={(e) => setNom(e.target.value)} onBlur={() => nom !== lead.nom && void onPatch(lead.id, { nom })} placeholder="Nom du client" />
+          </label>
+          <label className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">Téléphone
+            <input className={`${inputCls} mt-0.5`} value={tel} onChange={(e) => setTel(e.target.value)} onBlur={() => tel !== lead.tel && void onPatch(lead.id, { tel })} placeholder="Téléphone" />
+          </label>
+          <label className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">Email
+            <input className={`${inputCls} mt-0.5`} value={email} onChange={(e) => setEmail(e.target.value)} onBlur={() => email !== lead.email && void onPatch(lead.id, { email })} placeholder="Email" />
+          </label>
         </div>
 
         {/* Actions rapides de contact */}
