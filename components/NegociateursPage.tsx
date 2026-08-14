@@ -5,7 +5,7 @@ import { listLeads, type Lead } from "@/lib/leads";
 import { listClients, type ClientDossier } from "@/lib/clients";
 import { listEstimations, listDocuments, type HistoryMeta, type DocHistoryMeta } from "@/lib/history";
 import { listRegistre, type AppelEntry } from "@/lib/registre";
-import { EQUIPE, ASSISTANTE } from "@/lib/equipe";
+import { EQUIPE, ASSISTANTE, membreDepuisNom, estNonPersonne } from "@/lib/equipe";
 
 const norm = (s?: string) => (s ?? "").trim().toLowerCase().replace(/\s+/g, " ");
 const estGenerique = (k: string) => !k || k === "—" || k === "-" || k === "n/a" || k === "na";
@@ -64,16 +64,19 @@ export default function NegociateursPage({ onRetour }: { onRetour: () => void })
 
     const map = new Map<string, Row>();
     // 1) On amorce avec l'équipe de référence : chaque membre apparaît toujours,
-    //    même sans activité, avec son rôle.
-    const roleParCle = new Map<string, string>();
-    for (const m of EQUIPE) { map.set(norm(m.nom), rowVide(m.nom, m.role)); roleParCle.set(norm(m.nom), m.role); }
+    //    même sans activité, avec son rôle. La clé est l'id du membre.
+    for (const m of EQUIPE) map.set(m.id, rowVide(m.nom, m.role));
 
+    // Tout nom saisi est ramené à la bonne personne (consolidation des variantes :
+    // « FLECHER Emilie », « emilie flecher »… → Émilie Flécher). Les noms inconnus
+    // vont dans une seule ligne « Autres » ; les non-personnes (site, facebook…)
+    // sont ignorées.
     const obtenir = (label?: string): Row | null => {
-      const k = norm(label);
-      if (estGenerique(k)) return null;
-      let r = map.get(k);
-      if (!r) { r = rowVide(label ?? "", roleParCle.get(k) ?? ""); map.set(k, r); }
-      else if ((label ?? "").trim().length > r.label.length && r.role === "") r.label = (label ?? "").trim();
+      const membre = membreDepuisNom(label);
+      if (membre) return map.get(membre.id)!;
+      if (estNonPersonne(label) || estGenerique(norm(label))) return null;
+      let r = map.get("__autres");
+      if (!r) { r = rowVide("Autres", ""); map.set("__autres", r); }
       return r;
     };
 
@@ -102,7 +105,7 @@ export default function NegociateursPage({ onRetour }: { onRetour: () => void })
     // Registre des appels : rattaché à l'assistante (elle consigne les appels).
     // Chaque appel du registre saisi dans la période compte pour elle.
     if (ASSISTANTE) {
-      const r = map.get(norm(ASSISTANTE.nom));
+      const r = map.get(ASSISTANTE.id);
       if (r) r.appels += appels.filter((a) => dansPeriode(a.createdAt)).length;
     }
 
