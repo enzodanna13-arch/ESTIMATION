@@ -6,6 +6,7 @@ import { listClients, updateClient, type ClientDossier } from "@/lib/clients";
 import { STATUTS_RECHERCHE, STATUT_COULEURS } from "@/lib/acquereurs";
 import { listEstimations, listDocuments, type HistoryMeta, type DocHistoryMeta } from "@/lib/history";
 import { listRegistre } from "@/lib/registre";
+import { estDossierVendeurComplet } from "@/lib/docTypes";
 
 const int = new Intl.NumberFormat("fr-FR");
 const eur = (n: number) => `${int.format(Math.round(n))} €`;
@@ -57,7 +58,8 @@ export default function DashboardPage({ onRetour }: { onRetour: () => void }) {
     const budgetTotal = budgets.reduce((a, b) => a + b, 0);
 
     const valeurEstimee = estims.reduce((s, e) => s + ((e.fourchetteBasse + e.fourchetteHaute) / 2 || 0), 0);
-    const nbMandats = docs.filter((d) => /mandat/i.test(d.docType) || /mandat/i.test(d.titre)).length;
+    // Un mandat = un dossier VENDEUR complet (toutes les pièces obligatoires).
+    const nbMandats = clients.filter((c) => estDossierVendeurComplet(c)).length;
 
     return { parStatutLead, convertis, traites, tauxConv, nouveaux, vendeurs, acq, inv, budgetTotal, valeurEstimee, nbMandats };
   }, [leads, clients, estims, docs]);
@@ -102,7 +104,7 @@ export default function DashboardPage({ onRetour }: { onRetour: () => void }) {
             <KPI valeur={String(leads.length)} label="Leads reçus" sous={`${stats.nouveaux} à traiter`} accent="text-copper" />
             <KPI valeur={`${stats.tauxConv} %`} label="Taux de conversion" sous={`${stats.convertis} converti(s)`} accent="text-emerald-600" />
             <KPI valeur={String(clients.length)} label="Dossiers clients" sous={`${stats.vendeurs} vendeur · ${stats.acq} acq. · ${stats.inv} invest.`} />
-            <KPI valeur={String(stats.nbMandats)} label="Mandats générés" sous={`${docs.length} document(s) au total`} />
+            <KPI valeur={String(stats.nbMandats)} label="Mandats (dossiers vendeur complets)" sous={`${stats.vendeurs} dossier(s) vendeur · ${docs.length} document(s)`} accent="text-emerald-600" />
             <KPI valeur={String(estims.length)} label="Estimations réalisées" />
             <KPI valeur={eur(stats.valeurEstimee)} label="Valeur estimée cumulée" sous={`≈ ${eur(stats.valeurEstimee * TAUX_HONORAIRES)} d'honoraires potentiels`} accent="text-navy" />
             <KPI valeur={eur(stats.budgetTotal)} label="Budget portefeuille acquéreurs" />

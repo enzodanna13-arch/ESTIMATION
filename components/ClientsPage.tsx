@@ -14,7 +14,7 @@ import {
   type ClientDossier,
   type PieceClient,
 } from "@/lib/clients";
-import { PIECES_ATTENDUES } from "@/lib/docTypes";
+import { PIECES_ATTENDUES, estDossierVendeurComplet } from "@/lib/docTypes";
 import AcquereurFiche from "@/components/AcquereurFiche";
 import { STATUTS_RECHERCHE, STATUT_COULEURS, resumeRecherche } from "@/lib/acquereurs";
 import { NEGOCIATEURS } from "@/lib/equipe";
@@ -54,7 +54,7 @@ function piecesManquantes(d: ClientDossier): { categorie: string; copro?: boolea
 function BadgeCompletude({ d }: { d: ClientDossier }) {
   const manquantes = piecesManquantes(d);
   return manquantes.length === 0 ? (
-    <span className="rounded-full bg-green-100 px-2 py-0.5 text-[11px] font-bold text-green-700">✓ Complet</span>
+    <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-bold text-emerald-700" title="Dossier complet — compté comme mandat">✓ Mandat</span>
   ) : (
     <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-bold text-amber-700">
       {manquantes.length} manquant{manquantes.length > 1 ? "s" : ""}
@@ -567,8 +567,12 @@ export default function ClientsPage({ onRetour }: { onRetour: () => void }) {
             <h3 className="text-sm font-bold uppercase tracking-wide text-navy">📋 Rapport de complétude des dossiers</h3>
             <span className="flex items-center gap-3">
               <span className="text-xs text-slate-500">
-                {dossiers.filter((d) => piecesManquantes(d).length === 0).length} complet{dossiers.filter((d) => piecesManquantes(d).length === 0).length > 1 ? "s" : ""} ·{" "}
-                {dossiers.filter((d) => piecesManquantes(d).length > 0).length} incomplet{dossiers.filter((d) => piecesManquantes(d).length > 0).length > 1 ? "s" : ""}
+                {(() => {
+                  const vend = dossiers.filter((d) => (d.typeClient ?? "vendeur") === "vendeur");
+                  const mandats = vend.filter((d) => estDossierVendeurComplet(d)).length;
+                  const aCompleter = vend.length - mandats;
+                  return `${mandats} mandat${mandats > 1 ? "s" : ""} (dossier vendeur complet) · ${aCompleter} à compléter`;
+                })()}
               </span>
               <button
                 type="button"
@@ -673,7 +677,7 @@ export default function ClientsPage({ onRetour }: { onRetour: () => void }) {
               <button
                 key={d.id}
                 onClick={() => setOuvert(d)}
-                className="rounded-2xl border border-slate-200 bg-white p-4 text-left shadow-sm transition hover:-translate-y-0.5 hover:border-copper hover:shadow-md"
+                className={`rounded-2xl border border-l-4 border-slate-200 bg-white p-4 text-left shadow-sm transition hover:-translate-y-0.5 hover:border-copper hover:shadow-md ${t === "investisseur" ? "border-l-violet-400" : t === "acquereur" ? "border-l-blue-400" : "border-l-amber-400"}`}
               >
                 <div className="mb-1 flex items-center justify-between">
                   <span className={`rounded-full px-2 py-0.5 text-[11px] font-bold ${t === "investisseur" ? "bg-violet-100 text-violet-700" : t === "acquereur" ? "bg-blue-100 text-blue-700" : "bg-slate-100 text-slate-600"}`}>

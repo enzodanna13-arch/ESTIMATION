@@ -6,6 +6,7 @@ import { listClients, type ClientDossier } from "@/lib/clients";
 import { listEstimations, listDocuments, type HistoryMeta, type DocHistoryMeta } from "@/lib/history";
 import { listRegistre, type AppelEntry } from "@/lib/registre";
 import { EQUIPE, ASSISTANTE, membreDepuisNom, estNonPersonne } from "@/lib/equipe";
+import { estDossierVendeurComplet } from "@/lib/docTypes";
 
 const norm = (s?: string) => (s ?? "").trim().toLowerCase().replace(/\s+/g, " ");
 const estGenerique = (k: string) => !k || k === "—" || k === "-" || k === "n/a" || k === "na";
@@ -81,7 +82,7 @@ export default function NegociateursPage({ onRetour }: { onRetour: () => void })
     };
 
     for (const e of estims) if (dansPeriode(e.createdAt)) { const r = obtenir(e.negociateur); if (r) r.estimations++; }
-    for (const d of docs) if (dansPeriode(d.createdAt)) { const r = obtenir(d.negociateur); if (r) { r.documents++; if (/mandat/i.test(d.docType) || /mandat/i.test(d.titre)) r.mandats++; } }
+    for (const d of docs) if (dansPeriode(d.createdAt)) { const r = obtenir(d.negociateur); if (r) r.documents++; }
 
     for (const l of leads) {
       if (dansPeriode(l.createdAt)) {
@@ -96,6 +97,8 @@ export default function NegociateursPage({ onRetour }: { onRetour: () => void })
 
     for (const c of clients) {
       if (dansPeriode(c.createdAt)) { const r = obtenir(c.negociateur); if (r) r.dossiers++; }
+      // Dossier vendeur complet = mandat, rattaché à son négociateur
+      if (estDossierVendeurComplet(c) && dansPeriode(c.updatedAt)) { const r = obtenir(c.negociateur); if (r) r.mandats++; }
       for (const ev of c.timeline ?? []) if (dansPeriode(ev.date)) {
         const r = obtenir(ev.auteur);
         if (r) { if (ev.type === "appel") r.appels++; if (ev.type === "rdv") r.rdv++; }

@@ -214,6 +214,19 @@ export const PIECES_ATTENDUES: { categorie: string; copro?: boolean }[] = [
   { categorie: "Tracfin" },
 ];
 
+// Pièces manquantes d'un dossier (d'après les catégories présentes)
+export function piecesManquantesDe(categoriesPresentes: string[]): { categorie: string; copro?: boolean }[] {
+  const presentes = new Set(categoriesPresentes);
+  return PIECES_ATTENDUES.filter((a) => !presentes.has(a.categorie));
+}
+
+// Un dossier VENDEUR est « complet » (⇒ compté comme mandat) quand toutes les
+// pièces obligatoires sont présentes. Ne s'applique qu'aux dossiers vendeur.
+export function estDossierVendeurComplet(d: { typeClient?: string; pieces?: { categorie: string }[] }): boolean {
+  if ((d.typeClient ?? "vendeur") !== "vendeur") return false;
+  return piecesManquantesDe((d.pieces ?? []).map((p) => p.categorie)).length === 0;
+}
+
 export interface DocumentBloc {
   titre?: string;
   texte?: string; // paragraphes séparés par \n
