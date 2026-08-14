@@ -324,10 +324,19 @@ function FicheLead({ lead, onClose, onStatut, onSuivi, onPatch, onConvert, onDel
           {lead.email && <a href={`mailto:${lead.email}`} className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-semibold text-slate-600 hover:bg-slate-100">✉ Email</a>}
         </div>
 
-        <div className="grid gap-1.5 text-sm sm:grid-cols-2">
+        <div className="grid items-center gap-1.5 text-sm sm:grid-cols-2">
           {lead.ville && <div>📍 {lead.ville}</div>}
           {lead.budget != null && <div>💶 {int.format(lead.budget)} €</div>}
-          <div>🏷️ {labelProjet(lead.typeProjet)}</div>
+          <label className="flex items-center gap-1.5">
+            <span title="Type de projet">🏷️ Projet :</span>
+            <select
+              className="rounded-lg border border-slate-300 bg-white px-2 py-1 text-xs font-semibold text-navy focus:border-copper focus:outline-none"
+              value={lead.typeProjet}
+              onChange={(e) => void onPatch(lead.id, { typeProjet: e.target.value })}
+            >
+              {TYPES_PROJET_LEAD.map((t) => <option key={t.id} value={t.id}>{t.label}</option>)}
+            </select>
+          </label>
         </div>
         {lead.message && <p className="mt-2 rounded-lg bg-slate-50 p-2 text-sm text-slate-700">💬 {lead.message}</p>}
 

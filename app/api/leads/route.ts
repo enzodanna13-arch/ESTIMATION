@@ -7,6 +7,15 @@ export const dynamic = "force-dynamic";
 // (Zapier/Make/Meta) : l'utilisateur peut nommer ses champs librement
 // (mail, telephone, ville du bien, type de bien…) — on les rapproche des
 // champs attendus sans le forcer à recommencer.
+// Déduit le type de projet d'après les mots-clés (campagne + message)
+function deduireTypeProjet(texte: string): string {
+  const t = texte.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  if (/(investiss|locatif|rendement|defiscal|pinel|lmnp)/.test(t)) return "investisseur";
+  if (/(vendeur|vendre|vente|proprietaire|estimation|estimer|delai de vente|delais de vente|succession)/.test(t)) return "vendeur";
+  if (/(acquereur|acheteur|achat|acheter|recherche un|budget)/.test(t)) return "acquereur";
+  return "acquereur";
+}
+
 function extraireChamps(body: Record<string, unknown>): Partial<Lead> {
   const norm = (s: string) => s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, "");
   const idx: { k: string; orig: string; v: string }[] = [];
@@ -33,7 +42,7 @@ function extraireChamps(body: Record<string, unknown>): Partial<Lead> {
   const ville = trouver("villedubien", "ville", "city", "commune", "secteur");
   const campagne = trouver("campagne", "campaign");
   const source = trouver("source");
-  const typeProjet = trouver("typeprojet") || "acquereur";
+  const typeExplicite = trouver("typeprojet");
   const messageDirect = trouver("message", "projet", "recherche", "commentaire", "demande");
   // Tous les autres champs mappés (type de bien, délai de vente, DPE…) sont
   // conservés dans le message, avec leur libellé d'origine.
@@ -41,6 +50,10 @@ function extraireChamps(body: Record<string, unknown>): Partial<Lead> {
     .filter((e) => !consumed.has(e.k) && e.v.trim() && !/dummydata/i.test(e.v))
     .map((e) => `${e.orig} : ${e.v.trim()}`);
   const message = [messageDirect, ...extras].filter(Boolean).join(" · ");
+  // Type de projet : explicite si fourni, sinon déduit des mots-clés de la
+  // campagne / du message (une campagne « propriétaires vendeurs » ou « délais
+  // de vente » = un VENDEUR, pas un acquéreur).
+  const typeProjet = typeExplicite || deduireTypeProjet(`${campagne} ${message}`);
   return {
     nom, prenom, tel, email, ville,
     budget: Number.isFinite(budgetNum) && budgetNum > 0 ? budgetNum : null,
