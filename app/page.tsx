@@ -13,6 +13,7 @@ import RetouchePage from "@/components/RetouchePage";
 import LeadsPage from "@/components/LeadsPage";
 import DashboardPage from "@/components/DashboardPage";
 import NegociateursPage from "@/components/NegociateursPage";
+import { NEGOCIATEURS } from "@/lib/equipe";
 import { deleteDocument, deleteEstimation, getDocument, getEstimation, getHistoryKey, HistoryLockedError, listDocuments, listEstimations, saveDocument, setHistoryKey, type DocHistoryMeta, type HistoryMeta } from "@/lib/history";
 import { loyerNetAnnuel, prixParRendement, RENDEMENT_NET_BAS, RENDEMENT_NET_HAUT } from "@/lib/rendement";
 import { surfaceDependancesHabitables, surfaceHabitableTotale } from "@/lib/surfaces";
@@ -1082,7 +1083,8 @@ export default function Home() {
                     </Field>
                     <Select label="Horizon de vente" value={input.horizonVente} onChange={(v) => set("horizonVente", v)} options={OPT.horizon} />
                     <Field label="Négociateur en charge">
-                      <input className={inputCls} value={input.negociateur} onChange={(e) => set("negociateur", e.target.value)} placeholder="Votre nom (affiché sur le dossier)" />
+                      <input className={inputCls} value={input.negociateur} onChange={(e) => set("negociateur", e.target.value)} placeholder="Votre nom (affiché sur le dossier)" list="negos-app" />
+                      <datalist id="negos-app">{NEGOCIATEURS.map((n) => <option key={n} value={n} />)}</datalist>
                     </Field>
                     <Field label="Téléphone du négociateur">
                       <input className={inputCls} inputMode="tel" value={input.negociateurTel} onChange={(e) => set("negociateurTel", e.target.value)} placeholder="06 12 34 56 78" />
@@ -1986,7 +1988,8 @@ export default function Home() {
                     {docType !== "preetatdate" && docType !== "facture" && docType !== "mandat" && (
                     <div className="grid gap-4 sm:grid-cols-3">
                       <Field label="Négociateur (signature)">
-                        <input className={inputCls} value={docInput.negociateur} onChange={(e) => setD("negociateur", e.target.value)} placeholder="Votre nom" />
+                        <input className={inputCls} value={docInput.negociateur} onChange={(e) => setD("negociateur", e.target.value)} placeholder="Votre nom" list="negos-app-doc" />
+                        <datalist id="negos-app-doc">{NEGOCIATEURS.map((n) => <option key={n} value={n} />)}</datalist>
                       </Field>
                       <Field label="Téléphone">
                         <input className={inputCls} inputMode="tel" value={docInput.negociateurTel} onChange={(e) => setD("negociateurTel", e.target.value)} placeholder="06 12 34 56 78" />

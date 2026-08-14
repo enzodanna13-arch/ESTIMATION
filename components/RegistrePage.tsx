@@ -11,6 +11,7 @@ import {
   REGISTRE_COLONNES,
   type AppelEntry,
 } from "@/lib/registre";
+import { NEGOCIATEURS } from "@/lib/equipe";
 
 const inputCls =
   "w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-sm text-slate-800 shadow-sm outline-none transition focus:border-copper focus:ring-2 focus:ring-copper/30";
@@ -365,7 +366,8 @@ export default function RegistrePage({ onRetour }: { onRetour: () => void }) {
                 <select className={inputCls} value={form.origine} onChange={(e) => set("origine", e.target.value)}>
                   {["appel entrant", "appel sortant", "mail", "passage agence", "sms", "autre"].map((o) => <option key={o}>{o}</option>)}
                 </select>
-                <input className={inputCls} value={form.destinataire} onChange={(e) => set("destinataire", e.target.value)} placeholder="Destinataire (négociateur)" />
+                <input className={inputCls} value={form.destinataire} onChange={(e) => set("destinataire", e.target.value)} placeholder="Destinataire (négociateur)" list="negos-registre" />
+                <datalist id="negos-registre">{NEGOCIATEURS.map((n) => <option key={n} value={n} />)}</datalist>
                 <input className={inputCls} value={form.nom} onChange={(e) => set("nom", e.target.value)} placeholder="Nom de l'appelant" />
                 <input className={inputCls} value={form.telephone} onChange={(e) => set("telephone", e.target.value)} placeholder="Téléphone" />
                 <input className={inputCls} value={form.mail} onChange={(e) => set("mail", e.target.value)} placeholder="Mail" />

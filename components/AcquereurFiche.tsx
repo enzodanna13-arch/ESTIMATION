@@ -11,6 +11,7 @@ import {
   completudeDossier, financementVide, investissementVide, rechercheVide,
 } from "@/lib/acquereurs";
 import { listEstimations, getEstimation } from "@/lib/history";
+import { NEGOCIATEURS } from "@/lib/equipe";
 import { bienDepuisEstimation, NIVEAUX, scorerRecherche } from "@/lib/matching";
 
 const inputCls = "w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-copper focus:outline-none focus:ring-2 focus:ring-copper/20";
@@ -170,7 +171,7 @@ export default function AcquereurFiche({ dossier, onRetour, onSaved, onSupprime 
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             <Champ label="Nom *"><input className={inputCls} value={d.nom} onChange={(e) => set({ nom: e.target.value })} /></Champ>
             <Champ label="Prénom"><input className={inputCls} value={d.prenom ?? ""} onChange={(e) => set({ prenom: e.target.value })} /></Champ>
-            <Champ label="Négociateur en charge"><input className={inputCls} value={d.negociateur} onChange={(e) => set({ negociateur: e.target.value })} /></Champ>
+            <Champ label="Négociateur en charge"><input className={inputCls} value={d.negociateur} onChange={(e) => set({ negociateur: e.target.value })} list="negos-acq" /><datalist id="negos-acq">{NEGOCIATEURS.map((n) => <option key={n} value={n} />)}</datalist></Champ>
             <Champ label="Téléphone"><input className={inputCls} value={d.tel ?? ""} onChange={(e) => set({ tel: e.target.value })} /></Champ>
             <Champ label="Email"><input className={inputCls} value={d.email ?? ""} onChange={(e) => set({ email: e.target.value })} /></Champ>
             <Champ label="Adresse actuelle"><input className={inputCls} value={d.adresseActuelle ?? ""} onChange={(e) => set({ adresseActuelle: e.target.value })} /></Champ>

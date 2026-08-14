@@ -6,6 +6,7 @@ import {
   createLead, deleteLead, listLeads, updateLead, type Lead,
 } from "@/lib/leads";
 import { createClient } from "@/lib/clients";
+import { NEGOCIATEURS } from "@/lib/equipe";
 
 const inputCls = "w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-copper focus:outline-none focus:ring-2 focus:ring-copper/20";
 const int = new Intl.NumberFormat("fr-FR");
@@ -234,7 +235,7 @@ function FicheLead({ lead, onClose, onStatut, onSuivi, onPatch, onConvert, onDel
 
         <div className="mt-3 grid gap-3 sm:grid-cols-2">
           <label className="text-xs font-semibold text-slate-500">Transféré à (négociateur)
-            <div className="mt-1 flex gap-1"><input className={inputCls} value={nego} onChange={(e) => setNego(e.target.value)} placeholder="Nom du négociateur" />
+            <div className="mt-1 flex gap-1"><input className={inputCls} value={nego} onChange={(e) => setNego(e.target.value)} placeholder="Nom du négociateur" list="negos-leads" /><datalist id="negos-leads">{NEGOCIATEURS.map((n) => <option key={n} value={n} />)}</datalist>
               <button onClick={() => { void onPatch(lead.id, { negociateur: nego }); if (nego && nego !== lead.negociateur) onSuivi(lead, "transfert", `Transféré à ${nego}`); }} className="rounded-lg bg-navy px-3 text-sm font-bold text-white">OK</button></div>
           </label>
           <label className="text-xs font-semibold text-slate-500">Notes internes

@@ -5,18 +5,19 @@ import { listLeads, type Lead } from "@/lib/leads";
 import { listClients, type ClientDossier } from "@/lib/clients";
 import { listEstimations, listDocuments, type HistoryMeta, type DocHistoryMeta } from "@/lib/history";
 import { listRegistre, type AppelEntry } from "@/lib/registre";
+import { EQUIPE, ASSISTANTE } from "@/lib/equipe";
 
 const norm = (s?: string) => (s ?? "").trim().toLowerCase().replace(/\s+/g, " ");
 const estGenerique = (k: string) => !k || k === "—" || k === "-" || k === "n/a" || k === "na";
 
 interface Row {
-  key: string; label: string;
+  key: string; label: string; role: string;
   estimations: number; documents: number; mandats: number;
   leadsRecus: number; leadsTraites: number; leadsConvertis: number;
   appels: number; rdv: number; dossiers: number;
 }
-function rowVide(label: string): Row {
-  return { key: norm(label), label: label.trim(), estimations: 0, documents: 0, mandats: 0, leadsRecus: 0, leadsTraites: 0, leadsConvertis: 0, appels: 0, rdv: 0, dossiers: 0 };
+function rowVide(label: string, role = ""): Row {
+  return { key: norm(label), label: label.trim(), role, estimations: 0, documents: 0, mandats: 0, leadsRecus: 0, leadsTraites: 0, leadsConvertis: 0, appels: 0, rdv: 0, dossiers: 0 };
 }
 
 type ColKey = "estimations" | "leadsRecus" | "leadsTraites" | "leadsConvertis" | "appels" | "rdv" | "mandats" | "dossiers";
@@ -62,12 +63,17 @@ export default function NegociateursPage({ onRetour }: { onRetour: () => void })
     const dansPeriode = (t?: number) => !cutoff || (typeof t === "number" && t >= cutoff);
 
     const map = new Map<string, Row>();
+    // 1) On amorce avec l'équipe de référence : chaque membre apparaît toujours,
+    //    même sans activité, avec son rôle.
+    const roleParCle = new Map<string, string>();
+    for (const m of EQUIPE) { map.set(norm(m.nom), rowVide(m.nom, m.role)); roleParCle.set(norm(m.nom), m.role); }
+
     const obtenir = (label?: string): Row | null => {
       const k = norm(label);
       if (estGenerique(k)) return null;
       let r = map.get(k);
-      if (!r) { r = rowVide(label ?? ""); map.set(k, r); }
-      else if ((label ?? "").trim().length > r.label.length) r.label = (label ?? "").trim();
+      if (!r) { r = rowVide(label ?? "", roleParCle.get(k) ?? ""); map.set(k, r); }
+      else if ((label ?? "").trim().length > r.label.length && r.role === "") r.label = (label ?? "").trim();
       return r;
     };
 
@@ -93,7 +99,12 @@ export default function NegociateursPage({ onRetour }: { onRetour: () => void })
       }
     }
 
-    for (const a of appels) if (dansPeriode(a.createdAt)) { const r = obtenir(a.destinataire); if (r) r.appels++; }
+    // Registre des appels : rattaché à l'assistante (elle consigne les appels).
+    // Chaque appel du registre saisi dans la période compte pour elle.
+    if (ASSISTANTE) {
+      const r = map.get(norm(ASSISTANTE.nom));
+      if (r) r.appels += appels.filter((a) => dansPeriode(a.createdAt)).length;
+    }
 
     return [...map.values()].sort((x, y) => y[tri] - x[tri] || x.label.localeCompare(y.label));
   }, [estims, docs, leads, clients, appels, periode, tri]);
@@ -146,7 +157,10 @@ export default function NegociateursPage({ onRetour }: { onRetour: () => void })
                 <tbody>
                   {rows.map((r) => (
                     <tr key={r.key} className="border-b border-slate-100 hover:bg-slate-50/60">
-                      <td className="sticky left-0 z-10 bg-white px-4 py-2.5 font-bold capitalize text-navy">{r.label}</td>
+                      <td className="sticky left-0 z-10 bg-white px-4 py-2.5">
+                        <div className="font-bold text-navy">{r.label}</div>
+                        {r.role && <div className="text-[11px] font-medium text-slate-400">{r.role}</div>}
+                      </td>
                       {COLONNES.map((c) => (
                         <td key={c.cle} className={`px-3 py-2.5 text-center ${tri === c.cle ? "font-bold text-copper" : "text-slate-700"}`}>{r[c.cle] || <span className="text-slate-300">0</span>}</td>
                       ))}

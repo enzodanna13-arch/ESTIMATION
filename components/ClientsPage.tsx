@@ -17,6 +17,7 @@ import {
 import { PIECES_ATTENDUES } from "@/lib/docTypes";
 import AcquereurFiche from "@/components/AcquereurFiche";
 import { STATUTS_RECHERCHE, STATUT_COULEURS, resumeRecherche } from "@/lib/acquereurs";
+import { NEGOCIATEURS } from "@/lib/equipe";
 
 // Dossiers clients partagés : chaque négociateur y range toutes les pièces
 // PDF d'un client (comptes rendus de visite, mandat, diagnostics…), les
@@ -444,7 +445,8 @@ export default function ClientsPage({ onRetour }: { onRetour: () => void }) {
             <div className="grid gap-3 sm:grid-cols-3">
               <input className={inputCls} value={edit.nom} onChange={(e) => setEdit({ ...edit, nom: e.target.value })} placeholder="Nom *" />
               <input className={inputCls} value={edit.prenom} onChange={(e) => setEdit({ ...edit, prenom: e.target.value })} placeholder="Prénom" />
-              <input className={inputCls} value={edit.nego} onChange={(e) => setEdit({ ...edit, nego: e.target.value })} placeholder="Négociateur" />
+              <input className={inputCls} value={edit.nego} onChange={(e) => setEdit({ ...edit, nego: e.target.value })} placeholder="Négociateur" list="negos-c1" />
+              <datalist id="negos-c1">{NEGOCIATEURS.map((n) => <option key={n} value={n} />)}</datalist>
               <input className={inputCls} value={edit.tel} onChange={(e) => setEdit({ ...edit, tel: e.target.value })} placeholder="Téléphone" />
               <input className={inputCls} value={edit.email} onChange={(e) => setEdit({ ...edit, email: e.target.value })} placeholder="Email" />
               <input className={inputCls} value={edit.bien} onChange={(e) => setEdit({ ...edit, bien: e.target.value })} placeholder="Bien concerné" />
@@ -624,14 +626,16 @@ export default function ClientsPage({ onRetour }: { onRetour: () => void }) {
             <div className="grid gap-3 sm:grid-cols-4">
               <input className={inputCls} value={nom} onChange={(e) => setNom(e.target.value)} placeholder="Nom du client * (M. et Mme Dupont)" />
               <input className={inputCls} value={bien} onChange={(e) => setBien(e.target.value)} placeholder="Bien (T3, 12 quai Brescon, Martigues)" />
-              <input className={inputCls} value={nego} onChange={(e) => setNego(e.target.value)} placeholder="Négociateur" />
+              <input className={inputCls} value={nego} onChange={(e) => setNego(e.target.value)} placeholder="Négociateur" list="negos-c2" />
+              <datalist id="negos-c2">{NEGOCIATEURS.map((n) => <option key={n} value={n} />)}</datalist>
               <button onClick={() => void creer()} disabled={busy} className="rounded-lg bg-navy px-4 py-2 text-sm font-bold text-white transition hover:bg-navy-deep disabled:opacity-50">{busy ? "Création…" : "Créer le dossier"}</button>
             </div>
           ) : (
             <div className="grid gap-3 sm:grid-cols-3">
               <input className={inputCls} value={nom} onChange={(e) => setNom(e.target.value)} placeholder="Nom *" />
               <input className={inputCls} value={prenom} onChange={(e) => setPrenom(e.target.value)} placeholder="Prénom" />
-              <input className={inputCls} value={nego} onChange={(e) => setNego(e.target.value)} placeholder="Négociateur en charge" />
+              <input className={inputCls} value={nego} onChange={(e) => setNego(e.target.value)} placeholder="Négociateur en charge" list="negos-c3" />
+              <datalist id="negos-c3">{NEGOCIATEURS.map((n) => <option key={n} value={n} />)}</datalist>
               <input className={inputCls} value={tel} onChange={(e) => setTel(e.target.value)} placeholder="Téléphone" />
               <input className={inputCls} value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email" />
               <button onClick={() => void creer()} disabled={busy} className="rounded-lg bg-copper px-4 py-2 text-sm font-bold text-white transition hover:brightness-110 disabled:opacity-50">{busy ? "Création…" : "Créer et remplir la fiche"}</button>
