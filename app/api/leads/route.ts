@@ -35,8 +35,18 @@ function extraireChamps(body: Record<string, unknown>): Partial<Lead> {
   };
   const budgetTxt = trouver("budget", "prix");
   const budgetNum = budgetTxt ? Number(budgetTxt.replace(/[^0-9.]/g, "")) : NaN;
-  const nom = trouver("nom", "fullname", "name", "lastname");
-  const prenom = trouver("prenom", "firstname");
+  // Nom / prénom — Facebook & Zapier utilisent des libellés variés :
+  // first_name / last_name, full_name, ou une question personnalisée
+  // (« Votre nom », « Nom complet »…). On capture le prénom d'abord (pour ne
+  // pas le confondre avec le nom), puis le nom ; si on ne récupère qu'un nom
+  // complet (avec espace), on le découpe en prénom + nom.
+  let prenom = trouver("prenom", "firstname", "givenname");
+  let nom = trouver("nomdefamille", "lastname", "familyname", "surname", "nom", "fullname", "nomcomplet", "nomprenom", "votrenom", "contactname");
+  if (!prenom && nom && /\s/.test(nom.trim())) {
+    const parts = nom.trim().split(/\s+/);
+    prenom = parts.shift() ?? "";
+    nom = parts.join(" ");
+  }
   const tel = trouver("tel", "telephone", "phone", "mobile", "portable");
   const email = trouver("email", "mail", "courriel");
   const ville = trouver("villedubien", "ville", "city", "commune", "secteur");
