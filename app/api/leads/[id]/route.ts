@@ -5,7 +5,7 @@ export const dynamic = "force-dynamic";
 
 const CHAMPS: (keyof Lead)[] = [
   "source", "campagne", "nom", "prenom", "tel", "email", "ville", "budget",
-  "typeProjet", "message", "statut", "negociateur", "notes", "dossierId", "suivi",
+  "typeProjet", "message", "statut", "negociateur", "notes", "dossierId", "relanceLe", "suivi",
 ];
 
 export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {
