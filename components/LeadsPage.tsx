@@ -41,6 +41,13 @@ export default function LeadsPage({ onRetour }: { onRetour: () => void }) {
   const [fStatut, setFStatut] = useState("");
   const [fSource, setFSource] = useState("");
   const [fRelance, setFRelance] = useState(false);
+  const [fAppeler, setFAppeler] = useState(false);
+  const resetFiltres = () => { setFStatut(""); setFRelance(false); setFAppeler(false); };
+  const filtrer = (kind: "statut" | "relance" | "appeler", val = "") => {
+    setFStatut(kind === "statut" ? (fStatut === val ? "" : val) : "");
+    setFRelance(kind === "relance" ? !fRelance : false);
+    setFAppeler(kind === "appeler" ? !fAppeler : false);
+  };
   const [vue, setVue] = useState<"liste" | "pipeline">("liste");
   const [sel, setSel] = useState<Lead | null>(null);
   const [creation, setCreation] = useState(false);
@@ -62,20 +69,24 @@ export default function LeadsPage({ onRetour }: { onRetour: () => void }) {
     if (fStatut) base = base.filter((l) => l.statut === fStatut);
     if (fSource) base = base.filter((l) => l.source === fSource);
     if (fRelance) base = base.filter(aRelancer);
+    if (fAppeler) base = base.filter((l) => l.statut === "Nouveau" || l.statut === "À rappeler");
     // Liste COMPLÈTE et STABLE : tous les leads générés, du plus récent au plus
     // ancien. On ne réordonne PAS selon le statut/relance, pour qu'un lead ne
     // « bouge » jamais quand on l'attribue — il reste à sa place dans la liste.
     return [...base].sort((a, b) => b.createdAt - a.createdAt);
-  }, [leads, q, fStatut, fSource, fRelance]);
+  }, [leads, q, fStatut, fSource, fRelance, fAppeler]);
 
   const kpi = useMemo(() => {
     const ls = leads ?? [];
     const c: Record<string, number> = {};
     for (const l of ls) c[l.statut] = (c[l.statut] ?? 0) + 1;
-    const aTraiter = (c["Nouveau"] ?? 0) + (c["À rappeler"] ?? 0);
-    const convertis = c["Converti"] ?? 0;
-    const taux = ls.length ? Math.round((convertis / ls.length) * 100) : 0;
-    return { c, total: ls.length, aTraiter, rdv: c["RDV fixé"] ?? 0, convertis, taux, relancer: ls.filter(aRelancer).length };
+    const aAppeler = (c["Nouveau"] ?? 0) + (c["À rappeler"] ?? 0);
+    return {
+      c, total: ls.length, aAppeler,
+      relancer: ls.filter(aRelancer).length,
+      estimationFixee: c["RDV fixé"] ?? 0,
+      mandat: c["Prise de mandat"] ?? 0,
+    };
   }, [leads]);
 
   const majLead = async (id: string, patch: Partial<Lead>) => {
@@ -195,13 +206,12 @@ export default function LeadsPage({ onRetour }: { onRetour: () => void }) {
       )}
 
       {/* KPI cliquables */}
-      <div className="mb-3 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
-        <KpiCase v={kpi.total} l="Total leads" onClick={() => { setFStatut(""); setFRelance(false); }} actif={!fStatut && !fRelance} />
-        <KpiCase v={kpi.aTraiter} l="À traiter" accent="text-amber-600" />
-        <KpiCase v={kpi.relancer} l="À relancer" accent="text-red-600" onClick={() => setFRelance(!fRelance)} actif={fRelance} />
-        <KpiCase v={kpi.rdv} l="RDV fixés" accent="text-violet-600" onClick={() => setFStatut(fStatut === "RDV fixé" ? "" : "RDV fixé")} actif={fStatut === "RDV fixé"} />
-        <KpiCase v={kpi.convertis} l="Convertis" accent="text-emerald-600" onClick={() => setFStatut(fStatut === "Converti" ? "" : "Converti")} actif={fStatut === "Converti"} />
-        <KpiCase v={`${kpi.taux} %`} l="Taux de conversion" />
+      <div className="mb-3 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
+        <KpiCase v={kpi.total} l="Total leads" onClick={() => resetFiltres()} actif={!fStatut && !fRelance && !fAppeler} />
+        <KpiCase v={kpi.aAppeler} l="À appeler" accent="text-amber-600" onClick={() => filtrer("appeler")} actif={fAppeler} />
+        <KpiCase v={kpi.relancer} l="À relancer" accent="text-red-600" onClick={() => filtrer("relance")} actif={fRelance} />
+        <KpiCase v={kpi.estimationFixee} l="Estimation fixée" accent="text-violet-600" onClick={() => filtrer("statut", "RDV fixé")} actif={fStatut === "RDV fixé"} />
+        <KpiCase v={kpi.mandat} l="Mandat" accent="text-teal-700" onClick={() => filtrer("statut", "Prise de mandat")} actif={fStatut === "Prise de mandat"} />
       </div>
 
       {/* Barre d'outils : recherche, source, vue */}
@@ -217,9 +227,9 @@ export default function LeadsPage({ onRetour }: { onRetour: () => void }) {
       {/* Filtres statut (chips) */}
       {vue === "liste" && (
         <div className="mb-3 flex flex-wrap gap-1.5">
-          <button onClick={() => setFStatut("")} className={`rounded-full px-3 py-1 text-xs font-semibold ${!fStatut ? "bg-navy text-white" : "border border-slate-200 bg-white text-slate-600"}`}>Tous ({kpi.total})</button>
+          <button onClick={() => resetFiltres()} className={`rounded-full px-3 py-1 text-xs font-semibold ${!fStatut && !fRelance && !fAppeler ? "bg-navy text-white" : "border border-slate-200 bg-white text-slate-600"}`}>Tous ({kpi.total})</button>
           {STATUTS_LEAD.map((s) => (
-            <button key={s} onClick={() => setFStatut(fStatut === s ? "" : s)} className={`rounded-full px-3 py-1 text-xs font-semibold ${fStatut === s ? "ring-2 ring-navy " : ""}${STATUT_LEAD_COULEURS[s]}`}>{s} ({kpi.c[s] ?? 0})</button>
+            <button key={s} onClick={() => filtrer("statut", s)} className={`rounded-full px-3 py-1 text-xs font-semibold ${fStatut === s ? "ring-2 ring-navy " : ""}${STATUT_LEAD_COULEURS[s]}`}>{s} ({kpi.c[s] ?? 0})</button>
           ))}
         </div>
       )}
