@@ -118,11 +118,11 @@ export default function LeadsPage({ onRetour }: { onRetour: () => void }) {
   const transferer = async (l: Lead, negociateur: string) => {
     const nv = negociateur.trim();
     if (nv === (l.negociateur ?? "").trim()) return; // aucun changement
+    // Attribuer NE CHANGE PAS le statut : le lead garde sa place dans la liste
+    // principale (attribution et statut sont deux axes indépendants).
     const texte = nv ? `Négociateur en charge : ${nv}` : "Attribution retirée";
     const suivi = [{ id: `${Date.now()}`, date: Date.now(), type: "transfert", texte, auteur: nv || l.negociateur || "—" }, ...l.suivi];
-    const patch: Partial<Lead> = { negociateur: nv, suivi };
-    if (nv && l.statut === "Nouveau") patch.statut = "Transféré";
-    await majLead(l.id, patch);
+    await majLead(l.id, { negociateur: nv, suivi });
   };
   const creerLead = async () => {
     if (!nouveau.nom?.trim() && !nouveau.tel?.trim() && !nouveau.email?.trim()) return;

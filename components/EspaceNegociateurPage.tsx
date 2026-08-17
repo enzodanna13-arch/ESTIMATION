@@ -110,11 +110,10 @@ export default function EspaceNegociateurPage({ onRetour }: { onRetour: () => vo
   const onTransfert = async (l: Lead, negociateur: string) => {
     const nv = negociateur.trim();
     if (nv === (l.negociateur ?? "").trim()) return;
+    // Attribuer ne change pas le statut du lead (il reste dans la liste).
     const texte = nv ? `Négociateur en charge : ${nv}` : "Attribution retirée";
     const suivi = [{ id: `${Date.now()}`, date: Date.now(), type: "transfert", texte, auteur: nv || l.negociateur || "—" }, ...l.suivi];
-    const patch: Partial<Lead> = { negociateur: nv, suivi };
-    if (nv && l.statut === "Nouveau") patch.statut = "Transféré";
-    await majLead(l.id, patch);
+    await majLead(l.id, { negociateur: nv, suivi });
   };
   const onConvert = async (l: Lead) => {
     if (l.dossierId) return alert("Ce lead est déjà converti en dossier.");
