@@ -23,10 +23,13 @@ const derniereActiviteLead = (l: Lead) => Math.max(l.createdAt, ...(l.suivi ?? [
 // la création automatique et le simple transfert/changement de statut ne comptent pas.
 const SUIVI_CONTACT = ["appel", "email", "rdv", "note", "repondeur", "estim_sans_projet", "estim_projet", "pas_interesse"];
 const aUnSuivi = (l: Lead) => (l.suivi ?? []).some((s) => SUIVI_CONTACT.includes(s.type));
+// Statuts engagés (RDV/estimation pris) : sortent de « à relancer ».
+const STATUTS_ENGAGES = new Set(["RDV fixé", "Estimation — projet de vente"]);
 function leadARelancer(l: Lead): boolean {
   if (LEAD_TERMINAUX.includes(l.statut)) return false;
   if (l.relanceLe && l.relanceLe <= finJournee()) return true;
-  if (!aUnSuivi(l)) return true; // aucun contact consigné → à relancer, quel que soit le statut
+  if (STATUTS_ENGAGES.has(l.statut)) return false; // RDV fixé / Estimation projet : déjà pris en charge
+  if (!aUnSuivi(l)) return true; // aucun contact consigné → à relancer
   return false;
 }
 function dossierARelancer(c: ClientDossier): boolean {

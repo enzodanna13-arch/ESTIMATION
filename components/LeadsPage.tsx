@@ -24,12 +24,15 @@ const SUIVI_CONTACT = ["appel", "email", "rdv", "note", "repondeur", "estim_sans
 const aUnSuivi = (l: Lead) => (l.suivi ?? []).some((s) => SUIVI_CONTACT.includes(s.type));
 // Un lead « à relancer » : rappel programmé échu, AUCUN suivi consigné, ou
 // lead ouvert non traité depuis 2 j.
+// Statuts « engagés » (RDV/estimation pris) : le prospect a été traité, il sort
+// de « à relancer » (sauf si un rappel programmé arrive à échéance).
+const STATUTS_ENGAGES = new Set(["RDV fixé", "Estimation — projet de vente"]);
 function aRelancer(l: Lead): boolean {
-  if (TERMINAUX.includes(l.statut)) return false;
-  if (l.relanceLe && l.relanceLe <= finJournee()) return true; // rappel programmé échu
-  // Tant qu'AUCUN contact n'est consigné (appel/email/RDV/note), le lead reste
-  // « à relancer » quel que soit son statut (Nouveau, Transféré…) : il ne
-  // quitte donc pas le haut de la liste juste parce qu'on l'a attribué.
+  if (TERMINAUX.includes(l.statut)) return false; // terminé (Converti, Prise de mandat, Pas intéressé, Perdu, Estim. sans projet)
+  if (l.relanceLe && l.relanceLe <= finJournee()) return true; // rappel programmé échu → toujours prioritaire
+  if (STATUTS_ENGAGES.has(l.statut)) return false; // RDV fixé / Estimation projet : déjà pris en charge
+  // Sinon (Nouveau, À rappeler, Répondeur, Transféré) : à relancer tant qu'aucun
+  // contact n'est consigné (appel/email/RDV/note).
   if (!aUnSuivi(l)) return true;
   return false;
 }
