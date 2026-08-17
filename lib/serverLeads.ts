@@ -79,9 +79,15 @@ export async function listLeadsServer(): Promise<Lead[]> {
     const cur = parId.get(id);
     if (!cur || ts > cur.ts) parId.set(id, { url: b.url, ts });
   }
-  const leads = await Promise.all([...parId.values()].map(async ({ url }) => {
-    try { const r = await fetch(url, { cache: "no-store" }); return r.ok ? ((await r.json()) as Lead) : null; } catch { return null; }
-  }));
+  // Chargement avec 2 tentatives : un aléa réseau/CDN ne doit jamais faire
+  // « disparaître » un lead de la liste.
+  const charger = async (url: string): Promise<Lead | null> => {
+    for (let essai = 0; essai < 3; essai++) {
+      try { const r = await fetch(url, { cache: "no-store" }); if (r.ok) return (await r.json()) as Lead; } catch { /* on réessaie */ }
+    }
+    return null;
+  };
+  const leads = await Promise.all([...parId.values()].map(({ url }) => charger(url)));
   return leads.filter((l): l is Lead => l !== null).sort((a, b) => b.createdAt - a.createdAt);
 }
 
