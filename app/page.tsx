@@ -9,7 +9,6 @@ import { DOC_LABELS, type DocType, type DocumentInput, type DocumentResult } fro
 import ClientsPage, { SelecteurPiecesClient } from "@/components/ClientsPage";
 import VisitesPage from "@/components/VisitesPage";
 import RegistrePage from "@/components/RegistrePage";
-import RetouchePage from "@/components/RetouchePage";
 import LeadsPage from "@/components/LeadsPage";
 import DashboardPage from "@/components/DashboardPage";
 import NegociateursPage from "@/components/NegociateursPage";
@@ -235,7 +234,7 @@ export default function Home() {
   const [step, setStep] = useState(0);
   // Accueil à deux univers : Estimation (les 4 missions) et Génération de
   // documents (menu des documents de l'agence)
-  const [univers, setUnivers] = useState<"" | "estimation" | "documents" | "clients" | "historique" | "visites" | "registre" | "retouche" | "leads" | "dashboard" | "negociateurs" | "espace">("");
+  const [univers, setUnivers] = useState<"" | "estimation" | "documents" | "clients" | "historique" | "visites" | "registre" | "leads" | "dashboard" | "negociateurs" | "espace">("");
   const [sauvegarde, setSauvegarde] = useState<"idle" | "encours" | "erreur">("idle");
   const [sauvegardeMsg, setSauvegardeMsg] = useState<string | null>(null);
 
@@ -779,7 +778,6 @@ export default function Home() {
 
             {univers === "registre" && <RegistrePage onRetour={() => setUnivers("")} />}
 
-            {univers === "retouche" && <RetouchePage onRetour={() => setUnivers("")} />}
 
             {univers === "leads" && <LeadsPage onRetour={() => setUnivers("")} />}
             {univers === "dashboard" && <DashboardPage onRetour={() => setUnivers("")} />}
@@ -865,36 +863,6 @@ export default function Home() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => { setDocType("social"); setDocResult(null); setUnivers("documents"); }}
-                  className="group rounded-3xl border-2 border-slate-200 bg-white p-8 text-left shadow-sm transition hover:border-copper hover:shadow-lg"
-                >
-                  <div className="mb-3 text-4xl">📱</div>
-                  <div className="text-xl font-bold text-navy">Post réseaux sociaux</div>
-                  <p className="mt-1 text-sm text-slate-500">
-                    Légende Instagram / Facebook, hashtags et idées de visuels générés par l'IA
-                    à partir du bien — prêts à publier.
-                  </p>
-                  <span className="mt-4 inline-block rounded-lg bg-copper px-4 py-2 text-sm font-semibold text-white transition group-hover:brightness-110">
-                    Créer un post →
-                  </span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => { setDocType("mandat"); setDocResult(null); setUnivers("documents"); }}
-                  className="group rounded-3xl border-2 border-slate-200 bg-white p-8 text-left shadow-sm transition hover:border-copper hover:shadow-lg"
-                >
-                  <div className="mb-3 text-4xl">🖊️</div>
-                  <div className="text-xl font-bold text-navy">Mandat de vente + DPI</div>
-                  <p className="mt-1 text-sm text-slate-500">
-                    Mandat simple et Document Précontractuel d'Information au modèle exact de
-                    l'agence — pré-remplissage IA depuis la pièce d'identité et le titre de propriété.
-                  </p>
-                  <span className="mt-4 inline-block rounded-lg bg-copper px-4 py-2 text-sm font-semibold text-white transition group-hover:brightness-110">
-                    Remplir un mandat →
-                  </span>
-                </button>
-                <button
-                  type="button"
                   onClick={() => setUnivers("clients")}
                   className="group rounded-3xl border-2 border-slate-200 bg-white p-8 text-left shadow-sm transition hover:border-copper hover:shadow-lg"
                 >
@@ -936,21 +904,6 @@ export default function Home() {
                   </p>
                   <span className="mt-4 inline-block rounded-lg bg-navy px-4 py-2 text-sm font-semibold text-white transition group-hover:bg-navy-deep">
                     Ouvrir le registre →
-                  </span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setUnivers("retouche")}
-                  className="group rounded-3xl border-2 border-slate-200 bg-white p-8 text-left shadow-sm transition hover:border-copper hover:shadow-lg"
-                >
-                  <div className="mb-3 text-4xl">🎨</div>
-                  <div className="text-xl font-bold text-navy">Retouche photo</div>
-                  <p className="mt-1 text-sm text-slate-500">
-                    Embellir une photo, vider une pièce de ses meubles ou la meubler virtuellement
-                    (home staging IA) — comparaison avant/après et téléchargement HD.
-                  </p>
-                  <span className="mt-4 inline-block rounded-lg bg-copper px-4 py-2 text-sm font-semibold text-white transition group-hover:brightness-110">
-                    Ouvrir la retouche →
                   </span>
                 </button>
                 <button
