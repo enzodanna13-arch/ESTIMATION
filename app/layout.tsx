@@ -2,6 +2,10 @@ import type { Metadata } from "next";
 import { Fraunces, Geist, Geist_Mono, Manrope } from "next/font/google";
 import "./globals.css";
 
+// Rend l'app TOUJOURS fraîche (pas de page mise en cache par le CDN) : chaque
+// mise à jour est visible immédiatement, sans attendre l'expiration du cache.
+export const dynamic = "force-dynamic";
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
