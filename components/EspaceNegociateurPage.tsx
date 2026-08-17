@@ -112,9 +112,12 @@ export default function EspaceNegociateurPage({ onRetour }: { onRetour: () => vo
   };
   const onTransfert = async (l: Lead, negociateur: string) => {
     const nv = negociateur.trim();
-    if (!nv || nv === (l.negociateur ?? "").trim()) return;
-    const suivi = [{ id: `${Date.now()}`, date: Date.now(), type: "transfert", texte: `Transféré à ${nv}`, auteur: nv }, ...l.suivi];
-    await majLead(l.id, { negociateur: nv, statut: "Transféré", suivi });
+    if (nv === (l.negociateur ?? "").trim()) return;
+    const texte = nv ? `Négociateur en charge : ${nv}` : "Attribution retirée";
+    const suivi = [{ id: `${Date.now()}`, date: Date.now(), type: "transfert", texte, auteur: nv || l.negociateur || "—" }, ...l.suivi];
+    const patch: Partial<Lead> = { negociateur: nv, suivi };
+    if (nv && l.statut === "Nouveau") patch.statut = "Transféré";
+    await majLead(l.id, patch);
   };
   const onConvert = async (l: Lead) => {
     if (l.dossierId) return alert("Ce lead est déjà converti en dossier.");
@@ -329,6 +332,7 @@ export default function EspaceNegociateurPage({ onRetour }: { onRetour: () => vo
 
       {sel && (
         <FicheLead
+          key={sel.id}
           lead={sel}
           onClose={() => { setSel(null); void recharger(); }}
           onStatut={onStatut}

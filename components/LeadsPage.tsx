@@ -115,14 +115,17 @@ export default function LeadsPage({ onRetour }: { onRetour: () => void }) {
   };
   // Réattribution : négociateur + trace de suivi (+ statut) en UN SEUL
   // enregistrement, pour ne jamais déclencher deux écritures simultanées.
+  // Changer / corriger le négociateur en charge. Une simple correction ne
+  // modifie PAS le statut ; une première attribution depuis « Nouveau » passe
+  // le lead en « Transféré ». On peut aussi retirer l'attribution (vide).
   const transferer = async (l: Lead, negociateur: string) => {
     const nv = negociateur.trim();
-    if (!nv || nv === (l.negociateur ?? "").trim()) return;
-    // Réattribuer = SEUL le statut passe à « Transféré » (+ trace de suivi), en
-    // UN SEUL enregistrement. Le lead reste dans la liste (la page affiche tous
-    // les leads, tous statuts confondus) — il ne disparaît jamais.
-    const suivi = [{ id: `${Date.now()}`, date: Date.now(), type: "transfert", texte: `Transféré à ${nv}`, auteur: nv }, ...l.suivi];
-    await majLead(l.id, { negociateur: nv, statut: "Transféré", suivi });
+    if (nv === (l.negociateur ?? "").trim()) return; // aucun changement
+    const texte = nv ? `Négociateur en charge : ${nv}` : "Attribution retirée";
+    const suivi = [{ id: `${Date.now()}`, date: Date.now(), type: "transfert", texte, auteur: nv || l.negociateur || "—" }, ...l.suivi];
+    const patch: Partial<Lead> = { negociateur: nv, suivi };
+    if (nv && l.statut === "Nouveau") patch.statut = "Transféré";
+    await majLead(l.id, patch);
   };
   const creerLead = async () => {
     if (!nouveau.nom?.trim() && !nouveau.tel?.trim() && !nouveau.email?.trim()) return;
@@ -288,7 +291,7 @@ export default function LeadsPage({ onRetour }: { onRetour: () => void }) {
         </div>
       ))}
 
-      {sel && <FicheLead lead={sel} onClose={() => setSel(null)} onStatut={changerStatut} onSuivi={ajouterSuivi} onPatch={majLead} onTransfert={transferer} onConvert={convertir} onDelete={supprimer} />}
+      {sel && <FicheLead key={sel.id} lead={sel} onClose={() => setSel(null)} onStatut={changerStatut} onSuivi={ajouterSuivi} onPatch={majLead} onTransfert={transferer} onConvert={convertir} onDelete={supprimer} />}
     </div>
   );
 }
@@ -315,7 +318,6 @@ export function FicheLead({ lead, onClose, onStatut, onSuivi, onPatch, onTransfe
 }) {
   const [type, setType] = useState(SUIVI_TYPES[0].id);
   const [texte, setTexte] = useState("");
-  const [nego, setNego] = useState(lead.negociateur);
   const [notes, setNotes] = useState(lead.notes);
   const [prenom, setPrenom] = useState(lead.prenom);
   const [nom, setNom] = useState(lead.nom);
@@ -428,9 +430,12 @@ export function FicheLead({ lead, onClose, onStatut, onSuivi, onPatch, onTransfe
         </div>
 
         <div className="mt-3 grid gap-3 sm:grid-cols-2">
-          <label className="text-xs font-semibold text-slate-500">Transféré à (négociateur)
-            <div className="mt-1 flex gap-1"><input className={inputCls} value={nego} onChange={(e) => setNego(e.target.value)} placeholder="Nom du négociateur" list="negos-leads" /><datalist id="negos-leads">{NEGOCIATEURS.map((n) => <option key={n} value={n} />)}</datalist>
-              <button onClick={() => onTransfert(lead, nego)} className="rounded-lg bg-navy px-3 text-sm font-bold text-white">OK</button></div>
+          <label className="text-xs font-semibold text-slate-500">Négociateur en charge
+            <select className={`${inputCls} mt-1`} value={lead.negociateur || ""} onChange={(e) => onTransfert(lead, e.target.value)}>
+              <option value="">— Non attribué —</option>
+              {NEGOCIATEURS.map((n) => <option key={n} value={n}>{n}</option>)}
+              {lead.negociateur && !NEGOCIATEURS.includes(lead.negociateur) && <option value={lead.negociateur}>{lead.negociateur}</option>}
+            </select>
           </label>
           <label className="text-xs font-semibold text-slate-500">Notes internes
             <textarea className={`${inputCls} mt-1`} rows={2} value={notes} onChange={(e) => setNotes(e.target.value)} onBlur={() => notes !== lead.notes && void onPatch(lead.id, { notes })} />
