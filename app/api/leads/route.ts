@@ -1,5 +1,5 @@
 import { checkHistoryPassword } from "@/lib/historyAuth";
-import { leadVide, listLeadsServer, saveLeadServer, type Lead } from "@/lib/serverLeads";
+import { leadVide, listLeadsServer, restaurerArchivesServer, saveLeadServer, type Lead } from "@/lib/serverLeads";
 
 export const dynamic = "force-dynamic";
 
@@ -91,6 +91,12 @@ export async function POST(request: Request) {
 
   let body: Record<string, unknown>;
   try { body = (await request.json()) as Record<string, unknown>; } catch { return Response.json({ error: "Requête invalide" }, { status: 400 }); }
+  // Restauration des leads archivés (réservée à l'équipe, pas à la passerelle)
+  if (body.restaurer === true) {
+    if (!checkHistoryPassword(request)) return Response.json({ error: "Accès réservé" }, { status: 401 });
+    try { return Response.json(await restaurerArchivesServer()); }
+    catch { return Response.json({ error: "Restauration impossible" }, { status: 500 }); }
+  }
   try {
     // Champs explicites (saisie app) prioritaires, sinon détection tolérante
     const auto = extraireChamps(body);

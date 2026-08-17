@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import {
   SOURCES_LEAD, STATUTS_LEAD, STATUT_LEAD_COULEURS, SUIVI_TYPES, TYPES_PROJET_LEAD,
-  createLead, deleteLead, listLeads, updateLead, type Lead,
+  createLead, deleteLead, listLeads, restaurerLeadsArchives, updateLead, type Lead,
 } from "@/lib/leads";
 import { createClient } from "@/lib/clients";
 import { NEGOCIATEURS } from "@/lib/equipe";
@@ -123,6 +123,16 @@ export default function LeadsPage({ onRetour }: { onRetour: () => void }) {
   };
   const supprimer = async (l: Lead) => { if (confirm("Supprimer ce lead ?")) { await deleteLead(l.id); setSel(null); void recharger(); } };
 
+  const [restauration, setRestauration] = useState(false);
+  const restaurer = async () => {
+    setRestauration(true);
+    const r = await restaurerLeadsArchives();
+    await recharger();
+    setRestauration(false);
+    if (r) alert(r.restaures > 0 ? `✓ ${r.restaures} lead(s) restauré(s) depuis l'archive.` : "Aucun lead à restaurer — tous vos leads sont déjà présents.");
+    else alert("Restauration impossible — réessayez.");
+  };
+
   const KpiCase = ({ v, l, accent, onClick, actif }: { v: string | number; l: string; accent?: string; onClick?: () => void; actif?: boolean }) => (
     <button type="button" onClick={onClick} className={`rounded-xl border p-3 text-left transition ${actif ? "border-copper ring-2 ring-copper/30" : "border-slate-200 hover:border-copper/50"} ${onClick ? "cursor-pointer" : "cursor-default"} bg-white`}>
       <div className={`text-xl font-extrabold ${accent ?? "text-navy"}`}>{v}</div>
@@ -140,6 +150,7 @@ export default function LeadsPage({ onRetour }: { onRetour: () => void }) {
         <div className="flex flex-wrap items-center gap-2">
           <button onClick={onRetour} className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-600 hover:bg-slate-100">← Accueil</button>
           <button onClick={() => void recharger()} className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-semibold text-slate-600 hover:bg-slate-100">{maj ? "⏳" : "🔄"} Actualiser</button>
+          <button onClick={() => void restaurer()} disabled={restauration} className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-semibold text-slate-600 hover:bg-slate-100 disabled:opacity-50" title="Récupérer les leads éventuellement perdus, depuis l'archive de sécurité">{restauration ? "⏳ Restauration…" : "♻️ Restaurer les leads perdus"}</button>
           <button onClick={() => setConfig(!config)} className="rounded-lg border border-copper bg-white px-3 py-1.5 text-sm font-bold text-copper hover:bg-copper-soft/40">🔌 Brancher mes campagnes</button>
           <button onClick={() => setCreation(!creation)} className="rounded-lg bg-copper px-4 py-1.5 text-sm font-bold text-white hover:brightness-110">+ Nouveau lead</button>
         </div>

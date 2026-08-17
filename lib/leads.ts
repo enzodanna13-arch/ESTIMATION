@@ -52,6 +52,17 @@ export async function listLeads(): Promise<Lead[]> {
   return body.leads ?? [];
 }
 
+// Restaure les leads archivés absents de la liste (perdus par un ancien bug)
+export async function restaurerLeadsArchives(): Promise<{ restaures: number; ids: string[] } | null> {
+  try {
+    const res = await fetch("/api/leads", { method: "POST", headers: jsonHeaders(), body: JSON.stringify({ restaurer: true }) });
+    if (!res.ok) return null;
+    return (await res.json()) as { restaures: number; ids: string[] };
+  } catch {
+    return null;
+  }
+}
+
 export async function createLead(partial: Partial<Lead>): Promise<Lead | null> {
   const res = await fetch("/api/leads", { method: "POST", headers: jsonHeaders(), body: JSON.stringify(partial) });
   if (!res.ok) return null;

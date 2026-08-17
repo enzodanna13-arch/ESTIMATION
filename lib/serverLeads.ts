@@ -63,10 +63,53 @@ async function putLead(lead: Lead): Promise<void> {
   if (anciennes.length > 0) await del(anciennes);
 }
 
+// Archive IMMUABLE : à chaque enregistrement, une copie du lead est écrite
+// sous « leads-archive/{id}~{ts}.json » et n'est JAMAIS supprimée par le
+// nettoyage de versions. Même si le fichier « vivant » est perdu (bug, aléa),
+// le lead reste récupérable → un lead ne peut plus disparaître définitivement.
+const ARCHIVE = "leads-archive/";
+async function archiveLead(lead: Lead): Promise<void> {
+  const nom = `${ARCHIVE}${safe(lead.id)}~${lead.updatedAt}.json`;
+  try {
+    await put(nom, JSON.stringify(lead), { access: "public", addRandomSuffix: false, contentType: "application/json" });
+  } catch { /* l'archive est un filet de sécurité : ne bloque jamais l'enregistrement principal */ }
+}
+
 export async function saveLeadServer(lead: Lead): Promise<Lead> {
   lead.updatedAt = Date.now();
   await putLead(lead);
+  await archiveLead(lead);
   return lead;
+}
+
+// Restaure les leads présents dans l'archive mais absents de la liste vivante
+// (ex. perdus par un ancien bug). Renvoie le nombre de leads restaurés.
+export async function restaurerArchivesServer(): Promise<{ restaures: number; ids: string[] }> {
+  const vivantsLeads = await listLeadsServer();
+  const vivants = new Set(vivantsLeads.map((l) => l.id));
+  const { blobs } = await list({ prefix: ARCHIVE, limit: 1000 });
+  const parId = new Map<string, { url: string; ts: number }>();
+  for (const b of blobs) {
+    const nom = b.pathname.slice(b.pathname.lastIndexOf("/") + 1);
+    const id = nom.split("~")[0];
+    const ts = versionDe(b.pathname);
+    const cur = parId.get(id);
+    if (!cur || ts > cur.ts) parId.set(id, { url: b.url, ts });
+  }
+  // Backfill : archive les leads vivants pas encore archivés (protège l'existant)
+  for (const l of vivantsLeads) if (!parId.has(l.id)) await archiveLead(l);
+  const restaures: string[] = [];
+  for (const [id, { url }] of parId) {
+    if (vivants.has(id)) continue;
+    try {
+      const r = await fetch(url, { cache: "no-store" });
+      if (!r.ok) continue;
+      const lead = (await r.json()) as Lead;
+      await putLead(lead); // recrée le fichier vivant
+      restaures.push(id);
+    } catch { /* on continue */ }
+  }
+  return { restaures: restaures.length, ids: restaures };
 }
 
 export async function listLeadsServer(): Promise<Lead[]> {
@@ -99,6 +142,12 @@ export async function getLeadServer(id: string): Promise<Lead | null> {
 }
 
 export async function deleteLeadServer(id: string): Promise<void> {
-  const { blobs } = await list({ prefix: `${PREFIX}${safe(id)}~`, limit: 100 });
-  if (blobs.length > 0) await del(blobs.map((b) => b.url));
+  // Suppression VOLONTAIRE : on retire le fichier vivant ET l'archive, pour
+  // qu'un lead sciemment supprimé ne « revienne » pas à la restauration.
+  const [vivants, archives] = await Promise.all([
+    list({ prefix: `${PREFIX}${safe(id)}~`, limit: 100 }),
+    list({ prefix: `${ARCHIVE}${safe(id)}~`, limit: 100 }),
+  ]);
+  const urls = [...vivants.blobs, ...archives.blobs].map((b) => b.url);
+  if (urls.length > 0) await del(urls);
 }
