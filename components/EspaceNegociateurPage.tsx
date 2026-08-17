@@ -1,11 +1,12 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { listLeads, updateLead, STATUTS_LEAD, STATUT_LEAD_COULEURS, type Lead } from "@/lib/leads";
-import { listClients, type ClientDossier } from "@/lib/clients";
+import { listLeads, updateLead, deleteLead, STATUTS_LEAD, STATUT_LEAD_COULEURS, SUIVI_TYPES, type Lead } from "@/lib/leads";
+import { listClients, createClient, type ClientDossier } from "@/lib/clients";
 import { STATUT_COULEURS } from "@/lib/acquereurs";
 import { listEstimations, type HistoryMeta } from "@/lib/history";
 import { EQUIPE, membreDepuisNom } from "@/lib/equipe";
+import { FicheLead } from "@/components/LeadsPage";
 
 const int = new Intl.NumberFormat("fr-FR");
 const eur = (n?: number | null) => (n != null ? `${int.format(Math.round(n))} €` : "");
@@ -87,6 +88,47 @@ export default function EspaceNegociateurPage({ onRetour }: { onRetour: () => vo
     try { await navigator.clipboard.writeText(texte); setCopie(cle); setTimeout(() => setCopie((c) => (c === cle ? null : c)), 1500); } catch { /* */ }
   };
 
+  // ---- Ouverture de la fiche complète d'un lead (suivi, statut, relance, attribution) ----
+  const [sel, setSel] = useState<Lead | null>(null);
+  const majLead = async (id: string, patch: Partial<Lead>) => {
+    const m = await updateLead(id, patch);
+    if (m) { setSel((s) => (s?.id === id ? m : s)); setLeads((ls) => ls.map((l) => (l.id === id ? m : l))); }
+    return m;
+  };
+  const onStatut = async (l: Lead, statut: string) => {
+    const suivi = [{ id: `${Date.now()}`, date: Date.now(), type: "statut", texte: `Statut : ${statut}`, auteur: l.negociateur || "—" }, ...l.suivi];
+    const patch: Partial<Lead> = { statut, suivi };
+    if (LEAD_TERMINAUX.includes(statut)) patch.relanceLe = null;
+    await majLead(l.id, patch);
+  };
+  const onSuivi = async (l: Lead, type: string, texte: string) => {
+    const def = SUIVI_TYPES.find((t) => t.id === type);
+    const txt = texte.trim() || def?.label || "";
+    if (!txt) return;
+    const suivi = [{ id: `${Date.now()}`, date: Date.now(), type, texte: txt, auteur: l.negociateur || "—" }, ...l.suivi];
+    const patch: Partial<Lead> = { suivi };
+    if (def?.statut && def.statut !== l.statut) patch.statut = def.statut;
+    await majLead(l.id, patch);
+  };
+  const onTransfert = async (l: Lead, negociateur: string) => {
+    const nv = negociateur.trim();
+    if (!nv || nv === (l.negociateur ?? "").trim()) return;
+    const suivi = [{ id: `${Date.now()}`, date: Date.now(), type: "transfert", texte: `Transféré à ${nv}`, auteur: nv }, ...l.suivi];
+    await majLead(l.id, { negociateur: nv, statut: "Transféré", suivi });
+  };
+  const onConvert = async (l: Lead) => {
+    if (l.dossierId) return alert("Ce lead est déjà converti en dossier.");
+    const type = l.typeProjet === "investisseur" ? "investisseur" : l.typeProjet === "vendeur" ? "vendeur" : "acquereur";
+    const d = await createClient({ nom: l.nom || "Lead", bien: [l.ville, l.message].filter(Boolean).join(" — "), prenom: l.prenom, tel: l.tel, email: l.email, negociateur: l.negociateur, typeClient: type });
+    if (!d) return alert("Conversion impossible.");
+    const statut = type === "vendeur" ? "Prise de mandat" : "Converti";
+    const texteSuivi = type === "vendeur" ? "Prise de mandat — dossier vendeur créé" : `Converti en dossier ${type}`;
+    const suivi = [{ id: `${Date.now()}`, date: Date.now(), type: "conversion", texte: texteSuivi, auteur: l.negociateur || "—" }, ...l.suivi];
+    await majLead(l.id, { statut, dossierId: d.id, relanceLe: null, suivi });
+    alert(`Dossier ${type} créé${type === "vendeur" ? " — lead passé en « Prise de mandat »" : ""}.`);
+  };
+  const onDelete = async (l: Lead) => { if (confirm("Supprimer ce lead ?")) { await deleteLead(l.id); setSel(null); void recharger(); } };
+
   const Contacts = ({ tel, email }: { tel?: string; email?: string }) => (
     <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
       {tel && <a href={`tel:${tel}`} className="rounded-lg bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-700 hover:bg-emerald-100" title={`Appeler ${tel}`}>📞</a>}
@@ -158,7 +200,7 @@ export default function EspaceNegociateurPage({ onRetour }: { onRetour: () => vo
               {data.leadsRelance.map((l) => {
                 const retard = l.relanceLe && l.relanceLe <= finJournee();
                 return (
-                  <div key={l.id} className="flex flex-wrap items-center gap-3 rounded-xl border border-red-200 bg-white p-3 shadow-sm">
+                  <div key={l.id} onClick={() => setSel(l)} className="flex cursor-pointer flex-wrap items-center gap-3 rounded-xl border border-red-200 bg-white p-3 shadow-sm transition hover:shadow-md">
                     <span className="rounded-full bg-red-100 px-2 py-0.5 text-[10px] font-bold text-red-600">LEAD</span>
                     <div className="min-w-[140px]">
                       <div className="text-sm font-bold text-navy">{[l.prenom, l.nom].filter(Boolean).join(" ") || "Lead sans nom"}</div>
@@ -166,9 +208,10 @@ export default function EspaceNegociateurPage({ onRetour }: { onRetour: () => vo
                     </div>
                     <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${STATUT_LEAD_COULEURS[l.statut] ?? "bg-slate-100"}`}>{l.statut}</span>
                     <span className="text-xs text-red-600">{retard ? `relance prévue le ${dateFr(l.relanceLe!)}` : `sans contact depuis ${joursDepuis(derniereActiviteLead(l))} j`}</span>
-                    <div className="ml-auto flex items-center gap-1.5">
+                    <div className="ml-auto flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
                       <Contacts tel={l.tel} email={l.email} />
                       <button onClick={() => void definirRelance(l, 3)} className="rounded-lg border border-slate-200 px-2 py-1 text-xs font-semibold text-slate-600 hover:bg-slate-100" title="Reprogrammer dans 3 jours">↻ +3j</button>
+                      <button onClick={() => setSel(l)} className="rounded-lg border border-copper px-2 py-1 text-xs font-semibold text-copper hover:bg-copper-soft/40">Ouvrir</button>
                       <button onClick={() => void avancerLead(l)} className="rounded-lg bg-navy px-2 py-1 text-xs font-semibold text-white hover:bg-navy-deep">Avancer ›</button>
                     </div>
                   </div>
@@ -197,17 +240,18 @@ export default function EspaceNegociateurPage({ onRetour }: { onRetour: () => vo
                 const cle = `l${l.id}`;
                 const texte = `${[l.prenom, l.nom].filter(Boolean).join(" ")}\n${l.tel}\n${l.email}\n${l.ville}\n${l.message}`;
                 return (
-                  <div key={l.id} className={`rounded-2xl border bg-white p-3 shadow-sm ${leadARelancer(l) ? "border-red-200" : "border-slate-200"}`}>
+                  <div key={l.id} onClick={() => setSel(l)} className={`cursor-pointer rounded-2xl border bg-white p-3 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md ${leadARelancer(l) ? "border-red-200" : "border-slate-200 hover:border-copper/50"}`}>
                     <div className="mb-1 flex items-center justify-between">
                       <span className={`rounded-full px-2 py-0.5 text-[11px] font-bold ${STATUT_LEAD_COULEURS[l.statut] ?? "bg-slate-100"}`}>{l.statut}</span>
                       {leadARelancer(l) && <span className="rounded-full bg-red-100 px-2 py-0.5 text-[10px] font-bold text-red-600">⏰ à relancer</span>}
                     </div>
                     <div className="text-sm font-bold text-navy">{[l.prenom, l.nom].filter(Boolean).join(" ") || "Lead sans nom"}</div>
                     <div className="truncate text-xs text-slate-500">{[l.ville, eur(l.budget)].filter(Boolean).join(" · ")}</div>
-                    <div className="mt-2 flex items-center gap-1.5">
+                    {l.negociateur && <div className="mt-0.5 text-[11px] text-copper">👤 {l.negociateur}</div>}
+                    <div className="mt-2 flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
                       <Contacts tel={l.tel} email={l.email} />
                       <button onClick={() => void copier(cle, texte)} className="rounded-lg border border-slate-200 px-2 py-1 text-xs text-slate-500 hover:bg-slate-100" title="Copier la fiche">{copie === cle ? "✓" : "📋"}</button>
-                      <button onClick={() => void avancerLead(l)} className="ml-auto rounded-lg bg-navy px-2 py-1 text-xs font-semibold text-white hover:bg-navy-deep">Avancer ›</button>
+                      <button onClick={() => setSel(l)} className="ml-auto rounded-lg border border-copper px-2 py-1 text-xs font-semibold text-copper hover:bg-copper-soft/40">Ouvrir la fiche</button>
                     </div>
                   </div>
                 );
@@ -281,6 +325,19 @@ export default function EspaceNegociateurPage({ onRetour }: { onRetour: () => vo
             Personnalisez chaque relance pour rester efficace sans être insistant.
           </p>
         </>
+      )}
+
+      {sel && (
+        <FicheLead
+          lead={sel}
+          onClose={() => { setSel(null); void recharger(); }}
+          onStatut={onStatut}
+          onSuivi={onSuivi}
+          onPatch={majLead}
+          onTransfert={onTransfert}
+          onConvert={onConvert}
+          onDelete={onDelete}
+        />
       )}
     </div>
   );

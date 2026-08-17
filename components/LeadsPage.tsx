@@ -308,7 +308,7 @@ function ConfigPasserelle() {
   );
 }
 
-function FicheLead({ lead, onClose, onStatut, onSuivi, onPatch, onTransfert, onConvert, onDelete }: {
+export function FicheLead({ lead, onClose, onStatut, onSuivi, onPatch, onTransfert, onConvert, onDelete }: {
   lead: Lead; onClose: () => void;
   onStatut: (l: Lead, s: string) => void; onSuivi: (l: Lead, t: string, txt: string) => void;
   onPatch: (id: string, p: Partial<Lead>) => Promise<Lead | null>; onTransfert: (l: Lead, nego: string) => void; onConvert: (l: Lead) => void; onDelete: (l: Lead) => void;
