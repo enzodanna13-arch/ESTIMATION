@@ -57,7 +57,13 @@ export default function NegociateursPage({ onRetour }: { onRetour: () => void })
     setLeads(l); setClients(c); setEstims(e); setDocs(d); setAppels(r.entrees);
     setChargement(false);
   };
-  useEffect(() => { void recharger(); }, []);
+  useEffect(() => {
+    void recharger();
+    // Rafraîchissement automatique : le tableau suit les changements de statut
+    // des leads/dossiers sans avoir à cliquer « Rafraîchir ».
+    const t = setInterval(() => { void recharger(); }, 30000);
+    return () => clearInterval(t);
+  }, []);
 
   const rows = useMemo(() => {
     const cutoff = periode > 0 ? Date.now() - periode * 24 * 3600 * 1000 : 0;
@@ -84,21 +90,34 @@ export default function NegociateursPage({ onRetour }: { onRetour: () => void })
     for (const e of estims) if (dansPeriode(e.createdAt)) { const r = obtenir(e.negociateur); if (r) r.estimations++; }
     for (const d of docs) if (dansPeriode(d.createdAt)) { const r = obtenir(d.negociateur); if (r) r.documents++; }
 
+    // Dossiers vendeur complets issus d'un lead « Prise de mandat » : évite de
+    // compter deux fois le même mandat (une fois via le lead, une fois via le dossier).
+    const dossiersDeMandatLead = new Set(leads.filter((l) => l.statut === "Prise de mandat" && l.dossierId).map((l) => l.dossierId));
+
     for (const l of leads) {
-      if (dansPeriode(l.createdAt)) {
-        const r = obtenir(l.negociateur);
-        if (r) { r.leadsRecus++; if (l.statut !== "Nouveau") r.leadsTraites++; if (l.statut === "Converti") r.leadsConvertis++; }
+      // Un lead « actif dans la période » = reçu OU mis à jour (statut changé)
+      // récemment → les changements de statut se reflètent tout de suite.
+      const actif = dansPeriode(l.createdAt) || dansPeriode(l.updatedAt);
+      const r = actif ? obtenir(l.negociateur) : null;
+      if (r) {
+        if (dansPeriode(l.createdAt)) r.leadsRecus++;
+        if (l.statut !== "Nouveau") r.leadsTraites++;
+        if (l.statut === "Converti" || l.statut === "Prise de mandat") r.leadsConvertis++;
+        if (l.statut === "RDV fixé") r.rdv++;
+        if (l.statut === "Prise de mandat") r.mandats++;
       }
       for (const ev of l.suivi ?? []) if (dansPeriode(ev.date)) {
-        const r = obtenir(ev.auteur);
-        if (r) { if (ev.type === "appel") r.appels++; if (ev.type === "rdv") r.rdv++; }
+        const r2 = obtenir(ev.auteur);
+        if (r2) { if (ev.type === "appel" || ev.type === "repondeur") r2.appels++; if (ev.type === "rdv") r2.rdv++; }
       }
     }
 
     for (const c of clients) {
       if (dansPeriode(c.createdAt)) { const r = obtenir(c.negociateur); if (r) r.dossiers++; }
-      // Dossier vendeur complet = mandat, rattaché à son négociateur
-      if (estDossierVendeurComplet(c) && dansPeriode(c.updatedAt)) { const r = obtenir(c.negociateur); if (r) r.mandats++; }
+      // Dossier vendeur complet = mandat (sauf s'il est déjà compté via son lead « Prise de mandat »)
+      if (estDossierVendeurComplet(c) && dansPeriode(c.updatedAt) && !dossiersDeMandatLead.has(c.id)) {
+        const r = obtenir(c.negociateur); if (r) r.mandats++;
+      }
       for (const ev of c.timeline ?? []) if (dansPeriode(ev.date)) {
         const r = obtenir(ev.auteur);
         if (r) { if (ev.type === "appel") r.appels++; if (ev.type === "rdv") r.rdv++; }
