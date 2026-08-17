@@ -35,6 +35,17 @@ function aRelancer(l: Lead): boolean {
 }
 const ageTexte = (t: number) => { const j = joursDepuis(t); return j <= 0 ? "aujourd'hui" : j === 1 ? "hier" : `il y a ${j} j`; };
 
+// Niveau atteint dans l'entonnoir de conversion (cumulatif) :
+// 0 = généré · 1 = contacté · 2 = estimation fixée/faite · 3 = mandat pris.
+const STATUTS_CONTACT = new Set(["Répondeur / message laissé", "Converti", "Pas intéressé"]);
+const STATUTS_ESTIM = new Set(["RDV fixé", "Estimation — projet de vente", "Estimation — sans projet"]);
+function niveauFunnel(l: Lead): number {
+  if (l.statut === "Prise de mandat") return 3;
+  if (STATUTS_ESTIM.has(l.statut)) return 2;
+  if (aUnSuivi(l) || STATUTS_CONTACT.has(l.statut)) return 1;
+  return 0;
+}
+
 export default function LeadsPage({ onRetour }: { onRetour: () => void }) {
   const [leads, setLeads] = useState<Lead[] | null>(null);
   const [q, setQ] = useState("");
@@ -87,6 +98,22 @@ export default function LeadsPage({ onRetour }: { onRetour: () => void }) {
       estimationFixee: c["RDV fixé"] ?? 0,
       mandat: c["Prise de mandat"] ?? 0,
     };
+  }, [leads]);
+
+  // Entonnoir de conversion par étape (comptes cumulatifs + taux entre étapes)
+  const funnel = useMemo(() => {
+    const ls = leads ?? [];
+    const total = ls.length;
+    const contactes = ls.filter((l) => niveauFunnel(l) >= 1).length;
+    const estim = ls.filter((l) => niveauFunnel(l) >= 2).length;
+    const mandat = ls.filter((l) => niveauFunnel(l) >= 3).length;
+    const pct = (n: number, d: number) => (d ? Math.round((n / d) * 100) : 0);
+    return [
+      { label: "Leads générés", n: total, pctTotal: 100, conv: null as number | null, depuis: "" },
+      { label: "Contactés", n: contactes, pctTotal: pct(contactes, total), conv: pct(contactes, total), depuis: "leads" },
+      { label: "Estimation fixée", n: estim, pctTotal: pct(estim, total), conv: pct(estim, contactes), depuis: "contactés" },
+      { label: "Prise de mandat", n: mandat, pctTotal: pct(mandat, total), conv: pct(mandat, estim), depuis: "estimation" },
+    ];
   }, [leads]);
 
   const majLead = async (id: string, patch: Partial<Lead>) => {
@@ -212,6 +239,33 @@ export default function LeadsPage({ onRetour }: { onRetour: () => void }) {
         <KpiCase v={kpi.relancer} l="À relancer" accent="text-red-600" onClick={() => filtrer("relance")} actif={fRelance} />
         <KpiCase v={kpi.estimationFixee} l="Estimation fixée" accent="text-violet-600" onClick={() => filtrer("statut", "RDV fixé")} actif={fStatut === "RDV fixé"} />
         <KpiCase v={kpi.mandat} l="Mandat" accent="text-teal-700" onClick={() => filtrer("statut", "Prise de mandat")} actif={fStatut === "Prise de mandat"} />
+      </div>
+
+      {/* Entonnoir : taux de conversion par étape */}
+      <div className="mb-4 rounded-2xl border border-slate-200 bg-white p-4">
+        <div className="mb-3 text-sm font-bold text-navy">📈 Taux de conversion par étape</div>
+        <div className="space-y-2">
+          {funnel.map((e, i) => (
+            <div key={e.label} className="flex items-center gap-3">
+              <div className="w-36 shrink-0 text-sm font-semibold text-slate-700">{e.label}</div>
+              <div className="relative h-6 flex-1 overflow-hidden rounded-lg bg-slate-100">
+                <div className={`h-full rounded-lg ${i === 0 ? "bg-navy" : i === 1 ? "bg-amber-400" : i === 2 ? "bg-violet-400" : "bg-teal-500"}`} style={{ width: `${Math.max(e.pctTotal, 3)}%` }} />
+                <span className="absolute inset-y-0 left-2 flex items-center text-xs font-bold text-slate-700">{e.n} · {e.pctTotal}%</span>
+              </div>
+              <div className="w-40 shrink-0 text-right text-xs">
+                {e.conv === null ? <span className="text-slate-400">base 100 %</span> : (
+                  <span className={`font-semibold ${e.conv >= 50 ? "text-emerald-600" : e.conv >= 25 ? "text-amber-600" : "text-red-500"}`}>
+                    {e.conv}% <span className="font-normal text-slate-400">depuis {e.depuis}</span>
+                  </span>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+        <p className="mt-2 text-xs text-slate-400">
+          Chaque étape est cumulative : « Contactés » inclut ceux allés plus loin. Le taux à droite = conversion depuis l&apos;étape précédente.
+          Conversion globale leads → mandat : <span className="font-semibold text-teal-700">{funnel[0].n ? Math.round((funnel[3].n / funnel[0].n) * 100) : 0}%</span>.
+        </p>
       </div>
 
       {/* Barre d'outils : recherche, source, vue */}
