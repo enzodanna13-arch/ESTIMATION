@@ -17,7 +17,6 @@ const labelProjet = (id: string) => TYPES_PROJET_LEAD.find((t) => t.id === id)?.
 const TERMINAUX = ["Prise de mandat", "Converti", "Pas intéressé", "Perdu", "Estimation — sans projet"];
 const jour = 86400000;
 const joursDepuis = (t: number) => Math.floor((Date.now() - t) / jour);
-const derniereActivite = (l: Lead) => Math.max(l.createdAt, ...(l.suivi ?? []).map((s) => s.date));
 const finJournee = () => { const d = new Date(); d.setHours(23, 59, 59, 999); return d.getTime(); };
 // Un « vrai » suivi = un contact/action consigné (appel, email, RDV, note) :
 // la création auto et le transfert/changement de statut ne comptent pas.
@@ -28,12 +27,10 @@ const aUnSuivi = (l: Lead) => (l.suivi ?? []).some((s) => SUIVI_CONTACT.includes
 function aRelancer(l: Lead): boolean {
   if (TERMINAUX.includes(l.statut)) return false;
   if (l.relanceLe && l.relanceLe <= finJournee()) return true; // rappel programmé échu
-  // Un lead pas encore vraiment traité (Nouveau / À rappeler) sans contact
-  // consigné, ou sans nouvelle depuis 2 j, ressort à relancer.
-  if (l.statut === "Nouveau" || l.statut === "À rappeler") {
-    if (!aUnSuivi(l)) return true;
-    if (joursDepuis(derniereActivite(l)) >= 2) return true;
-  }
+  // Tant qu'AUCUN contact n'est consigné (appel/email/RDV/note), le lead reste
+  // « à relancer » quel que soit son statut (Nouveau, Transféré…) : il ne
+  // quitte donc pas le haut de la liste juste parce qu'on l'a attribué.
+  if (!aUnSuivi(l)) return true;
   return false;
 }
 const ageTexte = (t: number) => { const j = joursDepuis(t); return j <= 0 ? "aujourd'hui" : j === 1 ? "hier" : `il y a ${j} j`; };

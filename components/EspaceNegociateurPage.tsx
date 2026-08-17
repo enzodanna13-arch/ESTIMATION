@@ -26,10 +26,7 @@ const aUnSuivi = (l: Lead) => (l.suivi ?? []).some((s) => SUIVI_CONTACT.includes
 function leadARelancer(l: Lead): boolean {
   if (LEAD_TERMINAUX.includes(l.statut)) return false;
   if (l.relanceLe && l.relanceLe <= finJournee()) return true;
-  if (l.statut === "Nouveau" || l.statut === "À rappeler") {
-    if (!aUnSuivi(l)) return true; // aucun suivi enregistré → à relancer tout de suite
-    if (joursDepuis(derniereActiviteLead(l)) >= 2) return true;
-  }
+  if (!aUnSuivi(l)) return true; // aucun contact consigné → à relancer, quel que soit le statut
   return false;
 }
 function dossierARelancer(c: ClientDossier): boolean {
