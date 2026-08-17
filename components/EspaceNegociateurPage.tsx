@@ -15,7 +15,7 @@ const dateFr = (t?: number) => (t ? new Date(t).toLocaleDateString("fr-FR", { da
 const JOUR = 86400000;
 const joursDepuis = (t: number) => Math.floor((Date.now() - t) / JOUR);
 const finJournee = () => { const d = new Date(); d.setHours(23, 59, 59, 999); return d.getTime(); };
-const LEAD_TERMINAUX = ["Converti", "Pas intéressé", "Perdu", "Estimation — sans projet"];
+const LEAD_TERMINAUX = ["Prise de mandat", "Converti", "Pas intéressé", "Perdu", "Estimation — sans projet"];
 const ACQ_TERMINAUX = ["Projet abandonné", "Projet réalisé"];
 const derniereActiviteLead = (l: Lead) => Math.max(l.createdAt, ...(l.suivi ?? []).map((s) => s.date));
 // Un « vrai » suivi = un contact/action consigné (appel, email, RDV, note) —

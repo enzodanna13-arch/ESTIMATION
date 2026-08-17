@@ -14,7 +14,7 @@ const dateFr = (t: number) => new Date(t).toLocaleDateString("fr-FR", { day: "2-
 const labelSource = (id: string) => SOURCES_LEAD.find((s) => s.id === id)?.label ?? id;
 const labelProjet = (id: string) => TYPES_PROJET_LEAD.find((t) => t.id === id)?.label ?? id;
 
-const TERMINAUX = ["Converti", "Pas intéressé", "Perdu", "Estimation — sans projet"];
+const TERMINAUX = ["Prise de mandat", "Converti", "Pas intéressé", "Perdu", "Estimation — sans projet"];
 const jour = 86400000;
 const joursDepuis = (t: number) => Math.floor((Date.now() - t) / jour);
 const derniereActivite = (l: Lead) => Math.max(l.createdAt, ...(l.suivi ?? []).map((s) => s.date));
@@ -134,9 +134,13 @@ export default function LeadsPage({ onRetour }: { onRetour: () => void }) {
     const type = l.typeProjet === "investisseur" ? "investisseur" : l.typeProjet === "vendeur" ? "vendeur" : "acquereur";
     const d = await createClient({ nom: l.nom || "Lead", bien: [l.ville, l.message].filter(Boolean).join(" — "), prenom: l.prenom, tel: l.tel, email: l.email, negociateur: l.negociateur, typeClient: type });
     if (!d) return alert("Conversion impossible.");
-    const suivi = [{ id: `${Date.now()}`, date: Date.now(), type: "conversion", texte: `Converti en dossier ${type}`, auteur: l.negociateur || "—" }, ...l.suivi];
-    await majLead(l.id, { statut: "Converti", dossierId: d.id, relanceLe: null, suivi });
-    alert(`Dossier ${type} créé. Retrouvez-le dans « Dossiers clients » pour compléter le projet.`);
+    // Un dossier VENDEUR = une prise de mandat : le lead passe automatiquement
+    // en « Prise de mandat ». Acquéreur / investisseur → « Converti ».
+    const statut = type === "vendeur" ? "Prise de mandat" : "Converti";
+    const texteSuivi = type === "vendeur" ? "Prise de mandat — dossier vendeur créé" : `Converti en dossier ${type}`;
+    const suivi = [{ id: `${Date.now()}`, date: Date.now(), type: "conversion", texte: texteSuivi, auteur: l.negociateur || "—" }, ...l.suivi];
+    await majLead(l.id, { statut, dossierId: d.id, relanceLe: null, suivi });
+    alert(`Dossier ${type} créé${type === "vendeur" ? " — lead passé en « Prise de mandat »" : ""}. Retrouvez-le dans « Dossiers clients ».`);
   };
   const supprimer = async (l: Lead) => { if (confirm("Supprimer ce lead ?")) { await deleteLead(l.id); setSel(null); void recharger(); } };
 
