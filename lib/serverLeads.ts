@@ -55,7 +55,11 @@ async function putLead(lead: Lead): Promise<void> {
   const nom = `${PREFIX}${safe(lead.id)}~${lead.updatedAt}.json`;
   await put(nom, JSON.stringify(lead), { access: "public", addRandomSuffix: false, contentType: "application/json" });
   const { blobs } = await list({ prefix: `${PREFIX}${safe(lead.id)}~`, limit: 100 });
-  const anciennes = blobs.filter((b) => b.pathname !== nom).map((b) => b.url);
+  // Ne supprimer que les versions STRICTEMENT plus anciennes : si deux
+  // enregistrements du même lead se produisent en même temps (ex. réattribution
+  // qui écrit le négociateur ET le suivi), aucun n'efface la version fraîche de
+  // l'autre — le lead ne peut plus disparaître.
+  const anciennes = blobs.filter((b) => b.pathname !== nom && versionDe(b.pathname) < lead.updatedAt).map((b) => b.url);
   if (anciennes.length > 0) await del(anciennes);
 }
 

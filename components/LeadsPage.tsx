@@ -96,6 +96,15 @@ export default function LeadsPage({ onRetour }: { onRetour: () => void }) {
     const suivi = [{ id: `${Date.now()}`, date: Date.now(), type, texte: texte.trim(), auteur: l.negociateur || "—" }, ...l.suivi];
     await majLead(l.id, { suivi });
   };
+  // Réattribution : négociateur + trace de suivi (+ statut) en UN SEUL
+  // enregistrement, pour ne jamais déclencher deux écritures simultanées.
+  const transferer = async (l: Lead, negociateur: string) => {
+    const nv = negociateur.trim();
+    if (!nv || nv === l.negociateur) { if (nv !== l.negociateur) await majLead(l.id, { negociateur: nv }); return; }
+    const suivi = [{ id: `${Date.now()}`, date: Date.now(), type: "transfert", texte: `Transféré à ${nv}`, auteur: nv }, ...l.suivi];
+    const statut = l.statut === "Nouveau" ? "Transféré" : l.statut;
+    await majLead(l.id, { negociateur: nv, statut, suivi });
+  };
   const creerLead = async () => {
     if (!nouveau.nom?.trim() && !nouveau.tel?.trim() && !nouveau.email?.trim()) return;
     const l = await createLead(nouveau);
@@ -245,7 +254,7 @@ export default function LeadsPage({ onRetour }: { onRetour: () => void }) {
         </div>
       ))}
 
-      {sel && <FicheLead lead={sel} onClose={() => setSel(null)} onStatut={changerStatut} onSuivi={ajouterSuivi} onPatch={majLead} onConvert={convertir} onDelete={supprimer} />}
+      {sel && <FicheLead lead={sel} onClose={() => setSel(null)} onStatut={changerStatut} onSuivi={ajouterSuivi} onPatch={majLead} onTransfert={transferer} onConvert={convertir} onDelete={supprimer} />}
     </div>
   );
 }
@@ -265,10 +274,10 @@ function ConfigPasserelle() {
   );
 }
 
-function FicheLead({ lead, onClose, onStatut, onSuivi, onPatch, onConvert, onDelete }: {
+function FicheLead({ lead, onClose, onStatut, onSuivi, onPatch, onTransfert, onConvert, onDelete }: {
   lead: Lead; onClose: () => void;
   onStatut: (l: Lead, s: string) => void; onSuivi: (l: Lead, t: string, txt: string) => void;
-  onPatch: (id: string, p: Partial<Lead>) => Promise<Lead | null>; onConvert: (l: Lead) => void; onDelete: (l: Lead) => void;
+  onPatch: (id: string, p: Partial<Lead>) => Promise<Lead | null>; onTransfert: (l: Lead, nego: string) => void; onConvert: (l: Lead) => void; onDelete: (l: Lead) => void;
 }) {
   const [type, setType] = useState(SUIVI_TYPES[0].id);
   const [texte, setTexte] = useState("");
@@ -387,7 +396,7 @@ function FicheLead({ lead, onClose, onStatut, onSuivi, onPatch, onConvert, onDel
         <div className="mt-3 grid gap-3 sm:grid-cols-2">
           <label className="text-xs font-semibold text-slate-500">Transféré à (négociateur)
             <div className="mt-1 flex gap-1"><input className={inputCls} value={nego} onChange={(e) => setNego(e.target.value)} placeholder="Nom du négociateur" list="negos-leads" /><datalist id="negos-leads">{NEGOCIATEURS.map((n) => <option key={n} value={n} />)}</datalist>
-              <button onClick={() => { void onPatch(lead.id, { negociateur: nego }); if (nego && nego !== lead.negociateur) onSuivi(lead, "transfert", `Transféré à ${nego}`); }} className="rounded-lg bg-navy px-3 text-sm font-bold text-white">OK</button></div>
+              <button onClick={() => onTransfert(lead, nego)} className="rounded-lg bg-navy px-3 text-sm font-bold text-white">OK</button></div>
           </label>
           <label className="text-xs font-semibold text-slate-500">Notes internes
             <textarea className={`${inputCls} mt-1`} rows={2} value={notes} onChange={(e) => setNotes(e.target.value)} onBlur={() => notes !== lead.notes && void onPatch(lead.id, { notes })} />
