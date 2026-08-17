@@ -101,10 +101,11 @@ export default function LeadsPage({ onRetour }: { onRetour: () => void }) {
   const transferer = async (l: Lead, negociateur: string) => {
     const nv = negociateur.trim();
     if (!nv || nv === (l.negociateur ?? "").trim()) return;
-    // On garde le STATUT en place : réattribuer un lead ne doit jamais le faire
-    // disparaître de la vue courante (ex. si un filtre de statut est actif).
+    // Réattribuer = SEUL le statut passe à « Transféré » (+ trace de suivi), en
+    // UN SEUL enregistrement. Le lead reste dans la liste (la page affiche tous
+    // les leads, tous statuts confondus) — il ne disparaît jamais.
     const suivi = [{ id: `${Date.now()}`, date: Date.now(), type: "transfert", texte: `Transféré à ${nv}`, auteur: nv }, ...l.suivi];
-    await majLead(l.id, { negociateur: nv, suivi });
+    await majLead(l.id, { negociateur: nv, statut: "Transféré", suivi });
   };
   const creerLead = async () => {
     if (!nouveau.nom?.trim() && !nouveau.tel?.trim() && !nouveau.email?.trim()) return;
