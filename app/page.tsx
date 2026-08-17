@@ -1590,7 +1590,7 @@ export default function Home() {
                       charte Century 21 du dossier d&apos;estimation, prêt à imprimer.
                     </p>
                     <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                      {(Object.keys(DOC_LABELS) as DocType[]).map((t) => (
+                      {(Object.keys(DOC_LABELS) as DocType[]).filter((t) => t !== "social" && t !== "mandat").map((t) => (
                         <button
                           key={t}
                           type="button"
@@ -2077,7 +2077,7 @@ export default function Home() {
                   <div className="text-sm font-bold text-navy">Estimations</div>
                   <div className="mt-0.5 text-xs text-slate-500">Avis de valeur, audits, locatif, bien loué</div>
                 </button>
-                {(Object.keys(DOC_LABELS) as DocType[]).map((t) => (
+                {(Object.keys(DOC_LABELS) as DocType[]).filter((t) => t !== "social" && t !== "mandat").map((t) => (
                   <button
                     key={t}
                     type="button"
