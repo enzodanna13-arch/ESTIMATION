@@ -134,6 +134,36 @@ export async function listLeadsServer(): Promise<Lead[]> {
   return leads.filter((l): l is Lead => l !== null).sort((a, b) => b.createdAt - a.createdAt);
 }
 
+// Rapprochement automatique : relie un lead existant à un dossier client
+// nouvellement créé (par tél / email / nom) et met son statut à jour. Renvoie
+// l'id du lead rapproché, ou null si aucun ne correspond.
+export async function rapprocherLeadServer(params: { tel?: string; email?: string; nom?: string; prenom?: string; dossierId: string; statut: string }): Promise<string | null> {
+  const digits = (s?: string) => (s ?? "").replace(/\D/g, "");
+  const tail = (s?: string) => { const d = digits(s); return d.length >= 9 ? d.slice(-9) : ""; };
+  const norm = (s?: string) => (s ?? "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, "");
+  const telP = tail(params.tel);
+  const emailP = norm(params.email);
+  const nomP = norm(`${params.prenom ?? ""}${params.nom ?? ""}`);
+  if (!telP && !emailP && nomP.length < 5) return null;
+
+  const leads = await listLeadsServer();
+  const candidat = leads.find((l) => {
+    if (l.dossierId) return false; // déjà rattaché à un dossier
+    if (telP && tail(l.tel) && tail(l.tel) === telP) return true;
+    if (emailP && norm(l.email) && norm(l.email) === emailP) return true;
+    if (nomP.length >= 5 && norm(`${l.prenom ?? ""}${l.nom ?? ""}`) === nomP) return true;
+    return false;
+  });
+  if (!candidat) return null;
+
+  const texte = params.statut === "Prise de mandat"
+    ? "Prise de mandat — dossier vendeur créé (rapprochement automatique)"
+    : "Converti en dossier client (rapprochement automatique)";
+  const suivi = [{ id: `${Date.now()}`, date: Date.now(), type: "conversion", texte, auteur: candidat.negociateur || "—" }, ...(candidat.suivi ?? [])];
+  await saveLeadServer({ ...candidat, dossierId: params.dossierId, statut: params.statut, relanceLe: null, suivi });
+  return candidat.id;
+}
+
 export async function getLeadServer(id: string): Promise<Lead | null> {
   const { blobs } = await list({ prefix: `${PREFIX}${safe(id)}~`, limit: 100 });
   if (blobs.length === 0) return null;

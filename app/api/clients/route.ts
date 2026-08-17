@@ -1,5 +1,6 @@
 import { checkHistoryPassword } from "@/lib/historyAuth";
 import { listClientsServer, saveClientServer, type ClientDossier } from "@/lib/serverHistory";
+import { rapprocherLeadServer } from "@/lib/serverLeads";
 
 export const dynamic = "force-dynamic";
 
@@ -38,11 +39,12 @@ export async function POST(request: Request) {
     negociateur: (body.negociateur ?? "").trim(),
     pieces: [],
     typeClient: type,
+    // Coordonnées conservées pour TOUS les types (contact + rapprochement lead)
+    prenom: (body.prenom ?? "").trim(),
+    tel: (body.tel ?? "").trim(),
+    email: (body.email ?? "").trim(),
     ...(type !== "vendeur"
       ? {
-          prenom: (body.prenom ?? "").trim(),
-          tel: (body.tel ?? "").trim(),
-          email: (body.email ?? "").trim(),
           statut: "Nouveau",
           recherches: [],
           timeline: [{ id: `${Date.now()}`, date: Date.now(), type: "statut", texte: "Dossier créé", auteur: (body.negociateur ?? "").trim() || "—" }],
@@ -51,6 +53,13 @@ export async function POST(request: Request) {
   };
   try {
     await saveClientServer(dossier);
+    // Rapprochement automatique : si un lead correspond à ce nouveau dossier
+    // (tél / email / nom), on le relie et on met son statut à jour (vendeur →
+    // « Prise de mandat », acquéreur/investisseur → « Converti »).
+    try {
+      const statutLead = type === "vendeur" ? "Prise de mandat" : "Converti";
+      await rapprocherLeadServer({ tel: dossier.tel, email: dossier.email, nom: dossier.nom, prenom: dossier.prenom, dossierId: dossier.id, statut: statutLead });
+    } catch { /* le rapprochement ne doit jamais bloquer la création du dossier */ }
     return Response.json({ dossier });
   } catch {
     return Response.json({ error: "Stockage partagé indisponible" }, { status: 500 });
