@@ -100,10 +100,11 @@ export default function LeadsPage({ onRetour }: { onRetour: () => void }) {
   // enregistrement, pour ne jamais déclencher deux écritures simultanées.
   const transferer = async (l: Lead, negociateur: string) => {
     const nv = negociateur.trim();
-    if (!nv || nv === l.negociateur) { if (nv !== l.negociateur) await majLead(l.id, { negociateur: nv }); return; }
+    if (!nv || nv === (l.negociateur ?? "").trim()) return;
+    // On garde le STATUT en place : réattribuer un lead ne doit jamais le faire
+    // disparaître de la vue courante (ex. si un filtre de statut est actif).
     const suivi = [{ id: `${Date.now()}`, date: Date.now(), type: "transfert", texte: `Transféré à ${nv}`, auteur: nv }, ...l.suivi];
-    const statut = l.statut === "Nouveau" ? "Transféré" : l.statut;
-    await majLead(l.id, { negociateur: nv, statut, suivi });
+    await majLead(l.id, { negociateur: nv, suivi });
   };
   const creerLead = async () => {
     if (!nouveau.nom?.trim() && !nouveau.tel?.trim() && !nouveau.email?.trim()) return;
