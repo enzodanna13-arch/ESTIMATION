@@ -62,8 +62,10 @@ export default function LeadsPage({ onRetour }: { onRetour: () => void }) {
     if (fStatut) base = base.filter((l) => l.statut === fStatut);
     if (fSource) base = base.filter((l) => l.source === fSource);
     if (fRelance) base = base.filter(aRelancer);
-    // Tri : à relancer d'abord, puis les plus récents
-    return [...base].sort((a, b) => (Number(aRelancer(b)) - Number(aRelancer(a))) || b.createdAt - a.createdAt);
+    // Liste COMPLÈTE et STABLE : tous les leads générés, du plus récent au plus
+    // ancien. On ne réordonne PAS selon le statut/relance, pour qu'un lead ne
+    // « bouge » jamais quand on l'attribue — il reste à sa place dans la liste.
+    return [...base].sort((a, b) => b.createdAt - a.createdAt);
   }, [leads, q, fStatut, fSource, fRelance]);
 
   const kpi = useMemo(() => {
@@ -166,7 +168,7 @@ export default function LeadsPage({ onRetour }: { onRetour: () => void }) {
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 className="text-2xl font-bold text-navy">📥 Leads entrant</h2>
-          <p className="text-sm text-slate-500">Suivi du premier contact jusqu&apos;à la conversion — réagissez vite, relancez au bon moment.</p>
+          <p className="text-sm text-slate-500">Liste complète de tous vos leads générés. Attribuer un lead l&apos;ajoute à l&apos;espace du négociateur — sans jamais le retirer d&apos;ici.</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <button onClick={onRetour} className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-600 hover:bg-slate-100">← Accueil</button>
