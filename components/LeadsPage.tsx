@@ -19,10 +19,16 @@ const jour = 86400000;
 const joursDepuis = (t: number) => Math.floor((Date.now() - t) / jour);
 const derniereActivite = (l: Lead) => Math.max(l.createdAt, ...(l.suivi ?? []).map((s) => s.date));
 const finJournee = () => { const d = new Date(); d.setHours(23, 59, 59, 999); return d.getTime(); };
-// Un lead « à relancer » : rappel programmé échu, ou lead ouvert non traité depuis 2 j
+// Un « vrai » suivi = un contact/action consigné (appel, email, RDV, note) :
+// la création auto et le transfert/changement de statut ne comptent pas.
+const SUIVI_CONTACT = ["appel", "email", "rdv", "note"];
+const aUnSuivi = (l: Lead) => (l.suivi ?? []).some((s) => SUIVI_CONTACT.includes(s.type));
+// Un lead « à relancer » : rappel programmé échu, AUCUN suivi consigné, ou
+// lead ouvert non traité depuis 2 j.
 function aRelancer(l: Lead): boolean {
   if (TERMINAUX.includes(l.statut)) return false;
   if (l.relanceLe && l.relanceLe <= finJournee()) return true;
+  if (!aUnSuivi(l)) return true;
   if ((l.statut === "Nouveau" || l.statut === "À appeler") && joursDepuis(derniereActivite(l)) >= 2) return true;
   return false;
 }
