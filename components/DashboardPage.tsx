@@ -47,7 +47,7 @@ export default function DashboardPage({ onRetour }: { onRetour: () => void }) {
     const convertis = parStatutLead["Converti"] ?? 0;
     const traites = leads.filter((l) => l.statut !== "Nouveau").length;
     const tauxConv = leads.length ? Math.round((convertis / leads.length) * 100) : 0;
-    const nouveaux = (parStatutLead["Nouveau"] ?? 0) + (parStatutLead["À appeler"] ?? 0);
+    const nouveaux = (parStatutLead["Nouveau"] ?? 0) + (parStatutLead["À rappeler"] ?? 0);
 
     const vendeurs = clients.filter((c) => (c.typeClient ?? "vendeur") === "vendeur").length;
     const acq = clients.filter((c) => c.typeClient === "acquereur").length;

@@ -15,7 +15,7 @@ const dateFr = (t?: number) => (t ? new Date(t).toLocaleDateString("fr-FR", { da
 const JOUR = 86400000;
 const joursDepuis = (t: number) => Math.floor((Date.now() - t) / JOUR);
 const finJournee = () => { const d = new Date(); d.setHours(23, 59, 59, 999); return d.getTime(); };
-const LEAD_TERMINAUX = ["Converti", "Non converti", "Perdu"];
+const LEAD_TERMINAUX = ["Converti", "Pas intéressé", "Perdu", "Estimation — sans projet"];
 const ACQ_TERMINAUX = ["Projet abandonné", "Projet réalisé"];
 const derniereActiviteLead = (l: Lead) => Math.max(l.createdAt, ...(l.suivi ?? []).map((s) => s.date));
 // Un « vrai » suivi = un contact/action consigné (appel, email, RDV, note) —
@@ -25,8 +25,10 @@ const aUnSuivi = (l: Lead) => (l.suivi ?? []).some((s) => SUIVI_CONTACT.includes
 function leadARelancer(l: Lead): boolean {
   if (LEAD_TERMINAUX.includes(l.statut)) return false;
   if (l.relanceLe && l.relanceLe <= finJournee()) return true;
-  if (!aUnSuivi(l)) return true; // aucun suivi enregistré → à relancer tout de suite
-  if ((l.statut === "Nouveau" || l.statut === "À appeler") && joursDepuis(derniereActiviteLead(l)) >= 2) return true;
+  if (l.statut === "Nouveau" || l.statut === "À rappeler") {
+    if (!aUnSuivi(l)) return true; // aucun suivi enregistré → à relancer tout de suite
+    if (joursDepuis(derniereActiviteLead(l)) >= 2) return true;
+  }
   return false;
 }
 function dossierARelancer(c: ClientDossier): boolean {

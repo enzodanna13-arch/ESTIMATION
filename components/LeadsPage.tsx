@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import {
-  SOURCES_LEAD, STATUTS_LEAD, STATUT_LEAD_COULEURS, SUIVI_TYPES, TYPES_PROJET_LEAD,
+  SOURCES_LEAD, STATUTS_LEAD, STATUT_LEAD_COULEURS, SUIVI_TYPES, SUIVI_ACTIONS, TYPES_PROJET_LEAD,
   createLead, deleteLead, listLeads, restaurerLeadsArchives, updateLead, type Lead,
 } from "@/lib/leads";
 import { createClient } from "@/lib/clients";
@@ -14,7 +14,7 @@ const dateFr = (t: number) => new Date(t).toLocaleDateString("fr-FR", { day: "2-
 const labelSource = (id: string) => SOURCES_LEAD.find((s) => s.id === id)?.label ?? id;
 const labelProjet = (id: string) => TYPES_PROJET_LEAD.find((t) => t.id === id)?.label ?? id;
 
-const TERMINAUX = ["Converti", "Non converti", "Perdu"];
+const TERMINAUX = ["Converti", "Pas intéressé", "Perdu", "Estimation — sans projet"];
 const jour = 86400000;
 const joursDepuis = (t: number) => Math.floor((Date.now() - t) / jour);
 const derniereActivite = (l: Lead) => Math.max(l.createdAt, ...(l.suivi ?? []).map((s) => s.date));
@@ -27,9 +27,13 @@ const aUnSuivi = (l: Lead) => (l.suivi ?? []).some((s) => SUIVI_CONTACT.includes
 // lead ouvert non traité depuis 2 j.
 function aRelancer(l: Lead): boolean {
   if (TERMINAUX.includes(l.statut)) return false;
-  if (l.relanceLe && l.relanceLe <= finJournee()) return true;
-  if (!aUnSuivi(l)) return true;
-  if ((l.statut === "Nouveau" || l.statut === "À appeler") && joursDepuis(derniereActivite(l)) >= 2) return true;
+  if (l.relanceLe && l.relanceLe <= finJournee()) return true; // rappel programmé échu
+  // Un lead pas encore vraiment traité (Nouveau / À rappeler) sans contact
+  // consigné, ou sans nouvelle depuis 2 j, ressort à relancer.
+  if (l.statut === "Nouveau" || l.statut === "À rappeler") {
+    if (!aUnSuivi(l)) return true;
+    if (joursDepuis(derniereActivite(l)) >= 2) return true;
+  }
   return false;
 }
 const ageTexte = (t: number) => { const j = joursDepuis(t); return j <= 0 ? "aujourd'hui" : j === 1 ? "hier" : `il y a ${j} j`; };
@@ -69,7 +73,7 @@ export default function LeadsPage({ onRetour }: { onRetour: () => void }) {
     const ls = leads ?? [];
     const c: Record<string, number> = {};
     for (const l of ls) c[l.statut] = (c[l.statut] ?? 0) + 1;
-    const aTraiter = (c["Nouveau"] ?? 0) + (c["À appeler"] ?? 0);
+    const aTraiter = (c["Nouveau"] ?? 0) + (c["À rappeler"] ?? 0);
     const convertis = c["Converti"] ?? 0;
     const taux = ls.length ? Math.round((convertis / ls.length) * 100) : 0;
     return { c, total: ls.length, aTraiter, rdv: c["RDV fixé"] ?? 0, convertis, taux, relancer: ls.filter(aRelancer).length };
@@ -431,7 +435,7 @@ function FicheLead({ lead, onClose, onStatut, onSuivi, onPatch, onTransfert, onC
 
         {/* Ajout de suivi */}
         <div className="mt-3 flex flex-wrap items-end gap-2">
-          <select className={`${inputCls} w-auto`} value={type} onChange={(e) => setType(e.target.value)}>{SUIVI_TYPES.map((t) => <option key={t.id} value={t.id}>{t.label}</option>)}</select>
+          <select className={`${inputCls} w-auto`} value={type} onChange={(e) => setType(e.target.value)}>{SUIVI_ACTIONS.map((t) => <option key={t.id} value={t.id}>{t.label}</option>)}</select>
           <input className={`${inputCls} min-w-[180px] flex-1`} value={texte} onChange={(e) => setTexte(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") { onSuivi(lead, type, texte); setTexte(""); } }} placeholder="Ex. Appelé, RDV fixé mardi 14h" />
           <button onClick={() => { onSuivi(lead, type, texte); setTexte(""); }} className="rounded-lg bg-copper px-4 py-1.5 text-sm font-bold text-white">Ajouter au suivi</button>
         </div>

@@ -6,18 +6,30 @@ const headers = () => ({ "x-history-key": getHistoryKey() });
 const jsonHeaders = () => ({ "content-type": "application/json", "x-history-key": getHistoryKey() });
 
 // Statuts de suivi d'un lead (pipeline commercial)
+// Statuts de suivi d'un lead (pipeline immobilier orienté résultat).
 export const STATUTS_LEAD = [
-  "Nouveau", "À appeler", "Transféré", "RDV fixé", "En cours", "Converti", "Non converti", "Perdu",
+  "Nouveau",
+  "À rappeler",
+  "Répondeur / message laissé",
+  "Transféré",
+  "RDV fixé",
+  "Estimation — projet de vente",
+  "Converti",
+  "Estimation — sans projet",
+  "Pas intéressé",
+  "Perdu",
 ];
 
 export const STATUT_LEAD_COULEURS: Record<string, string> = {
   Nouveau: "bg-blue-100 text-blue-700",
-  "À appeler": "bg-amber-100 text-amber-700",
-  Transféré: "bg-cyan-100 text-cyan-700",
+  "À rappeler": "bg-amber-100 text-amber-700",
+  "Répondeur / message laissé": "bg-cyan-100 text-cyan-700",
+  Transféré: "bg-indigo-100 text-indigo-700",
   "RDV fixé": "bg-violet-100 text-violet-700",
-  "En cours": "bg-indigo-100 text-indigo-700",
-  Converti: "bg-emerald-100 text-emerald-700",
-  "Non converti": "bg-slate-100 text-slate-600",
+  "Estimation — projet de vente": "bg-emerald-100 text-emerald-700",
+  Converti: "bg-green-100 text-green-700",
+  "Estimation — sans projet": "bg-slate-100 text-slate-600",
+  "Pas intéressé": "bg-orange-100 text-orange-700",
   Perdu: "bg-red-100 text-red-600",
 };
 
@@ -39,17 +51,23 @@ export const TYPES_PROJET_LEAD = [
 
 // Types de suivi d'un lead. `statut` (optionnel) = statut appliqué
 // automatiquement au lead quand on enregistre ce type de suivi.
+// Types de suivi (timeline). `statut` (optionnel) = statut appliqué au lead
+// quand on enregistre ce suivi. Les résultats « Répondeur », « Pas intéressé »,
+// « Estimation… » sont désormais des STATUTS (chips), pas des lignes de suivi.
 export const SUIVI_TYPES: { id: string; label: string; statut?: string }[] = [
   { id: "appel", label: "Appel" },
-  { id: "repondeur", label: "Répondeur / message laissé" },
   { id: "email", label: "Email" },
   { id: "rdv", label: "RDV", statut: "RDV fixé" },
   { id: "note", label: "Note" },
+  // types techniques (affichés dans la timeline, non proposés à la saisie libre)
   { id: "transfert", label: "Transfert" },
-  { id: "estim_sans_projet", label: "Estimation faite — sans projet de vente" },
-  { id: "estim_projet", label: "Estimation faite — projet de vente", statut: "En cours" },
-  { id: "pas_interesse", label: "Pas intéressé", statut: "Non converti" },
+  { id: "statut", label: "Statut" },
+  { id: "creation", label: "Création" },
+  { id: "conversion", label: "Conversion" },
 ];
+
+// Actions proposées à la saisie manuelle d'un suivi (menu déroulant).
+export const SUIVI_ACTIONS = SUIVI_TYPES.filter((t) => ["appel", "email", "rdv", "note"].includes(t.id));
 
 export async function listLeads(): Promise<Lead[]> {
   const res = await fetch("/api/leads", { cache: "no-store", headers: headers() });
