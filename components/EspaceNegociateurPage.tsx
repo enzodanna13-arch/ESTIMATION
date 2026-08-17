@@ -20,7 +20,7 @@ const ACQ_TERMINAUX = ["Projet abandonné", "Projet réalisé"];
 const derniereActiviteLead = (l: Lead) => Math.max(l.createdAt, ...(l.suivi ?? []).map((s) => s.date));
 // Un « vrai » suivi = un contact/action consigné (appel, email, RDV, note) —
 // la création automatique et le simple transfert/changement de statut ne comptent pas.
-const SUIVI_CONTACT = ["appel", "email", "rdv", "note"];
+const SUIVI_CONTACT = ["appel", "email", "rdv", "note", "repondeur", "estim_sans_projet", "estim_projet", "pas_interesse"];
 const aUnSuivi = (l: Lead) => (l.suivi ?? []).some((s) => SUIVI_CONTACT.includes(s.type));
 function leadARelancer(l: Lead): boolean {
   if (LEAD_TERMINAUX.includes(l.statut)) return false;

@@ -37,12 +37,18 @@ export const TYPES_PROJET_LEAD = [
   { id: "autre", label: "Autre" },
 ];
 
-export const SUIVI_TYPES = [
+// Types de suivi d'un lead. `statut` (optionnel) = statut appliqué
+// automatiquement au lead quand on enregistre ce type de suivi.
+export const SUIVI_TYPES: { id: string; label: string; statut?: string }[] = [
   { id: "appel", label: "Appel" },
+  { id: "repondeur", label: "Répondeur / message laissé" },
   { id: "email", label: "Email" },
-  { id: "transfert", label: "Transfert" },
-  { id: "rdv", label: "RDV" },
+  { id: "rdv", label: "RDV", statut: "RDV fixé" },
   { id: "note", label: "Note" },
+  { id: "transfert", label: "Transfert" },
+  { id: "estim_sans_projet", label: "Estimation faite — sans projet de vente" },
+  { id: "estim_projet", label: "Estimation faite — projet de vente", statut: "En cours" },
+  { id: "pas_interesse", label: "Pas intéressé", statut: "Non converti" },
 ];
 
 export async function listLeads(): Promise<Lead[]> {

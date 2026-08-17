@@ -21,7 +21,7 @@ const derniereActivite = (l: Lead) => Math.max(l.createdAt, ...(l.suivi ?? []).m
 const finJournee = () => { const d = new Date(); d.setHours(23, 59, 59, 999); return d.getTime(); };
 // Un « vrai » suivi = un contact/action consigné (appel, email, RDV, note) :
 // la création auto et le transfert/changement de statut ne comptent pas.
-const SUIVI_CONTACT = ["appel", "email", "rdv", "note"];
+const SUIVI_CONTACT = ["appel", "email", "rdv", "note", "repondeur", "estim_sans_projet", "estim_projet", "pas_interesse"];
 const aUnSuivi = (l: Lead) => (l.suivi ?? []).some((s) => SUIVI_CONTACT.includes(s.type));
 // Un lead « à relancer » : rappel programmé échu, AUCUN suivi consigné, ou
 // lead ouvert non traité depuis 2 j.
@@ -98,9 +98,16 @@ export default function LeadsPage({ onRetour }: { onRetour: () => void }) {
     if (i > 0) await changerStatut(l, STATUTS_LEAD[i - 1]);
   };
   const ajouterSuivi = async (l: Lead, type: string, texte: string) => {
-    if (!texte.trim()) return;
-    const suivi = [{ id: `${Date.now()}`, date: Date.now(), type, texte: texte.trim(), auteur: l.negociateur || "—" }, ...l.suivi];
-    await majLead(l.id, { suivi });
+    const def = SUIVI_TYPES.find((t) => t.id === type);
+    // Le texte est facultatif pour les types « à sens unique » (ex. « Pas
+    // intéressé », « Estimation faite… ») : on retombe sur le libellé du type.
+    const txt = texte.trim() || def?.label || "";
+    if (!txt) return;
+    const suivi = [{ id: `${Date.now()}`, date: Date.now(), type, texte: txt, auteur: l.negociateur || "—" }, ...l.suivi];
+    const patch: Partial<Lead> = { suivi };
+    // Certains suivis font avancer le statut automatiquement (RDV, pas intéressé…)
+    if (def?.statut && def.statut !== l.statut) patch.statut = def.statut;
+    await majLead(l.id, patch);
   };
   // Réattribution : négociateur + trace de suivi (+ statut) en UN SEUL
   // enregistrement, pour ne jamais déclencher deux écritures simultanées.
