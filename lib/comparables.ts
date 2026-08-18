@@ -226,7 +226,7 @@ export function selectionnerComparables(
   const parProximite = [...propres].sort(
     (a, b) => rankProx(a) - rankProx(b) || (a.date < b.date ? 1 : -1),
   );
-  const PALIERS = [200, 500, 1000, 1500, 3000, Infinity];
+  const PALIERS = [50, 100, 200, 500, 1000, Infinity];
   let retenuesRaw = parProximite.slice(0, 8);
   for (const rayon of PALIERS) {
     const dans = parProximite.filter((s) => s.memeAdresse || (s.distanceM != null && s.distanceM <= rayon));

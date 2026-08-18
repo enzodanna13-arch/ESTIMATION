@@ -12,18 +12,6 @@ function medianOf(values: number[]): number | null {
   return v.length % 2 ? v[mid] : Math.round((v[mid - 1] + v[mid]) / 2);
 }
 
-const DPE_ADJUSTMENT: Record<string, number> = {
-  A: 1.06, B: 1.04, C: 1.02, D: 1.0, E: 0.96, F: 0.9, G: 0.85,
-};
-
-const ETAT_ADJUSTMENT: Record<string, number> = {
-  neuf: 1.08,
-  "refait à neuf": 1.05,
-  "bon état": 1.0,
-  "rafraîchissement à prévoir": 0.93,
-  "travaux importants": 0.82,
-};
-
 /**
  * Moteur statistique de secours : utilisé quand la clé ANTHROPIC_API_KEY
  * n'est pas configurée ou que l'appel IA échoue. Croise la médiane DVF,
@@ -57,10 +45,9 @@ export function computeFallbackEstimate(
   const plafondM2 = invendusM2 ? Math.round(invendusM2 * 0.97) : null;
   if (baseM2 && plafondM2 && baseM2 > plafondM2) baseM2 = plafondM2;
 
-  const dpeAdj = DPE_ADJUSTMENT[input.dpe?.toUpperCase()] ?? 1.0;
-  const etatAdj = ETAT_ADJUSTMENT[input.etatGeneral?.toLowerCase()] ?? 1.0;
-
-  const prixM2 = baseM2 ? Math.round(baseM2 * dpeAdj * etatAdj) : 0;
+  // Analyse au m² pure : pas d'ajustement DPE/état — l'analyse des ventes
+  // comparables du secteur intègre déjà ces éléments.
+  const prixM2 = baseM2 ? Math.round(baseM2) : 0;
   const prixEstime = surface > 0 ? Math.round((prixM2 * surface) / 1000) * 1000 : 0;
 
   const sources = [
@@ -80,7 +67,7 @@ export function computeFallbackEstimate(
     delai_vente_estime: "2 à 4 mois au prix recommandé",
     positionnement_marche:
       prixEstime > 0
-        ? `Estimation statistique calculée à partir de : ${sources.join(", ")}. Ajustements appliqués : DPE ${input.dpe || "n.c."} (×${dpeAdj}), état « ${input.etatGeneral || "n.c."} » (×${etatAdj}).`
+        ? `Estimation statistique calculée à partir de : ${sources.join(", ")}. Analyse au m² pure, sans ajustement de caractéristique.`
         : "Données insuffisantes pour une estimation fiable : renseignez la surface, et ajoutez des biens concurrents ou vérifiez le code postal pour les données DVF.",
     analyse_dvf: dvfMedian
       ? `${dvfSales.length} transactions DVF exploitées, médiane à ${dvfMedian} €/m².`

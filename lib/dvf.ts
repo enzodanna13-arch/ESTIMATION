@@ -218,11 +218,15 @@ export async function fetchDvfContext(
     geocodeAddress(adresse, codePostal, ville),
   ]);
   if (inseeCodes.length > 0) {
-    // Millésimes du plus récent au plus ancien, jusqu'à avoir assez de comparables
-    for (const year of [currentYear, currentYear - 1, currentYear - 2, currentYear - 3]) {
+    // Millésimes du plus récent jusqu'à 2018 (marché de prix comparable à
+    // aujourd'hui) : on remonte tant qu'on n'a pas un vivier suffisant de
+    // comparables pour les rayons de proximité serrés (50-500 m).
+    const annees: number[] = [];
+    for (let y = currentYear; y >= 2018; y--) annees.push(y);
+    for (const year of annees) {
       const batches = await Promise.all(inseeCodes.map((insee) => fetchOfficialDvf(insee, year, typeLocal)));
       sales.push(...batches.flat());
-      if (sales.length >= 30) break;
+      if (sales.length >= 80) break;
     }
   }
 
@@ -248,7 +252,7 @@ export async function fetchDvfContext(
   } else {
     sales.sort((a, b) => (a.date < b.date ? 1 : -1));
   }
-  return { sales: sales.slice(0, 60), subject: geo ? { lat: geo.lat, lon: geo.lon } : null };
+  return { sales: sales.slice(0, 120), subject: geo ? { lat: geo.lat, lon: geo.lon } : null };
 }
 
 export function medianPrixM2(sales: DvfSale[]): number | null {
