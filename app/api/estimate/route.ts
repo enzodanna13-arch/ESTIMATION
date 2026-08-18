@@ -126,41 +126,56 @@ export async function POST(request: Request) {
                 ? computeFallbackBienLoue(body, dvfSales)
                 : computeFallbackEstimate(body, dvfSales);
         }
-        // Filet de sécurité : le tableau des comparables DVF ne doit
-        // jamais être vide dès que des ventes existent (hors mission
-        // locative, qui n'affiche pas de tableau de ventes)
-        if (mission !== "locatif" && report.references_dvf.length === 0 && dvfSales.length > 0) {
-          const det = buildDvfReferences(dvfSales, body);
+        // Cohérence dossier : la base du calcul d'ajustements est la BASE DE
+        // MARCHÉ ROBUSTE — médiane PONDÉRÉE du €/m² des comparables (valeurs
+        // aberrantes exclues) appliquée à la surface du bien, et non la simple
+        // médiane des prix actés, qui surévalue dès que les comparables retenus
+        // sont plus grands que le bien. Si l'IA a utilisé une autre base,
+        // l'écart devient une ligne d'ajustement explicite — la somme du tableau
+        // reste exactement égale au cœur de fourchette.
+        let detRobuste: ReturnType<typeof buildDvfReferences> | null = null;
+        if (mission !== "locatif") {
+          detRobuste = buildDvfReferences(dvfSales, body);
+          // Références enrichies (distance, €/m², score, raison) : on impose la
+          // sélection robuste dès que des comparables existent, pour un tableau
+          // homogène quel que soit le moteur (IA ou statistique).
+          if (detRobuste.references.length > 0) {
+            report = { ...report, references_dvf: detRobuste.references };
+          }
+          const baseRobuste =
+            detRobuste.baseMediane > 0 ? detRobuste.baseMediane : medianeReferences(report.references_dvf);
+          if (baseRobuste > 0 && report.base_mediane !== baseRobuste) {
+            const diff = report.base_mediane - baseRobuste;
+            const ajustements = [...report.ajustements];
+            if (ajustements.length > 0) {
+              const i = ajustements.findIndex((a) => /transposition|surface/i.test(a.libelle));
+              if (i >= 0) {
+                ajustements[i] = { ...ajustements[i], montant: ajustements[i].montant + diff };
+              } else if (Math.abs(diff) >= 1000) {
+                ajustements.unshift({
+                  libelle: `Surface du bien (${surfaceHabitableTotale(body) || "?"} m² habitables) vs références`,
+                  montant: diff,
+                });
+              } else {
+                ajustements[0] = { ...ajustements[0], montant: ajustements[0].montant + diff };
+              }
+            }
+            report = { ...report, base_mediane: baseRobuste, ajustements };
+          }
+          // Indicateur de fiabilité + référence « dans votre rue » (€/m² brut
+          // observé à proximité immédiate, avant correction de superficie).
           report = {
             ...report,
-            references_dvf: det.references,
-            base_mediane: report.base_mediane > 0 ? report.base_mediane : det.baseMediane,
+            fiabilite: detRobuste.fiabilite,
+            fiabilite_raison: detRobuste.raisonFiabilite,
+            secteur_m2_bas: detRobuste.secteurM2Bas,
+            secteur_m2_haut: detRobuste.secteurM2Haut,
+            secteur_beta: detRobuste.betaSurface,
           };
-        }
-        // Cohérence dossier : la base du calcul d'ajustements est TOUJOURS
-        // la médiane des prix actés du tableau des comparables. Si l'IA a
-        // utilisé une autre base (ex. médiane €/m² transposée à la surface),
-        // l'écart devient une ligne d'ajustement explicite — la somme du
-        // tableau reste exactement égale au cœur de fourchette.
-        const medRefs = mission === "locatif" ? 0 : medianeReferences(report.references_dvf);
-        if (medRefs > 0 && report.base_mediane !== medRefs) {
-          const diff = report.base_mediane - medRefs;
-          const ajustements = [...report.ajustements];
-          if (ajustements.length > 0) {
-            const i = ajustements.findIndex((a) => /transposition|surface/i.test(a.libelle));
-            if (i >= 0) {
-              ajustements[i] = { ...ajustements[i], montant: ajustements[i].montant + diff };
-            } else if (Math.abs(diff) >= 1000) {
-              ajustements.unshift({
-                libelle: `Surface du bien (${surfaceHabitableTotale(body) || "?"} m² habitables) vs références`,
-                montant: diff,
-              });
-            } else {
-              // écart d'arrondi : absorbé par la première ligne existante
-              ajustements[0] = { ...ajustements[0], montant: ajustements[0].montant + diff };
-            }
-          }
-          report = { ...report, base_mediane: medRefs, ajustements };
+          // Indice de confiance honnête : plafonné selon la fiabilité réelle.
+          const capConf =
+            detRobuste.fiabilite === "faible" ? 55 : detRobuste.fiabilite === "moyenne" ? 78 : 92;
+          if (report.indice_confiance > capConf) report = { ...report, indice_confiance: capConf };
         }
         // Prix psychologiques : arrondi VERS LE BAS des prix affichés —
         // au millier pour une vente, à la dizaine pour un loyer mensuel
@@ -277,6 +292,31 @@ export async function POST(request: Request) {
           }
           // locatif : la fourchette (m² bas → m² haut) est déjà verrouillée
           // par le bloc dédié ci-dessus — ne pas la réécrire ici
+        }
+        // Fiabilité faible → fourchette ÉLARGIE par honnêteté : moins de
+        // comparables proches = plus d'incertitude, on l'assume au lieu de
+        // donner une fausse précision. Le prix conseillé reste AU MILIEU (donc
+        // prudent), jamais tiré vers le haut.
+        if ((mission === "vente" || mission === "audit") && detRobuste?.fiabilite === "faible") {
+          const basse = Math.floor((report.fourchette_basse * 0.97) / 1000) * 1000;
+          const haute = Math.ceil((report.fourchette_haute * 1.05) / 1000) * 1000;
+          if (basse > 0 && haute > basse) {
+            const stepMid = haute >= 200000 ? 5000 : 1000;
+            const mid = Math.max(basse, Math.floor((basse + haute) / 2 / stepMid) * stepMid);
+            report = {
+              ...report,
+              fourchette_basse: basse,
+              fourchette_haute: haute,
+              prix_presentation: mid,
+              scenarios_prix: report.scenarios_prix.map((s) =>
+                s.strategie === "Vente rapide"
+                  ? { ...s, prix: basse }
+                  : s.strategie === "Prix optimal"
+                    ? { ...s, prix: mid }
+                    : s,
+              ),
+            };
+          }
         }
         // Audit : le prix rendu est TOUJOURS STRICTEMENT INFÉRIEUR au prix
         // affiché actuel — relancer au prix qui ne se vend pas n'aurait

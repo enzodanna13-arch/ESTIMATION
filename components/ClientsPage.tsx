@@ -15,6 +15,7 @@ import {
   type PieceClient,
 } from "@/lib/clients";
 import { PIECES_ATTENDUES, estDossierVendeurComplet } from "@/lib/docTypes";
+import { compresserDocument } from "@/lib/compressDoc";
 import AcquereurFiche from "@/components/AcquereurFiche";
 import { STATUTS_RECHERCHE, STATUT_COULEURS, resumeRecherche } from "@/lib/acquereurs";
 import { NEGOCIATEURS } from "@/lib/equipe";
@@ -175,13 +176,6 @@ async function telechargerRapportPdf(dossiers: ClientDossier[]): Promise<void> {
   URL.revokeObjectURL(url);
 }
 
-async function fichierEnB64(f: File): Promise<string> {
-  const buf = new Uint8Array(await f.arrayBuffer());
-  let bin = "";
-  for (let i = 0; i < buf.length; i += 0x8000) bin += String.fromCharCode(...buf.subarray(i, i + 0x8000));
-  return btoa(bin);
-}
-
 // ---------------------------------------------------------------------------
 // Sélecteur de pièces : réutilisé par le bilan de commercialisation pour
 // importer les comptes rendus de visite depuis un dossier client.
@@ -324,6 +318,8 @@ export default function ClientsPage({ onRetour }: { onRetour: () => void }) {
   const [filtreStatut, setFiltreStatut] = useState("");
   const [busy, setBusy] = useState(false);
   const [erreur, setErreur] = useState<string | null>(null);
+  const [info, setInfo] = useState<string | null>(null);
+  const [etatCompression, setEtatCompression] = useState<string | null>(null);
   const [rapportOuvert, setRapportOuvert] = useState(false);
   const [edit, setEdit] = useState<{ nom: string; prenom: string; tel: string; email: string; bien: string; nego: string } | null>(null);
 
@@ -358,14 +354,29 @@ export default function ClientsPage({ onRetour }: { onRetour: () => void }) {
     setErreur(null);
     try {
       let dossier: ClientDossier | null = ouvert;
+      let gainTotal = 0;
       for (const f of Array.from(files)) {
-        if (!f.name.toLowerCase().endsWith(".pdf")) continue;
-        if (f.size > 4_000_000) throw new Error(`« ${f.name} » dépasse 4 Mo — compressez-le avant l'envoi.`);
-        dossier = await addClientFile(ouvert.id, { nom: f.name, categorie, data: await fichierEnB64(f) });
+        const nomBas = f.name.toLowerCase();
+        const accepte = nomBas.endsWith(".pdf") || /\.(jpe?g|png|webp|heic|heif)$/.test(nomBas) || f.type.startsWith("image/");
+        if (!accepte) continue;
+        // Compression PUISSANTE côté navigateur : PDF scannés et photos sont
+        // ré-encodés en PDF léger avant l'envoi.
+        setEtatCompression(`Compression de « ${f.name} »…`);
+        const c = await compresserDocument(f);
+        // Garde-fou : l'envoi est en base64 (+33 %). Un PDF > ~3,3 Mo dépasse la
+        // limite serverless (~4,5 Mo) une fois encodé → on refuse proprement.
+        if (c.tailleApres > 3_300_000) {
+          throw new Error(`« ${f.name} » reste trop lourd même compressé (${(c.tailleApres / 1_048_576).toFixed(1)} Mo) — scannez-le en noir & blanc ou coupez-le en 2 fichiers.`);
+        }
+        gainTotal += Math.max(0, c.tailleAvant - c.tailleApres);
+        dossier = await addClientFile(ouvert.id, { nom: c.nom, categorie, data: c.data });
       }
+      setEtatCompression(null);
       if (dossier) setOuvert(dossier);
+      if (gainTotal > 50_000) setInfo(`Compression : ${(gainTotal / 1_048_576).toFixed(1)} Mo économisés.`);
       void recharger();
     } catch (err) {
+      setEtatCompression(null);
       setErreur(err instanceof Error ? err.message : "Téléversement impossible");
     } finally {
       setBusy(false);
@@ -501,11 +512,12 @@ export default function ClientsPage({ onRetour }: { onRetour: () => void }) {
               </select>
             </label>
             <label className={`cursor-pointer rounded-xl border-2 border-dashed border-slate-300 px-5 py-2.5 text-sm font-semibold text-slate-500 transition hover:border-copper hover:text-copper ${busy ? "pointer-events-none opacity-50" : ""}`}>
-              {busy ? "Envoi en cours…" : "+ Ajouter des PDF au dossier"}
-              <input type="file" accept="application/pdf" multiple className="hidden" onChange={(e) => { void televerser(e.target.files); e.target.value = ""; }} />
+              {etatCompression ?? (busy ? "Envoi en cours…" : "+ Ajouter des documents (PDF ou photos)")}
+              <input type="file" accept="application/pdf,image/*" multiple className="hidden" onChange={(e) => { setInfo(null); void televerser(e.target.files); e.target.value = ""; }} />
             </label>
-            <p className="text-xs text-slate-400">PDF uniquement · 4 Mo max par pièce · stockage partagé de l&apos;équipe, accès protégé par le mot de passe.</p>
+            <p className="text-xs text-slate-400">PDF et photos acceptés · <strong>compression automatique puissante</strong> avant enregistrement (scans et photos ré-encodés en PDF léger) · stockage partagé de l&apos;équipe, accès protégé par le mot de passe.</p>
           </div>
+          {info && <p className="mt-3 rounded-lg border border-emerald-200 bg-emerald-50 p-2 text-sm text-emerald-700">✓ {info}</p>}
           {erreur && <p className="mt-3 rounded-lg border border-red-200 bg-red-50 p-2 text-sm text-red-700">{erreur}</p>}
         </div>
 

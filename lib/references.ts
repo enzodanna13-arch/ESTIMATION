@@ -1,3 +1,4 @@
+import { selectionnerComparables, type Fiabilite } from "./comparables";
 import { surfaceHabitableTotale } from "./surfaces";
 import type { DvfSale, PropertyInput, ReferenceDvf } from "./types";
 
@@ -5,11 +6,6 @@ import type { DvfSale, PropertyInput, ReferenceDvf } from "./types";
 // comparables du dossier n'est jamais vide dès que des ventes existent,
 // même si l'audit IA de la phase 1 a échoué (aucun risque d'invention :
 // les lignes proviennent directement des données Etalab).
-
-const TYPE_LOCAL: Partial<Record<PropertyInput["typeBien"], string>> = {
-  maison: "Maison",
-  appartement: "Appartement",
-};
 
 /**
  * Médiane des PRIX ACTÉS des références retenues — la définition canonique,
@@ -31,70 +27,67 @@ function fmtDate(iso: string): string {
 export function buildDvfReferences(
   dvfSales: DvfSale[],
   input: Pick<PropertyInput, "typeBien" | "surfaceHabitable"> & Partial<Pick<PropertyInput, "dependances">>,
-): { references: ReferenceDvf[]; baseMediane: number } {
+): {
+  references: ReferenceDvf[];
+  baseMediane: number;
+  baseM2: number;
+  mediineM2: number;
+  secteurM2Bas: number;
+  secteurM2Haut: number;
+  betaSurface: number;
+  fiabilite: Fiabilite;
+  raisonFiabilite: string;
+  nbAberrantes: number;
+} {
   // Surface de comparaison = habitable totale (logement principal
   // + dépendances habitables)
   const surface = surfaceHabitableTotale({
     surfaceHabitable: input.surfaceHabitable,
     dependances: input.dependances ?? [],
   });
-  const wantedType = TYPE_LOCAL[input.typeBien];
 
-  let pool = dvfSales.filter((s) => s.surface && s.prixM2 && s.prixM2 > 300 && s.prixM2 < 25000);
-  if (wantedType) {
-    const sameType = pool.filter((s) => s.typeLocal === wantedType);
-    if (sameType.length >= 3) pool = sameType;
-  }
-  if (surface > 0) {
-    // Resserre sur des surfaces réellement comparables (±25 %) pour que la
-    // médiane des prix actés soit directement représentative du bien ;
-    // à défaut, écarte au moins les surfaces sans rapport (½× à 2×)
-    const tight = pool.filter((s) => (s.surface as number) >= surface * 0.75 && (s.surface as number) <= surface * 1.25);
-    const close = pool.filter((s) => (s.surface as number) >= surface * 0.5 && (s.surface as number) <= surface * 2);
-    if (tight.length >= 3) pool = tight;
-    else if (close.length >= 3) pool = close;
-  }
+  const {
+    retenues, baseM2, baseMediane, mediineM2, secteurM2Bas, secteurM2Haut,
+    betaSurface, fiabilite, raisonFiabilite, nbAberrantes,
+  } = selectionnerComparables(dvfSales, { surface, typeBien: input.typeBien });
 
-  // Proximité d'abord : même adresse (copropriété), puis rayon proche,
-  // puis surface la plus comparable, puis date récente
-  const proxBand = (s: (typeof pool)[number]) => {
-    if (s.memeAdresse) return 0;
-    if (s.distanceM == null) return 4;
-    if (s.distanceM <= 300) return 1;
-    if (s.distanceM <= 1000) return 2;
-    return 3;
-  };
-  const refs = [...pool]
-    .sort((a, b) => {
-      const pa = proxBand(a);
-      const pb = proxBand(b);
-      if (pa !== pb) return pa - pb;
-      if (surface > 0) {
-        const da = Math.abs((a.surface as number) - surface);
-        const db = Math.abs((b.surface as number) - surface);
-        if (da !== db) return da - db;
-      }
-      return b.date.localeCompare(a.date); // plus récent d'abord
-    })
-    .slice(0, 6)
+  // Références affichées : les plus récentes d'abord, enrichies de la distance,
+  // du score de similarité et de la raison de la sélection.
+  const references: ReferenceDvf[] = [...retenues]
     .sort((a, b) => b.date.localeCompare(a.date))
     .map((s) => ({
       localisation: s.adresse ? `${s.adresse}, ${s.commune}` : s.commune,
       detail: `${s.typeLocal} · ${s.surface} m² — vente actée (DVF)${
         s.memeAdresse
           ? " · même adresse"
-          : s.distanceM != null
-            ? ` · à ${s.distanceM < 1000 ? `${s.distanceM} m` : `${(s.distanceM / 1000).toFixed(1)} km`} du bien`
+          : s.distance_m != null
+            ? ` · à ${s.distance_m < 1000 ? `${s.distance_m} m` : `${(s.distance_m / 1000).toFixed(1)} km`} du bien`
             : ""
       }`,
       surface: s.surface as number,
       date: fmtDate(s.date),
       prix: Math.round(s.valeurFonciere),
       prix_m2: s.prixM2 as number,
+      prix_m2_ajuste: s.prix_m2_ajuste,
+      distance_m: s.distance_m,
+      meme_adresse: Boolean(s.memeAdresse),
+      score: s.score,
+      raison: s.raison,
     }));
 
-  // Base = médiane des prix actés des références (le chiffre affiché sous le
-  // tableau des comparables) — la transposition à la surface du bien est une
-  // ligne d'ajustement, pas un recalcul silencieux de la base.
-  return { references: refs, baseMediane: medianeReferences(refs) };
+  // Base = €/m² du micro-marché (ventes les plus proches), CORRIGÉ de la
+  // superficie du bien puis appliqué à sa surface. Repli sur la médiane des
+  // prix actés si surface inconnue.
+  return {
+    references,
+    baseMediane: baseMediane || medianeReferences(references),
+    baseM2: baseM2 || 0,
+    mediineM2: mediineM2 || 0,
+    secteurM2Bas: secteurM2Bas || 0,
+    secteurM2Haut: secteurM2Haut || 0,
+    betaSurface,
+    fiabilite,
+    raisonFiabilite,
+    nbAberrantes,
+  };
 }
