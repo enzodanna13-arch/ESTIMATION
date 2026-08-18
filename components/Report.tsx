@@ -668,37 +668,53 @@ export default function Report({
           {refs.length > 0 && (
             <>
               <div style={{ height: 26 }} />
-              <div className="eyebrow" style={{ color: "var(--ink-45)" }}>Références de vente retenues — source DVF</div>
+              <div className="eyebrow" style={{ color: "var(--ink-45)" }}>Dans votre rue / à proximité immédiate — ventes réelles DVF</div>
               <hr className="rule" style={{ margin: "8px 0 4px" }} />
+              {(report.secteur_m2_bas ?? 0) > 0 && (
+                <p className="section-lead" style={{ marginTop: 4 }}>
+                  À proximité immédiate de votre adresse, les biens se sont vendus entre <b>{int.format(report.secteur_m2_bas!)}</b> et <b>{int.format(report.secteur_m2_haut!)} €/m²</b>. Comme le prix au m² baisse quand la surface augmente (et inversement), chaque vente est <b>ramenée à la superficie de votre bien</b> ({surface} m²) : votre référence retenue est <b>{surface > 0 && report.base_mediane > 0 ? int.format(Math.round(report.base_mediane / surface)) : int.format(medM2)} €/m²</b>.
+                </p>
+              )}
               <table>
                 <thead>
                   <tr>
                     <th>Bien comparable</th>
+                    <th className="r">Proximité</th>
                     <th className="r">Surface</th>
                     <th className="r">Date</th>
                     <th className="r">Prix acté</th>
-                    <th className="r">€ / m²</th>
+                    <th className="r">€/m² brut</th>
+                    <th className="r">€/m² ajusté</th>
                   </tr>
                 </thead>
                 <tbody>
                   {refs.map((r, i) => (
                     <tr key={i}>
-                      <td>{r.localisation}<span className="sub">{r.detail}</span></td>
+                      <td>{r.localisation}<span className="sub">{r.raison || r.detail}</span></td>
+                      <td className="r">{r.distance_m == null ? "—" : r.distance_m === 0 ? "même adr." : r.distance_m < 1000 ? `${r.distance_m} m` : `${(r.distance_m / 1000).toFixed(1)} km`}</td>
                       <td className="r">{int.format(r.surface)} m²</td>
                       <td className="r">{r.date}</td>
                       <td className="r"><span className="money">{euro.format(r.prix)}</span></td>
                       <td className="r">{int.format(r.prix_m2)}</td>
+                      <td className="r">{r.prix_m2_ajuste ? int.format(r.prix_m2_ajuste) : "—"}</td>
                     </tr>
                   ))}
                   <tr className="median-row">
-                    <td>Médiane des références</td>
+                    <td>Base retenue pour votre bien ({surface} m²)</td>
                     <td className="r">—</td>
                     <td className="r">—</td>
-                    <td className="r"><span className="money">{euro.format(medPrix)}</span></td>
-                    <td className="r">{int.format(medM2)}</td>
+                    <td className="r">—</td>
+                    <td className="r"><span className="money">{euro.format(report.base_mediane || medPrix)}</span></td>
+                    <td className="r">—</td>
+                    <td className="r">{surface > 0 && report.base_mediane > 0 ? int.format(Math.round(report.base_mediane / surface)) : int.format(medM2)}</td>
                   </tr>
                 </tbody>
               </table>
+              {report.fiabilite && (
+                <p className="section-lead" style={{ marginTop: 10 }}>
+                  <b>Fiabilité des comparables : {report.fiabilite}.</b>{report.fiabilite_raison ? ` ${report.fiabilite_raison}` : ""} Les biens au prix atypique sont écartés du calcul et les ventes les plus proches pèsent davantage dans la base retenue.
+                </p>
+              )}
             </>
           )}
 
@@ -718,7 +734,7 @@ export default function Report({
 
             <div className="adjust">
               <div className="ar">
-                <span><b>{locatif ? `Loyer de référence du secteur (${surface} m²)` : "Médiane DVF de référence — ancre de valeur"}</b></span>
+                <span><b>{locatif ? `Loyer de référence du secteur (${surface} m²)` : "Base de marché — €/m² pondéré des comparables × surface"}</b></span>
                 <span className="money">{fmtP(report.base_mediane)}</span>
               </div>
               {plusValues.length > 0 && (

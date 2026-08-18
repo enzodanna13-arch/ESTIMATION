@@ -182,6 +182,13 @@ export interface ReferenceDvf {
   date: string;
   prix: number;
   prix_m2: number;
+  // Sélection robuste : distance au bien, €/m² corrigé de la superficie,
+  // score de similarité /100 et raison
+  distance_m?: number | null;
+  prix_m2_ajuste?: number; // €/m² ramené à la surface du bien (correction taille)
+  meme_adresse?: boolean;
+  score?: number;
+  raison?: string;
 }
 
 export interface EstimationReport {
@@ -213,6 +220,14 @@ export interface EstimationReport {
   points_faibles: string[];
   strategie_commercialisation: string;
   argumentaire_vendeur: string;
+  // Fiabilité de l'estimation (qualité réelle des comparables DVF retenus)
+  fiabilite?: "élevée" | "moyenne" | "faible";
+  fiabilite_raison?: string;
+  // Référence « dans votre rue » : €/m² BRUT observé à proximité immédiate
+  // (fourchette), avant correction de superficie
+  secteur_m2_bas?: number;
+  secteur_m2_haut?: number;
+  secteur_beta?: number; // élasticité prix/surface appliquée
   // Estimation locative uniquement
   valeur_venale_indicative?: number; // valeur de vente indicative (rendement)
   rendement_brut?: number; // % annuel brut
