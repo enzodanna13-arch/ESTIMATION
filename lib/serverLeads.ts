@@ -31,6 +31,7 @@ export interface Lead {
   notes: string;
   dossierId: string; // dossier client créé depuis ce lead
   relanceLe?: number | null; // date de prochaine relance (rappel), facultative
+  exporteLe?: number | null; // date du dernier export CSV (systeme.io) — évite de ré-exporter
   suivi: SuiviLead[];
 }
 
@@ -45,7 +46,7 @@ export function leadVide(partial: Partial<Lead>): Lead {
     createdAt: now, updatedAt: now,
     source: "manuel", campagne: "", nom: "", prenom: "", tel: "", email: "",
     ville: "", budget: null, typeProjet: "acquereur", message: "",
-    statut: "Nouveau", negociateur: "", notes: "", dossierId: "", relanceLe: null,
+    statut: "Nouveau", negociateur: "", notes: "", dossierId: "", relanceLe: null, exporteLe: null,
     suivi: [{ id: `${now}`, date: now, type: "creation", texte: "Lead reçu", auteur: partial.source ?? "" }],
     ...partial,
   };

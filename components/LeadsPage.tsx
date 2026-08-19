@@ -4,7 +4,8 @@ import { useEffect, useMemo, useState } from "react";
 import {
   SOURCES_LEAD, STATUTS_LEAD, STATUT_LEAD_COULEURS, SUIVI_TYPES, SUIVI_ACTIONS, TYPES_PROJET_LEAD,
   createLead, deleteLead, listLeads, restaurerLeadsArchives, updateLead,
-  listSmsLead, envoyerSmsLead, type Lead, type SmsRecordClient,
+  listSmsLead, envoyerSmsLead, exporterLeadsCsv, reinitialiserExportLeads,
+  type Lead, type SmsRecordClient,
 } from "@/lib/leads";
 import { createClient } from "@/lib/clients";
 import { NEGOCIATEURS } from "@/lib/equipe";
@@ -209,6 +210,32 @@ export default function LeadsPage({ onRetour }: { onRetour: () => void }) {
     else alert("Restauration impossible — réessayez.");
   };
 
+  // Export CSV pour systeme.io : seuls les contacts JAMAIS exportés (avec email)
+  // sortent ; ils sont ensuite marqués et ne ressortiront plus.
+  const [exportEnCours, setExportEnCours] = useState(false);
+  const exporterCsv = async () => {
+    setExportEnCours(true);
+    const r = await exporterLeadsCsv();
+    setExportEnCours(false);
+    if (!r) { alert("Export impossible — réessayez."); return; }
+    if (r.count === 0) { alert("Aucun nouveau contact à exporter (les leads avec email ont déjà été extraits)."); return; }
+    const blob = new Blob([r.csv], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `leads-systemeio-${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(a); a.click(); a.remove();
+    URL.revokeObjectURL(url);
+    await recharger();
+    alert(`✓ ${r.count} nouveau(x) contact(s) exporté(s). Importez ce fichier dans systeme.io (Contacts → Importer).`);
+  };
+  const reinitExport = async () => {
+    if (!confirm("Réinitialiser le marquage d'export ? Tous les contacts pourront à nouveau être exportés (utile en cas d'erreur).")) return;
+    const n = await reinitialiserExportLeads();
+    await recharger();
+    alert(n != null ? `✓ ${n} contact(s) réinitialisé(s). Ils ressortiront au prochain export.` : "Réinitialisation impossible.");
+  };
+
   const KpiCase = ({ v, l, accent, onClick, actif }: { v: string | number; l: string; accent?: string; onClick?: () => void; actif?: boolean }) => (
     <button type="button" onClick={onClick} className={`rounded-xl border p-3 text-left transition ${actif ? "border-copper ring-2 ring-copper/30" : "border-slate-200 hover:border-copper/50"} ${onClick ? "cursor-pointer" : "cursor-default"} bg-white`}>
       <div className={`text-xl font-extrabold ${accent ?? "text-navy"}`}>{v}</div>
@@ -228,6 +255,8 @@ export default function LeadsPage({ onRetour }: { onRetour: () => void }) {
           <button onClick={() => void recharger()} className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-semibold text-slate-600 hover:bg-slate-100">{maj ? "⏳" : "🔄"} Actualiser</button>
           <button onClick={() => void restaurer()} disabled={restauration} className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-semibold text-slate-600 hover:bg-slate-100 disabled:opacity-50" title="Récupérer les leads éventuellement perdus, depuis l'archive de sécurité">{restauration ? "⏳ Restauration…" : "♻️ Restaurer les leads perdus"}</button>
           <button onClick={() => setConfig(!config)} className="rounded-lg border border-copper bg-white px-3 py-1.5 text-sm font-bold text-copper hover:bg-copper-soft/40">🔌 Brancher mes campagnes</button>
+          <button onClick={() => void exporterCsv()} disabled={exportEnCours} className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-semibold text-slate-600 hover:bg-slate-100 disabled:opacity-50" title="Exporter en CSV les nouveaux contacts (avec email) pour systeme.io — les déjà exportés ne ressortent pas">{exportEnCours ? "⏳ Export…" : "⬇️ Export systeme.io"}</button>
+          <button onClick={() => void reinitExport()} className="rounded-lg px-2 py-1.5 text-xs text-slate-400 hover:text-copper" title="Réinitialiser le marquage d'export (tout ré-exporter)">↺</button>
           <button onClick={() => setCreation(!creation)} className="rounded-lg bg-copper px-4 py-1.5 text-sm font-bold text-white hover:brightness-110">+ Nouveau lead</button>
         </div>
       </div>

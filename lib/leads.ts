@@ -122,6 +122,31 @@ export async function listSmsLead(leadId: string): Promise<SmsRecordClient[]> {
   } catch { return []; }
 }
 
+// --- Export CSV pour systeme.io (nouveaux contacts uniquement) ---------------
+export async function compterLeadsExportables(): Promise<number> {
+  try {
+    const res = await fetch("/api/leads/export", { cache: "no-store", headers: headers() });
+    if (!res.ok) return 0;
+    return ((await res.json()).disponibles ?? 0) as number;
+  } catch { return 0; }
+}
+
+export async function exporterLeadsCsv(): Promise<{ count: number; csv: string } | null> {
+  try {
+    const res = await fetch("/api/leads/export", { method: "POST", headers: jsonHeaders(), body: "{}" });
+    if (!res.ok) return null;
+    return (await res.json()) as { count: number; csv: string };
+  } catch { return null; }
+}
+
+export async function reinitialiserExportLeads(): Promise<number | null> {
+  try {
+    const res = await fetch("/api/leads/export", { method: "POST", headers: jsonHeaders(), body: JSON.stringify({ reset: true }) });
+    if (!res.ok) return null;
+    return ((await res.json()).reset ?? 0) as number;
+  } catch { return null; }
+}
+
 // Renvoie { record } en cas de succès, ou { error } (message lisible).
 export async function envoyerSmsLead(
   leadId: string,
