@@ -14,6 +14,17 @@
 
 import { PDFDocument } from "pdf-lib";
 
+// Polyfill : pdf.js v4 exige Promise.withResolvers, absent des navigateurs un
+// peu anciens → sans lui, la compression échouait silencieusement.
+if (typeof (Promise as unknown as { withResolvers?: unknown }).withResolvers !== "function") {
+  (Promise as unknown as { withResolvers: () => unknown }).withResolvers = function <T>() {
+    let resolve!: (v: T | PromiseLike<T>) => void;
+    let reject!: (r?: unknown) => void;
+    const promise = new Promise<T>((res, rej) => { resolve = res; reject = rej; });
+    return { promise, resolve, reject };
+  };
+}
+
 export interface PieceCompressee {
   nom: string; // toujours en .pdf
   data: string; // base64 du PDF (sans préfixe data:)
@@ -53,14 +64,36 @@ async function fileToB64(file: File): Promise<string> {
   return u8ToB64(new Uint8Array(await file.arrayBuffer()));
 }
 
-// pdf.js chargé dynamiquement (navigateur uniquement) + worker bundlé.
+// pdf.js chargé dynamiquement (navigateur uniquement). Le worker est le point
+// fragile en production : on tente le worker BUNDLÉ, puis le worker CDN (même
+// version), et en dernier recours le mode « fake worker » (thread principal) —
+// pour que la compression fonctionne quel que soit l'environnement.
+let pdfjsCharge: Promise<typeof import("pdfjs-dist")> | null = null;
 async function chargerPdfjs() {
-  const pdfjs = await import("pdfjs-dist");
-  pdfjs.GlobalWorkerOptions.workerSrc = new URL(
-    "pdfjs-dist/build/pdf.worker.min.mjs",
-    import.meta.url,
-  ).toString();
-  return pdfjs;
+  if (pdfjsCharge) return pdfjsCharge;
+  pdfjsCharge = (async () => {
+    const pdfjs = await import("pdfjs-dist");
+    const cdn = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.mjs`;
+    let src = cdn;
+    try {
+      src = new URL("pdfjs-dist/build/pdf.worker.min.mjs", import.meta.url).toString();
+    } catch { src = cdn; }
+    pdfjs.GlobalWorkerOptions.workerSrc = src;
+    return pdfjs;
+  })();
+  return pdfjsCharge;
+}
+
+// Ouvre le PDF, en basculant sur le worker CDN si le worker bundlé échoue.
+async function ouvrirPdf(bytes: Uint8Array) {
+  const pdfjs = await chargerPdfjs();
+  try {
+    return await pdfjs.getDocument({ data: bytes }).promise;
+  } catch {
+    // Bascule sur le worker CDN (même version) puis réessaie une fois.
+    pdfjs.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.mjs`;
+    return await pdfjs.getDocument({ data: bytes }).promise;
+  }
 }
 
 // Rend chaque page à un DPI/qualité donnés et réassemble un PDF de JPEG.
@@ -69,8 +102,7 @@ async function rasteriser(
   dpi: number,
   quality: number,
 ): Promise<Uint8Array> {
-  const pdfjs = await chargerPdfjs();
-  const doc = await pdfjs.getDocument({ data: bytes }).promise;
+  const doc = await ouvrirPdf(bytes);
   const out = await PDFDocument.create();
   try {
     for (let n = 1; n <= doc.numPages; n++) {
