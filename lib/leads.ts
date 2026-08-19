@@ -131,9 +131,15 @@ export async function compterLeadsExportables(): Promise<number> {
   } catch { return 0; }
 }
 
-export async function exporterLeadsCsv(): Promise<{ count: number; csv: string } | null> {
+export interface ExportOptions {
+  statuts?: string[];
+  avecEmail?: boolean;
+  nouveauxUniquement?: boolean;
+}
+
+export async function exporterLeadsCsv(options: ExportOptions = {}): Promise<{ count: number; csv: string } | null> {
   try {
-    const res = await fetch("/api/leads/export", { method: "POST", headers: jsonHeaders(), body: "{}" });
+    const res = await fetch("/api/leads/export", { method: "POST", headers: jsonHeaders(), body: JSON.stringify(options) });
     if (!res.ok) return null;
     return (await res.json()) as { count: number; csv: string };
   } catch { return null; }

@@ -210,24 +210,42 @@ export default function LeadsPage({ onRetour }: { onRetour: () => void }) {
     else alert("Restauration impossible — réessayez.");
   };
 
-  // Export CSV pour systeme.io : seuls les contacts JAMAIS exportés (avec email)
-  // sortent ; ils sont ensuite marqués et ne ressortiront plus.
+  // Export CSV pour systeme.io — panneau de choix : statuts, avec/sans email,
+  // et « nouveaux uniquement » (anti-doublon désactivable).
+  const [exportPanel, setExportPanel] = useState(false);
   const [exportEnCours, setExportEnCours] = useState(false);
+  const [expStatuts, setExpStatuts] = useState<Set<string>>(new Set());
+  const [expAvecEmail, setExpAvecEmail] = useState(true);
+  const [expNouveaux, setExpNouveaux] = useState(true);
+
+  const toggleStatut = (s: string) => setExpStatuts((prev) => { const n = new Set(prev); if (n.has(s)) n.delete(s); else n.add(s); return n; });
+
+  // Combien de contacts correspondent aux filtres (calculé côté client).
+  const compteExport = useMemo(() => {
+    const aMail = (l: Lead) => /.+@.+\..+/.test((l.email ?? "").trim());
+    return (leads ?? []).filter((l) => {
+      if (expStatuts.size > 0 && !expStatuts.has(l.statut)) return false;
+      if (expAvecEmail && !aMail(l)) return false;
+      if (expNouveaux && l.exporteLe) return false;
+      return true;
+    }).length;
+  }, [leads, expStatuts, expAvecEmail, expNouveaux]);
+
   const exporterCsv = async () => {
     setExportEnCours(true);
-    const r = await exporterLeadsCsv();
+    const r = await exporterLeadsCsv({ statuts: [...expStatuts], avecEmail: expAvecEmail, nouveauxUniquement: expNouveaux });
     setExportEnCours(false);
     if (!r) { alert("Export impossible — réessayez."); return; }
-    if (r.count === 0) { alert("Aucun nouveau contact à exporter (les leads avec email ont déjà été extraits)."); return; }
+    if (r.count === 0) { alert("Aucun contact ne correspond à ces filtres.\nAstuce : décochez « Uniquement les nouveaux » pour ré-exporter, ou « Avec email uniquement »."); return; }
     const blob = new Blob([r.csv], { type: "text/csv;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
     a.download = `leads-systemeio-${new Date().toISOString().slice(0, 10)}.csv`;
     document.body.appendChild(a); a.click(); a.remove();
-    URL.revokeObjectURL(url);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
     await recharger();
-    alert(`✓ ${r.count} nouveau(x) contact(s) exporté(s). Importez ce fichier dans systeme.io (Contacts → Importer).`);
+    alert(`✓ ${r.count} contact(s) exporté(s). Importez ce fichier dans systeme.io (Contacts → Importer).`);
   };
   const reinitExport = async () => {
     if (!confirm("Réinitialiser le marquage d'export ? Tous les contacts pourront à nouveau être exportés (utile en cas d'erreur).")) return;
@@ -255,11 +273,32 @@ export default function LeadsPage({ onRetour }: { onRetour: () => void }) {
           <button onClick={() => void recharger()} className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-semibold text-slate-600 hover:bg-slate-100">{maj ? "⏳" : "🔄"} Actualiser</button>
           <button onClick={() => void restaurer()} disabled={restauration} className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-semibold text-slate-600 hover:bg-slate-100 disabled:opacity-50" title="Récupérer les leads éventuellement perdus, depuis l'archive de sécurité">{restauration ? "⏳ Restauration…" : "♻️ Restaurer les leads perdus"}</button>
           <button onClick={() => setConfig(!config)} className="rounded-lg border border-copper bg-white px-3 py-1.5 text-sm font-bold text-copper hover:bg-copper-soft/40">🔌 Brancher mes campagnes</button>
-          <button onClick={() => void exporterCsv()} disabled={exportEnCours} className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-semibold text-slate-600 hover:bg-slate-100 disabled:opacity-50" title="Exporter en CSV les nouveaux contacts (avec email) pour systeme.io — les déjà exportés ne ressortent pas">{exportEnCours ? "⏳ Export…" : "⬇️ Export systeme.io"}</button>
-          <button onClick={() => void reinitExport()} className="rounded-lg px-2 py-1.5 text-xs text-slate-400 hover:text-copper" title="Réinitialiser le marquage d'export (tout ré-exporter)">↺</button>
+          <button onClick={() => setExportPanel(!exportPanel)} className={`rounded-lg border px-3 py-1.5 text-sm font-semibold hover:bg-slate-100 ${exportPanel ? "border-copper text-copper" : "border-slate-300 text-slate-600"}`} title="Exporter en CSV pour systeme.io — choix des statuts">⬇️ Export CSV</button>
           <button onClick={() => setCreation(!creation)} className="rounded-lg bg-copper px-4 py-1.5 text-sm font-bold text-white hover:brightness-110">+ Nouveau lead</button>
         </div>
       </div>
+
+      {exportPanel && (
+        <div className="mb-4 rounded-xl border border-slate-200 bg-white p-3">
+          <div className="mb-1 text-sm font-bold text-navy">Export CSV pour systeme.io</div>
+          <p className="mb-2 text-xs text-slate-500">Choisis les statuts à extraire. Le fichier se télécharge, prêt à importer dans systeme.io.</p>
+          <div className="mb-2 text-[11px] font-semibold uppercase text-slate-400">Statuts <span className="normal-case text-slate-400">(aucun coché = tous)</span></div>
+          <div className="mb-3 flex flex-wrap gap-1.5">
+            {STATUTS_LEAD.map((s) => (
+              <button key={s} onClick={() => toggleStatut(s)} className={`rounded-full px-2.5 py-1 text-xs font-semibold ${expStatuts.has(s) ? "bg-navy text-white" : STATUT_LEAD_COULEURS[s] ?? "bg-slate-100 text-slate-600"}`}>{s}</button>
+            ))}
+          </div>
+          <div className="mb-3 flex flex-wrap gap-4 text-sm text-slate-600">
+            <label className="flex items-center gap-1.5"><input type="checkbox" checked={expAvecEmail} onChange={(e) => setExpAvecEmail(e.target.checked)} /> Avec email uniquement</label>
+            <label className="flex items-center gap-1.5"><input type="checkbox" checked={expNouveaux} onChange={(e) => setExpNouveaux(e.target.checked)} /> Uniquement les nouveaux (jamais exportés)</label>
+          </div>
+          <div className="flex flex-wrap items-center gap-3">
+            <button onClick={() => void exporterCsv()} disabled={exportEnCours || compteExport === 0} className="rounded-lg bg-copper px-4 py-1.5 text-sm font-bold text-white hover:brightness-110 disabled:opacity-50">{exportEnCours ? "⏳ Export…" : `⬇️ Télécharger (${compteExport})`}</button>
+            <span className="text-xs text-slate-500">{compteExport} contact(s) correspondent aux filtres.</span>
+            <button onClick={() => void reinitExport()} className="ml-auto rounded-lg px-2 py-1 text-xs text-slate-400 hover:text-copper" title="Repasser tous les contacts comme non exportés">↺ Réinitialiser les exports</button>
+          </div>
+        </div>
+      )}
 
       {config && <ConfigPasserelle />}
 

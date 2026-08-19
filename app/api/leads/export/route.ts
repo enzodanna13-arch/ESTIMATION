@@ -4,62 +4,75 @@ import { listLeadsServer, saveLeadServer, type Lead } from "@/lib/serverLeads";
 export const dynamic = "force-dynamic";
 export const maxDuration = 300;
 
-// Export CSV des leads pour alimenter systeme.io (campagnes mailing).
-// RÈGLE : seuls les contacts JAMAIS exportés ressortent — après export, ils
-// sont marqués (exporteLe) et n'apparaîtront plus dans les extractions
-// suivantes. Colonnes compatibles import systeme.io (Email en tête).
+// Export CSV des leads pour alimenter systeme.io (campagnes mailing/SMS).
+// Filtres : par STATUT (Répondeur, Perdu, Pas intéressé…), avec/ sans email,
+// et « nouveaux uniquement » (jamais exportés). Après export, les contacts
+// sont marqués (exporteLe) et ne ressortent plus si « nouveaux uniquement ».
 
-const COLONNES = ["Email", "Prénom", "Nom", "Téléphone", "Ville", "Source", "Type de projet", "Reçu le"];
-
-// Un lead est exportable pour un mailing s'il a un email plausible.
-function exportable(l: Lead): boolean {
-  return /.+@.+\..+/.test((l.email ?? "").trim()) && !l.exporteLe;
-}
-
+const COLONNES = ["Email", "Prénom", "Nom", "Téléphone", "Ville", "Statut", "Source", "Type de projet", "Reçu le"];
+const aEmail = (l: Lead) => /.+@.+\..+/.test((l.email ?? "").trim());
 const champ = (v: unknown): string => `"${String(v ?? "").replace(/"/g, '""')}"`;
 
 function ligneCsv(l: Lead): string {
   return [
-    l.email, l.prenom, l.nom, l.tel, l.ville, l.source, l.typeProjet,
+    l.email, l.prenom, l.nom, l.tel, l.ville, l.statut, l.source, l.typeProjet,
     new Date(l.createdAt).toLocaleDateString("fr-FR"),
   ].map(champ).join(",");
 }
 
-// Aperçu : combien de nouveaux contacts sont disponibles à l'export.
+interface Options {
+  statuts?: string[]; // vide/absent = tous les statuts
+  avecEmail?: boolean; // défaut true (mailing)
+  nouveauxUniquement?: boolean; // défaut true (anti-doublon)
+  reset?: boolean;
+}
+
+function selectionner(leads: Lead[], o: Options): Lead[] {
+  const statuts = (o.statuts ?? []).filter(Boolean);
+  return leads.filter((l) => {
+    if (statuts.length > 0 && !statuts.includes(l.statut)) return false;
+    if (o.avecEmail !== false && !aEmail(l)) return false;
+    if (o.nouveauxUniquement !== false && l.exporteLe) return false;
+    return true;
+  });
+}
+
+// Aperçu : nombre de contacts par statut (avec email) restant à exporter.
 export async function GET(request: Request) {
   if (!checkHistoryPassword(request)) return Response.json({ error: "Accès réservé" }, { status: 401 });
   try {
     const leads = await listLeadsServer();
-    return Response.json({ disponibles: leads.filter(exportable).length });
+    const parStatut: Record<string, number> = {};
+    for (const l of leads) if (aEmail(l) && !l.exporteLe) parStatut[l.statut] = (parStatut[l.statut] ?? 0) + 1;
+    return Response.json({ parStatut });
   } catch {
-    return Response.json({ disponibles: 0 });
+    return Response.json({ parStatut: {} });
   }
 }
 
-// Génère le CSV des nouveaux contacts ET les marque comme exportés.
-// { reset: true } réinitialise le marquage (pour tout ré-exporter au besoin).
 export async function POST(request: Request) {
   if (!checkHistoryPassword(request)) return Response.json({ error: "Accès réservé" }, { status: 401 });
-  let body: { reset?: boolean } = {};
-  try { body = (await request.json()) as typeof body; } catch { /* corps vide accepté */ }
+  let o: Options = {};
+  try { o = (await request.json()) as Options; } catch { /* corps vide accepté */ }
 
   const leads = await listLeadsServer();
 
-  if (body.reset === true) {
+  if (o.reset === true) {
     let n = 0;
     for (const l of leads) if (l.exporteLe) { await saveLeadServer({ ...l, exporteLe: null }); n++; }
     return Response.json({ reset: n });
   }
 
-  const nouveaux = leads.filter(exportable);
-  if (nouveaux.length === 0) return Response.json({ count: 0, csv: "" });
+  const selection = selectionner(leads, o);
+  if (selection.length === 0) return Response.json({ count: 0, csv: "" });
 
-  // BOM UTF-8 + CRLF : accents corrects et compatibilité tableur / systeme.io.
-  const csv = "﻿" + [COLONNES.join(","), ...nouveaux.map(ligneCsv)].join("\r\n");
+  const csv = "﻿" + [COLONNES.join(","), ...selection.map(ligneCsv)].join("\r\n");
 
-  // Marquage : ces contacts ne ressortiront plus au prochain export.
-  const now = Date.now();
-  for (const l of nouveaux) await saveLeadServer({ ...l, exporteLe: now });
+  // Marquage anti-doublon (uniquement en mode « nouveaux uniquement »).
+  if (o.nouveauxUniquement !== false) {
+    const now = Date.now();
+    for (const l of selection) await saveLeadServer({ ...l, exporteLe: now });
+  }
 
-  return Response.json({ count: nouveaux.length, csv });
+  return Response.json({ count: selection.length, csv });
 }
