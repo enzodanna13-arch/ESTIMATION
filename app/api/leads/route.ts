@@ -1,5 +1,6 @@
 import { checkHistoryPassword } from "@/lib/historyAuth";
 import { leadVide, listLeadsServer, restaurerArchivesServer, saveLeadServer, type Lead } from "@/lib/serverLeads";
+import { declencherNewLead } from "@/lib/serverSms";
 
 export const dynamic = "force-dynamic";
 
@@ -113,6 +114,13 @@ export async function POST(request: Request) {
       statut: str("statut") || "Nouveau", negociateur: str("negociateur"),
     });
     await saveLeadServer(lead);
+    // SMS générique NEW_LEAD automatique — pour les leads ENTRANTS (passerelle
+    // Zapier/Make/site ou source campagne). Pas d'envoi auto pour une saisie
+    // manuelle dans l'app (le négociateur peut l'envoyer à la main si besoin).
+    const viaPasserelle = Boolean(secret && cleFournie === secret);
+    if (viaPasserelle || ["facebook", "instagram", "site"].includes(lead.source)) {
+      await declencherNewLead(lead);
+    }
     return Response.json({ lead });
   } catch {
     return Response.json({ error: "Enregistrement impossible" }, { status: 500 });

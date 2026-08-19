@@ -10,13 +10,15 @@ export interface Membre {
   role: string;
   sections: ("transaction" | "gestion" | "registre")[];
   alias: string[]; // fragments reconnus (sans accents, minuscules) pour consolider les variantes
+  prenom?: string; // prénom court (signatures SMS)
+  tel?: string; // téléphone du négociateur au format E.164 (+33…), pour les SMS de relance signés
 }
 
 export const EQUIPE: Membre[] = [
-  { id: "kevin", nom: "Kevin", role: "Gestion locative", sections: ["gestion"], alias: ["kevin"] },
-  { id: "emilie", nom: "Émilie Flécher", role: "Transaction", sections: ["transaction"], alias: ["flecher", "emilie"] },
-  { id: "lea", nom: "Léa Roussel", role: "Transaction", sections: ["transaction"], alias: ["roussel", "lea"] },
-  { id: "enzo", nom: "Enzo D'anna", role: "Responsable commercial", sections: ["transaction"], alias: ["enzo", "anna", "danna"] },
+  { id: "kevin", nom: "Kevin", role: "Gestion locative", sections: ["gestion"], alias: ["kevin"], prenom: "Kevin" },
+  { id: "emilie", nom: "Émilie Flécher", role: "Transaction", sections: ["transaction"], alias: ["flecher", "emilie"], prenom: "Émilie", tel: "+33658711643" },
+  { id: "lea", nom: "Léa Roussel", role: "Transaction", sections: ["transaction"], alias: ["roussel", "lea"], prenom: "Léa", tel: "+33768267735" },
+  { id: "enzo", nom: "Enzo D'anna", role: "Responsable commercial", sections: ["transaction"], alias: ["enzo", "anna", "danna"], prenom: "Enzo" },
   { id: "assistante", nom: "Assistante", role: "Registre des appels", sections: ["registre"], alias: ["assistant"] },
 ];
 
@@ -44,4 +46,23 @@ export function membreDepuisNom(label?: string): Membre | null {
 // true si l'étiquette est une non-personne à ignorer dans le suivi
 export function estNonPersonne(label?: string): boolean {
   return NON_PERSONNES.has(strip(label ?? ""));
+}
+
+// Téléphone d'un négociateur (E.164, +33…) à partir d'un nom saisi, ou null.
+export function telNegociateur(nom?: string): string | null {
+  return membreDepuisNom(nom)?.tel ?? null;
+}
+
+// Téléphone formaté « 07 68 26 77 35 » (affichage / signature SMS).
+export function telNegociateurFormate(nom?: string): string | null {
+  const tel = telNegociateur(nom);
+  if (!tel) return null;
+  const national = tel.startsWith("+33") ? "0" + tel.slice(3) : tel;
+  return /^0\d{9}$/.test(national) ? national.replace(/(\d{2})(?=\d)/g, "$1 ").trim() : tel;
+}
+
+// Prénom court d'un négociateur pour la signature (ex. « Léa », « Émilie »).
+export function prenomNegociateur(nom?: string): string {
+  const m = membreDepuisNom(nom);
+  return m?.prenom || (nom ?? "").trim().split(/\s+/)[0] || "";
 }

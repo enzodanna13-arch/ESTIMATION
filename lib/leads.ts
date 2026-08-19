@@ -105,3 +105,37 @@ export async function deleteLead(id: string): Promise<boolean> {
   const res = await fetch(`/api/leads/${encodeURIComponent(id)}`, { method: "DELETE", headers: headers() });
   return res.ok;
 }
+
+// --- SMS (Twilio) : historique et envoi manuel depuis la fiche lead ----------
+export interface SmsRecordClient {
+  id: string; leadId: string; agent: string | null; twilioSid: string;
+  type: string; recipient: string; body: string; status: string;
+  errorMessage: string; createdAt: number; sentAt: number | null;
+  deliveredAt: number | null; updatedAt: number;
+}
+
+export async function listSmsLead(leadId: string): Promise<SmsRecordClient[]> {
+  try {
+    const res = await fetch(`/api/sms?leadId=${encodeURIComponent(leadId)}`, { cache: "no-store", headers: headers() });
+    if (!res.ok) return [];
+    return ((await res.json()).sms ?? []) as SmsRecordClient[];
+  } catch { return []; }
+}
+
+// Renvoie { record } en cas de succès, ou { error } (message lisible).
+export async function envoyerSmsLead(
+  leadId: string,
+  type: "NO_ANSWER" | "NOT_INTERESTED" | "CUSTOM",
+  custom?: string,
+): Promise<{ record?: SmsRecordClient; error?: string }> {
+  try {
+    const res = await fetch("/api/sms/send", {
+      method: "POST", headers: jsonHeaders(), body: JSON.stringify({ leadId, type, custom }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) return { error: data.error ?? "Envoi impossible." };
+    return { record: data.record as SmsRecordClient };
+  } catch {
+    return { error: "Service SMS injoignable. Réessayez." };
+  }
+}

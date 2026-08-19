@@ -1,5 +1,6 @@
 import { checkHistoryPassword } from "@/lib/historyAuth";
 import { deleteLeadServer, getLeadServer, saveLeadServer, type Lead } from "@/lib/serverLeads";
+import { deleteSmsForLead } from "@/lib/serverSms";
 
 export const dynamic = "force-dynamic";
 
@@ -28,6 +29,6 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
   if (!checkHistoryPassword(request)) return Response.json({ error: "Accès réservé" }, { status: 401 });
   const { id } = await params;
-  try { await deleteLeadServer(id); return Response.json({ ok: true }); }
+  try { await deleteLeadServer(id); await deleteSmsForLead(id).catch(() => {}); return Response.json({ ok: true }); }
   catch { return Response.json({ error: "Suppression impossible" }, { status: 500 }); }
 }

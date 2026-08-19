@@ -1,4 +1,5 @@
 import { leadVide, saveLeadServer } from "@/lib/serverLeads";
+import { declencherNewLead } from "@/lib/serverSms";
 
 export const dynamic = "force-dynamic";
 
@@ -65,6 +66,8 @@ export async function POST(request: Request) {
         const lead = leadVide({ source: "facebook", campagne, ...champs, typeProjet: "acquereur", statut: "Nouveau" });
         lead.suivi[0].texte = `Lead Facebook Ads reçu${campagne ? ` (${campagne})` : ""}`;
         await saveLeadServer(lead);
+        // SMS générique CENTURY 21 Icaza immédiat (idempotent, ne bloque jamais).
+        await declencherNewLead(lead);
       }
     }
   } catch { /* Meta réessaie si on renvoie une erreur ; on absorbe */ }

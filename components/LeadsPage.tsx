@@ -3,10 +3,22 @@
 import { useEffect, useMemo, useState } from "react";
 import {
   SOURCES_LEAD, STATUTS_LEAD, STATUT_LEAD_COULEURS, SUIVI_TYPES, SUIVI_ACTIONS, TYPES_PROJET_LEAD,
-  createLead, deleteLead, listLeads, restaurerLeadsArchives, updateLead, type Lead,
+  createLead, deleteLead, listLeads, restaurerLeadsArchives, updateLead,
+  listSmsLead, envoyerSmsLead, type Lead, type SmsRecordClient,
 } from "@/lib/leads";
 import { createClient } from "@/lib/clients";
 import { NEGOCIATEURS } from "@/lib/equipe";
+import { buildSmsTemplate, SMS_TYPES_MANUELS, SMS_TYPE_LABELS, type SmsType } from "@/lib/smsTemplates";
+
+const SMS_STATUT_LABEL: Record<string, string> = {
+  queued: "En attente", sent: "Envoyé", delivered: "Délivré",
+  undelivered: "Non délivré", failed: "Échec", error: "Échec",
+};
+const SMS_STATUT_CLS: Record<string, string> = {
+  delivered: "bg-green-100 text-green-700", sent: "bg-blue-100 text-blue-700",
+  queued: "bg-slate-100 text-slate-600", undelivered: "bg-orange-100 text-orange-700",
+  failed: "bg-red-100 text-red-600", error: "bg-red-100 text-red-600",
+};
 
 const inputCls = "w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-copper focus:outline-none focus:ring-2 focus:ring-copper/20";
 const int = new Intl.NumberFormat("fr-FR");
@@ -377,6 +389,87 @@ function ConfigPasserelle() {
   );
 }
 
+// Bloc SMS de la fiche lead : dernier SMS, envoi manuel (relances + message
+// personnalisé) avec aperçu, garde-fou d'attribution, et historique complet.
+function SmsBloc({ lead }: { lead: Lead }) {
+  const [sms, setSms] = useState<SmsRecordClient[]>([]);
+  const [ouvert, setOuvert] = useState(false);
+  const [type, setType] = useState<SmsType>("NO_ANSWER");
+  const [custom, setCustom] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [erreur, setErreur] = useState<string | null>(null);
+  const [ok, setOk] = useState<string | null>(null);
+
+  const recharger = () => { void listSmsLead(lead.id).then(setSms); };
+  useEffect(() => { void listSmsLead(lead.id).then(setSms); }, [lead.id]);
+
+  const agentNom = (lead.negociateur ?? "").trim();
+  const tpl = buildSmsTemplate(type, lead, agentNom || undefined, custom);
+  const manqueNego = tpl.requiresAgent && !agentNom;
+  const apercu = tpl.body;
+
+  const envoyer = async () => {
+    setBusy(true); setErreur(null); setOk(null);
+    const r = await envoyerSmsLead(lead.id, type as "NO_ANSWER" | "NOT_INTERESTED" | "CUSTOM", custom);
+    setBusy(false);
+    if (r.error) { setErreur(r.error); return; }
+    setOk("SMS envoyé."); setCustom(""); setOuvert(false); recharger();
+  };
+
+  const dernier = sms[0];
+  return (
+    <div className="mt-3 rounded-lg border border-slate-200 p-2.5">
+      <div className="flex items-center justify-between">
+        <div className="text-xs font-semibold uppercase text-slate-400">📩 SMS</div>
+        <button onClick={() => { setOuvert((o) => !o); setErreur(null); setOk(null); }} className="rounded-lg bg-copper px-3 py-1 text-xs font-bold text-white transition hover:brightness-110">Envoyer un SMS</button>
+      </div>
+      {dernier ? (
+        <div className="mt-1 text-xs text-slate-500">Dernier : {new Date(dernier.createdAt).toLocaleString("fr-FR")} · {SMS_TYPE_LABELS[dernier.type as SmsType] ?? dernier.type} · <span className={`rounded px-1.5 py-0.5 font-semibold ${SMS_STATUT_CLS[dernier.status] ?? ""}`}>{SMS_STATUT_LABEL[dernier.status] ?? dernier.status}</span></div>
+      ) : <div className="mt-1 text-xs text-slate-400">Aucun SMS envoyé.</div>}
+
+      {ouvert && (
+        <div className="mt-2 space-y-2 rounded-lg bg-slate-50 p-2">
+          <div className="flex flex-wrap gap-1.5">
+            {SMS_TYPES_MANUELS.map((t) => (
+              <button key={t} onClick={() => setType(t)} className={`rounded-full px-2.5 py-1 text-xs font-semibold ${type === t ? "bg-navy text-white" : "border border-slate-200 bg-white text-slate-600"}`}>{SMS_TYPE_LABELS[t]}</button>
+            ))}
+          </div>
+          {type === "CUSTOM" && (
+            <div>
+              <textarea className={`${inputCls} h-20`} value={custom} onChange={(e) => setCustom(e.target.value)} placeholder="Votre message…" />
+              <div className="text-right text-[11px] text-slate-400">{apercu.length} caractères{apercu.length > 160 ? ` · ${Math.ceil(apercu.length / 153)} SMS` : ""}</div>
+            </div>
+          )}
+          <div className="rounded-lg border border-slate-200 bg-white p-2 text-xs text-slate-600">
+            <div><b>Destinataire :</b> {[lead.prenom, lead.nom].filter(Boolean).join(" ") || "—"} · {lead.tel || "numéro manquant"}</div>
+            <div><b>Négociatrice :</b> {lead.negociateur || "non attribuée"} · <b>Type :</b> {SMS_TYPE_LABELS[type]}</div>
+            <div className="mt-1 whitespace-pre-wrap border-t border-slate-100 pt-1 text-slate-700">{apercu || "…"}</div>
+          </div>
+          {manqueNego && <div className="rounded bg-amber-50 p-1.5 text-[11px] text-amber-700">Attribuez d&apos;abord ce lead à une négociatrice avant d&apos;envoyer cette relance.</div>}
+          {erreur && <div className="rounded bg-red-50 p-1.5 text-[11px] text-red-700">{erreur}</div>}
+          <button disabled={busy || manqueNego || !lead.tel || (type === "CUSTOM" && !custom.trim())} onClick={() => void envoyer()} className="w-full rounded-lg bg-emerald-600 px-3 py-1.5 text-sm font-bold text-white transition hover:brightness-110 disabled:opacity-50">{busy ? "Envoi…" : "Envoyer le SMS"}</button>
+        </div>
+      )}
+      {ok && <div className="mt-1 text-[11px] text-emerald-600">✓ {ok}</div>}
+
+      {sms.length > 0 && (
+        <div className="mt-2 space-y-1">
+          <div className="text-[11px] font-semibold uppercase text-slate-400">Historique</div>
+          {sms.map((s) => (
+            <div key={s.id} className="rounded border border-slate-100 px-2 py-1 text-[11px] text-slate-600">
+              <div className="flex items-center justify-between gap-2">
+                <span>{new Date(s.createdAt).toLocaleString("fr-FR")} · <b>{SMS_TYPE_LABELS[s.type as SmsType] ?? s.type}</b>{s.agent ? ` · ${s.agent}` : ""}</span>
+                <span className={`shrink-0 rounded px-1.5 py-0.5 font-semibold ${SMS_STATUT_CLS[s.status] ?? ""}`}>{SMS_STATUT_LABEL[s.status] ?? s.status}</span>
+              </div>
+              <div className="text-slate-400">{s.recipient}{s.errorMessage ? ` · ${s.errorMessage}` : ""}</div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function FicheLead({ lead, onClose, onStatut, onSuivi, onPatch, onTransfert, onConvert, onDelete }: {
   lead: Lead; onClose: () => void;
   onStatut: (l: Lead, s: string) => void; onSuivi: (l: Lead, t: string, txt: string) => void;
@@ -451,9 +544,12 @@ export function FicheLead({ lead, onClose, onStatut, onSuivi, onPatch, onTransfe
         {/* Actions rapides de contact */}
         <div className="mb-3 flex flex-wrap gap-2">
           {lead.tel && <a href={`tel:${lead.tel}`} className="rounded-lg bg-emerald-600 px-3 py-1.5 text-sm font-bold text-white hover:brightness-110">📞 Appeler {lead.tel}</a>}
-          {lead.tel && <a href={`sms:${lead.tel}`} className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-semibold text-slate-600 hover:bg-slate-100">💬 SMS</a>}
+          {lead.tel && <a href={`sms:${lead.tel}`} className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-semibold text-slate-600 hover:bg-slate-100">💬 SMS tél.</a>}
           {lead.email && <a href={`mailto:${lead.email}`} className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-semibold text-slate-600 hover:bg-slate-100">✉ Email</a>}
         </div>
+
+        {/* SMS Twilio : dernier envoi, envoi manuel (relances) et historique */}
+        <SmsBloc lead={lead} />
 
         <div className="grid items-center gap-1.5 text-sm sm:grid-cols-2">
           {lead.ville && <div>📍 {lead.ville}</div>}
