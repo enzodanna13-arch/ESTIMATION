@@ -362,7 +362,15 @@ export default function ClientsPage({ onRetour }: { onRetour: () => void }) {
         // Compression PUISSANTE côté navigateur : PDF scannés et photos sont
         // ré-encodés en PDF léger avant l'envoi.
         setEtatCompression(`Compression de « ${f.name} »…`);
+        // Fichier vide / illisible (0 octet) : souvent un fichier ouvert depuis
+        // un cloud (Drive, iCloud…) pas encore téléchargé sur l'appareil.
+        if (f.size < 100) {
+          throw new Error(`« ${f.name} » est vide (0 octet). S'il vient d'un cloud (Drive/iCloud), télécharge-le d'abord sur l'appareil, puis réessaie.`);
+        }
         const c = await compresserDocument(f);
+        if (!c.data || c.tailleApres < 100) {
+          throw new Error(`« ${f.name} » n'a pas pu être lu (fichier vide ou format non pris en charge). Réessaie avec un PDF ou une photo JPEG/PNG.`);
+        }
         // Garde-fou : l'envoi est en base64 (+33 %). Un PDF > ~3,3 Mo dépasse la
         // limite serverless (~4,5 Mo) une fois encodé → on refuse proprement.
         if (c.tailleApres > 3_300_000) {
