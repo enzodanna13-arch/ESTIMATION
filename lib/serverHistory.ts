@@ -373,6 +373,36 @@ export async function addClientFileServer(
   return dossier;
 }
 
+// Enregistre une pièce dont le PDF a DÉJÀ été téléversé directement sur le
+// Blob (upload navigateur → Blob, sans passer par le corps serverless, pour
+// les gros fichiers > 4,5 Mo). On vérifie que le blob existe bien au chemin
+// attendu et on lit sa VRAIE taille sur le Blob (jamais la taille annoncée
+// par le client). Aucun octet ne transite par cette requête.
+export async function addClientFilePreuploadedServer(
+  id: string,
+  piece: { fileId: string; nom: string; categorie: string },
+): Promise<ClientDossier | null> {
+  const dossier = await getClientServer(id);
+  if (!dossier) return null;
+  const fileId = safeId(piece.fileId);
+  if (!fileId) return null;
+  const { blobs } = await list({
+    prefix: `${CLIENT_FILE_PREFIX}${dossier.id}/${fileId}.pdf`,
+    limit: 1,
+  });
+  if (blobs.length === 0) return null; // aucun fichier téléversé à ce chemin
+  dossier.pieces.push({
+    fileId,
+    nom: piece.nom,
+    taille: blobs[0].size ?? 0,
+    categorie: piece.categorie,
+    createdAt: Date.now(),
+  });
+  dossier.updatedAt = Date.now();
+  await putClientMeta(dossier);
+  return dossier;
+}
+
 export async function getClientFileServer(id: string, fileId: string): Promise<ArrayBuffer | null> {
   const { blobs } = await list({
     prefix: `${CLIENT_FILE_PREFIX}${safeId(id)}/${safeId(fileId)}.pdf`,

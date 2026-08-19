@@ -11,6 +11,7 @@ import {
   listClients,
   telechargerClientFile,
   updateClient,
+  uploadPieceDirecte,
   type ClientDossier,
   type PieceClient,
 } from "@/lib/clients";
@@ -23,6 +24,14 @@ async function fichierEnB64(f: File): Promise<string> {
   let bin = "";
   for (let i = 0; i < buf.length; i += 0x8000) bin += String.fromCharCode(...buf.subarray(i, i + 0x8000));
   return btoa(bin);
+}
+
+// Décode un base64 en Blob (pour l'upload direct navigateur → Blob).
+function base64EnBlob(b64: string, type: string): Blob {
+  const bin = atob(b64);
+  const u8 = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
+  return new Blob([u8], { type });
 }
 import AcquereurFiche from "@/components/AcquereurFiche";
 import { STATUTS_RECHERCHE, STATUT_COULEURS, resumeRecherche } from "@/lib/acquereurs";
@@ -386,10 +395,18 @@ export default function ClientsPage({ onRetour }: { onRetour: () => void }) {
         if (!c || !c.data || c.tailleApres < 200) {
           throw new Error(`« ${f.name} » n'a pas pu être préparé (format non pris en charge). Réessaie avec un PDF, ou une photo JPEG/PNG.`);
         }
-        // Garde-fou : l'envoi est en base64 (+33 %). Un fichier > ~3,3 Mo dépasse
-        // la limite serverless (~4,5 Mo) une fois encodé → message clair.
+        // Fichier volumineux (> ~3,3 Mo) : l'envoi base64 dépasserait la limite
+        // serverless (~4,5 Mo). On bascule sur l'UPLOAD DIRECT navigateur → Blob
+        // (aucune limite, aucune perte) au lieu de bloquer. On envoie toujours un
+        // PDF : le plus léger disponible entre la version compressée et l'original.
         if (c.tailleApres > 3_300_000) {
-          throw new Error(`« ${f.name} » est trop lourd (${(c.tailleApres / 1_048_576).toFixed(1)} Mo) — scanne-le en noir & blanc, réduis la qualité, ou coupe-le en 2 fichiers.`);
+          setEtatCompression(`Envoi de « ${f.name} » (fichier volumineux)…`);
+          const pdfBlob = estPdf && c.tailleApres >= f.size
+            ? f // PDF dont la compression n'apporte aucun gain → original
+            : base64EnBlob(c.data, "application/pdf");
+          dossier = await uploadPieceDirecte(ouvert.id, pdfBlob, c.nom, categorie);
+          gainTotal += Math.max(0, c.tailleAvant - c.tailleApres);
+          continue;
         }
         gainTotal += Math.max(0, c.tailleAvant - c.tailleApres);
         dossier = await addClientFile(ouvert.id, { nom: c.nom, categorie, data: c.data });

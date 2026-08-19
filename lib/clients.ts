@@ -70,6 +70,40 @@ export async function addClientFile(
   return body.dossier ?? null;
 }
 
+// Téléverse une pièce LOURDE (> limite serverless) directement du navigateur
+// vers Vercel Blob, puis enregistre la fiche. Le fichier ne transite pas par
+// nos fonctions serverless → aucune limite de ~4,5 Mo. On génère un `fileId`
+// côté client et on écrit au chemin exact attendu par le stockage
+// (`clients/files/{dossierId}/{fileId}.pdf`), le jeton d'upload étant délivré
+// et restreint à ce chemin par /api/clients/blob-upload.
+export async function uploadPieceDirecte(
+  dossierId: string,
+  fichier: Blob,
+  nom: string,
+  categorie: string,
+): Promise<ClientDossier | null> {
+  const { upload } = await import("@vercel/blob/client");
+  const fileId = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+  const pathname = `clients/files/${dossierId.replace(/[^a-z0-9-]/gi, "")}/${fileId}.pdf`;
+  await upload(pathname, fichier, {
+    access: "public",
+    contentType: "application/pdf",
+    handleUploadUrl: "/api/clients/blob-upload",
+    clientPayload: getHistoryKey(),
+  });
+  const res = await fetch(`/api/clients/${encodeURIComponent(dossierId)}/files`, {
+    method: "POST",
+    headers: jsonHeaders(),
+    body: JSON.stringify({ fileId, nom, categorie }),
+  });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => null)) as { error?: string } | null;
+    throw new Error(body?.error ?? "Enregistrement de la pièce impossible");
+  }
+  const body = (await res.json()) as { dossier?: ClientDossier };
+  return body.dossier ?? null;
+}
+
 export async function deleteClientFile(id: string, fileId: string): Promise<ClientDossier | null> {
   const res = await fetch(`/api/clients/${encodeURIComponent(id)}/files/${encodeURIComponent(fileId)}`, {
     method: "DELETE",
