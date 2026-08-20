@@ -20,6 +20,7 @@ const META = "estimations-clients/meta/";
 const FULL = "estimations-clients/full/";
 const PUBLIC = "estimations-clients/public/";
 const PHOTOS = "estimations-clients/photos/";
+const TOKENIDX = "estimations-clients/tokenidx/"; // token → id (pour l'action « être rappelé »)
 
 const safeId = (s: string) => s.replace(/[^a-z0-9-]/gi, "");
 const version = (pathname: string) => {
@@ -80,7 +81,20 @@ export async function saveClientEstimation(r: ClientEstimationRecord): Promise<v
     put(`${PUBLIC}${safeId(r.token)}.json`, JSON.stringify(dossierPublicDe(r)), {
       access: "public", addRandomSuffix: false, contentType: "application/json",
     }),
+    put(`${TOKENIDX}${safeId(r.token)}.json`, JSON.stringify({ id: r.id }), {
+      access: "public", addRandomSuffix: false, contentType: "application/json",
+    }),
   ]);
+}
+
+/** Résout l'id interne à partir du token secret (usage serveur uniquement). */
+export async function getIdByToken(token: string): Promise<string | null> {
+  const { blobs } = await list({ prefix: `${TOKENIDX}${safeId(token)}.json`, limit: 1 });
+  if (blobs.length === 0) return null;
+  try {
+    const res = await fetch(blobs[0].url, { cache: "no-store" });
+    return res.ok ? (((await res.json()) as { id?: string }).id ?? null) : null;
+  } catch { return null; }
 }
 
 /** Liste back-office (métas), plus récentes d'abord. */

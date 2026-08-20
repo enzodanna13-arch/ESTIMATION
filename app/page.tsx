@@ -10,6 +10,7 @@ import ClientsPage, { SelecteurPiecesClient } from "@/components/ClientsPage";
 import VisitesPage from "@/components/VisitesPage";
 import RegistrePage from "@/components/RegistrePage";
 import LeadsPage from "@/components/LeadsPage";
+import EstimationsClientsPage from "@/components/EstimationsClientsPage";
 import DashboardPage from "@/components/DashboardPage";
 import NegociateursPage from "@/components/NegociateursPage";
 import EspaceNegociateurPage from "@/components/EspaceNegociateurPage";
@@ -234,7 +235,7 @@ export default function Home() {
   const [step, setStep] = useState(0);
   // Accueil à deux univers : Estimation (les 4 missions) et Génération de
   // documents (menu des documents de l'agence)
-  const [univers, setUnivers] = useState<"" | "estimation" | "documents" | "clients" | "historique" | "visites" | "registre" | "leads" | "dashboard" | "negociateurs" | "espace">("");
+  const [univers, setUnivers] = useState<"" | "estimation" | "documents" | "clients" | "historique" | "visites" | "registre" | "leads" | "estimations-clients" | "dashboard" | "negociateurs" | "espace">("");
   const [sauvegarde, setSauvegarde] = useState<"idle" | "encours" | "erreur">("idle");
   const [sauvegardeMsg, setSauvegardeMsg] = useState<string | null>(null);
 
@@ -780,6 +781,7 @@ export default function Home() {
 
 
             {univers === "leads" && <LeadsPage onRetour={() => setUnivers("")} />}
+            {univers === "estimations-clients" && <EstimationsClientsPage onRetour={() => setUnivers("")} />}
             {univers === "dashboard" && <DashboardPage onRetour={() => setUnivers("")} />}
             {univers === "negociateurs" && <NegociateursPage onRetour={() => setUnivers("")} />}
             {univers === "espace" && <EspaceNegociateurPage onRetour={() => setUnivers("")} />}
@@ -889,6 +891,21 @@ export default function Home() {
                   </p>
                   <span className="mt-4 inline-block rounded-lg bg-copper px-4 py-2 text-sm font-semibold text-white transition group-hover:brightness-110">
                     Ouvrir les leads →
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setUnivers("estimations-clients")}
+                  className="group rounded-3xl border-2 border-slate-200 bg-white p-8 text-left shadow-sm transition hover:border-copper hover:shadow-lg"
+                >
+                  <div className="mb-3 text-4xl">🏛️</div>
+                  <div className="text-xl font-bold text-navy">Estimations clients</div>
+                  <p className="mt-1 text-sm text-slate-500">
+                    Les estimations réalisées par les particuliers sur le site public : coordonnées,
+                    bien, photos, valeur estimée, projet et suivi commercial.
+                  </p>
+                  <span className="mt-4 inline-block rounded-lg bg-navy px-4 py-2 text-sm font-semibold text-white transition group-hover:bg-navy-deep">
+                    Ouvrir les estimations →
                   </span>
                 </button>
                 <button
