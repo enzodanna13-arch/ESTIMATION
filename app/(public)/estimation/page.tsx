@@ -18,6 +18,15 @@ const FACTEURS = [
   "Jardin", "Terrain", "Garage", "Parking", "Piscine", "Luminosité", "Nuisances", "Configuration",
 ];
 
+const CONSEILS_PHOTO: { t: string; d: string }[] = [
+  { t: "Grand angle, depuis un coin", d: "Placez-vous dans un angle de la pièce, dos au mur : vous captez tout le volume en une seule image. Activez le mode « 0,5 » / grand angle de votre téléphone." },
+  { t: "Une photo par pièce (au minimum)", d: "Photographiez chaque pièce — séjour, cuisine, chambres, salles de bains, entrée. Prenez deux vues pour les grandes pièces." },
+  { t: "N'oubliez pas les extérieurs", d: "S'il y a un jardin, une terrasse, un balcon, une piscine, un garage ou une belle vue : montrez-les. La façade d'une maison est essentielle." },
+  { t: "Cherchez la lumière", d: "Photographiez de jour, volets et rideaux ouverts, lumières allumées. Évitez de shooter à contre-jour face aux fenêtres." },
+  { t: "Tenez le téléphone droit et à l'horizontale", d: "À hauteur de poitrine et bien vertical : les murs restent droits. Le grand angle penche vite les lignes si l'appareil est incliné." },
+  { t: "Rangez et essuyez l'objectif", d: "Un rapide rangement et un coup de chiffon sur l'objectif : des photos nettes et dégagées valorisent votre bien." },
+];
+
 const ETAPES = [
   { t: "Localisez votre bien", d: "L'adresse exacte est la clé : elle permet à votre négociateur de retrouver les ventes réellement signées chez le notaire dans votre rue et à proximité immédiate — pas une moyenne de commune." },
   { t: "Décrivez votre logement", d: "Surface, pièces, chambres, terrain, prestations, état. Chaque détail compte : deux biens identiques sur le papier n'ont pas la même valeur sur le terrain." },
@@ -240,30 +249,46 @@ export default function LandingEstimation() {
       <section className="band" id="photos" style={{ background: "var(--pub-surface-2)" }}>
         <div className="wrap">
           <div className="sec-head">
-            <p className="eyebrow">Vos photos</p>
-            <h2>Une photo de chaque pièce remplace la visite</h2>
+            <p className="eyebrow">Vos photos — le cœur de la méthode</p>
+            <h2>Une photo <span style={{ fontStyle: "italic", color: "var(--pub-gold)" }}>grand angle</span> de chaque pièce remplace la visite</h2>
             <p className="muted">
-              C&apos;est le cœur de la méthode : vos photos permettent à votre négociateur d&apos;apprécier,
-              à distance, l&apos;état général, le niveau de rénovation, la qualité des prestations, la
-              luminosité, le standing, les extérieurs et le potentiel de votre bien — comme s&apos;il y était.
+              C&apos;est ce qui rend l&apos;estimation à distance possible. Une photo <b>grand angle</b> —
+              prise depuis un coin de la pièce — capture <b>tout le volume en une seule image</b> :
+              votre négociateur apprécie alors la surface réelle, l&apos;agencement, la luminosité, l&apos;état,
+              la qualité des prestations et le standing, exactement comme s&apos;il était sur place.
+              Plus vos photos sont complètes, plus votre estimation est juste — et plus vite vous la recevez.
             </p>
           </div>
+
           <div className="grid cols-2">
             <div className="card">
               <div className="ic">◱</div>
-              <h3>Appartement</h3>
-              <p>Séjour, cuisine, chambres, salle de bains, balcon ou terrasse, vue, et parties communes si pertinentes.</p>
+              <h3>Appartement — photographiez</h3>
+              <p>Séjour, cuisine, chaque chambre, salle(s) de bains, WC, entrée, rangements — puis <b>balcon, terrasse, vue</b> et parties communes si elles sont valorisantes.</p>
             </div>
             <div className="card">
               <div className="ic">⌂</div>
-              <h3>Maison</h3>
-              <p>Façade, séjour, cuisine, chambres, salle de bains, jardin, terrasse, piscine, dépendances et vue.</p>
+              <h3>Maison — photographiez</h3>
+              <p>Façade, séjour, cuisine, chaque chambre, salle(s) de bains — puis, s&apos;il y en a, <b>jardin, terrasse, piscine, garage, dépendances et vue</b>.</p>
             </div>
           </div>
-          <p className="muted" style={{ marginTop: 22, fontSize: 15 }}>
-            Pas besoin de photos professionnelles — simplement des photos nettes, suffisamment
-            lumineuses et représentatives. <b style={{ color: "var(--pub-gold-deep,#8c7233)" }}>Idéalement, une photo de chaque pièce : c&apos;est ce qui évite la visite.</b>
-          </p>
+
+          {/* Guide : comment bien prendre les photos */}
+          <div className="photo-guide">
+            <h3 className="pg-title">Comment réussir vos photos en 6 réflexes</h3>
+            <div className="pg-grid">
+              {CONSEILS_PHOTO.map((c, i) => (
+                <div className="pg-item" key={c.t}>
+                  <span className="pg-n">{i + 1}</span>
+                  <div><b>{c.t}</b><p>{c.d}</p></div>
+                </div>
+              ))}
+            </div>
+            <p className="pg-note">
+              Pas besoin de matériel de pro : votre smartphone suffit. Le mode <b>« 0,5 » / grand angle</b>
+              de l&apos;appareil photo est parfait pour capter une pièce entière.
+            </p>
+          </div>
         </div>
       </section>
 

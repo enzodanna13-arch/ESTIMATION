@@ -250,7 +250,13 @@ export default function TunnelEstimation() {
           {step === 4 && (
             <>
               <h2 className="qtitle">Photographiez chaque pièce</h2>
-              <p className="qhint">Une photo par pièce, c&apos;est ce qui évite la visite : votre négociateur voit l&apos;état réel de votre bien. Nettes et lumineuses suffisent.</p>
+              <p className="qhint">Une photo <b>grand angle</b> de chaque pièce, c&apos;est ce qui évite la visite : votre négociateur voit tout le volume et l&apos;état réel de votre bien.</p>
+              <ul className="photo-tips">
+                <li><b>Grand angle</b> — mode « 0,5 », depuis un coin de la pièce, pour tout capter.</li>
+                <li><b>Chaque pièce</b> — séjour, cuisine, chambres, salles de bains…</li>
+                <li><b>Les extérieurs</b> — façade, jardin, terrasse, balcon, piscine, vue.</li>
+                <li><b>De la lumière</b> — de jour, volets ouverts, téléphone tenu bien droit.</li>
+              </ul>
               <div
                 className={`dropzone ${drag ? "drag" : ""}`}
                 onClick={() => fileRef.current?.click()}

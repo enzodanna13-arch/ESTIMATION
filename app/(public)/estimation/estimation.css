@@ -149,6 +149,19 @@
 .c21pub .legaltext a { color: var(--pub-gold); }
 .c21pub .legaltext .maj { font-size: 13px; color: var(--pub-ink-faint); margin-top: 30px; font-style: italic; }
 
+/* ---- Guide photos ---- */
+.c21pub .photo-guide { margin-top: 30px; background: var(--pub-surface); border: 1px solid var(--pub-line); border-radius: 8px; padding: 34px 30px; box-shadow: var(--pub-shadow); }
+@media (max-width: 620px) { .c21pub .photo-guide { padding: 24px 18px; } }
+.c21pub .pg-title { font-family: var(--font-display), serif; font-size: clamp(21px, 3vw, 27px); margin: 0 0 22px; }
+.c21pub .pg-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px 30px; }
+@media (max-width: 700px) { .c21pub .pg-grid { grid-template-columns: 1fr; } }
+.c21pub .pg-item { display: grid; grid-template-columns: 40px 1fr; gap: 14px; align-items: start; }
+.c21pub .pg-n { width: 34px; height: 34px; border-radius: 50%; background: var(--pub-anthracite); color: var(--pub-gold-bright); font-family: var(--font-display), serif; font-size: 16px; display: grid; place-items: center; }
+.c21pub .pg-item b { font-size: 15.5px; display: block; margin-bottom: 3px; }
+.c21pub .pg-item p { margin: 0; font-size: 14px; color: var(--pub-ink-soft); }
+.c21pub .pg-note { margin: 24px 0 0; padding-top: 18px; border-top: 1px solid var(--pub-line-soft); font-size: 14.5px; color: var(--pub-ink-soft); }
+.c21pub .pg-note b { color: var(--pub-gold-deep, #8c7233); }
+
 /* ---- Stats / crédibilité ---- */
 .c21pub .statband { background: var(--pub-anthracite); padding: 44px 0; }
 .c21pub .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; text-align: center; }
@@ -228,6 +241,10 @@
 .c21pub .err { background: #f6e4dd; border: 1px solid #e4bfae; color: #9a3c26; padding: 12px 16px; border-radius: 4px; font-size: 14.5px; margin-bottom: 18px; }
 
 /* Photos */
+.c21pub .photo-tips { list-style: none; margin: 0 0 18px; padding: 16px 18px; background: var(--pub-surface-2); border-radius: 6px; display: grid; gap: 8px; }
+.c21pub .photo-tips li { position: relative; padding-left: 22px; font-size: 14px; color: var(--pub-ink-soft); }
+.c21pub .photo-tips li::before { content: "✓"; position: absolute; left: 0; color: var(--pub-gold-deep, #8c7233); font-weight: 700; }
+.c21pub .photo-tips b { color: var(--pub-ink); }
 .c21pub .dropzone { border: 2px dashed var(--pub-line); border-radius: 6px; padding: 40px 24px; text-align: center; cursor: pointer; transition: border-color .15s, background .15s; background: var(--pub-bg); }
 .c21pub .dropzone:hover, .c21pub .dropzone.drag { border-color: var(--pub-gold); background: color-mix(in srgb, var(--pub-gold-bright) 8%, var(--pub-surface)); }
 .c21pub .dropzone .big { font-family: var(--font-display), serif; font-size: 20px; margin-bottom: 6px; }
