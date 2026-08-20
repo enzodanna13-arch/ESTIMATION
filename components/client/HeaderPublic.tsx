@@ -7,7 +7,7 @@ export default function HeaderPublic() {
       <div className="wrap inner">
         <Link href="/estimation" className="brand" aria-label="Century 21 Icaza Immobilier — accueil">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/c21/logo-icaza.png" alt="Century 21 Icaza Immobilier" />
+          <img src="/c21/logo-icaza-transparent.png" alt="Century 21 Icaza Immobilier" />
         </Link>
         <nav className="nav">
           <a href="#methode">Notre méthode</a>
