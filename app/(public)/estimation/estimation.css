@@ -138,6 +138,17 @@
 .c21pub .pub-footer a:hover { color: #fff; }
 .c21pub .pub-footer .legal { border-top: 1px solid rgba(255,255,255,.1); margin-top: 40px; padding-top: 22px; font-size: 12.5px; color: #8a805f; }
 
+/* ---- Pages légales ---- */
+.c21pub .legaltext { max-width: 72ch; }
+.c21pub .legaltext h2 { font-family: var(--font-display), serif; font-size: 22px; margin: 34px 0 12px; }
+.c21pub .legaltext h2:first-of-type { margin-top: 22px; }
+.c21pub .legaltext p { color: var(--pub-ink-soft); font-size: 15.5px; margin: 0 0 12px; }
+.c21pub .legaltext ul { margin: 0 0 14px; padding-left: 20px; color: var(--pub-ink-soft); font-size: 15.5px; }
+.c21pub .legaltext li { margin-bottom: 6px; }
+.c21pub .legaltext b { color: var(--pub-ink); }
+.c21pub .legaltext a { color: var(--pub-gold); }
+.c21pub .legaltext .maj { font-size: 13px; color: var(--pub-ink-faint); margin-top: 30px; font-style: italic; }
+
 /* ---- Stats / crédibilité ---- */
 .c21pub .statband { background: var(--pub-anthracite); padding: 44px 0; }
 .c21pub .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; text-align: center; }
