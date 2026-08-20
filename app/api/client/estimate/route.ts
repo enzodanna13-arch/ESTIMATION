@@ -166,11 +166,11 @@ export async function POST(request: Request) {
   await saveClientEstimation(record);
 
   // Le client reçoit TOUJOURS une confirmation : son estimation est préparée
-  // par un négociateur, qui l'appelle et la lui envoie par mail (sous 3h).
+  // par un négociateur, qui l'appelle et la lui envoie par mail (sous 24h).
   // Le résultat chiffré n'est jamais renvoyé directement au navigateur.
   return Response.json({
     status: "recu",
     token: tk,
-    message: "Merci pour toutes ces informations. Votre négociateur Century 21 Icaza prépare votre estimation, vous appelle et vous l'envoie par mail sous 3h.",
+    message: "Merci pour toutes ces informations. Votre négociateur Century 21 Icaza prépare votre estimation, vous appelle et vous l'envoie par mail sous 24h.",
   });
 }

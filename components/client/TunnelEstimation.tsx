@@ -128,7 +128,7 @@ export default function TunnelEstimation() {
               analyser et référencer votre bien <b>sans même se déplacer</b>. Il finalise votre
               dossier, vous appelle et vous l&apos;envoie par mail.
             </p>
-            <div className="conf-delai"><span className="conf-delai-n">3h</span><span>Vous recevez votre estimation complète par mail, en journée.</span></div>
+            <div className="conf-delai"><span className="conf-delai-n">24h</span><span>Vous recevez votre estimation complète par mail, en journée.</span></div>
             <div className="conf-steps">
               <div><span className="cs-i">📞</span><b>Un appel personnalisé</b><p>Votre négociateur vous explique la valeur de votre bien.</p></div>
               <div><span className="cs-i">📩</span><b>Votre dossier par mail</b><p>Fourchette justifiée, comparables réels, synthèse claire.</p></div>

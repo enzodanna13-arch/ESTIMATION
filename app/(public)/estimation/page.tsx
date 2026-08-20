@@ -33,7 +33,7 @@ const ETAPES = [
   { t: "Photographiez chaque pièce", d: "Une photo par pièce, c'est ce qui remplace la visite : votre négociateur voit l'état réel, la luminosité, le standing et les prestations — et peut estimer votre bien sans se déplacer chez vous." },
   { t: "Votre négociateur analyse et référence votre bien", d: "Il croise vos informations et vos photos avec les ventes réelles (DVF) de votre secteur, corrigées de la surface et actualisées au marché d'aujourd'hui — pour une valeur juste, ni gonflée, ni sous-évaluée." },
   { t: "Il vous appelle", d: "Un échange personnalisé : votre négociateur vous explique la valeur retenue et répond à vos questions. Sans pression, sans forcing." },
-  { t: "Vous recevez votre dossier par mail", d: "Un avis de valeur complet et argumenté : fourchette justifiée, comparables détaillés, synthèse claire. Livré sous 3h, à consulter et conserver." },
+  { t: "Vous recevez votre dossier par mail", d: "Un avis de valeur complet et argumenté : fourchette justifiée, comparables détaillés, synthèse claire. Livré sous 24h, à consulter et conserver." },
 ];
 
 const RECOIT = [
@@ -57,7 +57,7 @@ const TEMOIGNAGES = [
 ];
 
 const FAQ: [string, string][] = [
-  ["Quand vais-je recevoir mon estimation ?", "Votre négociateur prépare votre dossier, vous appelle et vous l'envoie par mail — en général sous 3h, en journée. Vous n'attendez pas des jours."],
+  ["Quand vais-je recevoir mon estimation ?", "Votre négociateur prépare votre dossier, vous appelle et vous l'envoie par mail — en général sous 24h. Vous n'attendez pas des jours."],
   ["Un agent doit-il se déplacer chez moi ?", "Non. Vos informations et vos photos de chaque pièce suffisent à votre négociateur pour référencer votre bien et l'estimer, sans aucune visite à domicile."],
   ["L'estimation est-elle vraiment gratuite ?", "Oui, totalement gratuite et sans engagement. Votre dossier est à vous, vous en faites ce que vous voulez."],
   ["Vais-je être harcelé d'appels ?", "Non. Un seul appel, pour vous présenter votre estimation. Et si nous ne pouvons pas vous aider, nous vous le disons franchement."],
@@ -87,7 +87,7 @@ export default function LandingEstimation() {
               Estimer mon bien gratuitement <span className="arw">→</span>
             </Link>
           </div>
-          <p className="reassure"><b>Sans déplacement</b> • Appel + dossier par mail sous 3h • Gratuit et sans engagement</p>
+          <p className="reassure"><b>Sans déplacement</b> • Appel + dossier par mail sous 24h • Gratuit et sans engagement</p>
         </div>
       </section>
 
@@ -178,7 +178,7 @@ export default function LandingEstimation() {
         <div className="wrap">
           <div className="sec-head">
             <p className="eyebrow">Votre dossier</p>
-            <h2>Ce que vous recevez, sous 3h</h2>
+            <h2>Ce que vous recevez, sous 24h</h2>
           </div>
           <div className="grid cols-2">
             {RECOIT.map(([t, d]) => (

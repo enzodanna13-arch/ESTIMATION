@@ -45,7 +45,7 @@ export default function ResultatPage({ params }: { params: Promise<{ token: stri
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src="/c21/sceau-petit.png" alt="" style={{ width: 54, marginBottom: 18 }} />
         <h2 className="qtitle">Votre estimation est en préparation</h2>
-        <p className="qhint">Votre négociateur Century 21 Icaza finalise votre dossier, vous appelle et vous l&apos;envoie par mail sous 3h. Merci de votre confiance.</p>
+        <p className="qhint">Votre négociateur Century 21 Icaza finalise votre dossier, vous appelle et vous l&apos;envoie par mail sous 24h. Merci de votre confiance.</p>
       </div></div></main>
     );
   }

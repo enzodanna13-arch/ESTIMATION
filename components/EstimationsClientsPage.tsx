@@ -269,7 +269,7 @@ function Fiche({ record, loading, onClose, onChange }: {
                 <p className="text-sm font-medium text-green-700">✓ Dossier transmis au client{record.envoyeLe ? ` le ${dateLong(record.envoyeLe)}` : ""}.</p>
               ) : (
                 <>
-                  <p className="mb-3 text-sm text-slate-600">Le client attend son estimation sous 3h. <b>Appelez-le</b>, puis envoyez-lui le dossier par mail.</p>
+                  <p className="mb-3 text-sm text-slate-600">Le client attend son estimation sous 24h. <b>Appelez-le</b>, puis envoyez-lui le dossier par mail.</p>
                   <div className="flex flex-wrap items-center gap-2">
                     <a href={`tel:${record.input.tel}`} className="rounded-lg bg-navy px-3 py-2 text-sm font-semibold text-white hover:bg-navy-deep">📞 Appeler {record.input.tel}</a>
                     <a href={`mailto:${record.input.email}?subject=${encodeURIComponent("Votre estimation — Century 21 Icaza")}&body=${encodeURIComponent(`Bonjour ${record.input.prenom},\n\nSuite à votre demande, voici votre dossier d'estimation :\n${lienDossier}\n\nJe reste à votre disposition.\nCentury 21 Icaza Immobilier`)}`} className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-600 hover:border-copper">📩 Écrire à {record.input.email}</a>
