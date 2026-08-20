@@ -237,15 +237,10 @@ function Fiche({ record, loading, onClose, onChange }: {
             {/* Estimation */}
             <div className="mb-4 rounded-xl border border-slate-200 bg-white p-4">
               <div className="mb-2 flex items-center justify-between gap-2">
-                <div className="text-xs uppercase tracking-wide text-slate-500">Estimation (dossier IA)</div>
-                <div className="flex gap-2">
-                  {record.proInput && (
-                    <button onClick={() => demanderPrefillEstimation(record.id)} className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 hover:border-copper" title="Ouvre l'outil négociateur avec le bien et les photos déjà chargés">🔁 Refaire dans l&apos;outil</button>
-                  )}
-                  {record.report.prix_estime > 0 && (
-                    <a href={`/estimations-clients/dossier/${record.id}`} className="rounded-lg bg-navy px-3 py-1.5 text-xs font-semibold text-white hover:bg-navy-deep">📄 Ouvrir le dossier (PDF)</a>
-                  )}
-                </div>
+                <div className="text-xs uppercase tracking-wide text-slate-500">Estimation</div>
+                {record.report.prix_estime > 0 && (
+                  <a href={`/estimations-clients/dossier/${record.id}`} className="rounded-lg bg-navy px-3 py-1.5 text-xs font-semibold text-white hover:bg-navy-deep">📄 Ouvrir le dossier (PDF)</a>
+                )}
               </div>
               {record.report.prix_estime > 0 ? (
                 <>
@@ -258,7 +253,12 @@ function Fiche({ record, loading, onClose, onChange }: {
                   </div>
                 </>
               ) : (
-                <p className="text-sm text-amber-700">Analyse automatique indisponible — à traiter manuellement.</p>
+                <p className="mb-3 text-sm text-slate-600">Le bien et les <b>{record.photos.length} photo{record.photos.length > 1 ? "s" : ""}</b> du client sont prêts. Réalisez l&apos;estimation dans votre outil habituel — tout se pré-remplit automatiquement.</p>
+              )}
+              {record.proInput && record.report.prix_estime <= 0 && (
+                <button onClick={() => demanderPrefillEstimation(record.id)} className="w-full rounded-lg bg-copper px-4 py-2.5 text-sm font-semibold text-white hover:brightness-110">
+                  Faire l&apos;estimation dans l&apos;outil →
+                </button>
               )}
             </div>
 

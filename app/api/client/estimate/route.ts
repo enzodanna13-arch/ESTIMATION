@@ -1,5 +1,3 @@
-import { fetchDvfContext } from "@/lib/dvf";
-import { computeClientReport } from "@/lib/clientEngine/ai";
 import { calculerCompletude } from "@/lib/completude";
 import { versPropertyInput, type ClientEstimationInput, type ClientEstimationRecord, type PhotoMeta } from "@/lib/clientTypes";
 import type { PhotoInput, EstimationReport } from "@/lib/types";
@@ -115,26 +113,15 @@ export async function POST(request: Request) {
   const completude = calculerCompletude(input, photos.length).score;
   const photoMetas: PhotoMeta[] = photos.map((p, i) => ({ idx: i, mediaType: p.mediaType }));
 
-  // Moteur d'estimation (Sonnet). Ne JAMAIS perdre le prospect : en cas
-  // d'échec, on enregistre quand même avec un statut de reprise manuelle.
-  let report: EstimationReport = REPORT_VIDE;
-  let engine: "ia" | "statistique" = "statistique";
-  let statut = "Nouveau lead";
-  let moteurVersion = "client-1";
+  // PAS de génération automatique du dossier : l'estimation est réalisée par le
+  // négociateur dans son outil interne (le bien et les photos y sont pré-chargés
+  // via « Faire l'estimation dans l'outil »). Ici, on ne fait que capturer le
+  // prospect, son bien et ses photos. Aucun appel IA, aucun coût.
+  const report: EstimationReport = REPORT_VIDE;
+  const engine: "ia" | "statistique" = "statistique";
+  const statut = "Nouveau lead";
+  const moteurVersion = "manuel";
   const proInput = versPropertyInput(input, photos);
-  let dvfSalesStore: import("@/lib/types").DvfSale[] = [];
-  let subject: { lat: number; lon: number } | null = null;
-  try {
-    const ctx = await fetchDvfContext(input.codePostal, input.typeBien, input.adresse, input.ville);
-    dvfSalesStore = ctx.sales;
-    subject = ctx.subject;
-    const res = await computeClientReport(proInput, ctx.sales);
-    report = res.report;
-    moteurVersion = res.moteurVersion;
-    engine = "ia";
-  } catch {
-    statut = "À appeler"; // analyse auto indisponible → reprise par l'équipe
-  }
 
   // Photos → Blob, clés par le token (n'empêche jamais la création du dossier)
   await Promise.all(
@@ -146,20 +133,17 @@ export async function POST(request: Request) {
     input: { ...input, turnstileToken: undefined, consentement: true } as ClientEstimationRecord["input"],
     photos: photoMetas,
     report,
-    dvfSource: engine === "ia" && report.references_dvf.length > 0 ? "api" : "indisponible",
+    dvfSource: "indisponible",
     engine,
     completude,
-    confiance: report.indice_confiance,
-    notes: engine === "ia" ? [] : [{ id: rid(), date: now, auteur: "Système", texte: "Analyse automatique indisponible — dossier à traiter manuellement." }],
+    confiance: 0,
+    notes: [],
     marketing: input.marketing,
-    // Le dossier reste INTERNE : le négociateur le valide, appelle le client et
-    // le lui envoie par mail. Le client ne le voit en ligne qu'une fois transmis.
     transmisAuClient: false,
     envoyeLe: null,
-    // Données pour re-rendre le dossier à l'identique de l'outil interne.
-    proInput: { ...proInput, photos: [] }, // photos rechargées du Blob à l'affichage
-    dvfSales: dvfSalesStore.slice(0, 120),
-    subject,
+    // Bien + coordonnées à recharger dans l'outil négociateur (photos rechargées
+    // du Blob au moment du « Faire l'estimation dans l'outil »).
+    proInput: { ...proInput, photos: [] },
   };
 
   // Lead commercial : réutilise le CRM existant (SMS auto, relances, export)
