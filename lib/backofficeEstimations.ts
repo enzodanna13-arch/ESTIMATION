@@ -25,7 +25,7 @@ export async function getClientEstimation(id: string): Promise<ClientEstimationR
 
 export async function majClientEstimation(
   id: string,
-  patch: { statut?: string; ajouterNote?: string; auteur?: string },
+  patch: { statut?: string; ajouterNote?: string; auteur?: string; transmettre?: boolean },
 ): Promise<ClientEstimationRecord | null> {
   try {
     const res = await fetch(`/api/client-estimations/${encodeURIComponent(id)}`, {

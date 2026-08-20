@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { compressImage } from "@/lib/compressImage";
 import { calculerCompletude } from "@/lib/completude";
 import { lancerEstimation } from "@/lib/clientApi";
@@ -14,13 +14,11 @@ import Turnstile from "./Turnstile";
 
 const STEPS = ["Adresse", "Votre bien", "Caractéristiques", "Prestations & état", "Photos", "Coordonnées"];
 const ANALYSE_STEPS = [
-  "Analyse des caractéristiques",
-  "Analyse de la localisation",
-  "Recherche des données immobilières",
-  "Analyse des références comparables",
-  "Analyse de vos photos",
-  "Calcul de la valeur",
-  "Génération de votre dossier",
+  "Enregistrement de vos informations",
+  "Transmission de vos photos",
+  "Recherche des ventes réelles de votre secteur",
+  "Préparation de votre dossier",
+  "Attribution à votre négociateur",
 ];
 
 type Etat = ClientEstimationInput;
@@ -39,13 +37,13 @@ const CHAUFFAGE_OPTS = ["", "Individuel gaz", "Individuel électrique", "Collect
 const EXPO_OPTS = ["", "Sud", "Nord", "Est", "Ouest", "Sud-Est", "Sud-Ouest", "Nord-Est", "Nord-Ouest", "Traversant"];
 
 export default function TunnelEstimation() {
-  const router = useRouter();
   const [step, setStep] = useState(0);
   const [f, setF] = useState<Etat>(vide);
   const [photos, setPhotos] = useState<{ p: PhotoInput; url: string }[]>([]);
   const [captcha, setCaptcha] = useState("");
   const [err, setErr] = useState<string | null>(null);
-  const [phase, setPhase] = useState<"form" | "analyse">("form");
+  const [phase, setPhase] = useState<"form" | "analyse" | "confirme">("form");
+  const [prenomOk, setPrenomOk] = useState("");
   const [analyseStep, setAnalyseStep] = useState(0);
   const fileRef = useRef<HTMLInputElement | null>(null);
   const [drag, setDrag] = useState(false);
@@ -112,8 +110,36 @@ export default function TunnelEstimation() {
       return;
     }
     setAnalyseStep(ANALYSE_STEPS.length);
-    setTimeout(() => router.push(`/estimation/resultat/${resultat.token}`), 700);
+    setPrenomOk(f.prenom);
+    setTimeout(() => setPhase("confirme"), 700);
   };
+
+  if (phase === "confirme") {
+    return (
+      <main className="tunnel">
+        <div className="wrap-narrow">
+          <div className="confirme fade-in">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img className="seal" src="/c21/sceau.png" alt="Century 21 Icaza" />
+            <p className="eyebrow">Demande bien reçue</p>
+            <h2>Merci {prenomOk}, votre estimation est entre de bonnes mains.</h2>
+            <p className="conf-lede">
+              Grâce à vos informations et à vos photos, votre négociateur Century 21 Icaza peut
+              analyser et référencer votre bien <b>sans même se déplacer</b>. Il finalise votre
+              dossier, vous appelle et vous l&apos;envoie par mail.
+            </p>
+            <div className="conf-delai"><span className="conf-delai-n">3h</span><span>Vous recevez votre estimation complète par mail, en journée.</span></div>
+            <div className="conf-steps">
+              <div><span className="cs-i">📞</span><b>Un appel personnalisé</b><p>Votre négociateur vous explique la valeur de votre bien.</p></div>
+              <div><span className="cs-i">📩</span><b>Votre dossier par mail</b><p>Fourchette justifiée, comparables réels, synthèse claire.</p></div>
+              <div><span className="cs-i">🤝</span><b>Zéro pression</b><p>Vous êtes libre : conseil honnête, sans engagement.</p></div>
+            </div>
+            <Link href="/estimation" className="btn btn-ghost" style={{ marginTop: 26 }}>Retour à l&apos;accueil</Link>
+          </div>
+        </div>
+      </main>
+    );
+  }
 
   if (phase === "analyse") {
     return (
@@ -122,7 +148,7 @@ export default function TunnelEstimation() {
           <div className="analyse">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img className="seal" src="/c21/sceau-petit.png" alt="" />
-            <h2>Nous analysons votre bien…</h2>
+            <h2>Nous préparons votre dossier…</h2>
             <div className="steps-live">
               {ANALYSE_STEPS.map((s, i) => (
                 <div key={s} className={`live ${i < analyseStep ? "done" : i === analyseStep ? "active" : ""}`}>
@@ -223,8 +249,8 @@ export default function TunnelEstimation() {
 
           {step === 4 && (
             <>
-              <h2 className="qtitle">Ajoutez vos photos</h2>
-              <p className="qhint">Elles améliorent considérablement votre dossier. Nettes et représentatives suffisent.</p>
+              <h2 className="qtitle">Photographiez chaque pièce</h2>
+              <p className="qhint">Une photo par pièce, c&apos;est ce qui évite la visite : votre négociateur voit l&apos;état réel de votre bien. Nettes et lumineuses suffisent.</p>
               <div
                 className={`dropzone ${drag ? "drag" : ""}`}
                 onClick={() => fileRef.current?.click()}

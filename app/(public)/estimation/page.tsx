@@ -19,18 +19,18 @@ const FACTEURS = [
 ];
 
 const ETAPES = [
-  { t: "Localisez votre bien", d: "L'adresse exacte est la clé : elle nous permet de retrouver les ventes réellement signées chez le notaire dans votre rue et à proximité immédiate — pas une moyenne de commune." },
+  { t: "Localisez votre bien", d: "L'adresse exacte est la clé : elle permet à votre négociateur de retrouver les ventes réellement signées chez le notaire dans votre rue et à proximité immédiate — pas une moyenne de commune." },
   { t: "Décrivez votre logement", d: "Surface, pièces, chambres, terrain, prestations, état. Chaque détail compte : deux biens identiques sur le papier n'ont pas la même valeur sur le terrain." },
-  { t: "Ajoutez vos photos", d: "Un simulateur classique ne voit rien. Notre outil, lui, analyse vos photos : état réel, luminosité, standing, prestations — l'œil, en plus du chiffre." },
-  { t: "Nous analysons les ventes réelles (DVF)", d: "Nous croisons les transactions officielles enregistrées chez le notaire autour de chez vous, corrigées de la surface et actualisées au marché d'aujourd'hui." },
-  { t: "Analyse complète de votre bien", d: "Croisement de ses caractéristiques, de son état et des références comparables les plus proches pour une valeur juste — ni gonflée, ni sous-évaluée." },
-  { t: "Recevez votre dossier", d: "Un avis de valeur clair et argumenté : fourchette justifiée, comparables détaillés, synthèse pédagogique. À consulter, télécharger, et affiner avec un conseiller si vous le souhaitez." },
+  { t: "Photographiez chaque pièce", d: "Une photo par pièce, c'est ce qui remplace la visite : votre négociateur voit l'état réel, la luminosité, le standing et les prestations — et peut estimer votre bien sans se déplacer chez vous." },
+  { t: "Votre négociateur analyse et référence votre bien", d: "Il croise vos informations et vos photos avec les ventes réelles (DVF) de votre secteur, corrigées de la surface et actualisées au marché d'aujourd'hui — pour une valeur juste, ni gonflée, ni sous-évaluée." },
+  { t: "Il vous appelle", d: "Un échange personnalisé : votre négociateur vous explique la valeur retenue et répond à vos questions. Sans pression, sans forcing." },
+  { t: "Vous recevez votre dossier par mail", d: "Un avis de valeur complet et argumenté : fourchette justifiée, comparables détaillés, synthèse claire. Livré sous 3h, à consulter et conserver." },
 ];
 
 const RECOIT = [
-  ["Une fourchette de prix justifiée", "Fondée sur des ventes réelles, pas sur un algorithme qui gonfle le prix pour décrocher un mandat."],
-  ["Le détail des comparables", "Les ventes de référence proches de chez vous : localisation, surface, date, prix."],
-  ["Votre positionnement", "Où se situe votre bien face au marché actuel et à la concurrence en vente."],
+  ["Un appel personnalisé", "Votre négociateur vous explique de vive voix la valeur de votre bien et son positionnement."],
+  ["Votre dossier complet par mail", "Fourchette justifiée, comparables réels, synthèse claire — un vrai avis de valeur, pas un simple chiffre."],
+  ["Sans déplacement chez vous", "Tout se fait à distance : vos photos suffisent au négociateur pour référencer votre bien."],
   ["Aucune obligation", "Le dossier est à vous, librement. Vous restez libre de vendre… ou pas."],
 ];
 
@@ -48,14 +48,14 @@ const TEMOIGNAGES = [
 ];
 
 const FAQ: [string, string][] = [
+  ["Quand vais-je recevoir mon estimation ?", "Votre négociateur prépare votre dossier, vous appelle et vous l'envoie par mail — en général sous 3h, en journée. Vous n'attendez pas des jours."],
+  ["Un agent doit-il se déplacer chez moi ?", "Non. Vos informations et vos photos de chaque pièce suffisent à votre négociateur pour référencer votre bien et l'estimer, sans aucune visite à domicile."],
   ["L'estimation est-elle vraiment gratuite ?", "Oui, totalement gratuite et sans engagement. Votre dossier est à vous, vous en faites ce que vous voulez."],
-  ["Vais-je être harcelé d'appels ?", "Non. Vous n'êtes rappelé que si vous le demandez. Et si nous ne pouvons pas vous aider, nous vous le disons franchement."],
+  ["Vais-je être harcelé d'appels ?", "Non. Un seul appel, pour vous présenter votre estimation. Et si nous ne pouvons pas vous aider, nous vous le disons franchement."],
   ["Suis-je obligé de vendre ensuite ?", "Absolument pas. Beaucoup de propriétaires estiment leur bien par curiosité ou pour un projet à deux ans."],
-  ["Pourquoi avez-vous besoin de photos ?", "Parce qu'un simulateur ne voit pas votre logement. Les photos permettent d'apprécier l'état, la luminosité, le standing et les prestations réels — ce qui fait vraiment la valeur d'un bien."],
-  ["Comment est calculée l'estimation ?", "Nous partons des ventes réelles proches de chez vous (données publiques DVF, enregistrées chez le notaire), corrigées de la surface et actualisées au marché actuel, puis nous analysons les caractéristiques et les photos de votre bien."],
-  ["Quelle différence avec un simulateur en ligne classique ?", "Un simulateur applique un simple prix au m² moyen à l'échelle de la commune. Ici, nous privilégions les ventes les plus proches — votre rue d'abord — et nous intégrons l'état et les prestations de votre bien."],
-  ["Puis-je faire affiner mon estimation par un conseiller ?", "Oui. À la fin de votre dossier, vous pouvez être rappelé par un conseiller Century 21 Icaza pour confirmer la valeur et vous accompagner."],
-  ["Mes données sont-elles protégées ?", "Vos informations servent uniquement à traiter votre demande d'estimation et, si vous le demandez, à vous recontacter. Elles ne sont jamais revendues."],
+  ["Pourquoi une photo de chaque pièce ?", "Parce que c'est ce qui remplace la visite : les photos permettent à votre négociateur d'apprécier l'état, la luminosité, le standing et les prestations réels — ce qui fait vraiment la valeur d'un bien."],
+  ["Comment est calculée l'estimation ?", "Votre négociateur part des ventes réelles proches de chez vous (données DVF, enregistrées chez le notaire), corrigées de la surface et actualisées au marché actuel, puis intègre les caractéristiques et les photos de votre bien."],
+  ["Mes données sont-elles protégées ?", "Vos informations servent uniquement à préparer votre estimation et à vous recontacter. Elles ne sont jamais revendues."],
 ];
 
 export default function LandingEstimation() {
@@ -65,20 +65,20 @@ export default function LandingEstimation() {
       <section className="hero">
         <div className="wrap inner">
           <p className="eyebrow">Century 21 Icaza Immobilier · Estimation offerte</p>
-          <h1>Votre bien mérite plus qu&apos;un simple <span className="it">prix au m²</span>.</h1>
+          <h1>Votre estimation, préparée par un négociateur — <span className="it">sans qu&apos;il se déplace</span>.</h1>
           <p className="sub">Combien vaut réellement votre bien, dans votre rue ?</p>
           <p className="lede">
-            Pas d&apos;algorithme, pas de prix gonflé pour décrocher un mandat. Notre outil s&apos;appuie
-            sur les <b>ventes réelles signées chez le notaire</b> autour de chez vous, analyse les
-            caractéristiques et les photos de votre logement, et vous remet un dossier d&apos;estimation
-            complet et argumenté.
+            Renseignez votre logement et ajoutez une photo de chaque pièce : cela suffit à votre
+            négociateur Century 21 Icaza pour <b>analyser et référencer votre bien sans se déplacer
+            chez vous</b>. Il vous <b>appelle</b> et vous <b>envoie votre estimation complète par
+            mail</b> — un dossier argumenté, fondé sur les ventes réelles de votre secteur.
           </p>
           <div className="cta-row">
             <Link href="/estimation/commencer" className="btn btn-gold btn-lg">
               Estimer mon bien gratuitement <span className="arw">→</span>
             </Link>
           </div>
-          <p className="reassure"><b>Gratuit</b> • Sans engagement • Sans rappel insistant</p>
+          <p className="reassure"><b>Sans déplacement</b> • Appel + dossier par mail sous 3h • Gratuit et sans engagement</p>
         </div>
       </section>
 
@@ -144,8 +144,8 @@ export default function LandingEstimation() {
         <div className="wrap">
           <div className="sec-head">
             <p className="eyebrow">Comment ça marche</p>
-            <h2>Six étapes vers la vraie valeur de votre bien</h2>
-            <p className="muted">Simple pour vous, rigoureux pour nous. Comptez quelques minutes.</p>
+            <h2>Votre estimation, sans quitter votre canapé</h2>
+            <p className="muted">Quelques minutes pour vous, tout le travail pour votre négociateur — sans déplacement.</p>
           </div>
           <div className="steps">
             {ETAPES.map((e, i) => (
@@ -169,7 +169,7 @@ export default function LandingEstimation() {
         <div className="wrap">
           <div className="sec-head">
             <p className="eyebrow">Votre dossier</p>
-            <h2>Ce que vous recevez</h2>
+            <h2>Ce que vous recevez, sous 3h</h2>
           </div>
           <div className="grid cols-2">
             {RECOIT.map(([t, d]) => (
@@ -241,11 +241,11 @@ export default function LandingEstimation() {
         <div className="wrap">
           <div className="sec-head">
             <p className="eyebrow">Vos photos</p>
-            <h2>Les photos sont essentielles à votre estimation</h2>
+            <h2>Une photo de chaque pièce remplace la visite</h2>
             <p className="muted">
-              Un simulateur ne voit rien de votre logement. Nos photos permettent à l&apos;outil de
-              mieux comprendre votre bien : état général, niveau de rénovation, qualité des
-              prestations, luminosité, standing, extérieurs et potentiel.
+              C&apos;est le cœur de la méthode : vos photos permettent à votre négociateur d&apos;apprécier,
+              à distance, l&apos;état général, le niveau de rénovation, la qualité des prestations, la
+              luminosité, le standing, les extérieurs et le potentiel de votre bien — comme s&apos;il y était.
             </p>
           </div>
           <div className="grid cols-2">
@@ -262,7 +262,7 @@ export default function LandingEstimation() {
           </div>
           <p className="muted" style={{ marginTop: 22, fontSize: 15 }}>
             Pas besoin de photos professionnelles — simplement des photos nettes, suffisamment
-            lumineuses et représentatives. <b style={{ color: "var(--pub-gold-deep,#8c7233)" }}>Ajoutez-en plusieurs pour un dossier le plus complet possible.</b>
+            lumineuses et représentatives. <b style={{ color: "var(--pub-gold-deep,#8c7233)" }}>Idéalement, une photo de chaque pièce : c&apos;est ce qui évite la visite.</b>
           </p>
         </div>
       </section>

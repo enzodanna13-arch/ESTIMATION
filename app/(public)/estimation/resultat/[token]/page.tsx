@@ -17,8 +17,8 @@ export default function ResultatPage({ params }: { params: Promise<{ token: stri
       if (!vivant) return;
       if (!d) { setEtat("introuvable"); return; }
       setDossier(d);
-      // report vide (analyse en cours de finalisation manuelle)
-      setEtat(d.report.prix_estime > 0 ? "pret" : "attente");
+      // Le dossier n'est visible qu'une fois VALIDÉ ET TRANSMIS par le négociateur.
+      setEtat(d.transmis && d.report.prix_estime > 0 ? "pret" : "attente");
     });
     return () => { vivant = false; };
   }, [token]);
@@ -44,8 +44,8 @@ export default function ResultatPage({ params }: { params: Promise<{ token: stri
       <main className="tunnel"><div className="wrap-narrow"><div className="qcard" style={{ textAlign: "center" }}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src="/c21/sceau-petit.png" alt="" style={{ width: 54, marginBottom: 18 }} />
-        <h2 className="qtitle">Votre demande est bien reçue</h2>
-        <p className="qhint">Un conseiller Century 21 Icaza finalise votre estimation et vous recontacte très vite. Merci de votre confiance.</p>
+        <h2 className="qtitle">Votre estimation est en préparation</h2>
+        <p className="qhint">Votre négociateur Century 21 Icaza finalise votre dossier, vous appelle et vous l&apos;envoie par mail sous 3h. Merci de votre confiance.</p>
       </div></div></main>
     );
   }

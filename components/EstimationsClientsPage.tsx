@@ -165,6 +165,19 @@ function Fiche({ record, loading, onClose, onChange }: {
 }) {
   const [note, setNote] = useState("");
   const [busy, setBusy] = useState(false);
+  const [copie, setCopie] = useState(false);
+
+  const lienDossier = record ? `${typeof window !== "undefined" ? window.location.origin : ""}/estimation/resultat/${record.token}` : "";
+  const copierLien = async () => {
+    try { await navigator.clipboard.writeText(lienDossier); setCopie(true); setTimeout(() => setCopie(false), 2000); } catch { /* ignore */ }
+  };
+  const transmettre = async () => {
+    if (!record) return;
+    setBusy(true);
+    const r = await majClientEstimation(record.id, { transmettre: true });
+    if (r) onChange(r);
+    setBusy(false);
+  };
 
   const changerStatut = async (statut: string) => {
     if (!record) return;
@@ -238,6 +251,26 @@ function Fiche({ record, loading, onClose, onChange }: {
                 </>
               ) : (
                 <p className="text-sm text-amber-700">Analyse automatique indisponible — à traiter manuellement.</p>
+              )}
+            </div>
+
+            {/* Transmission au client */}
+            <div className={`mb-4 rounded-xl border p-4 ${record.transmisAuClient ? "border-green-300 bg-green-50" : "border-copper/40 bg-copper/5"}`}>
+              <div className="mb-2 text-xs uppercase tracking-wide text-slate-500">Remise du dossier</div>
+              {record.transmisAuClient ? (
+                <p className="text-sm font-medium text-green-700">✓ Dossier transmis au client{record.envoyeLe ? ` le ${dateLong(record.envoyeLe)}` : ""}.</p>
+              ) : (
+                <>
+                  <p className="mb-3 text-sm text-slate-600">Le client attend son estimation sous 3h. <b>Appelez-le</b>, puis envoyez-lui le dossier par mail.</p>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <a href={`tel:${record.input.tel}`} className="rounded-lg bg-navy px-3 py-2 text-sm font-semibold text-white hover:bg-navy-deep">📞 Appeler {record.input.tel}</a>
+                    <a href={`mailto:${record.input.email}?subject=${encodeURIComponent("Votre estimation — Century 21 Icaza")}&body=${encodeURIComponent(`Bonjour ${record.input.prenom},\n\nSuite à votre demande, voici votre dossier d'estimation :\n${lienDossier}\n\nJe reste à votre disposition.\nCentury 21 Icaza Immobilier`)}`} className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-600 hover:border-copper">📩 Écrire à {record.input.email}</a>
+                    <button onClick={copierLien} className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-600 hover:border-copper">{copie ? "✓ Lien copié" : "Copier le lien du dossier"}</button>
+                  </div>
+                  <button disabled={busy} onClick={transmettre} className="mt-3 w-full rounded-lg bg-copper px-4 py-2.5 text-sm font-semibold text-white hover:brightness-110 disabled:opacity-40">
+                    Marquer comme transmis (le client pourra consulter son dossier en ligne)
+                  </button>
+                </>
               )}
             </div>
 

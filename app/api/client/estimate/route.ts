@@ -147,6 +147,10 @@ export async function POST(request: Request) {
     confiance: report.indice_confiance,
     notes: engine === "ia" ? [] : [{ id: rid(), date: now, auteur: "Système", texte: "Analyse automatique indisponible — dossier à traiter manuellement." }],
     marketing: input.marketing,
+    // Le dossier reste INTERNE : le négociateur le valide, appelle le client et
+    // le lui envoie par mail. Le client ne le voit en ligne qu'une fois transmis.
+    transmisAuClient: false,
+    envoyeLe: null,
   };
 
   // Lead commercial : réutilise le CRM existant (SMS auto, relances, export)
@@ -168,20 +172,12 @@ export async function POST(request: Request) {
 
   await saveClientEstimation(record);
 
-  if (engine !== "ia") {
-    return Response.json({
-      status: "pending",
-      token: tk,
-      message: "Nous avons bien reçu votre demande. Un conseiller Century 21 Icaza finalise votre estimation et vous recontacte très vite.",
-    });
-  }
-
+  // Le client reçoit TOUJOURS une confirmation : son estimation est préparée
+  // par un négociateur, qui l'appelle et la lui envoie par mail (sous 3h).
+  // Le résultat chiffré n'est jamais renvoyé directement au navigateur.
   return Response.json({
-    status: "ready",
+    status: "recu",
     token: tk,
-    completude,
-    prixEstime: report.prix_estime,
-    fourchetteBasse: report.fourchette_basse,
-    fourchetteHaute: report.fourchette_haute,
+    message: "Merci pour toutes ces informations. Votre négociateur Century 21 Icaza prépare votre estimation, vous appelle et vous l'envoie par mail sous 3h.",
   });
 }

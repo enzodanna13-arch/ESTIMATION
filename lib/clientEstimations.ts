@@ -42,6 +42,7 @@ function dossierPublicDe(r: ClientEstimationRecord): DossierClientPublic {
   return {
     token: r.token,
     createdAt: r.createdAt,
+    transmis: r.transmisAuClient === true,
     bien: {
       adresse: r.input.adresse, ville: r.input.ville, typeBien: r.input.typeBien,
       surfaceHabitable: r.input.surfaceHabitable, surfaceTerrain: r.input.surfaceTerrain ?? null,
@@ -143,13 +144,15 @@ export async function getDossierPublic(token: string): Promise<DossierClientPubl
 /** Met à jour le suivi commercial (statut, notes, lien lead) — back-office. */
 export async function updateClientEstimationServer(
   id: string,
-  patch: Partial<Pick<ClientEstimationRecord, "statut" | "notes" | "leadId">>,
+  patch: Partial<Pick<ClientEstimationRecord, "statut" | "notes" | "leadId" | "transmisAuClient" | "envoyeLe">>,
 ): Promise<ClientEstimationRecord | null> {
   const r = await getClientEstimationServer(id);
   if (!r) return null;
   if (patch.statut !== undefined) r.statut = patch.statut;
   if (patch.notes !== undefined) r.notes = patch.notes;
   if (patch.leadId !== undefined) r.leadId = patch.leadId;
+  if (patch.transmisAuClient !== undefined) r.transmisAuClient = patch.transmisAuClient;
+  if (patch.envoyeLe !== undefined) r.envoyeLe = patch.envoyeLe;
   await saveClientEstimation(r);
   return r;
 }

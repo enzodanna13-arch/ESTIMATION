@@ -5,12 +5,8 @@
 import type { ClientEstimationInput, DossierClientPublic } from "./clientTypes";
 
 export interface ResultatLancement {
-  status: "ready" | "pending";
+  status: "recu";
   token: string;
-  completude?: number;
-  prixEstime?: number;
-  fourchetteBasse?: number;
-  fourchetteHaute?: number;
   message?: string;
 }
 

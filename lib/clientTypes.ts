@@ -143,6 +143,11 @@ export interface ClientEstimationRecord {
   leadId?: string;
   notes: NoteCommerciale[];
   marketing?: MarketingSource;
+  // Remise du dossier : l'estimation IA reste INTERNE tant que le négociateur
+  // ne l'a pas validée et transmise (appel + envoi par mail). Le client ne voit
+  // son dossier en ligne qu'une fois transmisAuClient = true.
+  transmisAuClient?: boolean;
+  envoyeLe?: number | null;
 }
 
 // Vue légère pour la liste du back-office.
@@ -170,6 +175,7 @@ export interface ClientEstimationMeta {
 export interface DossierClientPublic {
   token: string;
   createdAt: number;
+  transmis: boolean; // le dossier n'est visible du client qu'une fois transmis
   bien: {
     adresse: string;
     ville: string;
