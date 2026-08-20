@@ -4,7 +4,7 @@
 // PropertyInput partagé pour réutiliser, EN LECTURE SEULE, les libs de
 // données (DVF, comparables, références). Aucun champ Pro n'est modifié.
 
-import type { EstimationReport, PhotoInput, PropertyInput } from "./types";
+import type { DvfSale, EstimationReport, PhotoInput, PropertyInput } from "./types";
 
 export type TypeBienClient = "maison" | "appartement";
 
@@ -137,6 +137,12 @@ export interface ClientEstimationRecord {
   report: EstimationReport;
   dvfSource: "api" | "indisponible";
   engine: "ia" | "statistique";
+  // De quoi RE-RENDRE le dossier EXACTEMENT comme l'outil négociateur
+  // (composant Report.tsx). proInput est stocké SANS les photos base64
+  // (rechargées depuis le Blob à l'affichage) pour ne pas alourdir la fiche.
+  proInput?: PropertyInput;
+  dvfSales?: DvfSale[];
+  subject?: { lat: number; lon: number } | null;
   completude: number; // 0–100, déterministe
   confiance: number; // 0–100 (indice de confiance du rapport)
   // Suivi commercial & lien CRM

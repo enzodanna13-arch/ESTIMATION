@@ -121,9 +121,14 @@ export async function POST(request: Request) {
   let engine: "ia" | "statistique" = "statistique";
   let statut = "Nouveau lead";
   let moteurVersion = "client-1";
+  const proInput = versPropertyInput(input, photos);
+  let dvfSalesStore: import("@/lib/types").DvfSale[] = [];
+  let subject: { lat: number; lon: number } | null = null;
   try {
-    const { sales } = await fetchDvfContext(input.codePostal, input.typeBien, input.adresse, input.ville);
-    const res = await computeClientReport(versPropertyInput(input, photos), sales);
+    const ctx = await fetchDvfContext(input.codePostal, input.typeBien, input.adresse, input.ville);
+    dvfSalesStore = ctx.sales;
+    subject = ctx.subject;
+    const res = await computeClientReport(proInput, ctx.sales);
     report = res.report;
     moteurVersion = res.moteurVersion;
     engine = "ia";
@@ -151,6 +156,10 @@ export async function POST(request: Request) {
     // le lui envoie par mail. Le client ne le voit en ligne qu'une fois transmis.
     transmisAuClient: false,
     envoyeLe: null,
+    // Données pour re-rendre le dossier à l'identique de l'outil interne.
+    proInput: { ...proInput, photos: [] }, // photos rechargées du Blob à l'affichage
+    dvfSales: dvfSalesStore.slice(0, 120),
+    subject,
   };
 
   // Lead commercial : réutilise le CRM existant (SMS auto, relances, export)

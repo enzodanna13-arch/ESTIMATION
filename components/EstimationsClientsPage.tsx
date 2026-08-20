@@ -23,90 +23,6 @@ const STATUT_CLS: Record<string, string> = {
 };
 const badge = (s: string) => STATUT_CLS[s] ?? "bg-slate-100 text-slate-600";
 
-const esc = (s: unknown) =>
-  String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-
-// Génère le dossier d'estimation complet en un document imprimable (→ « Enregistrer
-// en PDF ») et l'ouvre en un clic. Les photos passent par l'URL PUBLIQUE par token
-// (pas d'en-tête d'authentification, donc affichables dans la fenêtre d'impression).
-function telechargerDossier(record: ClientEstimationRecord) {
-  const r = record.report;
-  const b = record.input;
-  const origin = typeof window !== "undefined" ? window.location.origin : "";
-  const para = (t: string) => esc(t).split("\n").filter(Boolean).map((p) => `<p>${p}</p>`).join("");
-  const photos = record.photos.length
-    ? `<h2>Photographies du bien</h2><div class="ph">${record.photos.map((p) => `<img src="${origin}/api/client/estimation/${encodeURIComponent(record.token)}/photo/${p.idx}" alt="">`).join("")}</div>`
-    : "";
-  const refs = r.references_dvf.length
-    ? `<h2>Références comparables (ventes réelles DVF)</h2><table><thead><tr><th>Localisation</th><th>Détail</th><th>Date</th><th>Prix</th><th>€/m²</th></tr></thead><tbody>${r.references_dvf.map((x) => `<tr><td>${esc(x.localisation)}</td><td>${esc(x.detail)}</td><td>${esc(x.date)}</td><td class="num">${euro(x.prix)}</td><td class="num">${new Intl.NumberFormat("fr-FR").format(x.prix_m2)}</td></tr>`).join("")}</tbody></table>`
-    : "";
-  const forts = r.points_forts.length ? `<div class="col"><h3>Points forts</h3><ul>${r.points_forts.map((x) => `<li>${esc(x)}</li>`).join("")}</ul></div>` : "";
-  const faibles = r.points_faibles.length ? `<div class="col"><h3>Points de vigilance</h3><ul>${r.points_faibles.map((x) => `<li>${esc(x)}</li>`).join("")}</ul></div>` : "";
-
-  const html = `<!doctype html><html lang="fr"><head><meta charset="utf-8">
-<title>Dossier d'estimation — ${esc(b.prenom)} ${esc(b.nom)}</title>
-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500&family=Manrope:wght@400;500;600&display=swap" rel="stylesheet">
-<style>
-  :root{--gold:#8c7233;--ink:#17130d;--soft:#4c463b;--line:#e3dac6;--paper:#f7f4ec}
-  *{box-sizing:border-box}body{margin:0;font-family:"Manrope",system-ui,sans-serif;color:var(--ink);background:#fff;line-height:1.6}
-  .page{max-width:820px;margin:0 auto;padding:44px 48px}
-  h1,h2,h3,.serif{font-family:"Fraunces",Georgia,serif;font-weight:400}
-  .cover{background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:40px;margin-bottom:30px;text-align:center}
-  .cover .c21{letter-spacing:.12em;color:var(--gold);font-size:15px;font-family:"Fraunces",serif}
-  .cover h1{font-size:34px;margin:14px 0 8px}
-  .cover .sub{color:var(--soft);font-size:15px}
-  .val{text-align:center;margin:26px 0}
-  .val .big{font-family:"Fraunces",serif;font-size:52px;line-height:1}
-  .val .rng{color:var(--soft);margin-top:10px;font-size:16px}
-  .val .m2{color:var(--gold);font-size:14px;margin-top:2px}
-  h2{font-size:20px;border-bottom:1px solid var(--line);padding-bottom:8px;margin:30px 0 14px}
-  h3{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--gold);margin:0 0 8px}
-  p{margin:0 0 10px;color:var(--soft)}
-  table{width:100%;border-collapse:collapse;font-size:13px;margin-top:6px}
-  th{text-align:left;color:#8a7f66;font-size:11px;text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--line);padding:6px 8px}
-  td{padding:7px 8px;border-bottom:1px solid var(--line)}.num{text-align:right;font-variant-numeric:tabular-nums}
-  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:24px}
-  .bien{display:grid;grid-template-columns:1fr 1fr;gap:8px 24px;font-size:14px}
-  .bien div{border-bottom:1px solid var(--line);padding:6px 0;display:flex;justify-content:space-between}
-  .bien span{color:#8a7f66}
-  ul{margin:0;padding-left:18px}li{color:var(--soft);font-size:14px;margin-bottom:4px}
-  .ph{display:grid;grid-template-columns:1fr 1fr;gap:10px}.ph img{width:100%;border-radius:6px;border:1px solid var(--line)}
-  .avert{border:1px dashed var(--line);border-radius:8px;padding:16px 18px;margin-top:26px;font-size:12.5px;color:#8a7f66}
-  .foot{text-align:center;color:#8a7f66;font-size:12px;margin-top:26px}
-  @media print{.page{padding:0}.cover,h2,table,.ph,.avert{break-inside:avoid}}
-</style></head><body onload="setTimeout(function(){window.print()},400)">
-<div class="page">
-  <div class="cover"><div class="c21">CENTURY 21 · Icaza Immobilier</div><h1>Dossier d'estimation</h1>
-    <div class="sub">${esc(b.adresse ? b.adresse + ", " : "")}${esc(b.ville)} — ${b.typeBien === "maison" ? "Maison" : "Appartement"} · ${b.surfaceHabitable ?? "?"} m²<br>Établi pour ${esc(b.prenom)} ${esc(b.nom)} · ${new Date(record.createdAt).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })}</div>
-  </div>
-  <div class="val"><div class="big">${euro(r.prix_estime)}</div><div class="rng">Fourchette : ${euro(r.fourchette_basse)} — ${euro(r.fourchette_haute)}</div>${r.prix_m2 > 0 ? `<div class="m2">≈ ${euro(r.prix_m2)} / m²${r.fiabilite ? ` · fiabilité ${esc(r.fiabilite)}` : ""}</div>` : ""}</div>
-  <h2>Votre bien</h2>
-  <div class="bien">
-    <div><span>Adresse</span><b>${esc(b.adresse ? b.adresse + ", " + b.ville : b.ville)}</b></div>
-    <div><span>Type</span><b>${b.typeBien === "maison" ? "Maison" : "Appartement"}</b></div>
-    <div><span>Surface</span><b>${b.surfaceHabitable ?? "—"} m²</b></div>
-    ${b.surfaceTerrain ? `<div><span>Terrain</span><b>${b.surfaceTerrain} m²</b></div>` : ""}
-    <div><span>Pièces / chambres</span><b>${b.nbPieces ?? "—"} / ${b.nbChambres ?? "—"}</b></div>
-    <div><span>État</span><b>${esc(b.etat) || "—"}</b></div>
-  </div>
-  ${r.description_bien ? `<h2>Analyse de votre bien</h2>${para(r.description_bien)}` : ""}
-  ${forts || faibles ? `<div class="grid2">${forts}${faibles}</div>` : ""}
-  ${r.analyse_dvf || r.positionnement_marche ? `<h2>Analyse du marché</h2>${para(r.analyse_dvf)}${para(r.positionnement_marche)}` : ""}
-  ${refs}
-  ${r.argumentaire_vendeur ? `<h2>Synthèse</h2>${para(r.argumentaire_vendeur)}` : ""}
-  ${photos}
-  <div class="avert"><b>Une estimation reste une estimation.</b> Cette analyse constitue une indication de valeur fondée sur les informations fournies et les données disponibles. Certaines caractéristiques particulières peuvent nécessiter l'avis d'un professionnel.</div>
-  <div class="foot">CENTURY 21 Icaza Immobilier · 32 avenue de la Paix, 13500 Martigues · 04 42 42 80 85</div>
-</div></body></html>`;
-
-  const w = window.open("", "_blank");
-  if (!w) { alert("Autorisez les fenêtres pop-up pour télécharger le dossier."); return; }
-  w.document.open();
-  w.document.write(html);
-  w.document.close();
-}
-
 export default function EstimationsClientsPage({ onRetour }: { onRetour: () => void }) {
   const [liste, setListe] = useState<ClientEstimationMeta[]>([]);
   const [chargement, setChargement] = useState(true);
@@ -322,7 +238,7 @@ function Fiche({ record, loading, onClose, onChange }: {
               <div className="mb-2 flex items-center justify-between gap-2">
                 <div className="text-xs uppercase tracking-wide text-slate-500">Estimation (dossier IA)</div>
                 {record.report.prix_estime > 0 && (
-                  <button onClick={() => telechargerDossier(record)} className="rounded-lg bg-navy px-3 py-1.5 text-xs font-semibold text-white hover:bg-navy-deep">📄 Télécharger le dossier (PDF)</button>
+                  <a href={`/estimations-clients/dossier/${record.id}`} className="rounded-lg bg-navy px-3 py-1.5 text-xs font-semibold text-white hover:bg-navy-deep">📄 Ouvrir le dossier (PDF)</a>
                 )}
               </div>
               {record.report.prix_estime > 0 ? (
