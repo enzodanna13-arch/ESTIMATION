@@ -213,7 +213,7 @@ export default function TunnelEstimation() {
               <div className="row3">
                 <div className="field"><label>Pièces</label><input inputMode="numeric" value={f.nbPieces ?? ""} onChange={(e) => set("nbPieces", numOr(e.target.value))} placeholder="4" /></div>
                 <div className="field"><label>Chambres</label><input inputMode="numeric" value={f.nbChambres ?? ""} onChange={(e) => set("nbChambres", numOr(e.target.value))} placeholder="3" /></div>
-                <div className="field"><label>Salles de bain</label><input inputMode="numeric" value={f.nbSallesDeBain ?? ""} onChange={(e) => set("nbSallesDeBain", numOr(e.target.value))} placeholder="1" /></div>
+                <div className="field"><label>Salles de bains</label><input inputMode="numeric" value={f.nbSallesDeBain ?? ""} onChange={(e) => set("nbSallesDeBain", numOr(e.target.value))} placeholder="1" /></div>
               </div>
               <div className="row2">
                 <div className="field"><label>Année de construction</label><input inputMode="numeric" value={f.anneeConstruction} onChange={(e) => set("anneeConstruction", e.target.value)} placeholder="1995" /></div>
@@ -313,7 +313,7 @@ export default function TunnelEstimation() {
               </div>
               <label className="consent">
                 <input type="checkbox" checked={f.consentement} onChange={(e) => set("consentement", e.target.checked)} />
-                <span>J&apos;accepte que mes informations soient utilisées pour traiter ma demande d&apos;estimation et, lorsque je l&apos;ai demandé, être recontacté dans le cadre de mon projet immobilier. Voir la <a href="/estimation/confidentialite" target="_blank" rel="noreferrer">politique de confidentialité</a>.</span>
+                <span>J&apos;accepte que mes informations soient utilisées pour traiter ma demande d&apos;estimation et, lorsque je l&apos;ai demandé, d&apos;être recontacté dans le cadre de mon projet immobilier. Voir la <a href="/estimation/confidentialite" target="_blank" rel="noreferrer">politique de confidentialité</a>.</span>
               </label>
               <Turnstile onToken={setCaptcha} />
             </>
