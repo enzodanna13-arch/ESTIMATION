@@ -30,10 +30,12 @@ export async function verifierTurnstile(token: string | undefined, ip: string | 
   }
 }
 
-// Plafond quotidien global (protège la facture IA). Défaut prudent : 300/jour.
+// Plafond quotidien global (protège la facture IA). Défaut PRUDENT : 60/jour,
+// tant que le captcha n'est pas configuré et que le site n'est pas encore
+// ouvert officiellement. Relevable via CLIENT_DAILY_CAP une fois en production.
 export function plafondQuotidien(): number {
   const n = Number(process.env.CLIENT_DAILY_CAP);
-  return Number.isFinite(n) && n > 0 ? n : 300;
+  return Number.isFinite(n) && n > 0 ? n : 60;
 }
 
 // Fenêtre anti-spam par contact (millisecondes). Défaut : 5 minutes.
