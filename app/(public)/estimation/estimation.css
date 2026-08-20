@@ -49,9 +49,10 @@
   backdrop-filter: blur(10px);
   border-bottom: 1px solid var(--pub-line);
 }
-.c21pub .pub-header .inner { display: flex; align-items: center; justify-content: space-between; height: 68px; }
+.c21pub .pub-header .inner { display: flex; align-items: center; justify-content: space-between; height: 84px; }
 .c21pub .brand { display: flex; align-items: center; gap: 12px; text-decoration: none; color: inherit; }
-.c21pub .brand img { height: 34px; width: auto; display: block; }
+.c21pub .brand img { height: 52px; width: auto; display: block; }
+@media (max-width: 560px) { .c21pub .pub-header .inner { height: 72px; } .c21pub .brand img { height: 42px; } }
 .c21pub .nav { display: flex; gap: 30px; align-items: center; }
 .c21pub .nav a { color: var(--pub-ink-soft); text-decoration: none; font-size: 14.5px; font-weight: 500; transition: color .15s; }
 .c21pub .nav a:hover { color: var(--pub-gold); }
