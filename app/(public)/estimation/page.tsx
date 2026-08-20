@@ -289,6 +289,18 @@ export default function LandingEstimation() {
               de l&apos;appareil photo est parfait pour capter une pièce entière.
             </p>
           </div>
+
+          {/* Réassurance confidentialité des photos */}
+          <div className="photo-rassure">
+            <div className="pr-head"><span className="pr-lock">🔒</span><h3>Vos photos restent strictement privées</h3></div>
+            <p className="pr-intro">Confier des photos de son logement peut inquiéter — c&apos;est légitime. Voici nos engagements clairs :</p>
+            <ul className="pr-list">
+              <li><b>Jamais publiées.</b> Vos photos ne sont mises en ligne nulle part, ne sont associées à aucune annonce et ne sont visibles par personne d&apos;autre.</li>
+              <li><b>Un seul destinataire.</b> Seul votre négociateur Century 21 Icaza y accède, depuis un espace professionnel sécurisé et protégé par mot de passe.</li>
+              <li><b>Uniquement pour votre estimation.</b> Elles servent à évaluer votre bien, rien d&apos;autre. Elles ne sont <b>jamais revendues</b> ni cédées à des tiers.</li>
+              <li><b>Vous gardez le contrôle.</b> Vous pouvez demander leur suppression à tout moment, conformément à notre <a href="/estimation/confidentialite">politique de confidentialité</a>.</li>
+            </ul>
+          </div>
         </div>
       </section>
 

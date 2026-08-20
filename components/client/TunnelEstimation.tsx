@@ -257,6 +257,7 @@ export default function TunnelEstimation() {
                 <li><b>Les extérieurs</b> — façade, jardin, terrasse, balcon, piscine, vue.</li>
                 <li><b>De la lumière</b> — de jour, volets ouverts, téléphone tenu bien droit.</li>
               </ul>
+              <p className="photo-prive">🔒 Vos photos restent <b>strictement privées</b> : jamais publiées, visibles uniquement par votre négociateur, jamais revendues, et supprimables à tout moment.</p>
               <div
                 className={`dropzone ${drag ? "drag" : ""}`}
                 onClick={() => fileRef.current?.click()}

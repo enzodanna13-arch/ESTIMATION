@@ -162,6 +162,19 @@
 .c21pub .pg-note { margin: 24px 0 0; padding-top: 18px; border-top: 1px solid var(--pub-line-soft); font-size: 14.5px; color: var(--pub-ink-soft); }
 .c21pub .pg-note b { color: var(--pub-gold-deep, #8c7233); }
 
+/* ---- Réassurance photos ---- */
+.c21pub .photo-rassure { margin-top: 26px; background: var(--pub-surface); border: 1px solid var(--pub-line); border-left: 3px solid var(--pub-gold); border-radius: 8px; padding: 26px 28px; box-shadow: var(--pub-shadow); }
+@media (max-width: 620px) { .c21pub .photo-rassure { padding: 22px 18px; } }
+.c21pub .photo-rassure .pr-head { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+.c21pub .photo-rassure .pr-lock { font-size: 22px; }
+.c21pub .photo-rassure h3 { font-family: var(--font-display), serif; font-size: 21px; margin: 0; }
+.c21pub .photo-rassure .pr-intro { color: var(--pub-ink-soft); font-size: 15px; margin: 0 0 14px; }
+.c21pub .photo-rassure .pr-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+.c21pub .photo-rassure .pr-list li { position: relative; padding-left: 26px; font-size: 14.5px; color: var(--pub-ink-soft); }
+.c21pub .photo-rassure .pr-list li::before { content: "✓"; position: absolute; left: 0; top: 0; color: var(--pub-gold-deep, #8c7233); font-weight: 700; }
+.c21pub .photo-rassure .pr-list b { color: var(--pub-ink); }
+.c21pub .photo-rassure a { color: var(--pub-gold); }
+
 /* ---- Stats / crédibilité ---- */
 .c21pub .statband { background: var(--pub-anthracite); padding: 44px 0; }
 .c21pub .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; text-align: center; }
@@ -245,6 +258,8 @@
 .c21pub .photo-tips li { position: relative; padding-left: 22px; font-size: 14px; color: var(--pub-ink-soft); }
 .c21pub .photo-tips li::before { content: "✓"; position: absolute; left: 0; color: var(--pub-gold-deep, #8c7233); font-weight: 700; }
 .c21pub .photo-tips b { color: var(--pub-ink); }
+.c21pub .photo-prive { margin: 0 0 18px; font-size: 13px; color: var(--pub-ink-soft); background: color-mix(in srgb, var(--pub-gold-bright) 10%, var(--pub-surface)); border: 1px solid var(--pub-line); border-radius: 6px; padding: 11px 14px; }
+.c21pub .photo-prive b { color: var(--pub-ink); }
 .c21pub .dropzone { border: 2px dashed var(--pub-line); border-radius: 6px; padding: 40px 24px; text-align: center; cursor: pointer; transition: border-color .15s, background .15s; background: var(--pub-bg); }
 .c21pub .dropzone:hover, .c21pub .dropzone.drag { border-color: var(--pub-gold); background: color-mix(in srgb, var(--pub-gold-bright) 8%, var(--pub-surface)); }
 .c21pub .dropzone .big { font-family: var(--font-display), serif; font-size: 20px; margin-bottom: 6px; }
