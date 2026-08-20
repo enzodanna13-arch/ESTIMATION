@@ -5,6 +5,7 @@ import {
   getClientEstimation, listClientEstimations, majClientEstimation, urlPhotoBackoffice,
 } from "@/lib/backofficeEstimations";
 import { PROJETS_CLIENT, STATUTS_ESTIMATION_CLIENT, type ClientEstimationMeta, type ClientEstimationRecord } from "@/lib/clientTypes";
+import { demanderPrefillEstimation } from "@/lib/prefillEstimation";
 
 const euro = (n: number) => (n > 0 ? new Intl.NumberFormat("fr-FR").format(Math.round(n)) + " €" : "—");
 const dateFr = (t: number) => new Date(t).toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit", year: "2-digit" });
@@ -237,9 +238,14 @@ function Fiche({ record, loading, onClose, onChange }: {
             <div className="mb-4 rounded-xl border border-slate-200 bg-white p-4">
               <div className="mb-2 flex items-center justify-between gap-2">
                 <div className="text-xs uppercase tracking-wide text-slate-500">Estimation (dossier IA)</div>
-                {record.report.prix_estime > 0 && (
-                  <a href={`/estimations-clients/dossier/${record.id}`} className="rounded-lg bg-navy px-3 py-1.5 text-xs font-semibold text-white hover:bg-navy-deep">📄 Ouvrir le dossier (PDF)</a>
-                )}
+                <div className="flex gap-2">
+                  {record.proInput && (
+                    <button onClick={() => demanderPrefillEstimation(record.id)} className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 hover:border-copper" title="Ouvre l'outil négociateur avec le bien et les photos déjà chargés">🔁 Refaire dans l&apos;outil</button>
+                  )}
+                  {record.report.prix_estime > 0 && (
+                    <a href={`/estimations-clients/dossier/${record.id}`} className="rounded-lg bg-navy px-3 py-1.5 text-xs font-semibold text-white hover:bg-navy-deep">📄 Ouvrir le dossier (PDF)</a>
+                  )}
+                </div>
               </div>
               {record.report.prix_estime > 0 ? (
                 <>

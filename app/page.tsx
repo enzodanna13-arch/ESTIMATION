@@ -11,6 +11,7 @@ import VisitesPage from "@/components/VisitesPage";
 import RegistrePage from "@/components/RegistrePage";
 import LeadsPage from "@/components/LeadsPage";
 import EstimationsClientsPage from "@/components/EstimationsClientsPage";
+import { consommerPrefillEstimation } from "@/lib/prefillEstimation";
 import DashboardPage from "@/components/DashboardPage";
 import NegociateursPage from "@/components/NegociateursPage";
 import EspaceNegociateurPage from "@/components/EspaceNegociateurPage";
@@ -375,6 +376,18 @@ export default function Home() {
   // Au chargement : si le mot de passe de la session est encore valide,
   // l'historique s'ouvre directement
   useEffect(refreshHistory, []);
+
+  // « Refaire dans l'outil » depuis une estimation CLIENT : une fois la session
+  // déverrouillée, on recharge le bien + les photos dans le formulaire et on
+  // bascule sur l'outil d'estimation. Sans prefill en attente : aucun effet.
+  useEffect(() => {
+    if (historyLocked) return;
+    let vivant = true;
+    consommerPrefillEstimation().then((inp) => {
+      if (vivant && inp) { setInput(inp); setUnivers("estimation"); }
+    });
+    return () => { vivant = false; };
+  }, [historyLocked]);
 
   const unlockHistory = async () => {
     setHistoryError(null);
