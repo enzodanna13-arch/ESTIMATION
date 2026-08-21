@@ -22,6 +22,12 @@ export async function GET(request: Request) {
 
 interface FieldDatum { name: string; values: string[] }
 
+// Mots-clés déjà mappés vers une colonne dédiée (pour ne pas les redoubler).
+const CLEFS_CONNUES = [
+  "last_name", "nom", "full_name", "name", "first_name", "prenom", "phone", "tel",
+  "email", "mail", "city", "ville", "secteur", "message", "projet", "recherche",
+];
+
 function mapChamps(fields: FieldDatum[]) {
   const get = (...clefs: string[]) => {
     for (const f of fields) {
@@ -30,13 +36,21 @@ function mapChamps(fields: FieldDatum[]) {
     }
     return "";
   };
+  // Robustesse aux changements de formulaire : TOUTE question personnalisée
+  // (budget, type de bien, délai…) non mappée vers une colonne est conservée
+  // dans le message, pour ne JAMAIS perdre une réponse.
+  const extras = fields
+    .filter((f) => { const n = f.name.toLowerCase(); return !CLEFS_CONNUES.some((c) => n.includes(c)); })
+    .map((f) => `${f.name} : ${(f.values?.[0] ?? "").trim()}`)
+    .filter((l) => !l.endsWith(" : "));
+  const messageBase = get("message", "projet", "recherche");
   return {
     nom: get("last_name", "nom") || get("full_name", "name"),
     prenom: get("first_name", "prenom"),
     tel: get("phone", "tel"),
     email: get("email", "mail"),
     ville: get("city", "ville", "secteur"),
-    message: get("message", "projet", "recherche"),
+    message: [messageBase, ...extras].filter(Boolean).join("\n"),
   };
 }
 
