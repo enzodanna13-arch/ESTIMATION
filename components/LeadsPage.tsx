@@ -217,23 +217,26 @@ export default function LeadsPage({ onRetour }: { onRetour: () => void }) {
   const [expStatuts, setExpStatuts] = useState<Set<string>>(new Set());
   const [expAvecEmail, setExpAvecEmail] = useState(true);
   const [expNouveaux, setExpNouveaux] = useState(true);
+  const [expJours, setExpJours] = useState(0); // 0 = tous, 1/2/3 = N derniers jours
 
   const toggleStatut = (s: string) => setExpStatuts((prev) => { const n = new Set(prev); if (n.has(s)) n.delete(s); else n.add(s); return n; });
 
   // Combien de contacts correspondent aux filtres (calculé côté client).
   const compteExport = useMemo(() => {
     const aMail = (l: Lead) => /.+@.+\..+/.test((l.email ?? "").trim());
+    const seuil = expJours > 0 ? Date.now() - expJours * 86400000 : null;
     return (leads ?? []).filter((l) => {
       if (expStatuts.size > 0 && !expStatuts.has(l.statut)) return false;
       if (expAvecEmail && !aMail(l)) return false;
       if (expNouveaux && l.exporteLe) return false;
+      if (seuil !== null && l.createdAt < seuil) return false;
       return true;
     }).length;
-  }, [leads, expStatuts, expAvecEmail, expNouveaux]);
+  }, [leads, expStatuts, expAvecEmail, expNouveaux, expJours]);
 
   const exporterCsv = async () => {
     setExportEnCours(true);
-    const r = await exporterLeadsCsv({ statuts: [...expStatuts], avecEmail: expAvecEmail, nouveauxUniquement: expNouveaux });
+    const r = await exporterLeadsCsv({ statuts: [...expStatuts], avecEmail: expAvecEmail, nouveauxUniquement: expNouveaux, joursMax: expJours });
     setExportEnCours(false);
     if (!r) { alert("Export impossible — réessayez."); return; }
     if (r.count === 0) { alert("Aucun contact ne correspond à ces filtres.\nAstuce : décochez « Uniquement les nouveaux » pour ré-exporter, ou « Avec email uniquement »."); return; }
@@ -286,6 +289,12 @@ export default function LeadsPage({ onRetour }: { onRetour: () => void }) {
           <div className="mb-3 flex flex-wrap gap-1.5">
             {STATUTS_LEAD.map((s) => (
               <button key={s} onClick={() => toggleStatut(s)} className={`rounded-full px-2.5 py-1 text-xs font-semibold ${expStatuts.has(s) ? "bg-navy text-white" : STATUT_LEAD_COULEURS[s] ?? "bg-slate-100 text-slate-600"}`}>{s}</button>
+            ))}
+          </div>
+          <div className="mb-2 text-[11px] font-semibold uppercase text-slate-400">Période de réception</div>
+          <div className="mb-3 flex flex-wrap gap-1.5">
+            {[[0, "Tous"], [1, "Dernier jour"], [2, "2 derniers jours"], [3, "3 derniers jours"]].map(([v, lbl]) => (
+              <button key={v} onClick={() => setExpJours(v as number)} className={`rounded-full px-2.5 py-1 text-xs font-semibold ${expJours === v ? "bg-navy text-white" : "bg-slate-100 text-slate-600"}`}>{lbl}</button>
             ))}
           </div>
           <div className="mb-3 flex flex-wrap gap-4 text-sm text-slate-600">

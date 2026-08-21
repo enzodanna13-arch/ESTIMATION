@@ -21,15 +21,18 @@ interface Options {
   statuts?: string[]; // vide/absent = tous les statuts
   avecEmail?: boolean; // défaut true (mailing)
   nouveauxUniquement?: boolean; // défaut true (anti-doublon)
+  joursMax?: number; // ex. 1/2/3 : uniquement les leads reçus dans les N derniers jours (0/absent = tous)
   reset?: boolean;
 }
 
 function selectionner(leads: Lead[], o: Options): Lead[] {
   const statuts = (o.statuts ?? []).filter(Boolean);
+  const seuil = o.joursMax && o.joursMax > 0 ? Date.now() - o.joursMax * 86400000 : null;
   return leads.filter((l) => {
     if (statuts.length > 0 && !statuts.includes(l.statut)) return false;
     if (o.avecEmail !== false && !aEmail(l)) return false;
     if (o.nouveauxUniquement !== false && l.exporteLe) return false;
+    if (seuil !== null && l.createdAt < seuil) return false;
     return true;
   });
 }

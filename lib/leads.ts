@@ -135,6 +135,7 @@ export interface ExportOptions {
   statuts?: string[];
   avecEmail?: boolean;
   nouveauxUniquement?: boolean;
+  joursMax?: number; // 1/2/3 : leads reçus dans les N derniers jours (0/absent = tous)
 }
 
 export async function exporterLeadsCsv(options: ExportOptions = {}): Promise<{ count: number; csv: string } | null> {
