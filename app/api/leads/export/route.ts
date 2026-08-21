@@ -9,15 +9,12 @@ export const maxDuration = 300;
 // et « nouveaux uniquement » (jamais exportés). Après export, les contacts
 // sont marqués (exporteLe) et ne ressortent plus si « nouveaux uniquement ».
 
-const COLONNES = ["Email", "Prénom", "Nom", "Téléphone", "Ville", "Statut", "Source", "Type de projet", "Reçu le"];
+const COLONNES = ["Email", "Téléphone"];
 const aEmail = (l: Lead) => /.+@.+\..+/.test((l.email ?? "").trim());
 const champ = (v: unknown): string => `"${String(v ?? "").replace(/"/g, '""')}"`;
 
 function ligneCsv(l: Lead): string {
-  return [
-    l.email, l.prenom, l.nom, l.tel, l.ville, l.statut, l.source, l.typeProjet,
-    new Date(l.createdAt).toLocaleDateString("fr-FR"),
-  ].map(champ).join(",");
+  return [l.email, l.tel].map(champ).join(",");
 }
 
 interface Options {
