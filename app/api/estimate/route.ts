@@ -358,6 +358,73 @@ export async function POST(request: Request) {
             };
           }
         }
+        // ---- Fourchette resserrée + BORNES DE PRIX IMPOSÉES (vente/audit) ----
+        // (a) La fourchette est bornée en amplitude (±4 % max) : fini les
+        //     fourchettes trop larges et peu utiles.
+        // (b) Si le négociateur a saisi un prix plancher/plafond, l'estimation
+        //     est RECALÉE dessus de façon DÉTERMINISTE : elle ne dépasse jamais
+        //     le plafond ni ne descend sous le plancher — même si l'IA a proposé
+        //     un autre prix. Le tableau « du marché au prix retenu » reste exact.
+        if (mission === "vente" || mission === "audit") {
+          const round = (v: number) => (v > 0 ? Math.floor(v / 1000) * 1000 : v);
+          let basse = report.fourchette_basse;
+          let haute = report.fourchette_haute;
+          let presentation = report.prix_presentation > 0 ? report.prix_presentation : report.prix_estime;
+
+          // (a) Amplitude bornée à ±4 % autour du prix de présentation.
+          if (presentation > 0) {
+            const demi = Math.round(presentation * 0.04);
+            if (haute - presentation > demi) haute = round(presentation + demi);
+            if (presentation - basse > demi) basse = round(presentation - demi);
+          }
+
+          // (b) Bornes imposées par le négociateur.
+          const plafond = (body.prixPlafond ?? 0) > 0 ? body.prixPlafond! : null;
+          const plancher = (body.prixPlancher ?? 0) > 0 ? body.prixPlancher! : null;
+          const borne = Boolean(plafond || plancher);
+          if (plafond && haute > plafond) haute = plafond;
+          if (plancher && basse < plancher) basse = plancher;
+          if (basse > haute) basse = round(haute * 0.95); // plafond bas → bande sous le plafond
+          if (plancher && basse < plancher) basse = plancher;
+          if (haute < basse) haute = basse;
+          if (borne) presentation = Math.round((basse + haute) / 2);
+
+          basse = round(basse); haute = round(haute);
+          if (haute < basse) haute = basse;
+          presentation = Math.min(Math.max(round(presentation), basse), haute);
+          const clampSc = (v: number) => Math.min(Math.max(v, basse), haute);
+          const surfV = surfaceHabitableTotale(body);
+
+          // Réconciliation du tableau d'ajustements : base_mediane + Σ = cœur.
+          let ajustements = report.ajustements;
+          if (borne && report.ajustements.length > 0 && report.base_mediane > 0) {
+            const somme = report.ajustements.reduce((s, a) => s + a.montant, 0);
+            const delta = (presentation - report.base_mediane) - somme;
+            if (Math.abs(delta) >= 500) {
+              ajustements = [...report.ajustements];
+              const i = ajustements.findIndex((a) => /borne|négociateur|impos/i.test(a.libelle));
+              if (i >= 0) ajustements[i] = { ...ajustements[i], montant: ajustements[i].montant + delta };
+              else ajustements.push({ libelle: "Positionnement retenu par le négociateur (bornes de prix imposées)", montant: delta });
+            }
+          }
+
+          report = {
+            ...report,
+            fourchette_basse: basse,
+            fourchette_haute: haute,
+            prix_presentation: presentation,
+            prix_estime: borne ? presentation : clampSc(report.prix_estime || presentation),
+            prix_m2: surfV > 0 ? Math.round(presentation / surfV) : report.prix_m2,
+            ajustements,
+            scenarios_prix: report.scenarios_prix.map((s) =>
+              s.strategie === "Vente rapide" ? { ...s, prix: basse }
+                : s.strategie === "Prix optimal" ? { ...s, prix: presentation }
+                  : s.strategie === "Prix plafond" ? { ...s, prix: haute }
+                    : { ...s, prix: clampSc(s.prix) },
+            ),
+          };
+        }
+
         // Historique PARTAGÉ de l'équipe (Vercel Blob) : sauvegarde
         // automatique du dossier — un échec n'empêche jamais le résultat
         try {

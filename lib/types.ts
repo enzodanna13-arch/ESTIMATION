@@ -106,6 +106,11 @@ export interface PropertyInput {
   commentaires: string;
   instructionsIA?: string; // consignes libres du négociateur à l'IA (toutes missions)
 
+  // Bornes de prix IMPOSÉES par le négociateur : l'estimation ne peut jamais
+  // dépasser le plafond ni descendre sous le plancher (garantie déterministe).
+  prixPlafond?: number | null; // l'estimation reste TOUJOURS ≤ ce montant
+  prixPlancher?: number | null; // l'estimation reste TOUJOURS ≥ ce montant
+
   // Marché (saisi par le commercial)
   concurrence: ComparableListing[];
   invendus: ComparableListing[];

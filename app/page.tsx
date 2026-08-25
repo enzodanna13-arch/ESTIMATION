@@ -1544,6 +1544,15 @@ export default function Home() {
                         <input type="number" className={inputCls} value={input.prixSouhaiteVendeur ?? ""} onChange={(e) => set("prixSouhaiteVendeur", num(e.target.value))} placeholder="320000" />
                       </Field>
                     )}
+                    {["vente", "audit"].includes(input.mission ?? "vente") && (
+                      <Field label="Bornes de prix imposées (facultatif) — l'estimation les respectera toujours" className="sm:col-span-2">
+                        <div className="grid gap-3 sm:grid-cols-2">
+                          <input type="number" className={inputCls} value={input.prixPlancher ?? ""} onChange={(e) => set("prixPlancher", num(e.target.value))} placeholder="Prix plancher € (mini)" />
+                          <input type="number" className={inputCls} value={input.prixPlafond ?? ""} onChange={(e) => set("prixPlafond", num(e.target.value))} placeholder="Prix plafond € (maxi — jamais dépassé)" />
+                        </div>
+                        <p className="mt-1 text-xs text-slate-400">Si vous connaissez déjà la juste valeur : l&apos;outil recale l&apos;estimation et la fourchette pour rester dans ces bornes, même si le calcul théorique en sort.</p>
+                      </Field>
+                    )}
                     <Field label="Contexte (mutation, succession, divorce…)">
                       <input className={inputCls} value={input.contexteVente} onChange={(e) => set("contexteVente", e.target.value)} />
                     </Field>

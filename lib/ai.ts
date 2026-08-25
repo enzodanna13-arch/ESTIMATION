@@ -86,7 +86,7 @@ const FINAL_SCHEMA = {
     },
     ajustements: {
       type: "array",
-      description: "UNE SEULE ligne : l'actualisation au marché actuel (marché baissier), appliquée à la base médiane pour aboutir à prix_estime. AUCUNE plus-value ni décote de caractéristique.",
+      description: "AU PLUS 2 lignes appliquées à la base médiane pour aboutir à prix_estime : (1) « Actualisation au marché actuel (marché baissier) » ; (2) « Positionnement du bien dans le secteur (état & prestations) », signé, borné à ±15 % de la base. Leur somme mène exactement de base_mediane à prix_estime.",
       items: {
         type: "object",
         properties: { libelle: { type: "string" }, montant: { type: "number" } },
@@ -203,7 +203,10 @@ RÈGLES :
 - MÉTHODE D'ESTIMATION (chemin imposé, dans cet ordre) :
   1. RÉFÉRENCES → si la fiche fournit une section « RÉFÉRENCES RETENUES », reprends-la TELLE QUELLE dans references_dvf (mêmes ventes, mêmes montants) et utilise la base_mediane IMPOSÉE : c'est ce qui garantit qu'un même dossier donne toujours le même calcul. Sinon, sélectionne 3 à 6 ventes réelles dans la liste DVF fournie, en appliquant la règle de PROXIMITÉ ci-dessous et des surfaces proches du bien (±25 %), et en ÉCARTANT toute vente au €/m² manifestement atypique (bien d'exception, vente entre proches) — mieux vaut 3-4 excellents comparables très proches que 6 éloignés. Dès que la liste n'est pas vide, references_dvf ne doit JAMAIS être vide. Reporte l'adresse et la distance dans localisation/detail. Rédige analyse_dvf.
   2. BASE → base_mediane = le €/m² MÉDIAN de ces références (en privilégiant les plus proches et les plus semblables) MULTIPLIÉ par la surface habitable du bien. Quand la base_mediane est IMPOSÉE, reprends-la exactement : elle est déjà calculée à la surface du bien.
-  3. PRIX RETENU (analyse au m² PURE) → prix_estime = base_mediane à laquelle on applique UNIQUEMENT l'actualisation au marché actuel (marché baissier, voir règle prioritaire ci-dessous). N'ajoute AUCUNE plus-value ni décote de caractéristique — NI DPE, NI état, NI extérieur, NI équipement (piscine, solaire…), NI stationnement, NI annexe : l'analyse au m² des ventes réellement comparables du secteur intègre déjà, de fait, ces éléments. Le tableau ajustements ne contient donc QU'UNE SEULE ligne : « Actualisation au marché actuel (ventes datées, marché en baisse) », montant NÉGATIF (ou nul si toutes les références sont très récentes), qui mène exactement de base_mediane à prix_estime. Tu peux mentionner les atouts/défauts du bien dans les TEXTES (description, points forts/faibles, positionnement) mais JAMAIS sous forme de ligne chiffrée d'ajustement.
+  3. PRIX RETENU → prix_estime = base_mediane ajustée de DEUX effets, et deux seulement :
+     a) ACTUALISATION MARCHÉ (marché baissier, voir règle prioritaire ci-dessous) : ligne « Actualisation au marché actuel (ventes datées, marché en baisse) », montant négatif ou nul selon l'ancienneté des références.
+     b) POSITIONNEMENT DU BIEN DANS LE SECTEUR (borné à ±15 % de la base) : le €/m² du secteur est dispersé ; place le bien selon son ÉTAT et ses PRESTATIONS RÉELS comparés aux biens vendus. Un bien SOUS la moyenne du secteur (à rafraîchir/rénover, SDB/cuisine datées, SANS stationnement ni cave, vue médiocre, mitoyenneté, nuisances…) se positionne dans le BAS de la fourchette → DÉCOTE. Un bien HAUT de gamme (rénové, prestations, extérieurs, vue) se positionne en HAUT → PRIME. En marché DISPERSÉ ou fiabilité FAIBLE, sois PRUDENT et positionne plutôt bas. Traduis-le par UNE ligne « Positionnement du bien dans le secteur (état & prestations) », montant SIGNÉ, borné à ±15 % de la base_mediane.
+     Le tableau ajustements contient donc AU PLUS ces deux lignes ; leur somme mène EXACTEMENT de base_mediane à prix_estime. Ne double-compte jamais un même facteur. Un bien moyen/quelconque du secteur ne se vend PAS au prix d'un bien rénové : n'hésite pas à décoter franchement un bien qui présente plusieurs faiblesses.
   4. FOURCHETTE → fourchette_basse = le prix du scénario « Vente rapide » ; fourchette_haute = le HAUT de la fourchette présentée au client (« Prix plafond »), prix_estime entre les deux. CONTRAINTE IMPÉRATIVE D'ÉCART : l'écart entre « Prix optimal » (prix_presentation) et « Vente rapide » (fourchette_basse) doit être d'AU MOINS 25 000 € — jamais moins. Si le calcul aboutit à un écart inférieur, ABAISSE « Vente rapide » (donc fourchette_basse) jusqu'à obtenir au minimum 25 000 € d'écart. Le prix de mise en marché conseillé (prix_presentation = « Prix optimal ») se place clairement au-dessus de « Vente rapide » (≥ 25 000 €) et jamais au sommet de la fourchette, arrondi vers le bas à un seuil attractif (ex. 355 000). Le « Prix plafond » reste ton garde-fou interne : fourchette_haute ne dépasse jamais la meilleure vente comparable ACTUALISÉE. Justifie les deux bornes et le prix conseillé dans positionnement_marche (ventes de référence, actualisation, atouts/défauts).
 - scenarios_prix : exactement 3 scénarios chiffrés, prix STRICTEMENT CROISSANTS :
   1. « Vente rapide » — sous la fourchette, pour vendre en quelques semaines ; il est AU MOINS 25 000 € SOUS le « Prix optimal » (écart minimum impératif).
@@ -252,7 +255,12 @@ ${(input.dependances ?? []).length ? `- Dépendances : ${(input.dependances ?? [
 - Charges copro : ${input.chargesCopro ?? "n.c."} €/mois | Taxe foncière : ${input.taxeFonciere ?? "n.c."} €/an
 
 ## Contexte de vente
-- Prix souhaité par le vendeur : ${input.prixSouhaiteVendeur ? `${input.prixSouhaiteVendeur} €` : "non communiqué"}
+- Prix souhaité par le vendeur : ${input.prixSouhaiteVendeur ? `${input.prixSouhaiteVendeur} €` : "non communiqué"}${
+    (input.prixPlafond ?? 0) > 0 || (input.prixPlancher ?? 0) > 0
+      ? `
+- ⛔ CONTRAINTE DE PRIX IMPÉRATIVE (imposée par le négociateur, qui connaît le terrain) : ${(input.prixPlancher ?? 0) > 0 ? `l'estimation ne doit PAS descendre sous ${input.prixPlancher} €` : ""}${(input.prixPlancher ?? 0) > 0 && (input.prixPlafond ?? 0) > 0 ? " ; " : ""}${(input.prixPlafond ?? 0) > 0 ? `l'estimation ne doit JAMAIS dépasser ${input.prixPlafond} €` : ""}. CALIBRE TOUTE ton analyse (base, ajustements, prix_estime, prix_presentation, fourchette, les 3 scénarios) pour rester STRICTEMENT dans ces bornes. Cet ordre PRIME sur le calcul théorique : un négociateur expérimenté corrige ainsi les biens que les seules données surévaluent ou sous-évaluent.`
+      : ""
+  }
 - Contexte : ${input.contexteVente || "n.c."}
 ${input.commentaires ? `- Commentaires du négociateur : ${input.commentaires}` : ""}${
     input.instructionsIA?.trim()
