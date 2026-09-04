@@ -550,8 +550,13 @@ export default function Home() {
         subject: rapportPhase.subject ?? null,
       } as unknown as EstimateResponse;
       // Mission audit par lien : le serveur renvoie la fiche ENRICHIE par
-      // l'annonce (localisation, surface, DPE…) — le dossier l'affiche
-      if (rapportPhase.input) setInput(rapportPhase.input as PropertyInput);
+      // l'annonce (localisation, surface, DPE…) — le dossier l'affiche.
+      // On conserve TOUJOURS les photos téléversées localement : si l'écho
+      // serveur les avait perdues, elles ne doivent pas disparaître du dossier.
+      if (rapportPhase.input) {
+        const srv = rapportPhase.input as PropertyInput;
+        setInput({ ...srv, photos: srv.photos?.length ? srv.photos : input.photos });
+      }
       setResult(estimation);
       window.scrollTo({ top: 0, behavior: "smooth" });
       // La sauvegarde dans l'historique partagé est faite par le serveur

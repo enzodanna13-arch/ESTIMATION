@@ -130,7 +130,15 @@ export default function Report({
     : null;
   const margeNego = report.prix_estime > 0 ? (((prixPresentation - report.prix_estime) / report.prix_estime) * 100).toFixed(1) : "0";
 
-  const photoAnalyses = report.analyse_par_photo.filter((pa) => input.photos[pa.photo - 1]);
+  // Le dossier affiche TOUJOURS les photos fournies par le négociateur, même
+  // quand l'analyse IA par photo est absente (repli sur le moteur statistique,
+  // ou réponse IA sans fiches détaillées). On part donc des photos réellement
+  // téléversées et on rattache à chacune son analyse quand elle existe — ainsi
+  // les photos ne disparaissent plus jamais du dossier.
+  const photoAnalyses = input.photos.map((_, i) => {
+    const pa = report.analyse_par_photo.find((p) => p.photo === i + 1);
+    return pa ?? { photo: i + 1, titre: "", bons_points: [], defauts: [] };
+  });
 
   // Références DVF + médiane — même définition que la base des ajustements
   // (lib/references.ts) : les pages Comparables et Prix retenu affichent
@@ -606,17 +614,19 @@ export default function Report({
                 return (
                   <div key={pa.photo} className="photo-card">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={`data:${photo.mediaType};base64,${photo.data}`} alt={pa.titre} />
+                    <img src={`data:${photo.mediaType};base64,${photo.data}`} alt={pa.titre || `Photo ${pa.photo}`} />
                     <div className="pc-body">
-                      <div className="pc-title">{pa.titre}</div>
-                      <ul>
-                        {pa.bons_points.slice(0, 3).map((b, i) => (
-                          <li key={`b${i}`} className="plus">{b}</li>
-                        ))}
-                        {pa.defauts.slice(0, 3).map((d, i) => (
-                          <li key={`d${i}`} className="moins">{d}</li>
-                        ))}
-                      </ul>
+                      <div className="pc-title">{pa.titre || `Photo ${pa.photo}`}</div>
+                      {(pa.bons_points.length > 0 || pa.defauts.length > 0) && (
+                        <ul>
+                          {pa.bons_points.slice(0, 3).map((b, i) => (
+                            <li key={`b${i}`} className="plus">{b}</li>
+                          ))}
+                          {pa.defauts.slice(0, 3).map((d, i) => (
+                            <li key={`d${i}`} className="moins">{d}</li>
+                          ))}
+                        </ul>
+                      )}
                     </div>
                   </div>
                 );
