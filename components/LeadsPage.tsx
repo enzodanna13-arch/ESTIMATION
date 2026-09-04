@@ -62,18 +62,16 @@ function niveauFunnel(l: Lead): number {
   return 0;
 }
 
-// Analyse des créneaux horaires (heure d'arrivée du lead → issue).
-interface CreneauBucket { label: string; n: number; nContact: number; nConv: number; contact: number; conv: number; }
+// Analyse des créneaux horaires : simple répartition du VOLUME de leads selon
+// leur heure d'arrivée, pour caler les horaires de diffusion des campagnes.
+interface CreneauBucket { label: string; n: number; pct: number; }
 interface CreneauxData {
   parHeure: CreneauBucket[];
   parJour: CreneauBucket[];
   meilleureHeure: CreneauBucket | null;
   meilleurJour: CreneauBucket | null;
   total: number;
-  seuil: number;
-  maxN: number;
 }
-const clsTaux = (p: number) => (p >= 50 ? "text-emerald-600" : p >= 25 ? "text-amber-600" : "text-red-500");
 
 export default function LeadsPage({ onRetour }: { onRetour: () => void }) {
   const [leads, setLeads] = useState<Lead[] | null>(null);
@@ -145,55 +143,37 @@ export default function LeadsPage({ onRetour }: { onRetour: () => void }) {
     ];
   }, [leads]);
 
-  // Analyse des CRÉNEAUX HORAIRES : à partir de l'heure d'ARRIVÉE de chaque
-  // lead (createdAt, heure locale) et de son issue, on mesure quels créneaux
-  // rapportent les leads qui se transforment le mieux. Deux lectures : par
-  // tranche horaire (2 h) et par jour de la semaine. Métriques par créneau :
-  // volume, taux de contact (au moins un échange consigné) et taux de
-  // conversion (mandat pris / converti). Utile pour caler la diffusion des
-  // pubs et pour prioriser le rappel des leads « chauds » à la bonne heure.
+  // Analyse des CRÉNEAUX HORAIRES : simple répartition du VOLUME de leads selon
+  // l'heure d'ARRIVÉE (createdAt, heure locale). Deux lectures : par tranche
+  // horaire (2 h) et par jour de la semaine. But : savoir quand les leads
+  // tombent, pour caler les horaires de diffusion des campagnes.
   const creneaux = useMemo(() => {
     const ls = leads ?? [];
-    const converti = (l: Lead) => l.statut === "Prise de mandat" || l.statut === "Converti";
-    const contacte = (l: Lead) => niveauFunnel(l) >= 1;
-
-    const agrege = (label: string, items: Lead[]): CreneauBucket => {
-      const n = items.length;
-      const nContact = items.filter(contacte).length;
-      const nConv = items.filter(converti).length;
-      return { label, n, nContact, nConv, contact: n ? Math.round((nContact / n) * 100) : 0, conv: n ? Math.round((nConv / n) * 100) : 0 };
-    };
+    const total = ls.length;
+    const agrege = (label: string, n: number): CreneauBucket => ({ label, n, pct: total ? Math.round((n / total) * 100) : 0 });
 
     const TRANCHES: [string, number, number][] = [
       ["Nuit · 0h–8h", 0, 8], ["8h–10h", 8, 10], ["10h–12h", 10, 12], ["12h–14h", 12, 14],
       ["14h–16h", 14, 16], ["16h–18h", 16, 18], ["18h–20h", 18, 20], ["20h–00h", 20, 24],
     ];
     const parHeure = TRANCHES.map(([label, h0, h1]) =>
-      agrege(label, ls.filter((l) => { const h = new Date(l.createdAt).getHours(); return h >= h0 && h < h1; })),
+      agrege(label, ls.filter((l) => { const h = new Date(l.createdAt).getHours(); return h >= h0 && h < h1; }).length),
     );
 
     // Semaine du lundi au dimanche (getDay : 0 = dimanche)
     const JOURS = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"];
     const parJour = JOURS.map((label, i) => {
       const js = (i + 1) % 7; // Lundi → 1 … Dimanche → 0
-      return agrege(label, ls.filter((l) => new Date(l.createdAt).getDay() === js));
+      return agrege(label, ls.filter((l) => new Date(l.createdAt).getDay() === js).length);
     });
 
-    // Meilleur créneau : on classe d'abord par conversion (avec un minimum de
-    // volume pour éviter qu'un 1/1 = 100 % ne fausse tout) ; si les mandats
-    // sont encore trop rares, on bascule sur le taux de contact.
-    const total = ls.length;
-    const seuil = Math.max(3, Math.round(total * 0.04));
+    // Créneau le plus chargé (plus gros volume de leads) sur chaque axe.
     const meilleur = (buckets: CreneauBucket[]): CreneauBucket | null => {
-      const eligibles = buckets.filter((b) => b.n >= seuil);
-      const pool = eligibles.length ? eligibles : buckets.filter((b) => b.n > 0);
-      if (pool.length === 0) return null;
-      const parConv = [...pool].sort((a, b) => b.conv - a.conv || b.n - a.n);
-      if (parConv[0].nConv > 0) return parConv[0];
-      return [...pool].sort((a, b) => b.contact - a.contact || b.n - a.n)[0]; // pas encore de mandat : on se base sur le contact
+      const pool = buckets.filter((b) => b.n > 0);
+      return pool.length ? [...pool].sort((a, b) => b.n - a.n)[0] : null;
     };
 
-    return { parHeure, parJour, meilleureHeure: meilleur(parHeure), meilleurJour: meilleur(parJour), total, seuil, maxN: Math.max(1, ...parHeure.map((b) => b.n), ...parJour.map((b) => b.n)) };
+    return { parHeure, parJour, meilleureHeure: meilleur(parHeure), meilleurJour: meilleur(parJour), total };
   }, [leads]);
 
   const majLead = async (id: string, patch: Partial<Lead>) => {
@@ -777,79 +757,69 @@ export function FicheLead({ lead, onClose, onStatut, onSuivi, onPatch, onTransfe
 // mieux. Barre = taux de conversion du créneau ; à droite le volume et le
 // taux de contact. Un badge « Meilleur » repère le créneau le plus performant.
 // ---------------------------------------------------------------------------
-function CreneauLigne({ b, best }: { b: CreneauBucket; best: boolean }) {
+function CreneauLigne({ b, maxN, best }: { b: CreneauBucket; maxN: number; best: boolean }) {
   return (
     <div className="flex items-center gap-3">
       <div className="flex w-28 shrink-0 items-center gap-1.5 text-sm font-semibold text-slate-700">
         {b.label}
-        {best && <span className="rounded-full bg-teal-600 px-1.5 py-0.5 text-[9px] font-bold uppercase text-white">Top</span>}
+        {best && b.n > 0 && <span className="rounded-full bg-teal-600 px-1.5 py-0.5 text-[9px] font-bold uppercase text-white">Pic</span>}
       </div>
       <div className="relative h-6 flex-1 overflow-hidden rounded-lg bg-slate-100">
-        <div className={`h-full rounded-lg ${best ? "bg-teal-500" : "bg-copper/70"}`} style={{ width: `${Math.max(b.conv, b.n ? 3 : 0)}%` }} />
+        <div className={`h-full rounded-lg ${best && b.n > 0 ? "bg-teal-500" : "bg-copper/70"}`} style={{ width: `${b.n > 0 ? Math.max((b.n / maxN) * 100, 4) : 0}%` }} />
         <span className="absolute inset-y-0 left-2 flex items-center text-xs font-bold text-slate-700">
-          {b.n > 0 ? `${b.conv}% conversion` : "—"}
+          {b.n > 0 ? `${b.n} lead${b.n > 1 ? "s" : ""}` : "—"}
         </span>
       </div>
-      <div className="w-40 shrink-0 text-right text-xs text-slate-500">
-        {b.n > 0 ? (
-          <>
-            <span className="font-semibold text-slate-700">{b.n}</span> lead{b.n > 1 ? "s" : ""} ·{" "}
-            <span className={`font-semibold ${clsTaux(b.contact)}`}>{b.contact}%</span> contact
-          </>
-        ) : (
-          <span className="text-slate-300">aucun lead</span>
-        )}
+      <div className="w-16 shrink-0 text-right text-xs font-semibold text-slate-500">
+        {b.n > 0 ? `${b.pct}%` : <span className="text-slate-300">0%</span>}
       </div>
     </div>
   );
 }
 
 function CreneauBloc({ titre, buckets, best }: { titre: string; buckets: CreneauBucket[]; best: CreneauBucket | null }) {
+  // Barres mises à l'échelle du plus gros créneau DE CE BLOC (les jours cumulent
+  // plusieurs heures : chaque axe garde donc sa propre échelle lisible).
+  const maxN = Math.max(1, ...buckets.map((b) => b.n));
   return (
     <div className="rounded-2xl border border-slate-200 bg-white p-4">
       <div className="mb-3 text-sm font-bold text-navy">{titre}</div>
       <div className="space-y-2">
-        {buckets.map((b) => <CreneauLigne key={b.label} b={b} best={best?.label === b.label && b.n > 0} />)}
+        {buckets.map((b) => <CreneauLigne key={b.label} b={b} maxN={maxN} best={best?.label === b.label} />)}
       </div>
     </div>
   );
 }
 
 function CreneauxView({ data }: { data: CreneauxData }) {
-  const { parHeure, parJour, meilleureHeure, meilleurJour, total, seuil } = data;
+  const { parHeure, parJour, meilleureHeure, meilleurJour, total } = data;
 
   return (
     <div className="space-y-4">
       {/* Recommandation en tête */}
       <div className="rounded-2xl border border-teal-200 bg-teal-50/60 p-4">
-        <div className="mb-1 text-sm font-bold text-teal-800">🎯 Vos meilleurs créneaux</div>
+        <div className="mb-1 text-sm font-bold text-teal-800">📣 Quand diffuser vos campagnes</div>
         {meilleureHeure || meilleurJour ? (
           <p className="text-sm text-slate-700">
             {meilleureHeure && (
-              <>Le créneau <span className="font-bold text-teal-800">{meilleureHeure.label}</span> est le plus performant :{" "}
-                <span className={`font-bold ${clsTaux(meilleureHeure.conv)}`}>{meilleureHeure.conv}% de conversion</span>{" "}
-                et <span className={`font-bold ${clsTaux(meilleureHeure.contact)}`}>{meilleureHeure.contact}% de contact</span> sur {meilleureHeure.n} leads reçus. </>
+              <>Vos leads arrivent surtout sur le créneau <span className="font-bold text-teal-800">{meilleureHeure.label}</span>{" "}
+                ({meilleureHeure.n} leads, {meilleureHeure.pct}% du total). </>
             )}
             {meilleurJour && (
-              <>Meilleur jour : <span className="font-bold text-teal-800">{meilleurJour.label}</span>{" "}
-                ({meilleurJour.conv}% de conversion, {meilleurJour.n} leads).</>
+              <>Jour le plus actif : <span className="font-bold text-teal-800">{meilleurJour.label}</span>{" "}
+                ({meilleurJour.n} leads, {meilleurJour.pct}%).</>
             )}
           </p>
         ) : (
-          <p className="text-sm text-slate-500">Pas encore assez de leads pour dégager une tendance fiable — l&apos;analyse s&apos;affine à chaque nouveau lead.</p>
+          <p className="text-sm text-slate-500">Pas encore de leads à analyser — la répartition s&apos;affiche dès les premiers leads reçus.</p>
         )}
         <p className="mt-1.5 text-xs text-slate-400">
-          Créneau = heure d&apos;<b>arrivée</b> du lead. « Contact » = au moins un échange consigné ; « Conversion » = mandat pris ou lead converti.
-          Un créneau doit compter au moins {seuil} leads pour être élu « Top ». Analyse sur {total} lead{total > 1 ? "s" : ""} au total.
+          Répartition selon l&apos;heure d&apos;<b>arrivée</b> des leads (heure locale). Concentrez la diffusion de vos publicités sur les créneaux où ils tombent le plus. Analyse sur {total} lead{total > 1 ? "s" : ""} au total.
         </p>
       </div>
 
       <CreneauBloc titre="⏰ Par tranche horaire (heure d'arrivée)" buckets={parHeure} best={meilleureHeure} />
       <CreneauBloc titre="📅 Par jour de la semaine" buckets={parJour} best={meilleurJour} />
-
-      <p className="text-xs text-slate-400">
-        💡 À exploiter : concentrez la diffusion de vos publicités sur les créneaux qui convertissent le mieux, et rappelez en priorité — le plus vite possible — les leads qui arrivent pendant ces fenêtres.
-      </p>
     </div>
   );
 }
