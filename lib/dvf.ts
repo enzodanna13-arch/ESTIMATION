@@ -10,13 +10,23 @@ function toNumber(v: unknown): number | null {
   return Number.isFinite(n) ? n : null;
 }
 
-async function fetchWithTimeout(url: string, ms: number): Promise<Response | null> {
-  try {
-    const res = await fetch(url, { signal: AbortSignal.timeout(ms), headers: { accept: "*/*" } });
-    return res.ok ? res : null;
-  } catch {
-    return null;
+// La source officielle DVF est servie via une REDIRECTION (302) vers un bucket
+// S3 OVH : un aléa réseau sur ce saut suffisait à renvoyer 0 vente et à figer
+// un dossier SANS aucune référence DVF (l'ancienne API communautaire de secours
+// est hors service). On réessaie donc quelques fois avant d'abandonner ; un
+// 404 (millésime pas encore publié, ex. année en cours) n'est PAS réessayé.
+async function fetchWithTimeout(url: string, ms: number, retries = 2): Promise<Response | null> {
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      const res = await fetch(url, { signal: AbortSignal.timeout(ms), headers: { accept: "*/*" } });
+      if (res.ok) return res;
+      if (res.status === 404) return null; // fichier inexistant : inutile d'insister
+    } catch {
+      /* aléa réseau/timeout : on réessaie */
+    }
+    if (attempt < retries) await new Promise((r) => setTimeout(r, 400 * (attempt + 1)));
   }
+  return null;
 }
 
 /**
