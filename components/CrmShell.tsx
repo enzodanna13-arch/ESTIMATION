@@ -56,7 +56,7 @@ const METIERS: { id: Metier; label: string; icon: string; soon?: boolean }[] = [
 ];
 
 export function CrmChrome({
-  univers, histoSection, metier, onMetier, onNavigate, onReset,
+  univers, histoSection, metier, onMetier, onNavigate, onReset, onPortail,
 }: {
   univers: string;
   histoSection: string;
@@ -64,6 +64,7 @@ export function CrmChrome({
   onMetier: (m: Metier) => void;
   onNavigate: (v: string, h?: string) => void;
   onReset: () => void;
+  onPortail?: () => void;
 }) {
   const [open, setOpen] = useState(false);
   const close = () => setOpen(false);
@@ -113,7 +114,10 @@ export function CrmChrome({
           ))}
         </nav>
 
-        <div className="ml-auto hidden items-center gap-2.5 sm:flex">
+        {onPortail && (
+          <button type="button" onClick={onPortail} className="ml-auto rounded-lg border border-white/20 px-3 py-1.5 text-xs font-semibold text-white/90 hover:bg-white/10" title="Revenir au choix des espaces">⊞ Espaces</button>
+        )}
+        <div className={`${onPortail ? "" : "ml-auto"} hidden items-center gap-2.5 sm:flex`}>
           <span className="flex h-9 w-9 items-center justify-center rounded-full border border-white/20 bg-navy text-[13px] font-bold">C21</span>
           <span className="hidden leading-tight lg:block">
             <b className="block text-[13px] font-semibold">Équipe Icaza</b>
@@ -217,6 +221,52 @@ export function MetierBientot({ metier, onRetour }: { metier: Metier; onRetour: 
           </button>
         </div>
       </div>
+    </div>
+  );
+}
+
+// Portail d'entrée (après le mot de passe d'équipe) : chaque métier accède à son
+// espace. La Transaction ouvre l'outil actuel ; le Syndic a sa propre connexion.
+export function Portail({ onTransaction }: { onTransaction: () => void }) {
+  const cartes: { titre: string; sous: string; desc: string; icon: string; onClick?: () => void; href?: string; soon?: boolean; primaire?: boolean }[] = [
+    { titre: "Transaction", sous: "Négociateurs", desc: "Estimations, leads entrants, dossiers clients, documents et pilotage commercial.", icon: "🏠", onClick: onTransaction, primaire: true },
+    { titre: "Syndic", sous: "Gestionnaires", desc: "Suivi des demandes des copropriétaires, attribution automatique, rédaction IA.", icon: "🏢", href: "/syndic" },
+    { titre: "Accueil", sous: "Saisie des demandes", desc: "Enregistrer rapidement un appel, une visite ou un mail et le transmettre au bon gestionnaire.", icon: "📞", href: "/syndic" },
+    { titre: "Gestion locative", sous: "À venir", desc: "Suivi des lots, locataires et loyers — bientôt disponible dans cet espace.", icon: "🔑", soon: true },
+  ];
+  return (
+    <div className="min-h-screen bg-[var(--background)]">
+      <header className="bg-navy-deep px-4 py-5 text-white">
+        <div className="mx-auto flex max-w-5xl items-center gap-3">
+          <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-copper text-lg font-black">21</span>
+          <div className="leading-tight">
+            <b className="block text-base font-bold tracking-wide">CENTURY 21 · Icaza Immobilier</b>
+            <span className="text-xs text-white/60">Martigues — choisissez votre espace</span>
+          </div>
+        </div>
+      </header>
+      <main className="mx-auto max-w-5xl px-4 py-10">
+        <h1 className="mb-1 text-2xl font-bold text-navy">Bienvenue</h1>
+        <p className="mb-8 text-sm text-slate-500">Sélectionnez l&apos;espace correspondant à votre métier.</p>
+        <div className="grid gap-5 sm:grid-cols-2">
+          {cartes.map((c) => {
+            const inner = (
+              <>
+                <div className="mb-3 text-4xl">{c.icon}</div>
+                <div className={`text-xl font-bold ${c.primaire ? "text-white" : "text-navy"}`}>{c.titre}</div>
+                <div className={`text-xs font-semibold uppercase tracking-wide ${c.primaire ? "text-white/70" : "text-copper"}`}>{c.sous}</div>
+                <p className={`mt-2 text-sm ${c.primaire ? "text-slate-300" : "text-slate-500"}`}>{c.desc}</p>
+                {!c.soon && <span className={`mt-4 inline-block rounded-lg px-4 py-2 text-sm font-semibold text-white ${c.primaire ? "bg-copper" : "bg-navy"}`}>Ouvrir →</span>}
+                {c.soon && <span className="mt-4 inline-block rounded-lg bg-slate-200 px-4 py-2 text-sm font-semibold text-slate-500">Bientôt</span>}
+              </>
+            );
+            const cls = `group block rounded-3xl border-2 p-8 text-left transition ${c.primaire ? "border-navy bg-navy hover:shadow-lg" : c.soon ? "cursor-default border-dashed border-slate-300 bg-white/60" : "border-slate-200 bg-white hover:border-copper hover:shadow-lg"}`;
+            if (c.href) return <a key={c.titre} href={c.href} className={cls}>{inner}</a>;
+            if (c.onClick) return <button key={c.titre} type="button" onClick={c.onClick} className={`${cls} w-full`}>{inner}</button>;
+            return <div key={c.titre} className={cls}>{inner}</div>;
+          })}
+        </div>
+      </main>
     </div>
   );
 }

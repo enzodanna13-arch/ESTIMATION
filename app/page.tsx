@@ -15,7 +15,7 @@ import { consommerPrefillEstimation } from "@/lib/prefillEstimation";
 import DashboardPage from "@/components/DashboardPage";
 import NegociateursPage from "@/components/NegociateursPage";
 import EspaceNegociateurPage from "@/components/EspaceNegociateurPage";
-import { CrmChrome, MetierBientot, type Metier } from "@/components/CrmShell";
+import { CrmChrome, MetierBientot, Portail, type Metier } from "@/components/CrmShell";
 import { NEGOCIATEURS } from "@/lib/equipe";
 import { deleteDocument, deleteEstimation, getDocument, getEstimation, getHistoryKey, HistoryLockedError, listDocuments, listEstimations, saveDocument, setHistoryKey, type DocHistoryMeta, type HistoryMeta } from "@/lib/history";
 import { loyerNetAnnuel, prixParRendement, RENDEMENT_NET_BAS, RENDEMENT_NET_HAUT } from "@/lib/rendement";
@@ -241,6 +241,9 @@ export default function Home() {
   // Métier actif (compartimentage CRM) : Transaction contient tout l'existant ;
   // Syndic et Gestion locative sont préparés (écran « à venir »).
   const [metier, setMetier] = useState<Metier>("transaction");
+  // Portail d'entrée : après le mot de passe d'équipe, on choisit son espace.
+  // "" = portail affiché ; "transaction" = outil négociateur ouvert.
+  const [espace, setEspace] = useState<"" | "transaction">("");
   const [sauvegarde, setSauvegarde] = useState<"idle" | "encours" | "erreur">("idle");
   const [sauvegardeMsg, setSauvegardeMsg] = useState<string | null>(null);
 
@@ -746,6 +749,8 @@ export default function Home() {
             </div>
           </main>
         </>
+      ) : espace === "" ? (
+        <Portail onTransaction={() => setEspace("transaction")} />
       ) : (
         <>
           <CrmChrome
@@ -753,6 +758,7 @@ export default function Home() {
             histoSection={histoSection}
             metier={metier}
             onMetier={setMetier}
+            onPortail={() => { setUnivers(""); setMetier("transaction"); setEspace(""); }}
             onNavigate={(v, h) => {
               setResult(null); setStep(0); setDocResult(null); setDocType(""); setError(null);
               setHistoSection((h ?? "") as typeof histoSection); setHistoQ(""); setMetier("transaction");
