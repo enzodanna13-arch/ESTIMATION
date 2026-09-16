@@ -183,7 +183,7 @@ export function MetierBientot({ metier, onRetour }: { metier: Metier; onRetour: 
       ? {
           em: "🏢",
           titre: "Module Syndic",
-          txt: "La gestion des demandes des copropriétaires arrivera ici : saisie à l'accueil, attribution automatique au gestionnaire, suivi des délais et tableau de bord du responsable.",
+          txt: "La gestion des demandes des copropriétaires : saisie à l'accueil, attribution automatique au gestionnaire, suivi des délais et tableau de bord. Le module a sa propre connexion (comptes individuels).",
         }
       : {
           em: "🔑",
@@ -199,13 +199,23 @@ export function MetierBientot({ metier, onRetour }: { metier: Metier; onRetour: 
         <div className="text-5xl">{info.em}</div>
         <h2 className="mt-3 text-2xl font-bold text-navy">{info.titre}</h2>
         <p className="mt-2 text-sm text-slate-500">{info.txt}</p>
-        <button
-          type="button"
-          onClick={onRetour}
-          className="mt-6 rounded-xl bg-navy px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-navy-deep"
-        >
-          ← Revenir à la Transaction
-        </button>
+        <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+          {metier === "syndic" && (
+            <a
+              href="/syndic"
+              className="rounded-xl bg-copper px-5 py-2.5 text-sm font-bold text-white transition hover:brightness-110"
+            >
+              Ouvrir le module Syndic →
+            </a>
+          )}
+          <button
+            type="button"
+            onClick={onRetour}
+            className="rounded-xl bg-navy px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-navy-deep"
+          >
+            ← Revenir à la Transaction
+          </button>
+        </div>
       </div>
     </div>
   );
