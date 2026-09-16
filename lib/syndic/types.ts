@@ -61,7 +61,7 @@ export interface LotSyndic {
 }
 
 export type QualiteContact = "proprietaire" | "occupant" | "conseil_syndical";
-export const QUALITES_LABELS: Record<QualiteContact, string> = {
+export const QUALITES_LABELS: Record<string, string> = {
   proprietaire: "Propriétaire",
   occupant: "Occupant",
   conseil_syndical: "Membre du conseil syndical",
@@ -86,6 +86,28 @@ export interface ContactSyndic {
 }
 
 // --- Tickets (modèle figé maintenant ; CRUD au Lot 2) -----------------------
+export const CATEGORIES_LABELS: Record<string, string> = {
+  information: "Information",
+  demande_document: "Demande de document",
+  travaux_parties_communes: "Travaux parties communes",
+  sinistre: "Sinistre",
+  reclamation: "Réclamation",
+  charges_comptabilite: "Charges / comptabilité",
+  assemblee_generale: "Assemblée générale",
+  autre: "Autre",
+};
+export const PRIORITES_LABELS: Record<string, string> = {
+  normale: "Normale", haute: "Haute", urgence: "Urgence",
+};
+export const STATUTS_LABELS: Record<string, string> = {
+  nouveau: "Nouveau", assigne: "Attribué", en_cours: "En cours",
+  en_attente: "En attente", clos: "Clos",
+};
+export const ORIGINES_LABELS: Record<string, string> = {
+  accueil_telephone: "Accueil — téléphone", accueil_visite: "Accueil — visite",
+  mail: "Mail", courrier: "Courrier", portail: "Portail", gestionnaire: "Gestionnaire",
+};
+
 export type TicketService = "syndic" | "gestion_locative";
 export type TicketOrigine =
   | "accueil_telephone" | "accueil_visite" | "mail" | "courrier" | "portail" | "gestionnaire";

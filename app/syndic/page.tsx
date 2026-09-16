@@ -1,7 +1,10 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { ROLES_LABELS, type SyndicRole, type SyndicUserPublic } from "@/lib/syndic/types";
+import {
+  ROLES_LABELS, CATEGORIES_LABELS, PRIORITES_LABELS, STATUTS_LABELS, QUALITES_LABELS,
+  type SyndicRole, type SyndicUserPublic,
+} from "@/lib/syndic/types";
 import { CHAMPS_IMPORT, type TypeImport } from "@/lib/syndic/csv";
 import * as api from "@/lib/syndic/client";
 import type { ResidenceListe } from "@/lib/syndic/client";
@@ -19,7 +22,8 @@ export default function SyndicPage() {
   const [chargement, setChargement] = useState(true);
   const [user, setUser] = useState<SyndicUserPublic | null>(null);
   const [besoinBootstrap, setBesoin] = useState(false);
-  const [onglet, setOnglet] = useState<"residences" | "utilisateurs" | "import">("residences");
+  const [section, setSection] = useState<string>("demandes");
+  const [ticketId, setTicketId] = useState<string | null>(null);
 
   const recharger = async () => {
     try { const r = await api.meApi(); setUser(r.user); setBesoin(Boolean(r.besoinBootstrap)); }
@@ -47,28 +51,37 @@ export default function SyndicPage() {
       </header>
 
       <main className="mx-auto max-w-6xl px-4 py-6">
-        {user.role === "admin" ? (
-          <>
-            <div className="mb-5 inline-flex rounded-lg border border-slate-200 bg-white p-1 text-sm font-semibold">
-              {([["residences", "🏢 Résidences"], ["utilisateurs", "👥 Utilisateurs"], ["import", "⬆️ Import CSV"]] as const).map(([k, lbl]) => (
-                <button key={k} onClick={() => setOnglet(k)} className={`rounded-md px-4 py-1.5 transition ${onglet === k ? "bg-copper text-white" : "text-slate-600 hover:bg-slate-100"}`}>{lbl}</button>
-              ))}
-            </div>
-            {onglet === "residences" && <AdminResidences />}
-            {onglet === "utilisateurs" && <AdminUsers moiId={user.id} />}
-            {onglet === "import" && <AdminImport />}
-          </>
-        ) : (
-          <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center">
-            <div className="text-4xl">🚧</div>
-            <h2 className="mt-3 text-xl font-bold text-navy">Bonjour {user.prenom || user.nom}</h2>
-            <p className="mx-auto mt-2 max-w-lg text-sm text-slate-500">
-              Votre rôle : <b>{ROLES_LABELS[user.role]}</b>. La saisie et le suivi des demandes
-              arrivent au prochain lot. Pour l&apos;instant, seule l&apos;administration
-              (résidences, utilisateurs, import) est disponible pour le responsable d&apos;agence.
-            </p>
-          </div>
-        )}
+        {(() => {
+          const nav: [string, string][] =
+            user.role === "admin"
+              ? [["demandes", "📋 Demandes"], ["nouvelle", "➕ Nouvelle demande"], ["residences", "🏢 Résidences"], ["utilisateurs", "👥 Utilisateurs"], ["import", "⬆️ Import CSV"]]
+              : user.role === "accueil"
+                ? [["demandes", "📋 Demandes du jour"], ["nouvelle", "➕ Nouvelle demande"]]
+                : [["demandes", "📋 Mes demandes"]];
+          const goto = (s: string) => { setTicketId(null); setSection(s); };
+          return (
+            <>
+              <div className="mb-5 flex flex-wrap gap-1 rounded-lg border border-slate-200 bg-white p-1 text-sm font-semibold">
+                {nav.map(([k, lbl]) => (
+                  <button key={k} onClick={() => goto(k)} className={`rounded-md px-4 py-1.5 transition ${section === k && !ticketId ? "bg-copper text-white" : "text-slate-600 hover:bg-slate-100"}`}>{lbl}</button>
+                ))}
+              </div>
+              {ticketId ? (
+                <TicketDetail id={ticketId} role={user.role} onBack={() => setTicketId(null)} />
+              ) : section === "demandes" ? (
+                <TicketsList role={user.role} onOpen={setTicketId} onNouvelle={() => goto("nouvelle")} />
+              ) : section === "nouvelle" ? (
+                <NouvelleDemande onCree={(id) => setTicketId(id)} />
+              ) : section === "residences" ? (
+                <AdminResidences />
+              ) : section === "utilisateurs" ? (
+                <AdminUsers moiId={user.id} />
+              ) : section === "import" ? (
+                <AdminImport />
+              ) : null}
+            </>
+          );
+        })()}
       </main>
     </div>
   );
@@ -393,6 +406,293 @@ function AdminImport() {
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+// ============================================================================
+// TICKETS / DEMANDES
+// ============================================================================
+const prioCls: Record<string, string> = { normale: "bg-slate-100 text-slate-600", haute: "bg-amber-100 text-amber-700", urgence: "bg-red-100 text-red-700" };
+const statutCls: Record<string, string> = { nouveau: "bg-blue-100 text-blue-700", assigne: "bg-indigo-100 text-indigo-700", en_cours: "bg-amber-100 text-amber-700", en_attente: "bg-purple-100 text-purple-700", clos: "bg-emerald-100 text-emerald-700" };
+const CATS = Object.keys(CATEGORIES_LABELS);
+const CAT_ICONS: Record<string, string> = { information: "ℹ️", demande_document: "📄", travaux_parties_communes: "🔧", sinistre: "🌊", reclamation: "⚠️", charges_comptabilite: "💶", assemblee_generale: "🏛️", autre: "📌" };
+const MOTS_URGENCE = ["fuite", "eau", "gaz", "feu", "fumée", "fumee", "incendie", "ascenseur", "coincé", "coince", "inondation", "courant", "électricité", "electricite", "porte bloquée", "porte bloquee", "vitre cassée", "vitre cassee", "effraction"];
+const dateFr = (t: number) => new Date(t).toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit", year: "2-digit" });
+const dateHeure = (t: number) => new Date(t).toLocaleString("fr-FR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
+
+function TicketsList({ role, onOpen, onNouvelle }: { role: SyndicRole; onOpen: (id: string) => void; onNouvelle: () => void }) {
+  const [tickets, setTickets] = useState<api.TicketResume[]>([]);
+  const [f, setF] = useState<string>("");
+  const [charge, setCharge] = useState(false);
+  useEffect(() => { setCharge(true); api.listTicketsApi().then((r) => setTickets(r.tickets)).catch(() => {}).finally(() => setCharge(false)); }, []);
+  const list = tickets.filter((t) => !f || (f === "qualifier" ? t.aQualifier : f === "attribuer" ? t.aAttribuer : t.statut === f));
+  const filtres: [string, string][] = [["", "Toutes"], ["nouveau", "Nouveau"], ["en_cours", "En cours"], ["en_attente", "En attente"], ["clos", "Clos"], ["qualifier", "À qualifier"], ["attribuer", "À attribuer"]];
+
+  return (
+    <div className="space-y-4">
+      <div className="flex flex-wrap items-center gap-1.5">
+        {filtres.map(([k, lbl]) => (
+          <button key={k || "all"} onClick={() => setF(k)} className={`rounded-full px-3 py-1 text-xs font-semibold ${f === k ? "bg-navy text-white" : "border border-slate-200 bg-white text-slate-600"}`}>{lbl}</button>
+        ))}
+        {(role === "accueil" || role === "admin") && <button onClick={onNouvelle} className={`${btnCopper} ml-auto !py-1.5`}>➕ Nouvelle demande</button>}
+      </div>
+      <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white">
+        <table className="w-full text-sm">
+          <thead><tr className="text-left text-[11px] uppercase tracking-wide text-slate-400">
+            <th className="p-3">N°</th><th className="p-3">Objet</th><th className="p-3">Catégorie</th><th className="p-3">Résidence</th><th className="p-3">Gestionnaire</th><th className="p-3">Priorité</th><th className="p-3">Statut</th><th className="p-3">Reçu</th>
+          </tr></thead>
+          <tbody>
+            {list.map((t) => (
+              <tr key={t.id} onClick={() => onOpen(t.id)} className="cursor-pointer border-t border-slate-100 hover:bg-slate-50">
+                <td className="p-3 font-mono text-xs text-slate-500">{t.numero}</td>
+                <td className="p-3 font-semibold text-navy">{t.objet || CATEGORIES_LABELS[t.categorie]}</td>
+                <td className="p-3 text-slate-600">{CAT_ICONS[t.categorie]} {CATEGORIES_LABELS[t.categorie]}</td>
+                <td className="p-3 text-slate-600">{t.residenceNom || <span className="text-amber-600">à qualifier</span>}</td>
+                <td className="p-3 text-slate-600">{t.assigneNom || <span className="text-amber-600">à attribuer</span>}</td>
+                <td className="p-3"><span className={`rounded-full px-2 py-0.5 text-[11px] font-bold ${prioCls[t.priorite]}`}>{PRIORITES_LABELS[t.priorite]}</span></td>
+                <td className="p-3"><span className={`rounded-full px-2 py-0.5 text-[11px] font-bold ${statutCls[t.statut]}`}>{STATUTS_LABELS[t.statut]}</span></td>
+                <td className="p-3 text-xs text-slate-400">{dateFr(t.creeLe)}</td>
+              </tr>
+            ))}
+            {list.length === 0 && <tr><td colSpan={8} className="p-6 text-center text-sm text-slate-400">{charge ? "Chargement…" : "Aucune demande."}</td></tr>}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+function NouvelleDemande({ onCree }: { onCree: (id: string) => void }) {
+  const [residences, setResidences] = useState<api.ResidenceListe[]>([]);
+  const [urgence, setUrgence] = useState(false);
+  const [appele, setAppele] = useState(false);
+  const [f, setF] = useState({ demandeurNom: "", demandeurTelephone: "", demandeurEmail: "", demandeurQualite: "proprietaire", residenceId: "", categorie: "", objet: "", description: "", creneauRappel: "", origine: "accueil_telephone" });
+  const [err, setErr] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [succes, setSucces] = useState<{ numero: string; id: string } | null>(null);
+  useEffect(() => { api.listResidencesApi().then((r) => setResidences(r.residences)).catch(() => {}); }, []);
+  const set = (k: keyof typeof f, v: string) => setF((p) => ({ ...p, [k]: v }));
+  const motUrgence = MOTS_URGENCE.find((m) => f.description.toLowerCase().includes(m));
+
+  const soumettre = async () => {
+    setErr(null);
+    if (!f.demandeurNom || !f.demandeurTelephone || !f.categorie || !f.description) { setErr("Nom, téléphone, catégorie et description sont obligatoires."); return; }
+    if (urgence && !appele) { setErr("Cochez « J'ai appelé le gestionnaire » pour valider une urgence."); return; }
+    setBusy(true);
+    try {
+      const r = await api.createTicketApi({ ...f, priorite: urgence ? "urgence" : "normale" });
+      setSucces({ numero: r.ticket.numero, id: r.ticket.id });
+    } catch (e) { setErr(e instanceof Error ? e.message : "Création impossible"); }
+    finally { setBusy(false); }
+  };
+
+  if (succes) return (
+    <div className="mx-auto max-w-lg rounded-2xl border border-emerald-200 bg-emerald-50 p-8 text-center">
+      <div className="text-4xl">✅</div>
+      <h2 className="mt-3 text-xl font-bold text-navy">Demande transmise</h2>
+      <p className="mt-2 text-sm text-slate-600">À dire au client : « C&apos;est transmis à votre gestionnaire. Vous serez rappelé{f.creneauRappel ? ` (${f.creneauRappel})` : ""}. »</p>
+      <p className="mt-2 font-mono text-sm font-bold text-emerald-700">{succes.numero}</p>
+      <div className="mt-5 flex justify-center gap-3">
+        <button onClick={() => onCree(succes.id)} className={btnNavy}>Ouvrir la demande</button>
+        <button onClick={() => { setSucces(null); setUrgence(false); setAppele(false); setF({ demandeurNom: "", demandeurTelephone: "", demandeurEmail: "", demandeurQualite: "proprietaire", residenceId: "", categorie: "", objet: "", description: "", creneauRappel: "", origine: "accueil_telephone" }); }} className={btnCopper}>Nouvelle demande</button>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="mx-auto max-w-2xl space-y-4">
+      {/* URGENCE */}
+      <div className={`rounded-2xl border-2 p-4 ${urgence ? "border-red-400 bg-red-50" : "border-slate-200 bg-white"}`}>
+        <button onClick={() => setUrgence((u) => !u)} className={`w-full rounded-xl px-4 py-3 text-lg font-black ${urgence ? "bg-red-600 text-white" : "bg-red-100 text-red-700"}`}>🚨 URGENCE {urgence ? "ACTIVÉE" : ""}</button>
+        {urgence && (
+          <div className="mt-3 text-sm text-red-800">
+            <p className="font-semibold">Appelez maintenant le gestionnaire de la résidence. Sans réponse en 15 minutes, appelez le responsable.</p>
+            <label className="mt-2 flex items-center gap-2 font-semibold"><input type="checkbox" checked={appele} onChange={(e) => setAppele(e.target.checked)} /> J&apos;ai appelé le gestionnaire</label>
+          </div>
+        )}
+      </div>
+
+      <div className="rounded-2xl border border-slate-200 bg-white p-5 space-y-4">
+        <div>
+          <div className="mb-1 text-sm font-bold text-navy">Qui appelle ?</div>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <input className={inputCls} placeholder="Nom du demandeur *" value={f.demandeurNom} onChange={(e) => set("demandeurNom", e.target.value)} />
+            <input className={inputCls} placeholder="Téléphone *" value={f.demandeurTelephone} onChange={(e) => set("demandeurTelephone", e.target.value)} />
+            <input className={inputCls} type="email" placeholder="Email (facultatif)" value={f.demandeurEmail} onChange={(e) => set("demandeurEmail", e.target.value)} />
+            <select className={inputCls} value={f.demandeurQualite} onChange={(e) => set("demandeurQualite", e.target.value)}>
+              {Object.entries(QUALITES_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+            </select>
+          </div>
+        </div>
+        <div>
+          <div className="mb-1 text-sm font-bold text-navy">Résidence <span className="font-normal text-slate-400">(sans résidence, la demande part « à qualifier »)</span></div>
+          <select className={inputCls} value={f.residenceId} onChange={(e) => set("residenceId", e.target.value)}>
+            <option value="">— résidence inconnue —</option>
+            {residences.map((r) => <option key={r.id} value={r.id}>{r.nom}{r.commune ? ` · ${r.commune}` : ""}</option>)}
+          </select>
+        </div>
+        <div>
+          <div className="mb-1 text-sm font-bold text-navy">Catégorie *</div>
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+            {CATS.map((c) => (
+              <button key={c} onClick={() => set("categorie", c)} className={`rounded-xl border p-2 text-center text-xs font-semibold transition ${f.categorie === c ? "border-copper bg-copper-soft/40 text-copper" : "border-slate-200 text-slate-600 hover:border-copper/50"}`}>
+                <div className="text-lg">{CAT_ICONS[c]}</div>{CATEGORIES_LABELS[c]}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div>
+          <div className="mb-1 text-sm font-bold text-navy">Ce qu&apos;il veut *</div>
+          <input className={`${inputCls} mb-2`} placeholder="Objet court (facultatif)" value={f.objet} onChange={(e) => set("objet", e.target.value)} />
+          <textarea rows={4} className={inputCls} placeholder="Description de la demande" value={f.description} onChange={(e) => set("description", e.target.value)} />
+          {motUrgence && !urgence && (
+            <button onClick={() => setUrgence(true)} className="mt-2 rounded-lg bg-red-100 px-3 py-1.5 text-xs font-bold text-red-700">⚠️ Mot d&apos;urgence détecté (« {motUrgence} ») — passer en URGENCE ?</button>
+          )}
+          <input className={`${inputCls} mt-2`} placeholder="Créneau de rappel souhaité (ex. demain matin)" value={f.creneauRappel} onChange={(e) => set("creneauRappel", e.target.value)} />
+        </div>
+        <div className="flex items-center gap-3">
+          <button onClick={soumettre} disabled={busy} className={btnCopper}>{busy ? "Envoi…" : "Envoyer au gestionnaire"}</button>
+          {err && <span className="text-sm text-red-600">{err}</span>}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function TicketDetail({ id, role, onBack }: { id: string; role: SyndicRole; onBack: () => void }) {
+  const [d, setD] = useState<api.TicketDetail | null>(null);
+  const [users, setUsers] = useState<SyndicUserPublic[]>([]);
+  const [residences, setResidences] = useState<api.ResidenceListe[]>([]);
+  const [err, setErr] = useState<string | null>(null);
+  const [comment, setComment] = useState("");
+  const [statutCible, setStatutCible] = useState("");
+  const [motif, setMotif] = useState("");
+  const [reassignId, setReassignId] = useState("");
+  const [reassignMotif, setReassignMotif] = useState("");
+  const [qualifId, setQualifId] = useState("");
+  const [faits, setFaits] = useState("");
+  const [brouillon, setBrouillon] = useState<{ objet: string; corps: string } | null>(null);
+  const [iaBusy, setIaBusy] = useState(false);
+  const [copie, setCopie] = useState(false);
+  const canTraiter = role === "gestionnaire_syndic" || role === "admin";
+  const canQualifier = role === "accueil" || role === "admin";
+
+  const charger = () => api.getTicketApi(id).then(setD).catch((e) => setErr(e instanceof Error ? e.message : "Erreur"));
+  useEffect(() => { void charger(); if (role !== "accueil") { api.listUsersApi().then((r) => setUsers(r.users)).catch(() => {}); api.listResidencesApi().then((r) => setResidences(r.residences)).catch(() => {}); } }, [id]);
+
+  const action = async (payload: Record<string, unknown>) => { setErr(null); try { await api.patchTicketApi(id, payload); await charger(); } catch (e) { setErr(e instanceof Error ? e.message : "Erreur"); } };
+  const rediger = async () => { setErr(null); setIaBusy(true); try { const r = await api.draftEmailApi(id, faits); setBrouillon(r.brouillon); } catch (e) { setErr(e instanceof Error ? e.message : "Rédaction impossible"); } finally { setIaBusy(false); } };
+  const copier = async () => { if (!brouillon) return; try { await navigator.clipboard.writeText(`Objet : ${brouillon.objet}\n\n${brouillon.corps}`); setCopie(true); setTimeout(() => setCopie(false), 2000); } catch { /* ignore */ } };
+
+  if (!d) return <div className="rounded-2xl border border-slate-200 bg-white p-6 text-sm text-slate-400">{err || "Chargement…"}</div>;
+  const t = d.ticket;
+  const gestionnaires = users.filter((u) => u.role === "gestionnaire_syndic" || u.role === "admin");
+
+  return (
+    <div className="space-y-4">
+      <button onClick={onBack} className="text-sm font-semibold text-slate-500 hover:text-copper">← Retour aux demandes</button>
+
+      <div className="rounded-2xl border border-slate-200 bg-white p-5">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="font-mono text-sm text-slate-500">{t.numero}</span>
+          <span className={`rounded-full px-2 py-0.5 text-[11px] font-bold ${prioCls[t.priorite]}`}>{PRIORITES_LABELS[t.priorite]}</span>
+          <span className={`rounded-full px-2 py-0.5 text-[11px] font-bold ${statutCls[t.statut]}`}>{STATUTS_LABELS[t.statut]}</span>
+          <span className="ml-auto text-xs text-slate-400">Reçu le {dateHeure(t.creeLe)}</span>
+        </div>
+        <h2 className="mt-2 text-xl font-bold text-navy">{t.objet || CATEGORIES_LABELS[t.categorie]}</h2>
+        <div className="mt-1 text-sm text-slate-500">{CAT_ICONS[t.categorie]} {CATEGORIES_LABELS[t.categorie]} · {d.residenceNom || "résidence à qualifier"} · Gestionnaire : {d.assigneNom || "à attribuer"}</div>
+        <p className="mt-3 whitespace-pre-wrap text-sm text-slate-700">{t.description}</p>
+        {canTraiter && (
+          <div className="mt-4 grid gap-2 rounded-xl bg-slate-50 p-3 text-sm sm:grid-cols-2">
+            <div><span className="text-slate-400">Demandeur :</span> <b>{t.demandeurNom}</b> ({QUALITES_LABELS[t.demandeurQualite] ?? t.demandeurQualite})</div>
+            <div><span className="text-slate-400">Contact :</span> {t.demandeurTelephone}{t.demandeurEmail ? ` · ${t.demandeurEmail}` : ""}</div>
+            {t.creneauRappel && <div><span className="text-slate-400">Rappel souhaité :</span> {t.creneauRappel}</div>}
+          </div>
+        )}
+        {t.statut === "en_attente" && t.motifAttente && <p className="mt-2 text-xs text-purple-700">En attente : {t.motifAttente}</p>}
+        {t.statut === "clos" && t.resumeResolution && <p className="mt-2 text-xs text-emerald-700">Résolution : {t.resumeResolution}</p>}
+      </div>
+
+      {/* Qualifier (résidence inconnue) */}
+      {canQualifier && !t.residenceId && (
+        <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4">
+          <div className="mb-2 text-sm font-bold text-amber-800">Qualifier la résidence</div>
+          <div className="flex flex-wrap gap-2">
+            <select className={`${inputCls} max-w-xs`} value={qualifId} onChange={(e) => setQualifId(e.target.value)}>
+              <option value="">— choisir une résidence —</option>
+              {residences.map((r) => <option key={r.id} value={r.id}>{r.nom}</option>)}
+            </select>
+            <button onClick={() => qualifId && action({ action: "qualifier", residenceId: qualifId })} className={btnNavy}>Attribuer</button>
+          </div>
+        </div>
+      )}
+
+      {/* Actions gestionnaire */}
+      {canTraiter && (
+        <div className="rounded-2xl border border-slate-200 bg-white p-5 space-y-4">
+          <div className="text-sm font-bold text-navy">Traiter la demande</div>
+          <div className="flex flex-wrap gap-2">
+            {t.statut !== "en_cours" && t.statut !== "clos" && <button onClick={() => action({ action: "prendre" })} className={btnNavy}>Prendre en charge</button>}
+            <button onClick={() => action({ action: "reponse" })} className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-100">J&apos;ai rappelé le client</button>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <select className={`${inputCls} max-w-[180px]`} value={statutCible} onChange={(e) => setStatutCible(e.target.value)}>
+              <option value="">Changer le statut…</option>
+              {Object.entries(STATUTS_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+            </select>
+            {(statutCible === "en_attente" || statutCible === "clos") && (
+              <input className={`${inputCls} flex-1`} placeholder={statutCible === "clos" ? "Résumé de résolution (obligatoire)" : "Motif d'attente (obligatoire)"} value={motif} onChange={(e) => setMotif(e.target.value)} />
+            )}
+            <button onClick={() => statutCible && action({ action: "statut", statut: statutCible, motif })} disabled={!statutCible} className={btnCopper}>Appliquer</button>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <select className={`${inputCls} max-w-[180px]`} value={reassignId} onChange={(e) => setReassignId(e.target.value)}>
+              <option value="">Réattribuer à…</option>
+              {gestionnaires.map((u) => <option key={u.id} value={u.id}>{u.prenom} {u.nom}</option>)}
+            </select>
+            <input className={`${inputCls} flex-1`} placeholder="Motif de réattribution (obligatoire)" value={reassignMotif} onChange={(e) => setReassignMotif(e.target.value)} />
+            <button onClick={() => reassignId && action({ action: "reassigner", assigneA: reassignId, motif: reassignMotif })} disabled={!reassignId} className={btnNavy}>Réattribuer</button>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <input className={`${inputCls} flex-1`} placeholder="Commentaire interne (non visible du client)" value={comment} onChange={(e) => setComment(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter" && comment.trim()) { action({ action: "commentaire", texte: comment }); setComment(""); } }} />
+            <button onClick={() => { if (comment.trim()) { action({ action: "commentaire", texte: comment }); setComment(""); } }} className="rounded-lg border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-100">Ajouter</button>
+          </div>
+          {err && <p className="text-sm text-red-600">{err}</p>}
+        </div>
+      )}
+
+      {/* Rédaction IA de l'email */}
+      {canTraiter && (
+        <div className="rounded-2xl border border-copper/40 bg-copper-soft/20 p-5">
+          <div className="text-sm font-bold text-navy">✍️ Proposer une réponse par email (IA)</div>
+          <p className="mt-1 text-xs text-slate-500">Saisissez les informations à communiquer (date d&apos;intervention, prestataire, montant, décision…). L&apos;IA rédige un brouillon d&apos;email — à relire et compléter avant envoi. Aucune coordonnée du demandeur n&apos;est envoyée à l&apos;IA.</p>
+          <textarea rows={3} className={`${inputCls} mt-3`} placeholder="Ex. Intervention plombier prévue le 14/10, société Martin, prise en charge par la copropriété." value={faits} onChange={(e) => setFaits(e.target.value)} />
+          <button onClick={rediger} disabled={iaBusy} className={`${btnCopper} mt-3`}>{iaBusy ? "Rédaction en cours…" : "Rédiger le brouillon"}</button>
+          {brouillon && (
+            <div className="mt-4 rounded-xl border border-slate-200 bg-white p-4">
+              <div className="mb-2 text-xs font-bold uppercase tracking-wide text-copper">Brouillon — à relire avant envoi</div>
+              <input className={`${inputCls} mb-2 font-semibold`} value={brouillon.objet} onChange={(e) => setBrouillon({ ...brouillon, objet: e.target.value })} />
+              <textarea rows={10} className={inputCls} value={brouillon.corps} onChange={(e) => setBrouillon({ ...brouillon, corps: e.target.value })} />
+              <button onClick={copier} className={`${btnNavy} mt-2`}>{copie ? "✓ Copié" : "📋 Copier"}</button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Historique */}
+      <div className="rounded-2xl border border-slate-200 bg-white p-5">
+        <div className="mb-3 text-sm font-bold text-navy">Historique</div>
+        <ul className="space-y-2">
+          {d.evenements.map((e) => (
+            <li key={e.id} className="flex gap-2 text-sm">
+              <span className="mt-0.5 rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-semibold uppercase text-slate-500">{e.type.replace(/_/g, " ")}</span>
+              <div><div className="text-slate-700">{e.contenu}</div><div className="text-xs text-slate-400">{dateHeure(e.creeLe)}{e.auteurNom ? ` · ${e.auteurNom}` : ""}</div></div>
+            </li>
+          ))}
+          {d.evenements.length === 0 && <li className="text-sm text-slate-400">Aucun événement.</li>}
+        </ul>
+      </div>
     </div>
   );
 }

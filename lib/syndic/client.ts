@@ -42,6 +42,30 @@ export interface ApercuImport {
   apercu: { ligne: number; valeurs: Record<string, string>; erreurs: string[] }[];
   nbValides: number; nbErreurs: number; total: number;
 }
+// --- Tickets / demandes -----------------------------------------------------
+export interface TicketResume {
+  id: string; numero: string; objet: string; categorie: string; priorite: string;
+  statut: string; creeLe: number; creneauRappel: string; residenceNom: string;
+  assigneNom: string; aQualifier: boolean; aAttribuer: boolean;
+}
+export interface EvenementUI {
+  id: string; type: string; contenu: string; creeLe: number; auteurNom: string;
+}
+export interface TicketDetail {
+  ticket: Record<string, unknown> & {
+    id: string; numero: string; objet: string; description: string; categorie: string;
+    priorite: string; statut: string; residenceId: string | null; assigneA: string | null;
+    demandeurNom: string; demandeurTelephone: string; demandeurEmail: string; demandeurQualite: string;
+    creneauRappel: string; creeLe: number; motifAttente: string; resumeResolution: string;
+  };
+  residenceNom: string; assigneNom: string; creeParNom: string; evenements: EvenementUI[];
+}
+export const listTicketsApi = () => j<{ tickets: TicketResume[]; role: string }>("/tickets");
+export const createTicketApi = (t: Record<string, unknown>) => j<{ ticket: { id: string; numero: string } }>("/tickets", { method: "POST", body: JSON.stringify(t) });
+export const getTicketApi = (id: string) => j<TicketDetail>(`/tickets/${id}`);
+export const patchTicketApi = (id: string, action: Record<string, unknown>) => j<{ ticket: unknown }>(`/tickets/${id}`, { method: "PATCH", body: JSON.stringify(action) });
+export const draftEmailApi = (id: string, faits: string) => j<{ brouillon: { objet: string; corps: string } }>(`/tickets/${id}/draft-email`, { method: "POST", body: JSON.stringify({ faits }) });
+
 export const previewImportApi = (type: string, csvText: string, mapping: Record<string, string>) =>
   j<ApercuImport>("/import", { method: "POST", body: JSON.stringify({ type, csvText, mapping, appliquer: false }) });
 export const applyImportApi = (type: string, csvText: string, mapping: Record<string, string>) =>
