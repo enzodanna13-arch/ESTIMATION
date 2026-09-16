@@ -152,6 +152,9 @@ export interface Ticket {
   motifAttente: string;
   resumeResolution: string;
   nbRelancesClient: number;
+  // Demande créée par l'IA depuis un mail et jugée ambiguë : à confirmer par un
+  // humain avant traitement (« l'IA propose, l'humain décide »).
+  aValider: boolean;
   // Suggestions IA (Lot 6)
   iaCategorie: TicketCategorie | null;
   iaPriorite: TicketPriorite | null;

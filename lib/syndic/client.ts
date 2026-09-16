@@ -46,8 +46,11 @@ export interface ApercuImport {
 export interface TicketResume {
   id: string; numero: string; objet: string; categorie: string; priorite: string;
   statut: string; creeLe: number; creneauRappel: string; residenceNom: string;
-  assigneNom: string; aQualifier: boolean; aAttribuer: boolean;
+  assigneNom: string; aQualifier: boolean; aAttribuer: boolean; aValider: boolean; origine: string;
 }
+export interface ResultatIngestion { statut: string; ticketId?: string; numero?: string; aValider?: boolean; raison?: string }
+export const ingestEmailApi = (email: { from: string; fromName: string; subject: string; body: string }) =>
+  j<{ resultat: ResultatIngestion }>("/emails/ingest", { method: "POST", body: JSON.stringify(email) });
 export interface EvenementUI {
   id: string; type: string; contenu: string; creeLe: number; auteurNom: string;
 }

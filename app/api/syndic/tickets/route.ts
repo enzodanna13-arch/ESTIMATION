@@ -28,6 +28,7 @@ export async function GET(request: Request) {
     residenceNom: t.residenceId ? (rnom.get(t.residenceId) ?? "—") : "",
     assigneNom: t.assigneA ? (unom.get(t.assigneA) ?? "—") : "",
     aQualifier: !t.residenceId, aAttribuer: Boolean(t.residenceId) && !t.assigneA,
+    aValider: t.aValider, origine: t.origine,
   }));
   return Response.json({ tickets: resume, role: g.user.role });
 }

@@ -54,10 +54,10 @@ export default function SyndicPage() {
         {(() => {
           const nav: [string, string][] =
             user.role === "admin"
-              ? [["demandes", "📋 Demandes"], ["nouvelle", "➕ Nouvelle demande"], ["residences", "🏢 Résidences"], ["utilisateurs", "👥 Utilisateurs"], ["import", "⬆️ Import CSV"]]
+              ? [["demandes", "📋 Demandes"], ["nouvelle", "➕ Nouvelle demande"], ["mail", "📧 Depuis un mail"], ["residences", "🏢 Résidences"], ["utilisateurs", "👥 Utilisateurs"], ["import", "⬆️ Import CSV"]]
               : user.role === "accueil"
-                ? [["demandes", "📋 Demandes du jour"], ["nouvelle", "➕ Nouvelle demande"]]
-                : [["demandes", "📋 Mes demandes"]];
+                ? [["demandes", "📋 Demandes du jour"], ["nouvelle", "➕ Nouvelle demande"], ["mail", "📧 Depuis un mail"]]
+                : [["demandes", "📋 Mes demandes"], ["mail", "📧 Depuis un mail"]];
           const goto = (s: string) => { setTicketId(null); setSection(s); };
           return (
             <>
@@ -72,6 +72,8 @@ export default function SyndicPage() {
                 <TicketsList role={user.role} onOpen={setTicketId} onNouvelle={() => goto("nouvelle")} />
               ) : section === "nouvelle" ? (
                 <NouvelleDemande onCree={(id) => setTicketId(id)} />
+              ) : section === "mail" ? (
+                <ColleMail onCree={(id) => setTicketId(id)} />
               ) : section === "residences" ? (
                 <AdminResidences />
               ) : section === "utilisateurs" ? (
@@ -426,8 +428,8 @@ function TicketsList({ role, onOpen, onNouvelle }: { role: SyndicRole; onOpen: (
   const [f, setF] = useState<string>("");
   const [charge, setCharge] = useState(false);
   useEffect(() => { setCharge(true); api.listTicketsApi().then((r) => setTickets(r.tickets)).catch(() => {}).finally(() => setCharge(false)); }, []);
-  const list = tickets.filter((t) => !f || (f === "qualifier" ? t.aQualifier : f === "attribuer" ? t.aAttribuer : t.statut === f));
-  const filtres: [string, string][] = [["", "Toutes"], ["nouveau", "Nouveau"], ["en_cours", "En cours"], ["en_attente", "En attente"], ["clos", "Clos"], ["qualifier", "À qualifier"], ["attribuer", "À attribuer"]];
+  const list = tickets.filter((t) => !f || (f === "qualifier" ? t.aQualifier : f === "attribuer" ? t.aAttribuer : f === "valider" ? t.aValider : t.statut === f));
+  const filtres: [string, string][] = [["", "Toutes"], ["valider", "À valider"], ["nouveau", "Nouveau"], ["en_cours", "En cours"], ["en_attente", "En attente"], ["clos", "Clos"], ["qualifier", "À qualifier"], ["attribuer", "À attribuer"]];
 
   return (
     <div className="space-y-4">
@@ -445,8 +447,8 @@ function TicketsList({ role, onOpen, onNouvelle }: { role: SyndicRole; onOpen: (
           <tbody>
             {list.map((t) => (
               <tr key={t.id} onClick={() => onOpen(t.id)} className="cursor-pointer border-t border-slate-100 hover:bg-slate-50">
-                <td className="p-3 font-mono text-xs text-slate-500">{t.numero}</td>
-                <td className="p-3 font-semibold text-navy">{t.objet || CATEGORIES_LABELS[t.categorie]}</td>
+                <td className="p-3 font-mono text-xs text-slate-500">{t.numero}{t.origine === "mail" && <span title="Créé depuis un mail"> 📧</span>}</td>
+                <td className="p-3 font-semibold text-navy">{t.objet || CATEGORIES_LABELS[t.categorie]}{t.aValider && <span className="ml-2 rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-bold text-amber-700">à valider</span>}</td>
                 <td className="p-3 text-slate-600">{CAT_ICONS[t.categorie]} {CATEGORIES_LABELS[t.categorie]}</td>
                 <td className="p-3 text-slate-600">{t.residenceNom || <span className="text-amber-600">à qualifier</span>}</td>
                 <td className="p-3 text-slate-600">{t.assigneNom || <span className="text-amber-600">à attribuer</span>}</td>
@@ -614,6 +616,14 @@ function TicketDetail({ id, role, onBack }: { id: string; role: SyndicRole; onBa
         {t.statut === "clos" && t.resumeResolution && <p className="mt-2 text-xs text-emerald-700">Résolution : {t.resumeResolution}</p>}
       </div>
 
+      {/* Demande issue d'un mail, à valider */}
+      {canTraiter && Boolean(t.aValider) && (
+        <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-4">
+          <span className="text-sm text-amber-800">📧 Demande créée automatiquement par l&apos;IA depuis un mail — à confirmer avant traitement.</span>
+          <button onClick={() => action({ action: "valider" })} className={`${btnCopper} ml-auto`}>Valider la demande</button>
+        </div>
+      )}
+
       {/* Qualifier (résidence inconnue) */}
       {canQualifier && !t.residenceId && (
         <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4">
@@ -692,6 +702,55 @@ function TicketDetail({ id, role, onBack }: { id: string; role: SyndicRole; onBa
           ))}
           {d.evenements.length === 0 && <li className="text-sm text-slate-400">Aucun événement.</li>}
         </ul>
+      </div>
+    </div>
+  );
+}
+
+// -------------------------------------------------- Coller un mail → ticket
+function ColleMail({ onCree }: { onCree: (id: string) => void }) {
+  const [f, setF] = useState({ from: "", fromName: "", subject: "", body: "" });
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+  const [res, setRes] = useState<api.ResultatIngestion | null>(null);
+  const set = (k: keyof typeof f, v: string) => setF((p) => ({ ...p, [k]: v }));
+
+  const analyser = async () => {
+    setErr(null); setRes(null); setBusy(true);
+    try { const r = await api.ingestEmailApi(f); setRes(r.resultat); }
+    catch (e) { setErr(e instanceof Error ? e.message : "Analyse impossible"); }
+    finally { setBusy(false); }
+  };
+
+  return (
+    <div className="mx-auto max-w-2xl space-y-4">
+      <div className="rounded-2xl border border-copper/40 bg-copper-soft/20 p-5">
+        <div className="text-sm font-bold text-navy">📧 Créer une demande depuis un mail</div>
+        <p className="mt-1 text-xs text-slate-500">Collez un mail reçu : l&apos;IA détermine s&apos;il s&apos;agit d&apos;une demande et crée le ticket (directement si clair, « à valider » si ambigu). Minimisation : seuls le sujet et le corps sont analysés par l&apos;IA. <b>Bientôt automatique</b> une fois la connexion Outlook autorisée.</p>
+      </div>
+      <div className="rounded-2xl border border-slate-200 bg-white p-5 space-y-3">
+        <div className="grid gap-3 sm:grid-cols-2">
+          <input className={inputCls} placeholder="Email de l'expéditeur" value={f.from} onChange={(e) => set("from", e.target.value)} />
+          <input className={inputCls} placeholder="Nom de l'expéditeur (facultatif)" value={f.fromName} onChange={(e) => set("fromName", e.target.value)} />
+        </div>
+        <input className={inputCls} placeholder="Sujet du mail" value={f.subject} onChange={(e) => set("subject", e.target.value)} />
+        <textarea rows={8} className={inputCls} placeholder="Corps du mail (copier-coller)" value={f.body} onChange={(e) => set("body", e.target.value)} />
+        <div className="flex items-center gap-3">
+          <button onClick={analyser} disabled={busy} className={btnCopper}>{busy ? "Analyse IA…" : "Analyser et créer la demande"}</button>
+          {err && <span className="text-sm text-red-600">{err}</span>}
+        </div>
+        {res && (
+          <div className={`rounded-xl p-4 text-sm ${res.statut === "ignore" ? "bg-slate-100 text-slate-600" : "bg-emerald-50 text-emerald-800"}`}>
+            {res.statut === "ignore" && <>Aucun ticket créé — {res.raison}.</>}
+            {res.statut === "relance" && <>Cet expéditeur avait déjà une demande ouverte : ajoutée comme <b>relance</b> ({res.numero}).</>}
+            {(res.statut === "cree" || res.statut === "a_valider") && (
+              <div className="flex flex-wrap items-center gap-3">
+                <span>Demande <b>{res.numero}</b> créée{res.aValider ? " (à valider)" : " et attribuée"}.</span>
+                {res.ticketId && <button onClick={() => onCree(res.ticketId!)} className={btnNavy}>Ouvrir la demande</button>}
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

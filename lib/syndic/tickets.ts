@@ -69,7 +69,13 @@ export async function creerTicket(data: {
   objet: string;
   description: string;
   creneauRappel: string;
-}, creePar: string): Promise<Ticket> {
+}, creePar: string, meta?: {
+  iaCategorie?: TicketCategorie | null;
+  iaPriorite?: TicketPriorite | null;
+  iaResidenceId?: string | null;
+  iaConfiance?: number | null;
+  aValider?: boolean;
+}): Promise<Ticket> {
   const numero = await numeroTicket();
   const residence = data.residenceId ? await obtenirResidence(data.residenceId) : null;
   const users = await listerUsers();
@@ -107,7 +113,12 @@ export async function creerTicket(data: {
     motifAttente: "",
     resumeResolution: "",
     nbRelancesClient: 0,
-    iaCategorie: null, iaPriorite: null, iaResidenceId: null, iaConfiance: null, iaSuggestionAcceptee: false,
+    aValider: meta?.aValider ?? false,
+    iaCategorie: meta?.iaCategorie ?? null,
+    iaPriorite: meta?.iaPriorite ?? null,
+    iaResidenceId: meta?.iaResidenceId ?? null,
+    iaConfiance: meta?.iaConfiance ?? null,
+    iaSuggestionAcceptee: false,
     updatedAt: now,
   };
   await enregistrer(COLL, ticket);
@@ -130,7 +141,8 @@ export type ActionTicket =
   | { action: "commentaire"; texte: string }
   | { action: "statut"; statut: TicketStatut; motif?: string }
   | { action: "reassigner"; assigneA: string; motif: string }
-  | { action: "qualifier"; residenceId: string };
+  | { action: "qualifier"; residenceId: string }
+  | { action: "valider" };
 
 // Applique une action sur un ticket, journalise l'événement, renvoie le ticket.
 export async function appliquerAction(
@@ -170,6 +182,10 @@ export async function appliquerAction(
       if (t.statut === "nouveau") t.statut = "assigne";
       await ajouterEvenement(t.id, "reassignation", auteurId, `Réattribuée — ${act.motif.trim()}`);
       break;
+    case "valider":
+      t.aValider = false;
+      await ajouterEvenement(t.id, "changement_statut", auteurId, "Demande (issue d'un mail) validée par un gestionnaire");
+      break;
     case "qualifier": {
       if (!act.residenceId) return { erreur: "Choisissez une résidence" };
       t.residenceId = act.residenceId;
@@ -190,4 +206,21 @@ export async function appliquerAction(
   t.updatedAt = now;
   await sauverTicket(t);
   return { ticket: t };
+}
+
+// Anti-doublon (mails) : un même expéditeur qui a déjà une demande OUVERTE ne
+// doit pas créer un second ticket — on l'ajoute comme relance au ticket existant.
+export async function ticketOuvertParEmail(email: string): Promise<Ticket | null> {
+  const cible = (email ?? "").trim().toLowerCase();
+  if (!cible) return null;
+  const ts = await listerTickets();
+  return ts.find((t) => t.statut !== "clos" && (t.demandeurEmail ?? "").trim().toLowerCase() === cible) ?? null;
+}
+
+// Enregistre une relance client sur un ticket existant (compteur + événement).
+export async function ajouterRelance(ticket: Ticket, contenu: string): Promise<Ticket> {
+  const t = { ...ticket, nbRelancesClient: ticket.nbRelancesClient + 1, updatedAt: Date.now() };
+  await sauverTicket(t);
+  await ajouterEvenement(t.id, "relance_client", null, contenu);
+  return t;
 }
