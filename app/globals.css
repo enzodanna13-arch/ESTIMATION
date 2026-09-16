@@ -316,8 +316,14 @@ body {
     margin: 0 !important;
     box-shadow: none;
     width: auto !important;
-    min-height: 295mm !important; /* léger jeu pour absorber les arrondis de rendu */
-    padding: 22mm 20mm 18mm !important;
+    /* PAS de hauteur forcée à l'impression : chaque section prend la hauteur de
+       son contenu et démarre sur une nouvelle feuille (break-before). Forcer une
+       hauteur proche de la feuille A4 poussait le pied de page (margin-top:auto)
+       tout en bas, et le moteur d'impression le faisait alors basculer seul sur
+       une feuille presque vide. Sans hauteur forcée, le pied suit le contenu :
+       plus aucune feuille intercalaire ni feuille blanche finale. */
+    min-height: 0 !important;
+    padding: 20mm 20mm 16mm !important;
     break-after: auto;
     page-break-after: auto;
   }
@@ -332,11 +338,21 @@ body {
     break-before: page;
     page-break-before: always;
   }
+  /* Page de garde : hauteur fixe qui remplit la feuille SANS jamais déborder.
+     overflow:hidden garantit que le bas de la couverture (« Établi pour / Par /
+     Date ») ne peut plus partir seul sur une 2e feuille noire. Le contenu réel
+     de la couverture est court : rien d'utile n'est rogné. */
   .dossier .page.cover {
-    height: 295mm;
-    min-height: 0;
+    height: 292mm !important;
+    min-height: 292mm !important;
+    max-height: 292mm !important;
+    overflow: hidden !important;
+    padding: 22mm 22mm !important;
   }
+  /* Dernière feuille : pas de hauteur forcée, pour ne pas générer une feuille
+     blanche finale par arrondi. */
   .dossier .page:last-child {
+    min-height: 0 !important;
     break-after: avoid;
     page-break-after: avoid;
   }
