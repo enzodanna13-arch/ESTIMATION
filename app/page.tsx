@@ -15,6 +15,7 @@ import { consommerPrefillEstimation } from "@/lib/prefillEstimation";
 import DashboardPage from "@/components/DashboardPage";
 import NegociateursPage from "@/components/NegociateursPage";
 import EspaceNegociateurPage from "@/components/EspaceNegociateurPage";
+import { CrmChrome, MetierBientot, type Metier } from "@/components/CrmShell";
 import { NEGOCIATEURS } from "@/lib/equipe";
 import { deleteDocument, deleteEstimation, getDocument, getEstimation, getHistoryKey, HistoryLockedError, listDocuments, listEstimations, saveDocument, setHistoryKey, type DocHistoryMeta, type HistoryMeta } from "@/lib/history";
 import { loyerNetAnnuel, prixParRendement, RENDEMENT_NET_BAS, RENDEMENT_NET_HAUT } from "@/lib/rendement";
@@ -236,7 +237,10 @@ export default function Home() {
   const [step, setStep] = useState(0);
   // Accueil à deux univers : Estimation (les 4 missions) et Génération de
   // documents (menu des documents de l'agence)
-  const [univers, setUnivers] = useState<"" | "estimation" | "documents" | "clients" | "historique" | "visites" | "registre" | "leads" | "estimations-clients" | "dashboard" | "negociateurs" | "espace">("");
+  const [univers, setUnivers] = useState<"" | "estimation" | "documents" | "clients" | "historique" | "visites" | "registre" | "leads" | "estimations-clients" | "dashboard" | "negociateurs" | "espace" | "sauvegarde">("");
+  // Métier actif (compartimentage CRM) : Transaction contient tout l'existant ;
+  // Syndic et Gestion locative sont préparés (écran « à venir »).
+  const [metier, setMetier] = useState<Metier>("transaction");
   const [sauvegarde, setSauvegarde] = useState<"idle" | "encours" | "erreur">("idle");
   const [sauvegardeMsg, setSauvegardeMsg] = useState<string | null>(null);
 
@@ -701,74 +705,71 @@ export default function Home() {
     <div className="min-h-screen">
       {loading && <LoadingOverlay status={loadingStatus} />}
 
-      <header className="bg-navy-deep text-white print:hidden">
-        <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-5">
-          <div className="flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-copper text-lg font-black">
-              21
+      {historyLocked ? (
+        <>
+          <header className="bg-navy-deep text-white print:hidden">
+            <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-5">
+              <div className="flex items-center gap-3">
+                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-copper text-lg font-black">21</div>
+                <div>
+                  <h1 className="text-lg font-bold leading-tight">IA Century21-Icazaimmobilier</h1>
+                  <p className="text-xs text-slate-300">Estimations &amp; documents pour l&apos;équipe commerciale</p>
+                </div>
+              </div>
             </div>
-            <div>
-              <h1 className="text-lg font-bold leading-tight">IA Century21-Icazaimmobilier</h1>
-              <p className="text-xs text-slate-300">Estimations &amp; documents pour l&apos;équipe commerciale</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="hidden gap-2 lg:flex">
-              {["Ventes réelles DVF", "Observatoire des loyers", "Dossiers Century 21"].map((s) => (
-                <span key={s} className="rounded-full border border-white/20 px-3 py-1 text-xs text-slate-200">
-                  {s}
-                </span>
-              ))}
-            </div>
-            {!historyLocked && (
+          </header>
+          <main className="mx-auto max-w-5xl px-4 py-8">
+            <div className="mx-auto mt-16 max-w-md rounded-3xl border border-slate-200 bg-white p-8 text-center shadow-sm print:hidden">
+              <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-copper text-xl font-black text-white">21</div>
+              <h2 className="text-xl font-bold text-navy">IA Century21-Icazaimmobilier</h2>
+              <p className="mt-1 text-sm text-slate-500">
+                Accès réservé à l&apos;équipe — saisissez le mot de passe de l&apos;agence pour ouvrir
+                les estimations, la génération de documents et les historiques.
+              </p>
+              <input
+                type="password"
+                className={`${inputCls} mt-5 text-center`}
+                placeholder="Mot de passe de l'agence"
+                value={historyPwd}
+                onChange={(e) => setHistoryPwd(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && unlockHistory()}
+                autoFocus
+              />
               <button
                 type="button"
-                onClick={() => {
-                  setResult(null);
-                  setStep(0);
-                  setDocResult(null);
-                  setDocType("");
-                  setUnivers("");
-                  setError(null);
-                  window.scrollTo({ top: 0, behavior: "smooth" });
-                }}
-                className="rounded-lg bg-copper px-4 py-2 text-sm font-bold text-white shadow-md shadow-black/20 transition hover:brightness-110"
+                onClick={unlockHistory}
+                className="mt-3 w-full rounded-xl bg-navy px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-navy-deep"
               >
-                🏠 Accueil
+                Entrer
               </button>
-            )}
-          </div>
-        </div>
-      </header>
-
-      <main className="mx-auto max-w-5xl px-4 py-8">
-        {historyLocked ? (
-          <div className="mx-auto mt-16 max-w-md rounded-3xl border border-slate-200 bg-white p-8 text-center shadow-sm print:hidden">
-            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-copper text-xl font-black text-white">21</div>
-            <h2 className="text-xl font-bold text-navy">IA Century21-Icazaimmobilier</h2>
-            <p className="mt-1 text-sm text-slate-500">
-              Accès réservé à l&apos;équipe — saisissez le mot de passe de l&apos;agence pour ouvrir
-              les estimations, la génération de documents et les historiques.
-            </p>
-            <input
-              type="password"
-              className={`${inputCls} mt-5 text-center`}
-              placeholder="Mot de passe de l'agence"
-              value={historyPwd}
-              onChange={(e) => setHistoryPwd(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && unlockHistory()}
-              autoFocus
-            />
-            <button
-              type="button"
-              onClick={unlockHistory}
-              className="mt-3 w-full rounded-xl bg-navy px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-navy-deep"
-            >
-              Entrer
-            </button>
-            {historyError && <p className="mt-3 text-sm text-red-600">{historyError}</p>}
-          </div>
-        ) : result ? (
+              {historyError && <p className="mt-3 text-sm text-red-600">{historyError}</p>}
+            </div>
+          </main>
+        </>
+      ) : (
+        <>
+          <CrmChrome
+            univers={univers}
+            histoSection={histoSection}
+            metier={metier}
+            onMetier={setMetier}
+            onNavigate={(v, h) => {
+              setResult(null); setStep(0); setDocResult(null); setDocType(""); setError(null);
+              setHistoSection((h ?? "") as typeof histoSection); setHistoQ(""); setMetier("transaction");
+              setUnivers(v as typeof univers);
+              window.scrollTo({ top: 0 });
+            }}
+            onReset={() => {
+              setResult(null); setStep(0); setDocResult(null); setDocType(""); setError(null);
+              setMetier("transaction"); setUnivers("");
+              window.scrollTo({ top: 0 });
+            }}
+          />
+          <main className="min-h-screen pt-16 print:pt-0 md:pl-[268px] print:md:pl-0">
+            <div className="mx-auto max-w-5xl px-4 py-8">
+              {metier !== "transaction" ? (
+                <MetierBientot metier={metier} onRetour={() => setMetier("transaction")} />
+              ) : result ? (
           <Report result={result} input={input} onReset={() => { setResult(null); setStep(0); }} />
         ) : docResult ? (
           <DocumentPage
@@ -975,7 +976,7 @@ export default function Home() {
             )}
 
             {/* Sauvegarde complète (télécharge tout le contenu en .zip) */}
-            {univers === "" && (
+            {(univers === "" || univers === "sauvegarde") && (
               <div className="mb-10 flex flex-wrap items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4 print:hidden">
                 <div className="mr-auto">
                   <div className="text-sm font-bold text-navy">💾 Sauvegarde complète</div>
@@ -2290,9 +2291,12 @@ export default function Home() {
                 )}
               </section>
             )}
-          </>
-        )}
-      </main>
+              </>
+            )}
+            </div>
+          </main>
+        </>
+      )}
 
       <footer className="pb-8 text-center text-xs text-slate-400 print:hidden">
         Estimation indicative fondée sur DVF, le marché actif et l&apos;analyse IA — ne remplace pas un
