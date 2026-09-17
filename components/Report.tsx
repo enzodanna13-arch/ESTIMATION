@@ -85,19 +85,25 @@ export default function Report({
   );
 
   const clientName = [input.clientCivilite, input.clientPrenom, input.clientNom].filter(Boolean).join(" ");
-  const [pdfBusy, setPdfBusy] = useState(false);
+  const [pdfProg, setPdfProg] = useState<{ fait: number; total: number } | null>(null);
   const telechargerPdf = async () => {
-    setPdfBusy(true);
+    setPdfProg({ fait: 0, total: 0 });
     try {
       const base = [refDossier, input.clientNom].filter(Boolean).join("-").replace(/[^a-z0-9-]/gi, "_");
-      const ok = await genererDossierPdf(`${base || "dossier"}.pdf`);
-      if (!ok) window.print(); // repli si la capture échoue
+      const ok = await genererDossierPdf(`${base || "dossier"}.pdf`, (fait, total) => setPdfProg({ fait, total }));
+      if (!ok) throw new Error("Dossier introuvable");
     } catch {
+      alert("La génération directe a échoué — on bascule sur l'impression du navigateur. Choisissez « Enregistrer au format PDF », orientation Portrait.");
       window.print();
     } finally {
-      setPdfBusy(false);
+      setPdfProg(null);
     }
   };
+  const pdfLabel = !pdfProg
+    ? "📄 Télécharger le dossier PDF"
+    : pdfProg.total === 0
+      ? "⏳ Préparation…"
+      : `⏳ Génération… ${pdfProg.fait}/${pdfProg.total}`;
   const typeLabel =
     input.typeBien === "appartement" && input.nbPieces
       ? `Appartement T${input.nbPieces}`
@@ -271,8 +277,8 @@ export default function Report({
           >
             {engine === "ia" ? "✦ Moteur IA + recherche web" : "Moteur statistique (clé IA non configurée)"}
           </span>
-          <button onClick={telechargerPdf} disabled={pdfBusy} className="rounded-lg bg-copper px-4 py-1.5 text-sm font-bold text-white transition hover:brightness-110 disabled:opacity-60">
-            {pdfBusy ? "⏳ Génération du PDF…" : "📄 Télécharger le dossier PDF"}
+          <button onClick={telechargerPdf} disabled={pdfProg !== null} className="rounded-lg bg-copper px-4 py-1.5 text-sm font-bold text-white transition hover:brightness-110 disabled:opacity-60">
+            {pdfLabel}
           </button>
           <button onClick={() => window.print()} className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-600 transition hover:bg-slate-100" title="Imprimer via le navigateur (ancienne méthode)">
             🖨️ Imprimer
