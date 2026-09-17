@@ -55,24 +55,20 @@ export async function genererDossierPdf(
     const pxParMm = canvas.width / A4_L;
     const hauteurTotaleMm = canvas.height / pxParMm;
 
+    const img = canvas.toDataURL("image/jpeg", 0.85);
+    if (!premiere) pdf.addPage();
+    premiere = false;
     if (hauteurTotaleMm <= A4_H + 0.5) {
-      if (!premiere) pdf.addPage();
-      pdf.addImage(canvas.toDataURL("image/jpeg", 0.85), "JPEG", 0, 0, A4_L, hauteurTotaleMm);
-      premiere = false;
+      // Tient sur une feuille : pleine largeur, en haut.
+      pdf.addImage(img, "JPEG", 0, 0, A4_L, hauteurTotaleMm);
     } else {
-      const trancheHpx = Math.floor(A4_H * pxParMm);
-      let y = 0;
-      while (y < canvas.height) {
-        const h = Math.min(trancheHpx, canvas.height - y);
-        const c = document.createElement("canvas");
-        c.width = canvas.width;
-        c.height = h;
-        c.getContext("2d")!.drawImage(canvas, 0, y, canvas.width, h, 0, 0, canvas.width, h);
-        if (!premiere) pdf.addPage();
-        pdf.addImage(c.toDataURL("image/jpeg", 0.85), "JPEG", 0, 0, A4_L, h / pxParMm);
-        premiere = false;
-        y += h;
-      }
+      // Section plus haute qu'une feuille (ex. long tableau de comparables) :
+      // on la RÉDUIT pour qu'elle tienne sur UNE feuille — jamais de ligne
+      // coupée ni de page à moitié vide. Ratio conservé, centrée.
+      const ratio = A4_H / hauteurTotaleMm;
+      const largeur = A4_L * ratio;
+      const x = (A4_L - largeur) / 2;
+      pdf.addImage(img, "JPEG", x, 0, largeur, A4_H);
     }
   }
 
