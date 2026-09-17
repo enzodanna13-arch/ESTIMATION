@@ -1,4 +1,4 @@
-import { checkHistoryPassword } from "@/lib/historyAuth";
+import { verifierAccesEquipe } from "@/lib/historyAuth";
 import { listLeadsServer, saveLeadServer, type Lead } from "@/lib/serverLeads";
 
 export const dynamic = "force-dynamic";
@@ -39,7 +39,7 @@ function selectionner(leads: Lead[], o: Options): Lead[] {
 
 // Aperçu : nombre de contacts par statut (avec email) restant à exporter.
 export async function GET(request: Request) {
-  if (!checkHistoryPassword(request)) return Response.json({ error: "Accès réservé" }, { status: 401 });
+  if (!(await verifierAccesEquipe(request))) return Response.json({ error: "Accès réservé" }, { status: 401 });
   try {
     const leads = await listLeadsServer();
     const parStatut: Record<string, number> = {};
@@ -51,7 +51,7 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  if (!checkHistoryPassword(request)) return Response.json({ error: "Accès réservé" }, { status: 401 });
+  if (!(await verifierAccesEquipe(request))) return Response.json({ error: "Accès réservé" }, { status: 401 });
   let o: Options = {};
   try { o = (await request.json()) as Options; } catch { /* corps vide accepté */ }
 

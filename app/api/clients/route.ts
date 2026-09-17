@@ -1,4 +1,4 @@
-import { checkHistoryPassword } from "@/lib/historyAuth";
+import { verifierAccesEquipe } from "@/lib/historyAuth";
 import { listClientsServer, saveClientServer, type ClientDossier } from "@/lib/serverHistory";
 import { rapprocherLeadServer } from "@/lib/serverLeads";
 
@@ -6,7 +6,7 @@ export const dynamic = "force-dynamic";
 
 // Dossiers clients partagés : liste et création
 export async function GET(request: Request) {
-  if (!checkHistoryPassword(request)) {
+  if (!(await verifierAccesEquipe(request))) {
     return Response.json({ error: "Accès réservé — mot de passe requis" }, { status: 401 });
   }
   try {
@@ -17,7 +17,7 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  if (!checkHistoryPassword(request)) {
+  if (!(await verifierAccesEquipe(request))) {
     return Response.json({ error: "Accès réservé — mot de passe requis" }, { status: 401 });
   }
   let body: { nom?: string; bien?: string; negociateur?: string; typeClient?: string; prenom?: string; tel?: string; email?: string };

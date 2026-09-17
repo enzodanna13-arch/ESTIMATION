@@ -1,4 +1,4 @@
-import { checkHistoryPassword } from "@/lib/historyAuth";
+import { verifierAccesEquipe } from "@/lib/historyAuth";
 import { compterUsers, creerUser } from "@/lib/syndic/users";
 import { cookieConnexion, creerJeton } from "@/lib/syndic/session";
 import { toPublicUser } from "@/lib/syndic/types";
@@ -9,7 +9,7 @@ export const dynamic = "force-dynamic";
 // s'il n'existe encore AUCUN utilisateur, et protégée par le mot de passe
 // d'équipe (en-tête x-history-key) pour éviter une création par un inconnu.
 export async function POST(request: Request) {
-  if (!checkHistoryPassword(request)) {
+  if (!(await verifierAccesEquipe(request))) {
     return Response.json({ error: "Mot de passe d'équipe requis" }, { status: 401 });
   }
   if ((await compterUsers()) > 0) {

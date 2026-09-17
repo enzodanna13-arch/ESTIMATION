@@ -1,4 +1,4 @@
-import { checkHistoryPassword } from "@/lib/historyAuth";
+import { verifierAccesEquipe } from "@/lib/historyAuth";
 import { deleteVisiteImageServer, getVisiteImageServer } from "@/lib/serverHistory";
 
 export const dynamic = "force-dynamic";
@@ -29,7 +29,7 @@ export async function DELETE(
   request: Request,
   { params }: { params: Promise<{ id: string; imgId: string }> },
 ) {
-  if (!checkHistoryPassword(request)) {
+  if (!(await verifierAccesEquipe(request))) {
     return Response.json({ error: "Accès réservé — mot de passe requis" }, { status: 401 });
   }
   const { id, imgId } = await params;

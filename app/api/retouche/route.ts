@@ -1,4 +1,4 @@
-import { checkHistoryPassword } from "@/lib/historyAuth";
+import { verifierAccesEquipe } from "@/lib/historyAuth";
 import { ROOM_TYPES, STYLES_DECO, type EditRequest, type EditResult } from "@/lib/imageEditing/types";
 
 export const maxDuration = 300;
@@ -139,7 +139,7 @@ async function viaHttp(req: EditRequest, prompt: string): Promise<EditResult> {
 }
 
 export async function POST(request: Request) {
-  if (!checkHistoryPassword(request)) {
+  if (!(await verifierAccesEquipe(request))) {
     return Response.json({ ok: false, error: "Accès réservé" } satisfies EditResult, { status: 401 });
   }
   let req: EditRequest;

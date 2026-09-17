@@ -1,4 +1,4 @@
-import { checkHistoryPassword } from "@/lib/historyAuth";
+import { verifierAccesEquipe } from "@/lib/historyAuth";
 import { deleteLeadServer, getLeadServer, saveLeadServer, type Lead } from "@/lib/serverLeads";
 import { deleteSmsForLead } from "@/lib/serverSms";
 
@@ -10,7 +10,7 @@ const CHAMPS: (keyof Lead)[] = [
 ];
 
 export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  if (!checkHistoryPassword(request)) return Response.json({ error: "Accès réservé" }, { status: 401 });
+  if (!(await verifierAccesEquipe(request))) return Response.json({ error: "Accès réservé" }, { status: 401 });
   const { id } = await params;
   let patch: Partial<Lead>;
   try { patch = (await request.json()) as Partial<Lead>; } catch { return Response.json({ error: "Requête invalide" }, { status: 400 }); }
@@ -27,7 +27,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 }
 
 export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  if (!checkHistoryPassword(request)) return Response.json({ error: "Accès réservé" }, { status: 401 });
+  if (!(await verifierAccesEquipe(request))) return Response.json({ error: "Accès réservé" }, { status: 401 });
   const { id } = await params;
   try { await deleteLeadServer(id); await deleteSmsForLead(id).catch(() => {}); return Response.json({ ok: true }); }
   catch { return Response.json({ error: "Suppression impossible" }, { status: 500 }); }

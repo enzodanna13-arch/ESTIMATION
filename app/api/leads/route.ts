@@ -1,4 +1,4 @@
-import { checkHistoryPassword } from "@/lib/historyAuth";
+import { verifierAccesEquipe } from "@/lib/historyAuth";
 import { leadVide, listLeadsServer, restaurerArchivesServer, saveLeadServer, type Lead } from "@/lib/serverLeads";
 import { declencherNewLead } from "@/lib/serverSms";
 
@@ -91,7 +91,7 @@ function extraireChamps(body: Record<string, unknown>): Partial<Lead> {
 }
 
 export async function GET(request: Request) {
-  if (!checkHistoryPassword(request)) return Response.json({ error: "Accès réservé" }, { status: 401 });
+  if (!(await verifierAccesEquipe(request))) return Response.json({ error: "Accès réservé" }, { status: 401 });
   try {
     return Response.json({ leads: await listLeadsServer() });
   } catch {
@@ -105,14 +105,14 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   const secret = process.env.LEADS_INBOUND_SECRET;
   const cleFournie = request.headers.get("x-leads-key");
-  const autorise = checkHistoryPassword(request) || (secret && cleFournie === secret);
+  const autorise = (await verifierAccesEquipe(request)) || (secret && cleFournie === secret);
   if (!autorise) return Response.json({ error: "Accès réservé" }, { status: 401 });
 
   let body: Record<string, unknown>;
   try { body = (await request.json()) as Record<string, unknown>; } catch { return Response.json({ error: "Requête invalide" }, { status: 400 }); }
   // Restauration des leads archivés (réservée à l'équipe, pas à la passerelle)
   if (body.restaurer === true) {
-    if (!checkHistoryPassword(request)) return Response.json({ error: "Accès réservé" }, { status: 401 });
+    if (!(await verifierAccesEquipe(request))) return Response.json({ error: "Accès réservé" }, { status: 401 });
     try { return Response.json(await restaurerArchivesServer()); }
     catch { return Response.json({ error: "Restauration impossible" }, { status: 500 }); }
   }

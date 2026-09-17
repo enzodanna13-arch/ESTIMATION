@@ -1,4 +1,4 @@
-import { checkHistoryPassword } from "@/lib/historyAuth";
+import { verifierAccesEquipe } from "@/lib/historyAuth";
 import { addAppelServer, creerMoisServer, deleteAppelServer, listRegistreServer, reclasserParDateServer, type AppelEntry } from "@/lib/serverRegistre";
 
 export const dynamic = "force-dynamic";
@@ -8,7 +8,7 @@ function nettoyer(v: unknown): string {
 }
 
 export async function GET(request: Request) {
-  if (!checkHistoryPassword(request)) {
+  if (!(await verifierAccesEquipe(request))) {
     return Response.json({ error: "Accès réservé" }, { status: 401 });
   }
   try {
@@ -21,7 +21,7 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  if (!checkHistoryPassword(request)) {
+  if (!(await verifierAccesEquipe(request))) {
     return Response.json({ error: "Accès réservé" }, { status: 401 });
   }
   try {
@@ -63,7 +63,7 @@ export async function POST(request: Request) {
 }
 
 export async function DELETE(request: Request) {
-  if (!checkHistoryPassword(request)) {
+  if (!(await verifierAccesEquipe(request))) {
     return Response.json({ error: "Accès réservé" }, { status: 401 });
   }
   const { searchParams } = new URL(request.url);

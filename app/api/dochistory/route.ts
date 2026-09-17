@@ -1,11 +1,11 @@
-import { checkHistoryPassword } from "@/lib/historyAuth";
+import { verifierAccesEquipe } from "@/lib/historyAuth";
 import { listDocumentsServer, saveDocumentServer, type DocHistoryFull } from "@/lib/serverHistory";
 
 export const dynamic = "force-dynamic";
 
 /** Liste des documents générés (protégée par le mot de passe d'équipe). */
 export async function GET(request: Request) {
-  if (!checkHistoryPassword(request)) {
+  if (!(await verifierAccesEquipe(request))) {
     return Response.json({ error: "Mot de passe requis" }, { status: 401 });
   }
   try {
@@ -17,7 +17,7 @@ export async function GET(request: Request) {
 
 /** Sauvegarde d'un document généré (appelée par le client après génération). */
 export async function POST(request: Request) {
-  if (!checkHistoryPassword(request)) {
+  if (!(await verifierAccesEquipe(request))) {
     return Response.json({ error: "Mot de passe requis" }, { status: 401 });
   }
   try {

@@ -1,5 +1,5 @@
 import { auditLiens, auditUrls, computeFinalReport, extractListingFacts, mergeListingFacts } from "@/lib/ai";
-import { checkHistoryPassword } from "@/lib/historyAuth";
+import { verifierAccesEquipe } from "@/lib/historyAuth";
 import { fetchDvfContext } from "@/lib/dvf";
 import { computeFallbackBienLoue, computeFallbackEstimate, computeFallbackLocatif } from "@/lib/fallback";
 import { fetchLoyerIndicateur } from "@/lib/loyers";
@@ -21,7 +21,7 @@ export const dynamic = "force-dynamic";
  */
 export async function POST(request: Request) {
   // Accès réservé à l'équipe : même mot de passe que l'ensemble de l'outil
-  if (!checkHistoryPassword(request)) {
+  if (!(await verifierAccesEquipe(request))) {
     return Response.json({ error: "Accès réservé — mot de passe requis" }, { status: 401 });
   }
   let body: PropertyInput;

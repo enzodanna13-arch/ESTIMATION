@@ -1,11 +1,11 @@
-import { checkHistoryPassword } from "@/lib/historyAuth";
+import { verifierAccesEquipe } from "@/lib/historyAuth";
 import { listVisitesServer, saveVisiteServer, type VisiteVirtuelle } from "@/lib/serverHistory";
 
 export const dynamic = "force-dynamic";
 
 // Visites virtuelles : liste et création (protégées — réservées à l'équipe)
 export async function GET(request: Request) {
-  if (!checkHistoryPassword(request)) {
+  if (!(await verifierAccesEquipe(request))) {
     return Response.json({ error: "Accès réservé — mot de passe requis" }, { status: 401 });
   }
   try {
@@ -16,7 +16,7 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  if (!checkHistoryPassword(request)) {
+  if (!(await verifierAccesEquipe(request))) {
     return Response.json({ error: "Accès réservé — mot de passe requis" }, { status: 401 });
   }
   let body: { bien?: string; negociateur?: string };

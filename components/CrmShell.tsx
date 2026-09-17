@@ -47,6 +47,9 @@ const GROUPES: Groupe[] = [
     { v: "historique", h: "", t: "Historiques", i: "🗂️" },
     { v: "sauvegarde", t: "Sauvegarde", i: "💾" },
   ] },
+  { label: "Réglages", items: [
+    { v: "reglages", t: "Mot de passe", i: "⚙️" },
+  ] },
 ];
 
 const METIERS: { id: Metier; label: string; icon: string; soon?: boolean }[] = [

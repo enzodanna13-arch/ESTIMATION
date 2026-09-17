@@ -1,4 +1,4 @@
-import { checkHistoryPassword } from "@/lib/historyAuth";
+import { verifierAccesEquipe } from "@/lib/historyAuth";
 import { getLeadServer } from "@/lib/serverLeads";
 import { envoyerSmsPourLead } from "@/lib/serverSms";
 import { TwilioErreur } from "@/lib/twilio";
@@ -10,7 +10,7 @@ export const dynamic = "force-dynamic";
 // Le backend décide TOUJOURS de l'expéditeur (TWILIO_FROM_NUMBER) : le frontend
 // ne fournit jamais de From ni de credentials.
 export async function POST(request: Request) {
-  if (!checkHistoryPassword(request)) {
+  if (!(await verifierAccesEquipe(request))) {
     return Response.json({ error: "Accès réservé — mot de passe requis" }, { status: 401 });
   }
   let body: { leadId?: string; type?: string; custom?: string };

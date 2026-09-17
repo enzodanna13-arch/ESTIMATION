@@ -1,10 +1,10 @@
-import { checkHistoryPassword } from "@/lib/historyAuth";
+import { verifierAccesEquipe } from "@/lib/historyAuth";
 import { listEstimationsServer } from "@/lib/serverHistory";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(request: Request) {
-  if (!checkHistoryPassword(request)) {
+  if (!(await verifierAccesEquipe(request))) {
     return Response.json({ error: "Mot de passe requis" }, { status: 401 });
   }
   try {

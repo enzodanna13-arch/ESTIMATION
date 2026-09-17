@@ -1,6 +1,6 @@
 import JSZip from "jszip";
 import { list } from "@vercel/blob";
-import { checkHistoryPassword } from "@/lib/historyAuth";
+import { verifierAccesEquipe } from "@/lib/historyAuth";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -10,7 +10,7 @@ export const maxDuration = 60;
 // générés, registre des appels, leads, visites…). Chaque fichier est rangé
 // sous son chemin d'origine, ce qui rend la sauvegarde lisible et ré-importable.
 export async function GET(request: Request) {
-  if (!checkHistoryPassword(request)) {
+  if (!(await verifierAccesEquipe(request))) {
     return Response.json({ error: "Accès réservé — mot de passe requis" }, { status: 401 });
   }
   try {

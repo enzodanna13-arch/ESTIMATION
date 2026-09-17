@@ -1,5 +1,5 @@
 import { handleUpload, type HandleUploadBody } from "@vercel/blob/client";
-import { checkHistoryKeyValue } from "@/lib/historyAuth";
+import { verifierCleEquipe } from "@/lib/historyAuth";
 
 export const dynamic = "force-dynamic";
 
@@ -20,7 +20,7 @@ export async function POST(request: Request): Promise<Response> {
       request,
       body,
       onBeforeGenerateToken: async (pathname, clientPayload) => {
-        if (!checkHistoryKeyValue(clientPayload ?? "")) {
+        if (!(await verifierCleEquipe(clientPayload ?? ""))) {
           throw new Error("Accès réservé");
         }
         if (!pathname.startsWith("clients/files/") || !pathname.endsWith(".pdf")) {

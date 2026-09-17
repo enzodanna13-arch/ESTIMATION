@@ -1,4 +1,4 @@
-import { checkHistoryPassword } from "@/lib/historyAuth";
+import { verifierAccesEquipe } from "@/lib/historyAuth";
 import { getClientEstimationServer, updateClientEstimationServer } from "@/lib/clientEstimations";
 import { STATUTS_ESTIMATION_CLIENT, type NoteCommerciale } from "@/lib/clientTypes";
 
@@ -7,7 +7,7 @@ export const dynamic = "force-dynamic";
 // Fiche complète d'une estimation client + mise à jour du suivi commercial
 // (statut, notes). Protégé par le mot de passe d'équipe.
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  if (!checkHistoryPassword(request)) return Response.json({ error: "Accès réservé" }, { status: 401 });
+  if (!(await verifierAccesEquipe(request))) return Response.json({ error: "Accès réservé" }, { status: 401 });
   const { id } = await params;
   const rec = await getClientEstimationServer(id);
   if (!rec) return Response.json({ error: "Introuvable" }, { status: 404 });
@@ -15,7 +15,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
 }
 
 export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  if (!checkHistoryPassword(request)) return Response.json({ error: "Accès réservé" }, { status: 401 });
+  if (!(await verifierAccesEquipe(request))) return Response.json({ error: "Accès réservé" }, { status: 401 });
   const { id } = await params;
   let body: { statut?: string; ajouterNote?: string; auteur?: string; transmettre?: boolean };
   try { body = (await request.json()) as typeof body; }

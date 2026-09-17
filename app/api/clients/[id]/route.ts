@@ -1,4 +1,4 @@
-import { checkHistoryPassword } from "@/lib/historyAuth";
+import { verifierAccesEquipe } from "@/lib/historyAuth";
 import { deleteClientServer, getClientServer, saveClientServer, type ClientDossier } from "@/lib/serverHistory";
 
 export const dynamic = "force-dynamic";
@@ -12,7 +12,7 @@ const CHAMPS_MODIFIABLES: (keyof ClientDossier)[] = [
 
 // Mise à jour d'un dossier client (fiche acquéreur / investisseur)
 export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  if (!checkHistoryPassword(request)) {
+  if (!(await verifierAccesEquipe(request))) {
     return Response.json({ error: "Accès réservé — mot de passe requis" }, { status: 401 });
   }
   const { id } = await params;
@@ -41,7 +41,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 
 // Un dossier client : détail et suppression (dossier + toutes ses pièces)
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  if (!checkHistoryPassword(request)) {
+  if (!(await verifierAccesEquipe(request))) {
     return Response.json({ error: "Accès réservé — mot de passe requis" }, { status: 401 });
   }
   const { id } = await params;
@@ -55,7 +55,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
 }
 
 export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  if (!checkHistoryPassword(request)) {
+  if (!(await verifierAccesEquipe(request))) {
     return Response.json({ error: "Accès réservé — mot de passe requis" }, { status: 401 });
   }
   const { id } = await params;

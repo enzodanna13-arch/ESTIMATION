@@ -237,7 +237,7 @@ export default function Home() {
   const [step, setStep] = useState(0);
   // Accueil à deux univers : Estimation (les 4 missions) et Génération de
   // documents (menu des documents de l'agence)
-  const [univers, setUnivers] = useState<"" | "estimation" | "documents" | "clients" | "historique" | "visites" | "registre" | "leads" | "estimations-clients" | "dashboard" | "negociateurs" | "espace" | "sauvegarde">("");
+  const [univers, setUnivers] = useState<"" | "estimation" | "documents" | "clients" | "historique" | "visites" | "registre" | "leads" | "estimations-clients" | "dashboard" | "negociateurs" | "espace" | "sauvegarde" | "reglages">("");
   // Métier actif (compartimentage CRM) : Transaction contient tout l'existant ;
   // Syndic et Gestion locative sont préparés (écran « à venir »).
   const [metier, setMetier] = useState<Metier>("transaction");
@@ -810,6 +810,7 @@ export default function Home() {
             {univers === "dashboard" && <DashboardPage onRetour={() => setUnivers("")} />}
             {univers === "negociateurs" && <NegociateursPage onRetour={() => setUnivers("")} />}
             {univers === "espace" && <EspaceNegociateurPage onRetour={() => setUnivers("")} />}
+            {univers === "reglages" && <ReglagesMotDePasse />}
 
             {univers === "" && (
               <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 print:hidden">
@@ -2308,6 +2309,67 @@ export default function Home() {
         Estimation indicative fondée sur DVF, le marché actif et l&apos;analyse IA — ne remplace pas un
         avis de valeur signé.
       </footer>
+    </div>
+  );
+}
+
+// Réglages : changer le mot de passe d'équipe depuis l'outil (sans Vercel).
+function ReglagesMotDePasse() {
+  const [actuel, setActuel] = useState("");
+  const [nouveau, setNouveau] = useState("");
+  const [confirme, setConfirme] = useState("");
+  const [msg, setMsg] = useState<string | null>(null);
+  const [err, setErr] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  const soumettre = async () => {
+    setErr(null); setMsg(null);
+    if (nouveau.length < 6) { setErr("Le nouveau mot de passe doit faire au moins 6 caractères."); return; }
+    if (nouveau !== confirme) { setErr("La confirmation ne correspond pas au nouveau mot de passe."); return; }
+    setBusy(true);
+    try {
+      const r = await fetch("/api/history/password", {
+        method: "POST", headers: { "content-type": "application/json" },
+        body: JSON.stringify({ actuel, nouveau }),
+      });
+      const d = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(d.error || "Échec du changement");
+      setMsg("Mot de passe changé. Il sera demandé à tout le monde à la prochaine connexion.");
+      setActuel(""); setNouveau(""); setConfirme("");
+    } catch (e) { setErr(e instanceof Error ? e.message : "Erreur"); }
+    finally { setBusy(false); }
+  };
+
+  return (
+    <div className="mx-auto max-w-lg">
+      <h2 className="mb-1 text-2xl font-bold text-navy">⚙️ Mot de passe de l&apos;outil</h2>
+      <p className="mb-6 text-sm text-slate-500">
+        Changez ici le mot de passe d&apos;accès à l&apos;outil, sans passer par Vercel. Le nouveau mot de passe
+        remplace l&apos;ancien pour toute l&apos;équipe.
+      </p>
+      <div className="space-y-3 rounded-2xl border border-slate-200 bg-white p-6">
+        <div>
+          <label className="mb-1 block text-sm font-semibold text-slate-600">Mot de passe actuel</label>
+          <input type="password" className={inputCls} value={actuel} onChange={(e) => setActuel(e.target.value)} autoComplete="current-password" />
+        </div>
+        <div>
+          <label className="mb-1 block text-sm font-semibold text-slate-600">Nouveau mot de passe</label>
+          <input type="password" className={inputCls} value={nouveau} onChange={(e) => setNouveau(e.target.value)} autoComplete="new-password" />
+        </div>
+        <div>
+          <label className="mb-1 block text-sm font-semibold text-slate-600">Confirmer le nouveau mot de passe</label>
+          <input type="password" className={inputCls} value={confirme} onChange={(e) => setConfirme(e.target.value)} autoComplete="new-password" onKeyDown={(e) => e.key === "Enter" && soumettre()} />
+        </div>
+        <button onClick={soumettre} disabled={busy} className="w-full rounded-xl bg-navy px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-navy-deep disabled:opacity-50">
+          {busy ? "Enregistrement…" : "Changer le mot de passe"}
+        </button>
+        {msg && <p className="rounded-lg bg-emerald-50 p-3 text-sm font-semibold text-emerald-700">{msg}</p>}
+        {err && <p className="text-sm text-red-600">{err}</p>}
+      </div>
+      <p className="mt-4 text-xs text-slate-400">
+        En cas d&apos;oubli, le mot de passe d&apos;origine (celui configuré sur Vercel) permet toujours de le
+        réinitialiser depuis cet écran, mais ne permet plus de se connecter directement.
+      </p>
     </div>
   );
 }

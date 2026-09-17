@@ -1,11 +1,11 @@
-import { checkHistoryPassword } from "@/lib/historyAuth";
+import { verifierAccesEquipe } from "@/lib/historyAuth";
 import { listSmsForLead } from "@/lib/serverSms";
 
 export const dynamic = "force-dynamic";
 
 // Historique SMS d'un lead (réservé à l'équipe authentifiée) : /api/sms?leadId=…
 export async function GET(request: Request) {
-  if (!checkHistoryPassword(request)) {
+  if (!(await verifierAccesEquipe(request))) {
     return Response.json({ error: "Accès réservé" }, { status: 401 });
   }
   const leadId = new URL(request.url).searchParams.get("leadId")?.trim();

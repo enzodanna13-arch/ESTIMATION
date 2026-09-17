@@ -1,4 +1,4 @@
-import { checkHistoryPassword } from "@/lib/historyAuth";
+import { verifierAccesEquipe } from "@/lib/historyAuth";
 import { addVisiteImageServer } from "@/lib/serverHistory";
 
 export const maxDuration = 60;
@@ -7,7 +7,7 @@ export const dynamic = "force-dynamic";
 // Ajout d'une scène 360° (une prise de vue par requête, JPEG compressé
 // côté client sous la limite serverless ~4,5 Mo) — protégé
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  if (!checkHistoryPassword(request)) {
+  if (!(await verifierAccesEquipe(request))) {
     return Response.json({ error: "Accès réservé — mot de passe requis" }, { status: 401 });
   }
   const { id } = await params;

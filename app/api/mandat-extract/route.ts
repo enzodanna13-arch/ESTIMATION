@@ -1,5 +1,5 @@
 import Anthropic from "@anthropic-ai/sdk";
-import { checkHistoryPassword } from "@/lib/historyAuth";
+import { verifierAccesEquipe } from "@/lib/historyAuth";
 
 export const maxDuration = 300;
 export const dynamic = "force-dynamic";
@@ -47,7 +47,7 @@ function mediaTypeDe(data: string): "application/pdf" | "image/jpeg" | "image/pn
 }
 
 export async function POST(request: Request) {
-  if (!checkHistoryPassword(request)) {
+  if (!(await verifierAccesEquipe(request))) {
     return Response.json({ error: "Accès réservé — mot de passe requis" }, { status: 401 });
   }
   if (!process.env.ANTHROPIC_API_KEY) {
