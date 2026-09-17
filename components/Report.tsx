@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
+import { genererDossierPdf } from "@/lib/genererDossierPdf";
 import RapprochementAcquereurs from "@/components/RapprochementAcquereurs";
 import { calculPlusValue } from "@/lib/plusvalue";
 import { medianeReferences } from "@/lib/references";
@@ -84,6 +85,19 @@ export default function Report({
   );
 
   const clientName = [input.clientCivilite, input.clientPrenom, input.clientNom].filter(Boolean).join(" ");
+  const [pdfBusy, setPdfBusy] = useState(false);
+  const telechargerPdf = async () => {
+    setPdfBusy(true);
+    try {
+      const base = [refDossier, input.clientNom].filter(Boolean).join("-").replace(/[^a-z0-9-]/gi, "_");
+      const ok = await genererDossierPdf(`${base || "dossier"}.pdf`);
+      if (!ok) window.print(); // repli si la capture échoue
+    } catch {
+      window.print();
+    } finally {
+      setPdfBusy(false);
+    }
+  };
   const typeLabel =
     input.typeBien === "appartement" && input.nbPieces
       ? `Appartement T${input.nbPieces}`
@@ -257,8 +271,11 @@ export default function Report({
           >
             {engine === "ia" ? "✦ Moteur IA + recherche web" : "Moteur statistique (clé IA non configurée)"}
           </span>
-          <button onClick={() => window.print()} className="rounded-lg bg-copper px-4 py-1.5 text-sm font-bold text-white transition hover:brightness-110">
-            📄 Exporter le dossier PDF
+          <button onClick={telechargerPdf} disabled={pdfBusy} className="rounded-lg bg-copper px-4 py-1.5 text-sm font-bold text-white transition hover:brightness-110 disabled:opacity-60">
+            {pdfBusy ? "⏳ Génération du PDF…" : "📄 Télécharger le dossier PDF"}
+          </button>
+          <button onClick={() => window.print()} className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-600 transition hover:bg-slate-100" title="Imprimer via le navigateur (ancienne méthode)">
+            🖨️ Imprimer
           </button>
           <button onClick={onReset} className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-600 transition hover:bg-slate-100">
             Nouvelle estimation

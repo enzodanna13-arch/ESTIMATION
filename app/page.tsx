@@ -16,6 +16,7 @@ import DashboardPage from "@/components/DashboardPage";
 import NegociateursPage from "@/components/NegociateursPage";
 import EspaceNegociateurPage from "@/components/EspaceNegociateurPage";
 import { CrmChrome, MetierBientot, Portail, type Metier } from "@/components/CrmShell";
+import { genererDossierPdf } from "@/lib/genererDossierPdf";
 import { NEGOCIATEURS } from "@/lib/equipe";
 import { deleteDocument, deleteEstimation, getDocument, getEstimation, getHistoryKey, HistoryLockedError, listDocuments, listEstimations, saveDocument, setHistoryKey, type DocHistoryMeta, type HistoryMeta } from "@/lib/history";
 import { loyerNetAnnuel, prixParRendement, RENDEMENT_NET_BAS, RENDEMENT_NET_HAUT } from "@/lib/rendement";
@@ -415,7 +416,7 @@ export default function Home() {
   useEffect(() => {
     if (result && printOnOpen) {
       setPrintOnOpen(false);
-      const t = setTimeout(() => window.print(), 900);
+      const t = setTimeout(() => { void genererDossierPdf("dossier.pdf").catch(() => window.print()); }, 900);
       return () => clearTimeout(t);
     }
   }, [result, printOnOpen]);
