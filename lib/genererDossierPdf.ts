@@ -8,9 +8,14 @@
 const A4_L = 210; // mm
 const A4_H = 297; // mm
 
+// box-sizing: border-box est ESSENTIEL : sans lui la feuille est en
+// content-box, donc les 40 mm de marges internes s'AJOUTENT aux 297 mm
+// (≈ 337 mm capturés). La page était alors réduite pour tenir sur l'A4 et
+// laissait des bords blancs tout autour (visible surtout sur la couverture
+// noire). En border-box, une page fait exactement 297 mm et remplit la feuille.
 const STYLE_CAPTURE = `
-  .dossier .page { width: 210mm !important; min-height: 297mm !important; margin: 0 !important; box-shadow: none !important; }
-  .dossier .page.cover { min-height: 297mm !important; }
+  .dossier .page { box-sizing: border-box !important; width: 210mm !important; min-height: 297mm !important; margin: 0 !important; box-shadow: none !important; }
+  .dossier .page.cover { box-sizing: border-box !important; min-height: 297mm !important; }
   .dossier .foot { margin-top: auto !important; }
 `;
 
