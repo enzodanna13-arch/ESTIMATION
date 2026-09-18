@@ -11,6 +11,7 @@ import VisitesPage from "@/components/VisitesPage";
 import RegistrePage from "@/components/RegistrePage";
 import LeadsPage from "@/components/LeadsPage";
 import ChassePage from "@/components/ChassePage";
+import FlyersPage from "@/components/FlyersPage";
 import EstimationsClientsPage from "@/components/EstimationsClientsPage";
 import { consommerPrefillEstimation } from "@/lib/prefillEstimation";
 import DashboardPage from "@/components/DashboardPage";
@@ -239,7 +240,7 @@ export default function Home() {
   const [step, setStep] = useState(0);
   // Accueil à deux univers : Estimation (les 4 missions) et Génération de
   // documents (menu des documents de l'agence)
-  const [univers, setUnivers] = useState<"" | "estimation" | "documents" | "clients" | "historique" | "visites" | "registre" | "leads" | "chasse" | "estimations-clients" | "dashboard" | "negociateurs" | "espace" | "sauvegarde" | "reglages">("");
+  const [univers, setUnivers] = useState<"" | "estimation" | "documents" | "clients" | "historique" | "visites" | "registre" | "leads" | "chasse" | "flyers" | "estimations-clients" | "dashboard" | "negociateurs" | "espace" | "sauvegarde" | "reglages">("");
   // Métier actif (compartimentage CRM) : Transaction contient tout l'existant ;
   // Syndic et Gestion locative sont préparés (écran « à venir »).
   const [metier, setMetier] = useState<Metier>("transaction");
@@ -824,6 +825,7 @@ export default function Home() {
 
             {univers === "leads" && <LeadsPage onRetour={() => setUnivers("")} />}
             {univers === "chasse" && <ChassePage onRetour={() => setUnivers("")} />}
+            {univers === "flyers" && <FlyersPage onRetour={() => setUnivers("")} />}
             {univers === "estimations-clients" && <EstimationsClientsPage onRetour={() => setUnivers("")} />}
             {univers === "dashboard" && <DashboardPage onRetour={() => setUnivers("")} />}
             {univers === "negociateurs" && <NegociateursPage onRetour={() => setUnivers("")} />}
@@ -905,6 +907,21 @@ export default function Home() {
                   </p>
                   <span className="mt-4 inline-block rounded-lg bg-copper px-4 py-2 text-sm font-semibold text-white transition group-hover:brightness-110">
                     Choisir un document →
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setUnivers("flyers")}
+                  className="group rounded-3xl border-2 border-slate-200 bg-white p-8 text-left shadow-sm transition hover:border-copper hover:shadow-lg"
+                >
+                  <div className="mb-3 text-4xl">🖨️</div>
+                  <div className="text-xl font-bold text-navy">Flyers de prospection</div>
+                  <p className="mt-1 text-sm text-slate-500">
+                    Plusieurs visuels prêts à imprimer, 2 flyers par A4. Personnalisez au nom
+                    de chaque boîte aux lettres via un fichier CSV.
+                  </p>
+                  <span className="mt-4 inline-block rounded-lg bg-copper px-4 py-2 text-sm font-semibold text-white transition group-hover:brightness-110">
+                    Créer des flyers →
                   </span>
                 </button>
                 <button

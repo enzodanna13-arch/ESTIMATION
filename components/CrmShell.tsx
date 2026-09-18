@@ -42,6 +42,7 @@ const GROUPES: Groupe[] = [
   ] },
   { label: "Marketing & médias", items: [
     { v: "documents", t: "Génération de documents", i: "📄" },
+    { v: "flyers", t: "Flyers de prospection", i: "🖨️" },
     { v: "visites", t: "Montage vidéo & 360°", i: "🎬" },
   ] },
   { label: "Archives", items: [
