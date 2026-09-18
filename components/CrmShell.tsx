@@ -29,6 +29,7 @@ const GROUPES: Groupe[] = [
   ] },
   { label: "Prospection", items: [
     { v: "leads", t: "Leads entrant", i: "📥" },
+    { v: "chasse", t: "Chasse immobilière", i: "🏹" },
     { v: "estimations-clients", t: "Estimations clients", i: "🏛️" },
     { v: "registre", t: "Registre des appels", i: "📞" },
   ] },

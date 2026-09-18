@@ -1,0 +1,285 @@
+"use client";
+
+import { useEffect, useMemo, useState } from "react";
+import {
+  STATUTS_CHASSE, STATUT_CHASSE_COULEURS,
+  extraireAnnonce, listChasse, saveChasse, deleteChasse,
+  type FicheChasse,
+} from "@/lib/chasse";
+import { NEGOCIATEURS } from "@/lib/equipe";
+
+const inputCls = "w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-copper focus:outline-none focus:ring-2 focus:ring-copper/20";
+const int = new Intl.NumberFormat("fr-FR");
+const euro = (n: number) => (n > 0 ? `${int.format(n)} €` : "—");
+const dateFr = (t: number) => new Date(t).toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit", year: "2-digit" });
+
+function StatutChip({ s }: { s: string }) {
+  return <span className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-semibold ${STATUT_CHASSE_COULEURS[s] ?? "bg-slate-100 text-slate-600"}`}>{s}</span>;
+}
+
+export default function ChassePage({ onRetour }: { onRetour: () => void }) {
+  const [fiches, setFiches] = useState<FicheChasse[]>([]);
+  const [chargement, setChargement] = useState(true);
+  const [q, setQ] = useState("");
+  const [filtreStatut, setFiltreStatut] = useState("");
+  const [selection, setSelection] = useState<FicheChasse | null>(null);
+
+  // Nouvelle chasse
+  const [url, setUrl] = useState("");
+  const [nego, setNego] = useState(NEGOCIATEURS[0] ?? "");
+  const [analyse, setAnalyse] = useState(false);
+  const [msg, setMsg] = useState<string | null>(null);
+  const [err, setErr] = useState<string | null>(null);
+
+  const recharger = () => {
+    setChargement(true);
+    listChasse().then((f) => { setFiches(f); setChargement(false); }).catch(() => setChargement(false));
+  };
+  useEffect(recharger, []);
+
+  const affichees = useMemo(() => {
+    const qt = q.trim().toLowerCase();
+    return fiches.filter((f) =>
+      (!filtreStatut || f.statut === filtreStatut) &&
+      (!qt || [f.titre, f.ville, f.codePostal, f.source, f.negociateur, f.description].join(" ").toLowerCase().includes(qt)),
+    );
+  }, [fiches, q, filtreStatut]);
+
+  const analyser = async () => {
+    setErr(null); setMsg(null);
+    const lien = url.trim();
+    if (!/^https?:\/\//i.test(lien)) { setErr("Collez le lien complet de l'annonce (https://…)"); return; }
+    setAnalyse(true);
+    try {
+      const r = await extraireAnnonce(lien);
+      const fiche = await saveChasse({ ...r.fiche, url: lien, negociateur: nego, statut: "À contacter" });
+      setFiches((prev) => [fiche, ...prev.filter((x) => x.id !== fiche.id)]);
+      setUrl("");
+      setMsg(r.bloque ? (r.message ?? "Fiche créée — à compléter à la main.") : "Annonce importée ✔ — vérifiez et complétez la fiche.");
+      setSelection(fiche);
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : "Analyse impossible");
+    } finally {
+      setAnalyse(false);
+    }
+  };
+
+  if (selection) {
+    return (
+      <FicheDetail
+        fiche={selection}
+        onRetour={() => setSelection(null)}
+        onEnregistre={(f) => { setFiches((prev) => prev.map((x) => (x.id === f.id ? f : x))); setSelection(f); }}
+        onSupprime={(id) => { setFiches((prev) => prev.filter((x) => x.id !== id)); setSelection(null); }}
+      />
+    );
+  }
+
+  return (
+    <div className="mx-auto max-w-6xl">
+      <div className="mb-6 flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-bold text-navy">🏹 Chasse immobilière</h2>
+          <p className="text-sm text-slate-500">Repérez un bien en ligne, l&apos;IA récupère la fiche, vous ajoutez votre estimation et votre suivi.</p>
+        </div>
+        <button onClick={onRetour} className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm text-slate-600 hover:bg-slate-50">← Retour</button>
+      </div>
+
+      {/* Nouvelle chasse */}
+      <div className="mb-6 rounded-2xl border border-copper/30 bg-copper/5 p-5">
+        <h3 className="mb-3 text-sm font-bold uppercase tracking-wide text-copper">Nouvelle chasse — coller le lien d&apos;une annonce</h3>
+        <div className="flex flex-col gap-3 md:flex-row md:items-end">
+          <div className="flex-1">
+            <label className="mb-1 block text-xs font-semibold text-slate-600">Lien de l&apos;annonce</label>
+            <input className={inputCls} placeholder="https://www.seloger.com/annonces/…" value={url} onChange={(e) => setUrl(e.target.value)} onKeyDown={(e) => e.key === "Enter" && analyser()} />
+          </div>
+          <div className="md:w-56">
+            <label className="mb-1 block text-xs font-semibold text-slate-600">Négociateur</label>
+            <select className={inputCls} value={nego} onChange={(e) => setNego(e.target.value)}>
+              {NEGOCIATEURS.map((n) => <option key={n} value={n}>{n}</option>)}
+            </select>
+          </div>
+          <button onClick={analyser} disabled={analyse} className="rounded-xl bg-copper px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-copper/90 disabled:opacity-50">
+            {analyse ? "Analyse en cours…" : "Analyser l'annonce"}
+          </button>
+        </div>
+        {msg && <p className="mt-3 rounded-lg bg-emerald-50 p-2.5 text-sm text-emerald-700">{msg}</p>}
+        {err && <p className="mt-3 text-sm text-red-600">{err}</p>}
+      </div>
+
+      {/* Filtres */}
+      <div className="mb-4 flex flex-wrap items-center gap-2">
+        <input className={`${inputCls} max-w-xs`} placeholder="Rechercher (ville, titre, négociateur…)" value={q} onChange={(e) => setQ(e.target.value)} />
+        <select className={`${inputCls} max-w-[12rem]`} value={filtreStatut} onChange={(e) => setFiltreStatut(e.target.value)}>
+          <option value="">Tous les statuts</option>
+          {STATUTS_CHASSE.map((s) => <option key={s} value={s}>{s}</option>)}
+        </select>
+        <span className="ml-auto text-sm text-slate-500">{affichees.length} bien{affichees.length > 1 ? "s" : ""}</span>
+      </div>
+
+      {/* Liste */}
+      {chargement ? (
+        <p className="py-16 text-center text-slate-400">Chargement…</p>
+      ) : affichees.length === 0 ? (
+        <div className="rounded-2xl border border-dashed border-slate-300 py-16 text-center text-slate-400">
+          Aucun bien en chasse pour l&apos;instant. Collez le lien d&apos;une annonce ci-dessus pour démarrer.
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {affichees.map((f) => (
+            <button key={f.id} onClick={() => setSelection(f)} className="group overflow-hidden rounded-2xl border border-slate-200 bg-white text-left shadow-sm transition hover:shadow-md">
+              <div className="relative h-40 w-full bg-slate-100">
+                {f.photos[0]
+                  // eslint-disable-next-line @next/next/no-img-element
+                  ? <img src={f.photos[0]} alt="" className="h-full w-full object-cover transition group-hover:scale-[1.02]" loading="lazy" />
+                  : <div className="flex h-full items-center justify-center text-3xl text-slate-300">🏠</div>}
+                <div className="absolute left-2 top-2"><StatutChip s={f.statut} /></div>
+                {f.photos.length > 1 && <div className="absolute bottom-2 right-2 rounded-md bg-black/60 px-1.5 py-0.5 text-xs text-white">📷 {f.photos.length}</div>}
+              </div>
+              <div className="p-3">
+                <div className="truncate text-sm font-bold text-navy">{f.titre || f.typeBien || "Bien sans titre"}</div>
+                <div className="truncate text-xs text-slate-500">{[f.ville, f.codePostal].filter(Boolean).join(" · ") || f.source}</div>
+                <div className="mt-2 flex items-center justify-between text-sm">
+                  <span className="text-slate-600">Annonce&nbsp;: <b>{euro(f.prixAffiche)}</b></span>
+                  <span className="text-copper">Estim.&nbsp;: <b>{euro(f.estimationNego)}</b></span>
+                </div>
+                <div className="mt-1 flex items-center justify-between text-xs text-slate-400">
+                  <span>{f.negociateur || "—"}</span>
+                  <span>{dateFr(f.updatedAt)}</span>
+                </div>
+              </div>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+
+function FicheDetail({ fiche, onRetour, onEnregistre, onSupprime }: {
+  fiche: FicheChasse;
+  onRetour: () => void;
+  onEnregistre: (f: FicheChasse) => void;
+  onSupprime: (id: string) => void;
+}) {
+  const [f, setF] = useState<FicheChasse>(fiche);
+  const [busy, setBusy] = useState(false);
+  const [ok, setOk] = useState(false);
+  const [nouvellePhoto, setNouvellePhoto] = useState("");
+
+  const maj = <K extends keyof FicheChasse>(k: K, v: FicheChasse[K]) => { setF((p) => ({ ...p, [k]: v })); setOk(false); };
+  const majNum = (k: keyof FicheChasse, v: string) => maj(k, (Number(v.replace(/[^0-9.]/g, "")) || 0) as never);
+
+  const enregistrer = async () => {
+    setBusy(true);
+    try {
+      const saved = await saveChasse(f);
+      setF(saved); setOk(true); onEnregistre(saved);
+    } catch { /* silencieux */ } finally { setBusy(false); }
+  };
+  const supprimer = async () => {
+    if (!confirm("Supprimer définitivement cette fiche de chasse ?")) return;
+    setBusy(true);
+    try { await deleteChasse(f.id); onSupprime(f.id); } finally { setBusy(false); }
+  };
+  const retirerPhoto = (i: number) => maj("photos", f.photos.filter((_, j) => j !== i));
+  const ajouterPhoto = () => {
+    const u = nouvellePhoto.trim();
+    if (/^https?:\/\//i.test(u)) { maj("photos", [...f.photos, u]); setNouvellePhoto(""); }
+  };
+
+  const ecart = f.prixAffiche > 0 && f.estimationNego > 0 ? f.estimationNego - f.prixAffiche : 0;
+
+  return (
+    <div className="mx-auto max-w-5xl">
+      <div className="mb-5 flex items-center justify-between">
+        <button onClick={onRetour} className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm text-slate-600 hover:bg-slate-50">← Toutes les chasses</button>
+        <div className="flex items-center gap-2">
+          {ok && <span className="text-sm font-semibold text-emerald-600">Enregistré ✔</span>}
+          <button onClick={enregistrer} disabled={busy} className="rounded-xl bg-navy px-4 py-2 text-sm font-semibold text-white hover:bg-navy-deep disabled:opacity-50">{busy ? "…" : "Enregistrer"}</button>
+          <button onClick={supprimer} disabled={busy} className="rounded-xl border border-red-200 px-3 py-2 text-sm font-semibold text-red-600 hover:bg-red-50">Supprimer</button>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
+        {/* Photos */}
+        <div className="lg:col-span-3">
+          <div className="overflow-hidden rounded-2xl border border-slate-200 bg-slate-100">
+            {f.photos[0]
+              // eslint-disable-next-line @next/next/no-img-element
+              ? <img src={f.photos[0]} alt="" className="h-72 w-full object-cover" />
+              : <div className="flex h-72 items-center justify-center text-5xl text-slate-300">🏠</div>}
+          </div>
+          {f.photos.length > 0 && (
+            <div className="mt-3 grid grid-cols-4 gap-2 sm:grid-cols-6">
+              {f.photos.map((p, i) => (
+                <div key={i} className="group relative aspect-square overflow-hidden rounded-lg border border-slate-200 bg-slate-100">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={p} alt="" className="h-full w-full object-cover" loading="lazy" />
+                  <button onClick={() => retirerPhoto(i)} className="absolute right-0.5 top-0.5 hidden rounded bg-black/60 px-1 text-xs text-white group-hover:block">✕</button>
+                </div>
+              ))}
+            </div>
+          )}
+          <div className="mt-3 flex gap-2">
+            <input className={inputCls} placeholder="Ajouter une photo par URL (https://…)" value={nouvellePhoto} onChange={(e) => setNouvellePhoto(e.target.value)} onKeyDown={(e) => e.key === "Enter" && ajouterPhoto()} />
+            <button onClick={ajouterPhoto} className="whitespace-nowrap rounded-lg border border-slate-300 px-3 text-sm text-slate-600 hover:bg-slate-50">+ Photo</button>
+          </div>
+          <div className="mt-3">
+            <label className="mb-1 block text-xs font-semibold text-slate-600">Description</label>
+            <textarea className={`${inputCls} min-h-[120px]`} value={f.description} onChange={(e) => maj("description", e.target.value)} />
+          </div>
+        </div>
+
+        {/* Infos & saisie */}
+        <div className="space-y-4 lg:col-span-2">
+          <div className="rounded-2xl border border-slate-200 bg-white p-4">
+            <div className="mb-2 flex items-center justify-between">
+              <StatutChip s={f.statut} />
+              {f.url && <a href={f.url} target="_blank" rel="noreferrer" className="text-xs font-semibold text-copper hover:underline">Voir l&apos;annonce ↗</a>}
+            </div>
+            <label className="mb-1 block text-xs font-semibold text-slate-600">Titre</label>
+            <input className={inputCls} value={f.titre} onChange={(e) => maj("titre", e.target.value)} />
+            <div className="mt-2 grid grid-cols-2 gap-2">
+              <div><label className="mb-1 block text-xs font-semibold text-slate-600">Type</label><input className={inputCls} value={f.typeBien} onChange={(e) => maj("typeBien", e.target.value)} /></div>
+              <div><label className="mb-1 block text-xs font-semibold text-slate-600">DPE</label><input className={inputCls} value={f.dpe} onChange={(e) => maj("dpe", e.target.value.toUpperCase().slice(0, 1))} /></div>
+              <div><label className="mb-1 block text-xs font-semibold text-slate-600">Ville</label><input className={inputCls} value={f.ville} onChange={(e) => maj("ville", e.target.value)} /></div>
+              <div><label className="mb-1 block text-xs font-semibold text-slate-600">Code postal</label><input className={inputCls} value={f.codePostal} onChange={(e) => maj("codePostal", e.target.value)} /></div>
+              <div><label className="mb-1 block text-xs font-semibold text-slate-600">Surface (m²)</label><input className={inputCls} value={f.surface || ""} onChange={(e) => majNum("surface", e.target.value)} /></div>
+              <div><label className="mb-1 block text-xs font-semibold text-slate-600">Pièces</label><input className={inputCls} value={f.pieces || ""} onChange={(e) => majNum("pieces", e.target.value)} /></div>
+              <div><label className="mb-1 block text-xs font-semibold text-slate-600">Chambres</label><input className={inputCls} value={f.chambres || ""} onChange={(e) => majNum("chambres", e.target.value)} /></div>
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-copper/30 bg-copper/5 p-4">
+            <h3 className="mb-2 text-sm font-bold text-copper">Estimation & suivi</h3>
+            <label className="mb-1 block text-xs font-semibold text-slate-600">Prix affiché (annonce)</label>
+            <input className={inputCls} value={f.prixAffiche || ""} onChange={(e) => majNum("prixAffiche", e.target.value)} />
+            <label className="mb-1 mt-2 block text-xs font-semibold text-slate-600">Mon estimation (€)</label>
+            <input className={inputCls} value={f.estimationNego || ""} onChange={(e) => majNum("estimationNego", e.target.value)} />
+            {ecart !== 0 && (
+              <p className={`mt-1 text-xs font-semibold ${ecart < 0 ? "text-red-600" : "text-emerald-600"}`}>
+                {ecart < 0 ? "En dessous" : "Au dessus"} du prix affiché de {int.format(Math.abs(ecart))} €
+              </p>
+            )}
+            <label className="mb-1 mt-3 block text-xs font-semibold text-slate-600">Statut</label>
+            <select className={inputCls} value={f.statut} onChange={(e) => maj("statut", e.target.value)}>
+              {STATUTS_CHASSE.map((s) => <option key={s} value={s}>{s}</option>)}
+            </select>
+            <label className="mb-1 mt-3 block text-xs font-semibold text-slate-600">Négociateur</label>
+            <select className={inputCls} value={f.negociateur} onChange={(e) => maj("negociateur", e.target.value)}>
+              {NEGOCIATEURS.map((n) => <option key={n} value={n}>{n}</option>)}
+              {f.negociateur && !NEGOCIATEURS.includes(f.negociateur) && <option value={f.negociateur}>{f.negociateur}</option>}
+            </select>
+            <label className="mb-1 mt-3 block text-xs font-semibold text-slate-600">Contact propriétaire</label>
+            <input className={inputCls} placeholder="Nom, téléphone, email…" value={f.contactProprietaire} onChange={(e) => maj("contactProprietaire", e.target.value)} />
+            <label className="mb-1 mt-3 block text-xs font-semibold text-slate-600">Notes</label>
+            <textarea className={`${inputCls} min-h-[90px]`} value={f.notes} onChange={(e) => maj("notes", e.target.value)} />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
