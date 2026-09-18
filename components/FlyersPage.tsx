@@ -16,10 +16,10 @@ const AGENCE = {
 interface Destinataire { civilite: string; prenom: string; nom: string; adresse: string }
 
 const MODELES = [
-  { id: "estimation", label: "Estimation offerte" },
-  { id: "acquereur", label: "Acquéreur en attente" },
-  { id: "vendu", label: "Vendu dans le quartier" },
-  { id: "valeur", label: "Valeur du bien" },
+  { id: "estimation", label: "Avis de recherche" },
+  { id: "acquereur", label: "Acquéreurs en attente" },
+  { id: "vendu", label: "Quartier très recherché" },
+  { id: "valeur", label: "Nous avons l'acheteur" },
 ] as const;
 type ModeleId = (typeof MODELES)[number]["id"];
 
@@ -64,53 +64,62 @@ function Flyer({ modele, nego, tel, dest }: { modele: ModeleId; nego: string; te
   const base = "relative overflow-hidden";
   const style: React.CSSProperties = { width: "210mm", height: "148.5mm", boxSizing: "border-box", padding: "12mm 14mm" };
 
+  // 1) AVIS DE RECHERCHE — style « affiche recherchée », navy + or
   if (modele === "estimation") {
     return (
       <div className={base} style={{ ...style, background: "#0f1e3d", color: "#f7f3ec" }}>
         <div className="flex items-start justify-between">
           <Logo clair />
-          <div className="rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-widest" style={{ background: "#b8935a", color: "#0f1e3d" }}>Offert</div>
+          <div className="rotate-3 rounded-md border-2 px-3 py-1 text-[12px] font-black uppercase tracking-[0.2em]" style={{ borderColor: "#b8935a", color: "#b8935a" }}>Avis de recherche</div>
         </div>
-        <div className="mt-6">
-          <BandeauDestinataire d={dest} clair />
-          <h1 className="font-serif text-[40px] font-black leading-[1.05]">Vendez au<br />meilleur prix.</h1>
-          <p className="mt-3 max-w-[130mm] text-[14px]" style={{ color: "#d9c7ad" }}>
-            Profitez d&apos;une <b style={{ color: "#f7f3ec" }}>estimation offerte et sans engagement</b> de votre bien, réalisée par un expert de votre secteur.
-          </p>
+        <div className="mt-5 flex items-start gap-4">
+          <div className="text-[52px] leading-none">🔍</div>
+          <div>
+            <BandeauDestinataire d={dest} clair />
+            <h1 className="font-serif text-[34px] font-black leading-[1.05]">Nous recherchons un bien<br />dans <span style={{ color: "#b8935a" }}>votre quartier</span>.</h1>
+            <p className="mt-3 max-w-[128mm] text-[14px]" style={{ color: "#d9c7ad" }}>
+              Pour le compte d&apos;<b style={{ color: "#f7f3ec" }}>acquéreurs déjà sélectionnés et finançables</b>, nous cherchons activement maisons et appartements à vendre près de chez vous.
+            </p>
+          </div>
         </div>
         <div className="absolute inset-x-[14mm] bottom-[10mm]"><Contact nego={nego} tel={tel} clair /></div>
       </div>
     );
   }
 
+  // 2) ACQUÉREURS EN ATTENTE — chiffre fort + urgence
   if (modele === "acquereur") {
     return (
       <div className={base} style={{ ...style, background: "#f7f3ec", color: "#0f1e3d" }}>
-        <div className="flex items-start justify-between"><Logo /><div className="text-5xl">📍</div></div>
-        <div className="mt-5">
-          <BandeauDestinataire d={dest} />
-          <h1 className="font-serif text-[34px] font-black leading-[1.08]">Un acquéreur recherche<br />un bien dans <span style={{ color: "#b8935a" }}>votre quartier</span>.</h1>
-          <p className="mt-3 max-w-[135mm] text-[14px] text-slate-700">
-            Nous accompagnons des acheteurs sérieux à la recherche d&apos;un bien près de chez vous. <b>Vous envisagez de vendre ?</b> Parlons-en, sans engagement.
-          </p>
+        <div className="flex items-start justify-between"><Logo /><div className="text-[11px] font-bold uppercase tracking-widest" style={{ color: "#b8935a" }}>🎯 Recherche active</div></div>
+        <div className="mt-4 flex items-center gap-5">
+          <div className="font-serif text-[92px] font-black leading-none" style={{ color: "#b8935a" }}>3</div>
+          <div>
+            <BandeauDestinataire d={dest} />
+            <h1 className="font-serif text-[30px] font-black leading-[1.08]">acquéreurs recherchent<br />un bien dans <span style={{ color: "#b8935a" }}>votre secteur</span>.</h1>
+            <p className="mt-2 max-w-[120mm] text-[14px] text-slate-700">
+              Leur projet est prêt, leur financement validé. <b>Votre bien les intéresse peut-être déjà.</b>
+            </p>
+          </div>
         </div>
         <div className="absolute inset-x-[14mm] bottom-[10mm]"><Contact nego={nego} tel={tel} /></div>
       </div>
     );
   }
 
+  // 3) QUARTIER TRÈS RECHERCHÉ — pénurie de biens
   if (modele === "vendu") {
     return (
       <div className={base} style={{ ...style, background: "#ffffff", color: "#0f1e3d" }}>
         <div className="flex items-start justify-between">
           <Logo />
-          <div className="rounded-md px-3 py-1.5 text-[13px] font-black uppercase tracking-widest" style={{ background: "#0f1e3d", color: "#f7f3ec" }}>Vendu</div>
+          <div className="rounded-md px-3 py-1.5 text-[12px] font-black uppercase tracking-widest" style={{ background: "#0f1e3d", color: "#f7f3ec" }}>🔥 Très demandé</div>
         </div>
-        <div className="mt-6">
+        <div className="mt-6 pl-[4mm]">
           <BandeauDestinataire d={dest} />
-          <h1 className="font-serif text-[36px] font-black leading-[1.06]">Encore un bien vendu<br />près de chez vous.</h1>
+          <h1 className="font-serif text-[33px] font-black leading-[1.06]">Votre quartier est<br /><span style={{ color: "#b8935a" }}>très recherché</span>.</h1>
           <p className="mt-3 max-w-[135mm] text-[14px] text-slate-700">
-            Le marché est actif dans votre secteur. <b>Votre bien vaut peut-être plus que vous ne le pensez</b> — demandez votre estimation gratuite.
+            Nous <b>manquons de biens</b> à proposer à nos acheteurs dans votre secteur. Si vous vendez (même plus tard), votre bien pourrait partir vite et au bon prix.
           </p>
         </div>
         <div className="absolute left-0 top-0 h-full w-[8mm]" style={{ background: "#b8935a" }} />
@@ -119,16 +128,16 @@ function Flyer({ modele, nego, tel, dest }: { modele: ModeleId; nego: string; te
     );
   }
 
-  // valeur
+  // 4) NOUS AVONS DÉJÀ L'ACHETEUR — estimation offerte
   return (
     <div className={base} style={{ ...style, background: "#f7f3ec", color: "#0f1e3d" }}>
-      <div className="flex items-start justify-between"><Logo /></div>
-      <div className="mt-5">
+      <div className="flex items-start justify-between"><Logo /><div className="text-[44px] leading-none">🏡</div></div>
+      <div className="mt-4">
         <BandeauDestinataire d={dest} />
-        <div className="mb-2 inline-block rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-widest" style={{ background: "#b8935a", color: "#0f1e3d" }}>Estimation gratuite</div>
-        <h1 className="font-serif text-[33px] font-black leading-[1.08]">Connaissez-vous la valeur<br />de votre bien aujourd&apos;hui ?</h1>
+        <div className="mb-2 inline-block rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-widest" style={{ background: "#b8935a", color: "#0f1e3d" }}>Estimation offerte</div>
+        <h1 className="font-serif text-[32px] font-black leading-[1.08]">Vous vendez ?<br />Nous avons peut-être <span style={{ color: "#b8935a" }}>déjà l&apos;acheteur</span>.</h1>
         <p className="mt-3 max-w-[135mm] text-[14px] text-slate-700">
-          Les prix ont bougé. Obtenez une <b>estimation fiable et gratuite</b> de votre appartement ou maison, fondée sur les ventes réelles de votre quartier.
+          Grâce à notre fichier d&apos;acquéreurs en recherche active, nous rapprochons rapidement votre bien du bon acheteur. <b>Estimation offerte et sans engagement.</b>
         </p>
       </div>
       <div className="absolute inset-x-[14mm] bottom-[10mm]"><Contact nego={nego} tel={tel} /></div>
@@ -217,8 +226,8 @@ export default function FlyersPage({ onRetour }: { onRetour: () => void }) {
     <div className="mx-auto max-w-6xl">
       <div className="mb-5 flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-navy">🖨️ Flyers de prospection</h2>
-          <p className="text-sm text-slate-500">Choisissez un visuel, 2 flyers par A4. Personnalisez avec les noms relevés (CSV) pour un flyer nominatif par boîte aux lettres.</p>
+          <h2 className="text-2xl font-bold text-navy">🖨️ Flyers de prospection — chasse immobilière</h2>
+          <p className="text-sm text-slate-500">Visuels « recherche active de biens », 2 flyers par A4. Personnalisez avec les noms relevés (CSV) pour un flyer nominatif par boîte aux lettres.</p>
         </div>
         <button onClick={onRetour} className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm text-slate-600 hover:bg-slate-50">← Retour</button>
       </div>
