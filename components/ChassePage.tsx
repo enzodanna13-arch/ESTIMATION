@@ -28,9 +28,7 @@ export default function ChassePage({ onRetour }: { onRetour: () => void }) {
   const [selection, setSelection] = useState<FicheChasse | null>(null);
 
   // Nouvelle chasse
-  const [url, setUrl] = useState("");
   const [texte, setTexte] = useState("");
-  const [modeTexte, setModeTexte] = useState(false);
   const [nego, setNego] = useState(NEGOCIATEURS[0] ?? "");
   const [analyse, setAnalyse] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
@@ -111,25 +109,36 @@ export default function ChassePage({ onRetour }: { onRetour: () => void }) {
     if (bookRef.current) bookRef.current.setAttribute("href", bookmarklet);
   }, [bookmarklet, showBook]);
 
-  const analyser = async () => {
+  // Analyse d'un texte d'annonce collé (l'IA remplit la fiche).
+  const analyserTexte = async () => {
     setErr(null); setMsg(null);
-    const lien = url.trim();
     const txt = texte.trim();
-    if (modeTexte) {
-      if (txt.length < 30) { setErr("Collez le texte de l'annonce (au moins quelques lignes)."); return; }
-    } else if (!/^https?:\/\//i.test(lien)) {
-      setErr("Collez le lien complet de l'annonce (https://…)"); return;
-    }
+    if (txt.length < 30) { setErr("Collez le texte de l'annonce (au moins quelques lignes)."); return; }
     setAnalyse(true);
     try {
-      const r = await extraireAnnonce(modeTexte ? { url: lien, texte: txt } : { url: lien });
-      const fiche = await saveChasse({ ...r.fiche, url: lien, negociateur: nego, statut: "À contacter" });
+      const r = await extraireAnnonce({ texte: txt });
+      const fiche = await saveChasse({ ...r.fiche, negociateur: nego, statut: "À contacter" });
       setFiches((prev) => [fiche, ...prev.filter((x) => x.id !== fiche.id)]);
-      setUrl(""); setTexte("");
-      setMsg(r.bloque ? (r.message ?? "Fiche créée — à compléter à la main.") : "Annonce importée ✔ — vérifiez, complétez et ajoutez les photos.");
+      setTexte("");
+      setMsg("Fiche créée depuis le texte ✔ — vérifiez, complétez et ajoutez les photos.");
       setSelection(fiche);
     } catch (e) {
       setErr(e instanceof Error ? e.message : "Analyse impossible");
+    } finally {
+      setAnalyse(false);
+    }
+  };
+
+  // Création manuelle : le négociateur remplit lui-même la fiche.
+  const creerManuelle = async () => {
+    setErr(null); setMsg(null);
+    setAnalyse(true);
+    try {
+      const fiche = await saveChasse({ negociateur: nego, statut: "À contacter" });
+      setFiches((prev) => [fiche, ...prev.filter((x) => x.id !== fiche.id)]);
+      setSelection(fiche);
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : "Création impossible");
     } finally {
       setAnalyse(false);
     }
@@ -188,50 +197,30 @@ export default function ChassePage({ onRetour }: { onRetour: () => void }) {
 
       {/* Nouvelle chasse */}
       <div className="mb-6 rounded-2xl border border-copper/30 bg-copper/5 p-5">
-        <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+        <div className="mb-3 flex flex-wrap items-end justify-between gap-3">
           <h3 className="text-sm font-bold uppercase tracking-wide text-copper">Nouvelle chasse</h3>
-          <div className="flex rounded-lg border border-copper/30 bg-white p-0.5 text-xs font-semibold">
-            <button onClick={() => setModeTexte(false)} className={`rounded-md px-3 py-1 ${!modeTexte ? "bg-copper text-white" : "text-slate-600"}`}>Par lien</button>
-            <button onClick={() => setModeTexte(true)} className={`rounded-md px-3 py-1 ${modeTexte ? "bg-copper text-white" : "text-slate-600"}`}>Coller le texte</button>
-          </div>
-        </div>
-
-        {!modeTexte ? (
-          <div className="flex flex-col gap-3 md:flex-row md:items-end">
-            <div className="flex-1">
-              <label className="mb-1 block text-xs font-semibold text-slate-600">Lien de l&apos;annonce</label>
-              <input className={inputCls} placeholder="https://www.bienici.com/annonce/… (SeLoger & Leboncoin : voir « Coller le texte »)" value={url} onChange={(e) => setUrl(e.target.value)} onKeyDown={(e) => e.key === "Enter" && analyser()} />
-            </div>
-            <div className="md:w-56">
+          <div className="flex items-end gap-2">
+            <div>
               <label className="mb-1 block text-xs font-semibold text-slate-600">Négociateur</label>
-              <select className={inputCls} value={nego} onChange={(e) => setNego(e.target.value)}>
+              <select className={`${inputCls} w-48`} value={nego} onChange={(e) => setNego(e.target.value)}>
                 {NEGOCIATEURS.map((n) => <option key={n} value={n}>{n}</option>)}
               </select>
             </div>
-            <button onClick={analyser} disabled={analyse} className="rounded-xl bg-copper px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-copper/90 disabled:opacity-50">
-              {analyse ? "Analyse…" : "Analyser l'annonce"}
+            <button onClick={creerManuelle} disabled={analyse} className="rounded-xl bg-navy px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-navy-deep disabled:opacity-50">
+              ➕ Créer une fiche
             </button>
           </div>
-        ) : (
-          <div>
-            <p className="mb-2 text-xs text-slate-500">
-              Fonctionne partout, même Leboncoin et SeLoger : sur l&apos;annonce, sélectionnez le texte (les infos du bien), copiez-le et collez-le ici. Les photos s&apos;ajoutent ensuite avec « Importer des photos ».
-            </p>
-            <textarea className={`${inputCls} min-h-[130px]`} placeholder="Collez ici le texte de l'annonce (titre, prix, surface, pièces, description…)" value={texte} onChange={(e) => setTexte(e.target.value)} />
-            <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-end">
-              <div className="sm:w-56">
-                <label className="mb-1 block text-xs font-semibold text-slate-600">Négociateur</label>
-                <select className={inputCls} value={nego} onChange={(e) => setNego(e.target.value)}>
-                  {NEGOCIATEURS.map((n) => <option key={n} value={n}>{n}</option>)}
-                </select>
-              </div>
-              <div className="sm:flex-1" />
-              <button onClick={analyser} disabled={analyse} className="rounded-xl bg-copper px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-copper/90 disabled:opacity-50">
-                {analyse ? "Analyse…" : "Analyser le texte"}
-              </button>
-            </div>
-          </div>
-        )}
+        </div>
+
+        <p className="mb-2 text-xs text-slate-500">
+          Créez une fiche vide et remplissez-la vous-même, <b>ou</b> collez le texte d&apos;une annonce ci-dessous et l&apos;IA la remplit (marche partout, même Leboncoin/SeLoger). Les photos s&apos;ajoutent dans la fiche avec « 📷 Importer des photos », ou en 1 clic avec le bouton <b>Piger</b>.
+        </p>
+        <textarea className={`${inputCls} min-h-[110px]`} placeholder="Facultatif — collez ici le texte d'une annonce (titre, prix, surface, pièces, description…) pour que l'IA remplisse la fiche" value={texte} onChange={(e) => setTexte(e.target.value)} />
+        <div className="mt-2 flex justify-end">
+          <button onClick={analyserTexte} disabled={analyse || texte.trim().length < 30} className="rounded-xl bg-copper px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-copper/90 disabled:opacity-40">
+            {analyse ? "…" : "Créer depuis le texte collé"}
+          </button>
+        </div>
         {msg && <p className="mt-3 rounded-lg bg-emerald-50 p-2.5 text-sm text-emerald-700">{msg}</p>}
         {err && <p className="mt-3 text-sm text-red-600">{err}</p>}
       </div>
@@ -291,7 +280,7 @@ export default function ChassePage({ onRetour }: { onRetour: () => void }) {
         <p className="py-16 text-center text-slate-400">Chargement…</p>
       ) : affichees.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-slate-300 py-16 text-center text-slate-400">
-          Aucun bien en chasse pour l&apos;instant. Collez le lien d&apos;une annonce ci-dessus pour démarrer.
+          Aucun bien en chasse pour l&apos;instant. Cliquez « ➕ Créer une fiche », collez le texte d&apos;une annonce, ou utilisez le bouton « Piger » pour démarrer.
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
