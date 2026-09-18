@@ -19,8 +19,40 @@ const PREFIXES = [
 ];
 
 export async function GET(request: Request) {
-  if (!(await verifierAccesEquipe(request))) {
+  // Sonde TEMPORAIRE (?probe=etat) : accessible sans mot de passe mais ne
+  // renvoie QUE des compteurs et des booléens — jamais de contenu, de nom de
+  // fichier, ni de secret. Sert à diagnostiquer une disparition d'affichage.
+  // À RETIRER une fois le diagnostic fait.
+  const url = new URL(request.url);
+  const probe = url.searchParams.get("probe") === "etat";
+
+  if (!probe && !(await verifierAccesEquipe(request))) {
     return Response.json({ error: "Mot de passe requis" }, { status: 401 });
+  }
+
+  if (probe) {
+    const out: Record<string, unknown> = {
+      jetonBlobPresent: Boolean(process.env.BLOB_READ_WRITE_TOKEN),
+      historyPasswordEnvPresent: Boolean(process.env.HISTORY_PASSWORD),
+    };
+    try {
+      const tout = await list({ limit: 1000 });
+      out.totalFichiers = tout.blobs.length;
+      out.aTronque = tout.hasMore ?? false;
+    } catch (err) {
+      out.erreurListe = { nom: (err as Error)?.name, message: (err as Error)?.message };
+    }
+    const counts: Record<string, number | string> = {};
+    for (const p of PREFIXES) {
+      try {
+        const r = await list({ prefix: p, limit: 1000 });
+        counts[p] = r.blobs.length;
+      } catch (err) {
+        counts[p] = "ERREUR: " + ((err as Error)?.message ?? "?");
+      }
+    }
+    out.comptesParPrefixe = counts;
+    return Response.json(out);
   }
 
   const rapport: Record<string, unknown> = {
