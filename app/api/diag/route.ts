@@ -1,5 +1,6 @@
 import { list } from "@vercel/blob";
 import { verifierAccesEquipe } from "@/lib/historyAuth";
+import { listEstimationsServer } from "@/lib/serverHistory";
 
 // Diagnostic LECTURE SEULE de l'accès au stockage (Vercel Blob). Aucun secret
 // n'est renvoyé : seulement des indicateurs (jeton présent ou non, nombre de
@@ -52,6 +53,40 @@ export async function GET(request: Request) {
       }
     }
     out.comptesParPrefixe = counts;
+
+    // Test DÉCISIF : la vraie fonction de lecture (list + fetch de chaque URL).
+    // Si list() donne 120 mais ceci renvoie 0, alors le fetch des URLs échoue.
+    try {
+      const t0 = Date.now();
+      const rows = await listEstimationsServer();
+      out.lectureReelleEstimations = {
+        nombre: rows.length,
+        ms: Date.now() - t0,
+        premier: rows[0] ? { client: rows[0].client, ville: rows[0].ville } : null,
+      };
+    } catch (err) {
+      out.lectureReelleEstimations = { erreur: (err as Error)?.message ?? String(err) };
+    }
+
+    // Test d'accès à UNE URL de blob (le fetch peut échouer même si list() marche).
+    try {
+      const one = await list({ prefix: "estimations/meta/", limit: 1 });
+      if (one.blobs[0]) {
+        const b = one.blobs[0];
+        const r = await fetch(b.url, { cache: "no-store" });
+        out.testFetchBlob = {
+          hote: new URL(b.url).host,
+          statut: r.status,
+          ok: r.ok,
+          jsonOk: r.ok ? (await r.json().then(() => true).catch(() => false)) : false,
+        };
+      } else {
+        out.testFetchBlob = "aucun blob meta";
+      }
+    } catch (err) {
+      out.testFetchBlob = { erreur: (err as Error)?.message ?? String(err) };
+    }
+
     return Response.json(out);
   }
 
