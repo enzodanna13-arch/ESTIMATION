@@ -7,7 +7,15 @@ import type { DocHistoryFull, DocHistoryMeta, HistoryFull, HistoryMeta } from ".
 
 const KEY_STORAGE = "estimation-history-key";
 
+// La clé d'équipe est conservée dans localStorage : la connexion persiste
+// d'un onglet à l'autre et d'une session à l'autre (utile notamment pour le
+// bouton « Piger » qui ouvre un nouvel onglet). Repli sur sessionStorage pour
+// les anciennes sessions et la navigation privée.
 export function getHistoryKey(): string {
+  try {
+    const v = localStorage.getItem(KEY_STORAGE);
+    if (v) return v;
+  } catch { /* localStorage indisponible */ }
   try {
     return sessionStorage.getItem(KEY_STORAGE) ?? "";
   } catch {
@@ -16,6 +24,10 @@ export function getHistoryKey(): string {
 }
 
 export function setHistoryKey(key: string): void {
+  try {
+    localStorage.setItem(KEY_STORAGE, key);
+    return;
+  } catch { /* repli */ }
   try {
     sessionStorage.setItem(KEY_STORAGE, key);
   } catch {

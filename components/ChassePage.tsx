@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   STATUTS_CHASSE, STATUT_CHASSE_COULEURS,
   extraireAnnonce, listChasse, saveChasse, deleteChasse,
@@ -23,6 +23,8 @@ export default function ChassePage({ onRetour }: { onRetour: () => void }) {
   const [chargement, setChargement] = useState(true);
   const [q, setQ] = useState("");
   const [filtreStatut, setFiltreStatut] = useState("");
+  const [filtreNego, setFiltreNego] = useState("");
+  const [tri, setTri] = useState<"recent" | "prix-asc" | "prix-desc" | "ecart">("recent");
   const [selection, setSelection] = useState<FicheChasse | null>(null);
 
   // Nouvelle chasse
@@ -33,6 +35,9 @@ export default function ChassePage({ onRetour }: { onRetour: () => void }) {
   const [analyse, setAnalyse] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
+  const [importing, setImporting] = useState(false);
+  const [showBook, setShowBook] = useState(false);
+  const bookRef = useRef<HTMLAnchorElement>(null);
 
   const recharger = () => {
     setChargement(true);
@@ -40,13 +45,71 @@ export default function ChassePage({ onRetour }: { onRetour: () => void }) {
   };
   useEffect(recharger, []);
 
+  // Import automatique déclenché par le bouton « Piger » (bookmarklet) : les
+  // données de l'annonce ont été déposées dans sessionStorage par la page.
+  useEffect(() => {
+    let raw: string | null = null;
+    try { raw = sessionStorage.getItem("chasse_import"); } catch { /* ignore */ }
+    if (!raw) return;
+    try { sessionStorage.removeItem("chasse_import"); } catch { /* ignore */ }
+    let payload: { url?: string; titre?: string; texte?: string; photos?: string[] };
+    try { payload = JSON.parse(decodeURIComponent(escape(atob(raw)))); } catch { return; }
+    setImporting(true); setErr(null); setMsg(null);
+    (async () => {
+      try {
+        const r = await extraireAnnonce({ url: payload.url ?? "", texte: payload.texte ?? "" });
+        const photos = Array.from(new Set([...(r.fiche.photos ?? []), ...(payload.photos ?? [])])).slice(0, 30);
+        const fiche = await saveChasse({ ...r.fiche, url: payload.url ?? "", titre: r.fiche.titre || payload.titre || "", photos, negociateur: nego, statut: "À contacter" });
+        setFiches((prev) => [fiche, ...prev.filter((x) => x.id !== fiche.id)]);
+        setSelection(fiche);
+        setMsg("Annonce pigée ✔ — vérifiez et complétez la fiche.");
+      } catch (e) {
+        setErr("Import automatique impossible : " + (e instanceof Error ? e.message : "erreur"));
+      } finally {
+        setImporting(false);
+      }
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const affichees = useMemo(() => {
     const qt = q.trim().toLowerCase();
-    return fiches.filter((f) =>
+    const list = fiches.filter((f) =>
       (!filtreStatut || f.statut === filtreStatut) &&
+      (!filtreNego || f.negociateur === filtreNego) &&
       (!qt || [f.titre, f.ville, f.codePostal, f.source, f.negociateur, f.description].join(" ").toLowerCase().includes(qt)),
     );
-  }, [fiches, q, filtreStatut]);
+    const ecart = (f: FicheChasse) => (f.prixAffiche > 0 && f.estimationNego > 0 ? f.estimationNego - f.prixAffiche : Number.POSITIVE_INFINITY);
+    const arr = [...list];
+    if (tri === "prix-asc") arr.sort((a, b) => (a.prixAffiche || Infinity) - (b.prixAffiche || Infinity));
+    else if (tri === "prix-desc") arr.sort((a, b) => (b.prixAffiche || 0) - (a.prixAffiche || 0));
+    else if (tri === "ecart") arr.sort((a, b) => ecart(a) - ecart(b)); // plus grosse opportunité (sous le prix) d'abord
+    else arr.sort((a, b) => b.updatedAt - a.updatedAt);
+    return arr;
+  }, [fiches, q, filtreStatut, filtreNego, tri]);
+
+  // Statistiques globales du portefeuille de chasse
+  const stats = useMemo(() => {
+    const prix = fiches.filter((f) => f.prixAffiche > 0).map((f) => f.prixAffiche);
+    const prixMoyen = prix.length ? Math.round(prix.reduce((s, p) => s + p, 0) / prix.length) : 0;
+    const avecEstim = fiches.filter((f) => f.estimationNego > 0).length;
+    const parStatut: Record<string, number> = {};
+    for (const f of fiches) parStatut[f.statut] = (parStatut[f.statut] ?? 0) + 1;
+    return { total: fiches.length, prixMoyen, avecEstim, parStatut };
+  }, [fiches]);
+
+  // Code du bouton « Piger » (bookmarklet) — s'exécute sur l'annonce, dans le
+  // navigateur du négociateur (donc passe les blocages type Leboncoin/SeLoger).
+  const bookmarklet = useMemo(() => {
+    const origin = typeof window !== "undefined" ? window.location.origin : "https://estimation-ia.vercel.app";
+    return `javascript:(function(){try{var d=document,I=[],A=function(u){if(!u)return;try{u=new URL(u,location.href).href}catch(e){return}if(/^https?:/.test(u)&&!/\\.svg($|\\?)/i.test(u)&&!/(sprite|logo|icon|favicon|pixel|placeholder|avatar)/i.test(u)&&(/\\.(jpe?g|png|webp|avif)($|\\?)/i.test(u)||/(image|photo|media|cdn|static)/i.test(u))&&I.indexOf(u)<0)I.push(u)};var M=d.querySelectorAll('meta[property=\"og:image\"],meta[name=\"twitter:image\"]');for(var i=0;i<M.length;i++)A(M[i].content);var G=d.images;for(var j=0;j<G.length;j++){A(G[j].currentSrc||G[j].src);A(G[j].getAttribute('data-src'))}I=I.slice(0,20);var T=(d.body.innerText||'').replace(/\\s+/g,' ').trim().slice(0,7000);var P={url:location.href,titre:d.title||'',texte:T,photos:I};var B=btoa(unescape(encodeURIComponent(JSON.stringify(P))));window.open('${origin}/#chasse='+encodeURIComponent(B),'_blank')}catch(e){alert('Piger: '+e)}})();`;
+  }, []);
+
+  // On pose l'URL javascript: directement sur l'ancre (React neutralise les
+  // href « javascript: ») pour que le glisser-vers-favoris capture le vrai code.
+  useEffect(() => {
+    if (bookRef.current) bookRef.current.setAttribute("href", bookmarklet);
+  }, [bookmarklet, showBook]);
 
   const analyser = async () => {
     setErr(null); setMsg(null);
@@ -85,13 +148,43 @@ export default function ChassePage({ onRetour }: { onRetour: () => void }) {
 
   return (
     <div className="mx-auto max-w-6xl">
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-4 flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold text-navy">🏹 Chasse immobilière</h2>
           <p className="text-sm text-slate-500">Repérez un bien en ligne, l&apos;IA récupère la fiche, vous ajoutez votre estimation et votre suivi.</p>
         </div>
-        <button onClick={onRetour} className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm text-slate-600 hover:bg-slate-50">← Retour</button>
+        <div className="flex items-center gap-2">
+          <button onClick={() => setShowBook((v) => !v)} className="rounded-lg border border-copper/40 bg-copper/10 px-3 py-1.5 text-sm font-semibold text-copper hover:bg-copper/20">⚡ Bouton Piger</button>
+          <button onClick={onRetour} className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm text-slate-600 hover:bg-slate-50">← Retour</button>
+        </div>
       </div>
+
+      {/* Installer le bouton Piger (bookmarklet) */}
+      {showBook && (
+        <div className="mb-6 rounded-2xl border border-navy/20 bg-navy/5 p-5 text-sm">
+          <h3 className="mb-2 text-base font-bold text-navy">⚡ Le bouton « Piger » — importer une annonce en 1 clic (gratuit, marche partout)</h3>
+          <p className="mb-3 text-slate-600">
+            Idéal pour <b>Leboncoin et SeLoger</b> : comme le bouton s&apos;exécute dans <b>votre</b> navigateur, il n&apos;est jamais bloqué. Installation en une fois :
+          </p>
+          <ol className="mb-3 list-decimal space-y-1 pl-5 text-slate-600">
+            <li>Affichez la barre des favoris (<b>Cmd/Ctrl + Maj + B</b>).</li>
+            <li><b>Glissez le bouton bleu ci-dessous</b> dans votre barre des favoris.</li>
+            <li>Sur n&apos;importe quelle annonce, cliquez ce favori : la fiche se crée ici avec les photos.</li>
+          </ol>
+          {/* eslint-disable-next-line @next/next/no-html-link-for-pages, jsx-a11y/anchor-is-valid */}
+          <a ref={bookRef} href="#" onClick={(e) => e.preventDefault()} draggable className="inline-block cursor-move rounded-lg bg-navy px-4 py-2 font-bold text-white shadow hover:bg-navy-deep" title="Glissez-moi dans votre barre de favoris">🏹 Piger → Icaza</a>
+          <p className="mt-2 text-xs text-slate-400">Astuce : ne cliquez pas le bouton ici — <b>glissez-le</b> vers vos favoris. Ensuite servez-vous-en sur les annonces.</p>
+          <details className="mt-3 text-xs text-slate-500">
+            <summary className="cursor-pointer font-semibold">Le glisser ne marche pas ? Créer le favori à la main</summary>
+            <p className="mt-2">Créez un nouveau favori, nommez-le « Piger → Icaza », et collez ce code dans le champ adresse&nbsp;:</p>
+            <textarea readOnly onFocus={(e) => e.currentTarget.select()} className={`${inputCls} mt-1 min-h-[70px] font-mono text-[10px]`} value={bookmarklet} />
+          </details>
+        </div>
+      )}
+
+      {importing && (
+        <div className="mb-4 rounded-xl border border-copper/30 bg-copper/5 p-3 text-sm font-semibold text-copper">⏳ Import de l&apos;annonce pigée en cours…</div>
+      )}
 
       {/* Nouvelle chasse */}
       <div className="mb-6 rounded-2xl border border-copper/30 bg-copper/5 p-5">
@@ -143,14 +236,54 @@ export default function ChassePage({ onRetour }: { onRetour: () => void }) {
         {err && <p className="mt-3 text-sm text-red-600">{err}</p>}
       </div>
 
-      {/* Filtres */}
+      {/* Statistiques du portefeuille */}
+      {fiches.length > 0 && (
+        <div className="mb-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <div className="rounded-xl border border-slate-200 bg-white p-3 text-center">
+            <div className="text-2xl font-bold text-navy">{stats.total}</div>
+            <div className="text-xs text-slate-500">bien{stats.total > 1 ? "s" : ""} en chasse</div>
+          </div>
+          <div className="rounded-xl border border-slate-200 bg-white p-3 text-center">
+            <div className="text-2xl font-bold text-navy">{euro(stats.prixMoyen)}</div>
+            <div className="text-xs text-slate-500">prix moyen affiché</div>
+          </div>
+          <div className="rounded-xl border border-slate-200 bg-white p-3 text-center">
+            <div className="text-2xl font-bold text-copper">{stats.avecEstim}</div>
+            <div className="text-xs text-slate-500">avec mon estimation</div>
+          </div>
+          <div className="rounded-xl border border-slate-200 bg-white p-3 text-center">
+            <div className="text-2xl font-bold text-emerald-600">{stats.parStatut["Mandat en cours"] ?? 0}</div>
+            <div className="text-xs text-slate-500">mandat en cours</div>
+          </div>
+        </div>
+      )}
+
+      {/* Filtres par statut (puces cliquables avec compteur) */}
+      {fiches.length > 0 && (
+        <div className="mb-3 flex flex-wrap gap-1.5">
+          <button onClick={() => setFiltreStatut("")} className={`rounded-full px-3 py-1 text-xs font-semibold ${!filtreStatut ? "bg-navy text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`}>Tous ({stats.total})</button>
+          {STATUTS_CHASSE.filter((s) => (stats.parStatut[s] ?? 0) > 0).map((s) => (
+            <button key={s} onClick={() => setFiltreStatut(filtreStatut === s ? "" : s)} className={`rounded-full px-3 py-1 text-xs font-semibold ${filtreStatut === s ? (STATUT_CHASSE_COULEURS[s] ?? "bg-navy text-white") + " ring-2 ring-offset-1 ring-copper" : STATUT_CHASSE_COULEURS[s] ?? "bg-slate-100 text-slate-600"}`}>
+              {s} ({stats.parStatut[s]})
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* Recherche + tri + négociateur */}
       <div className="mb-4 flex flex-wrap items-center gap-2">
-        <input className={`${inputCls} max-w-xs`} placeholder="Rechercher (ville, titre, négociateur…)" value={q} onChange={(e) => setQ(e.target.value)} />
-        <select className={`${inputCls} max-w-[12rem]`} value={filtreStatut} onChange={(e) => setFiltreStatut(e.target.value)}>
-          <option value="">Tous les statuts</option>
-          {STATUTS_CHASSE.map((s) => <option key={s} value={s}>{s}</option>)}
+        <input className={`${inputCls} max-w-xs`} placeholder="Rechercher (ville, titre…)" value={q} onChange={(e) => setQ(e.target.value)} />
+        <select className={`${inputCls} max-w-[11rem]`} value={filtreNego} onChange={(e) => setFiltreNego(e.target.value)}>
+          <option value="">Tous les négociateurs</option>
+          {NEGOCIATEURS.map((n) => <option key={n} value={n}>{n}</option>)}
         </select>
-        <span className="ml-auto text-sm text-slate-500">{affichees.length} bien{affichees.length > 1 ? "s" : ""}</span>
+        <select className={`${inputCls} max-w-[12rem]`} value={tri} onChange={(e) => setTri(e.target.value as typeof tri)}>
+          <option value="recent">Plus récents</option>
+          <option value="ecart">Meilleure opportunité (sous mon estim.)</option>
+          <option value="prix-asc">Prix croissant</option>
+          <option value="prix-desc">Prix décroissant</option>
+        </select>
+        <span className="ml-auto text-sm text-slate-500">{affichees.length} affiché{affichees.length > 1 ? "s" : ""}</span>
       </div>
 
       {/* Liste */}
@@ -167,18 +300,26 @@ export default function ChassePage({ onRetour }: { onRetour: () => void }) {
               <div className="relative h-40 w-full bg-slate-100">
                 {f.photos[0]
                   // eslint-disable-next-line @next/next/no-img-element
-                  ? <img src={f.photos[0]} alt="" className="h-full w-full object-cover transition group-hover:scale-[1.02]" loading="lazy" />
+                  ? <img src={f.photos[0]} alt="" className="h-full w-full object-cover transition group-hover:scale-[1.02]" loading="lazy" referrerPolicy="no-referrer" />
                   : <div className="flex h-full items-center justify-center text-3xl text-slate-300">🏠</div>}
                 <div className="absolute left-2 top-2"><StatutChip s={f.statut} /></div>
                 {f.photos.length > 1 && <div className="absolute bottom-2 right-2 rounded-md bg-black/60 px-1.5 py-0.5 text-xs text-white">📷 {f.photos.length}</div>}
               </div>
               <div className="p-3">
                 <div className="truncate text-sm font-bold text-navy">{f.titre || f.typeBien || "Bien sans titre"}</div>
-                <div className="truncate text-xs text-slate-500">{[f.ville, f.codePostal].filter(Boolean).join(" · ") || f.source}</div>
+                <div className="truncate text-xs text-slate-500">
+                  {[f.ville, f.codePostal].filter(Boolean).join(" · ") || f.source}
+                  {f.surface > 0 ? ` · ${int.format(f.surface)} m²` : ""}{f.pieces > 0 ? ` · ${f.pieces} p.` : ""}
+                </div>
                 <div className="mt-2 flex items-center justify-between text-sm">
                   <span className="text-slate-600">Annonce&nbsp;: <b>{euro(f.prixAffiche)}</b></span>
                   <span className="text-copper">Estim.&nbsp;: <b>{euro(f.estimationNego)}</b></span>
                 </div>
+                {f.prixAffiche > 0 && f.estimationNego > 0 && (
+                  <div className={`mt-1 text-xs font-semibold ${f.estimationNego < f.prixAffiche ? "text-red-600" : "text-emerald-600"}`}>
+                    {f.estimationNego < f.prixAffiche ? "▼" : "▲"} {int.format(Math.abs(f.estimationNego - f.prixAffiche))} € {f.estimationNego < f.prixAffiche ? "sous" : "au-dessus"} du prix affiché
+                  </div>
+                )}
                 <div className="mt-1 flex items-center justify-between text-xs text-slate-400">
                   <span>{f.negociateur || "—"}</span>
                   <span>{dateFr(f.updatedAt)}</span>
@@ -265,7 +406,7 @@ function FicheDetail({ fiche, onRetour, onEnregistre, onSupprime }: {
           <div className="overflow-hidden rounded-2xl border border-slate-200 bg-slate-100">
             {f.photos[0]
               // eslint-disable-next-line @next/next/no-img-element
-              ? <img src={f.photos[0]} alt="" className="h-72 w-full object-cover" />
+              ? <img src={f.photos[0]} alt="" className="h-72 w-full object-cover" referrerPolicy="no-referrer" />
               : <div className="flex h-72 items-center justify-center text-5xl text-slate-300">🏠</div>}
           </div>
           {f.photos.length > 0 && (
@@ -273,7 +414,7 @@ function FicheDetail({ fiche, onRetour, onEnregistre, onSupprime }: {
               {f.photos.map((p, i) => (
                 <div key={i} className="group relative aspect-square overflow-hidden rounded-lg border border-slate-200 bg-slate-100">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={p} alt="" className="h-full w-full object-cover" loading="lazy" />
+                  <img src={p} alt="" className="h-full w-full object-cover" loading="lazy" referrerPolicy="no-referrer" />
                   <button onClick={() => retirerPhoto(i)} className="absolute right-0.5 top-0.5 hidden rounded bg-black/60 px-1 text-xs text-white group-hover:block">✕</button>
                 </div>
               ))}

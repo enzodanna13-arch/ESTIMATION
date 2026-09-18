@@ -422,6 +422,21 @@ export default function Home() {
     }
   }, [result, printOnOpen]);
 
+  // Import « Chasse » depuis le bouton Piger (bookmarklet) : les données de
+  // l'annonce arrivent dans le fragment d'URL (#chasse=…). On les met de côté
+  // et on ouvre directement le module Chasse (Transaction), qui les traitera.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const h = window.location.hash;
+    if (h.startsWith("#chasse=")) {
+      try { sessionStorage.setItem("chasse_import", decodeURIComponent(h.slice("#chasse=".length))); } catch { /* ignore */ }
+      try { window.history.replaceState(null, "", window.location.pathname + window.location.search); } catch { /* ignore */ }
+      setMetier("transaction");
+      setEspace("transaction");
+      setUnivers("chasse");
+    }
+  }, []);
+
   const openEntry = async (id: string, print: boolean) => {
     const full = await getEstimation(id).catch(() => null);
     if (!full) return;
