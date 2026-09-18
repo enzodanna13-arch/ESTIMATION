@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import {
   STATUTS_CHASSE, STATUT_CHASSE_COULEURS,
   extraireAnnonce, listChasse, saveChasse, deleteChasse,
+  uploadPhotosChasse, fichierEnBase64,
   type FicheChasse,
 } from "@/lib/chasse";
 import { NEGOCIATEURS } from "@/lib/equipe";
@@ -26,6 +27,8 @@ export default function ChassePage({ onRetour }: { onRetour: () => void }) {
 
   // Nouvelle chasse
   const [url, setUrl] = useState("");
+  const [texte, setTexte] = useState("");
+  const [modeTexte, setModeTexte] = useState(false);
   const [nego, setNego] = useState(NEGOCIATEURS[0] ?? "");
   const [analyse, setAnalyse] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
@@ -48,14 +51,19 @@ export default function ChassePage({ onRetour }: { onRetour: () => void }) {
   const analyser = async () => {
     setErr(null); setMsg(null);
     const lien = url.trim();
-    if (!/^https?:\/\//i.test(lien)) { setErr("Collez le lien complet de l'annonce (https://…)"); return; }
+    const txt = texte.trim();
+    if (modeTexte) {
+      if (txt.length < 30) { setErr("Collez le texte de l'annonce (au moins quelques lignes)."); return; }
+    } else if (!/^https?:\/\//i.test(lien)) {
+      setErr("Collez le lien complet de l'annonce (https://…)"); return;
+    }
     setAnalyse(true);
     try {
-      const r = await extraireAnnonce(lien);
+      const r = await extraireAnnonce(modeTexte ? { url: lien, texte: txt } : { url: lien });
       const fiche = await saveChasse({ ...r.fiche, url: lien, negociateur: nego, statut: "À contacter" });
       setFiches((prev) => [fiche, ...prev.filter((x) => x.id !== fiche.id)]);
-      setUrl("");
-      setMsg(r.bloque ? (r.message ?? "Fiche créée — à compléter à la main.") : "Annonce importée ✔ — vérifiez et complétez la fiche.");
+      setUrl(""); setTexte("");
+      setMsg(r.bloque ? (r.message ?? "Fiche créée — à compléter à la main.") : "Annonce importée ✔ — vérifiez, complétez et ajoutez les photos.");
       setSelection(fiche);
     } catch (e) {
       setErr(e instanceof Error ? e.message : "Analyse impossible");
@@ -87,22 +95,50 @@ export default function ChassePage({ onRetour }: { onRetour: () => void }) {
 
       {/* Nouvelle chasse */}
       <div className="mb-6 rounded-2xl border border-copper/30 bg-copper/5 p-5">
-        <h3 className="mb-3 text-sm font-bold uppercase tracking-wide text-copper">Nouvelle chasse — coller le lien d&apos;une annonce</h3>
-        <div className="flex flex-col gap-3 md:flex-row md:items-end">
-          <div className="flex-1">
-            <label className="mb-1 block text-xs font-semibold text-slate-600">Lien de l&apos;annonce</label>
-            <input className={inputCls} placeholder="https://www.seloger.com/annonces/…" value={url} onChange={(e) => setUrl(e.target.value)} onKeyDown={(e) => e.key === "Enter" && analyser()} />
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+          <h3 className="text-sm font-bold uppercase tracking-wide text-copper">Nouvelle chasse</h3>
+          <div className="flex rounded-lg border border-copper/30 bg-white p-0.5 text-xs font-semibold">
+            <button onClick={() => setModeTexte(false)} className={`rounded-md px-3 py-1 ${!modeTexte ? "bg-copper text-white" : "text-slate-600"}`}>Par lien</button>
+            <button onClick={() => setModeTexte(true)} className={`rounded-md px-3 py-1 ${modeTexte ? "bg-copper text-white" : "text-slate-600"}`}>Coller le texte</button>
           </div>
-          <div className="md:w-56">
-            <label className="mb-1 block text-xs font-semibold text-slate-600">Négociateur</label>
-            <select className={inputCls} value={nego} onChange={(e) => setNego(e.target.value)}>
-              {NEGOCIATEURS.map((n) => <option key={n} value={n}>{n}</option>)}
-            </select>
-          </div>
-          <button onClick={analyser} disabled={analyse} className="rounded-xl bg-copper px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-copper/90 disabled:opacity-50">
-            {analyse ? "Analyse en cours…" : "Analyser l'annonce"}
-          </button>
         </div>
+
+        {!modeTexte ? (
+          <div className="flex flex-col gap-3 md:flex-row md:items-end">
+            <div className="flex-1">
+              <label className="mb-1 block text-xs font-semibold text-slate-600">Lien de l&apos;annonce</label>
+              <input className={inputCls} placeholder="https://www.bienici.com/annonce/… (SeLoger & Leboncoin : voir « Coller le texte »)" value={url} onChange={(e) => setUrl(e.target.value)} onKeyDown={(e) => e.key === "Enter" && analyser()} />
+            </div>
+            <div className="md:w-56">
+              <label className="mb-1 block text-xs font-semibold text-slate-600">Négociateur</label>
+              <select className={inputCls} value={nego} onChange={(e) => setNego(e.target.value)}>
+                {NEGOCIATEURS.map((n) => <option key={n} value={n}>{n}</option>)}
+              </select>
+            </div>
+            <button onClick={analyser} disabled={analyse} className="rounded-xl bg-copper px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-copper/90 disabled:opacity-50">
+              {analyse ? "Analyse…" : "Analyser l'annonce"}
+            </button>
+          </div>
+        ) : (
+          <div>
+            <p className="mb-2 text-xs text-slate-500">
+              Fonctionne partout, même Leboncoin et SeLoger : sur l&apos;annonce, sélectionnez le texte (les infos du bien), copiez-le et collez-le ici. Les photos s&apos;ajoutent ensuite avec « Importer des photos ».
+            </p>
+            <textarea className={`${inputCls} min-h-[130px]`} placeholder="Collez ici le texte de l'annonce (titre, prix, surface, pièces, description…)" value={texte} onChange={(e) => setTexte(e.target.value)} />
+            <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-end">
+              <div className="sm:w-56">
+                <label className="mb-1 block text-xs font-semibold text-slate-600">Négociateur</label>
+                <select className={inputCls} value={nego} onChange={(e) => setNego(e.target.value)}>
+                  {NEGOCIATEURS.map((n) => <option key={n} value={n}>{n}</option>)}
+                </select>
+              </div>
+              <div className="sm:flex-1" />
+              <button onClick={analyser} disabled={analyse} className="rounded-xl bg-copper px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-copper/90 disabled:opacity-50">
+                {analyse ? "Analyse…" : "Analyser le texte"}
+              </button>
+            </div>
+          </div>
+        )}
         {msg && <p className="mt-3 rounded-lg bg-emerald-50 p-2.5 text-sm text-emerald-700">{msg}</p>}
         {err && <p className="mt-3 text-sm text-red-600">{err}</p>}
       </div>
@@ -168,6 +204,8 @@ function FicheDetail({ fiche, onRetour, onEnregistre, onSupprime }: {
   const [busy, setBusy] = useState(false);
   const [ok, setOk] = useState(false);
   const [nouvellePhoto, setNouvellePhoto] = useState("");
+  const [upload, setUpload] = useState(false);
+  const [uploadErr, setUploadErr] = useState<string | null>(null);
 
   const maj = <K extends keyof FicheChasse>(k: K, v: FicheChasse[K]) => { setF((p) => ({ ...p, [k]: v })); setOk(false); };
   const majNum = (k: keyof FicheChasse, v: string) => maj(k, (Number(v.replace(/[^0-9.]/g, "")) || 0) as never);
@@ -188,6 +226,24 @@ function FicheDetail({ fiche, onRetour, onEnregistre, onSupprime }: {
   const ajouterPhoto = () => {
     const u = nouvellePhoto.trim();
     if (/^https?:\/\//i.test(u)) { maj("photos", [...f.photos, u]); setNouvellePhoto(""); }
+  };
+  const importerFichiers = async (files: FileList | null) => {
+    if (!files || files.length === 0) return;
+    setUploadErr(null); setUpload(true);
+    try {
+      const images = await Promise.all(
+        Array.from(files).slice(0, 20).filter((x) => x.type.startsWith("image/")).map(async (x) => ({ nom: x.name, data: await fichierEnBase64(x) })),
+      );
+      if (images.length === 0) { setUploadErr("Choisissez des fichiers image (JPEG, PNG, WebP)."); return; }
+      const urls = await uploadPhotosChasse(f.id, images);
+      const fusion = { ...f, photos: [...f.photos, ...urls], updatedAt: Date.now() };
+      const saved = await saveChasse(fusion);
+      setF(saved); onEnregistre(saved);
+    } catch (e) {
+      setUploadErr(e instanceof Error ? e.message : "Import impossible");
+    } finally {
+      setUpload(false);
+    }
   };
 
   const ecart = f.prixAffiche > 0 && f.estimationNego > 0 ? f.estimationNego - f.prixAffiche : 0;
@@ -223,10 +279,16 @@ function FicheDetail({ fiche, onRetour, onEnregistre, onSupprime }: {
               ))}
             </div>
           )}
-          <div className="mt-3 flex gap-2">
-            <input className={inputCls} placeholder="Ajouter une photo par URL (https://…)" value={nouvellePhoto} onChange={(e) => setNouvellePhoto(e.target.value)} onKeyDown={(e) => e.key === "Enter" && ajouterPhoto()} />
-            <button onClick={ajouterPhoto} className="whitespace-nowrap rounded-lg border border-slate-300 px-3 text-sm text-slate-600 hover:bg-slate-50">+ Photo</button>
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            <label className={`cursor-pointer whitespace-nowrap rounded-lg bg-navy px-3 py-2 text-sm font-semibold text-white hover:bg-navy-deep ${upload ? "opacity-50" : ""}`}>
+              {upload ? "Import…" : "📷 Importer des photos"}
+              <input type="file" accept="image/*" multiple className="hidden" disabled={upload} onChange={(e) => { void importerFichiers(e.target.files); e.target.value = ""; }} />
+            </label>
+            <span className="text-xs text-slate-400">ou par URL :</span>
+            <input className={`${inputCls} flex-1`} placeholder="https://…" value={nouvellePhoto} onChange={(e) => setNouvellePhoto(e.target.value)} onKeyDown={(e) => e.key === "Enter" && ajouterPhoto()} />
+            <button onClick={ajouterPhoto} className="whitespace-nowrap rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-600 hover:bg-slate-50">+ Ajouter</button>
           </div>
+          {uploadErr && <p className="mt-2 text-sm text-red-600">{uploadErr}</p>}
           <div className="mt-3">
             <label className="mb-1 block text-xs font-semibold text-slate-600">Description</label>
             <textarea className={`${inputCls} min-h-[120px]`} value={f.description} onChange={(e) => maj("description", e.target.value)} />

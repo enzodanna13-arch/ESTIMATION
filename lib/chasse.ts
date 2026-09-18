@@ -24,17 +24,42 @@ export interface ResultatExtraction {
   message?: string;
 }
 
-export async function extraireAnnonce(url: string): Promise<ResultatExtraction> {
+export async function extraireAnnonce(params: { url?: string; texte?: string }): Promise<ResultatExtraction> {
   const res = await fetch("/api/chasse/extract", {
     method: "POST",
     headers: jsonHeaders(),
-    body: JSON.stringify({ url }),
+    body: JSON.stringify(params),
   });
   if (!res.ok) {
     const d = (await res.json().catch(() => ({}))) as { error?: string };
     throw new Error(d.error || "Lecture de l'annonce impossible");
   }
   return (await res.json()) as ResultatExtraction;
+}
+
+// Téléverse des photos (fichiers image) et renvoie leurs URL publiques.
+export async function uploadPhotosChasse(ficheId: string, images: { nom: string; data: string }[]): Promise<string[]> {
+  const res = await fetch("/api/chasse/upload", {
+    method: "POST",
+    headers: jsonHeaders(),
+    body: JSON.stringify({ ficheId, images }),
+  });
+  if (!res.ok) {
+    const d = (await res.json().catch(() => ({}))) as { error?: string };
+    throw new Error(d.error || "Import des photos impossible");
+  }
+  const body = (await res.json()) as { urls: string[] };
+  return body.urls ?? [];
+}
+
+// Lit un fichier image en base64 (préfixe data: inclus).
+export function fichierEnBase64(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = () => resolve(String(r.result));
+    r.onerror = () => reject(new Error("Lecture du fichier impossible"));
+    r.readAsDataURL(file);
+  });
 }
 
 export async function listChasse(): Promise<FicheChasse[]> {
