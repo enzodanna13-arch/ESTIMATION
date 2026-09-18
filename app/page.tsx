@@ -2322,6 +2322,19 @@ function ReglagesMotDePasse() {
   const [msg, setMsg] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [diag, setDiag] = useState<string | null>(null);
+  const [diagBusy, setDiagBusy] = useState(false);
+
+  const lancerDiag = async () => {
+    setDiag(null); setDiagBusy(true);
+    try {
+      const r = await fetch("/api/diag", { cache: "no-store", headers: { "x-history-key": getHistoryKey() } });
+      const d = await r.json().catch(() => ({}));
+      setDiag(JSON.stringify(d, null, 2));
+    } catch (e) {
+      setDiag("Erreur : " + (e instanceof Error ? e.message : String(e)));
+    } finally { setDiagBusy(false); }
+  };
 
   const soumettre = async () => {
     setErr(null); setMsg(null);
@@ -2371,6 +2384,20 @@ function ReglagesMotDePasse() {
         En cas d&apos;oubli, le mot de passe d&apos;origine (celui configuré sur Vercel) permet toujours de le
         réinitialiser depuis cet écran, mais ne permet plus de se connecter directement.
       </p>
+
+      <div className="mt-8 space-y-3 rounded-2xl border border-amber-200 bg-amber-50/60 p-6">
+        <h3 className="text-lg font-bold text-navy">🔍 Diagnostic des données</h3>
+        <p className="text-sm text-slate-600">
+          Si des listes s&apos;affichent vides, ce test (lecture seule, sans risque) vérifie l&apos;accès
+          au stockage et compte les fichiers réellement présents. Envoyez la capture du résultat à votre support.
+        </p>
+        <button onClick={lancerDiag} disabled={diagBusy} className="rounded-xl bg-amber-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-amber-700 disabled:opacity-50">
+          {diagBusy ? "Analyse…" : "Lancer le diagnostic"}
+        </button>
+        {diag && (
+          <pre className="max-h-96 overflow-auto rounded-lg bg-slate-900 p-4 text-xs leading-relaxed text-emerald-200">{diag}</pre>
+        )}
+      </div>
     </div>
   );
 }
