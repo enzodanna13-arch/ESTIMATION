@@ -77,18 +77,21 @@ function Flyer({ modele, nego, tel, dest }: { modele: ModeleId; nego: string; te
   // avec la photo + les coordonnées du négociateur en bas à droite.
   if (modele === "chasse-visite") {
     const photo = photoNegociateur(nego);
+    const initiales = (nego || "").split(/\s+/).filter(Boolean).map((w) => w[0]).slice(0, 2).join("").toUpperCase();
     return (
       <div className="relative overflow-hidden" style={{ width: "148.5mm", height: "210mm" }}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src="/flyers/juste-une-visite.webp" alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
-        <div style={{ position: "absolute", right: 0, bottom: 0, width: "40mm", height: "24mm", background: "#0d0b09", display: "flex", alignItems: "center", gap: "2mm", padding: "0 3mm", borderTopLeftRadius: "6mm" }}>
-          {photo && (
+        <div style={{ position: "absolute", right: 0, bottom: 0, width: "41.5mm", height: "27mm", background: "#1c1915", borderLeft: "1px solid rgba(184,147,90,.55)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "1.5mm", padding: "2mm" }}>
+          {photo ? (
             /* eslint-disable-next-line @next/next/no-img-element */
-            <img src={photo} alt="" style={{ width: "14mm", height: "14mm", borderRadius: "50%", objectFit: "cover", border: "2px solid #b8935a", flexShrink: 0 }} />
+            <img src={photo} alt="" style={{ width: "12.5mm", height: "12.5mm", borderRadius: "50%", objectFit: "cover", border: "1.5px solid #b8935a" }} />
+          ) : (
+            <div style={{ width: "12.5mm", height: "12.5mm", borderRadius: "50%", border: "1.5px solid #b8935a", background: "#2a2621", display: "flex", alignItems: "center", justifyContent: "center", color: "#e7cfa0", fontWeight: 800, fontSize: "13px" }}>{initiales}</div>
           )}
-          <div style={{ lineHeight: 1.2, color: "#f7f3ec" }}>
-            <div style={{ fontSize: "6.5px", letterSpacing: "0.5px", color: "#b8935a", textTransform: "uppercase" }}>Votre conseiller</div>
-            <div style={{ fontSize: "10px", fontWeight: 800 }}>{nego}</div>
+          <div style={{ textAlign: "center", lineHeight: 1.25, color: "#f7f3ec" }}>
+            <div style={{ fontSize: "6.5px", letterSpacing: "1.5px", color: "#b8935a", textTransform: "uppercase" }}>Votre conseiller</div>
+            <div style={{ fontSize: "10px", fontWeight: 800, whiteSpace: "nowrap" }}>{nego}</div>
             {tel && <div style={{ fontSize: "9.5px", fontWeight: 700, color: "#e7cfa0" }}>{tel}</div>}
           </div>
         </div>
