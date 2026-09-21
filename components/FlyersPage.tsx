@@ -16,12 +16,14 @@ const AGENCE = {
 interface Destinataire { civilite: string; prenom: string; nom: string; adresse: string }
 
 const MODELES = [
+  { id: "chasse-visite", label: "Chasse — Juste une visite", portrait: true },
   { id: "estimation", label: "Avis de recherche" },
   { id: "acquereur", label: "Acquéreurs en attente" },
   { id: "vendu", label: "Quartier très recherché" },
   { id: "valeur", label: "Nous avons l'acheteur" },
 ] as const;
 type ModeleId = (typeof MODELES)[number]["id"];
+const estPortrait = (id: ModeleId) => Boolean(MODELES.find((m) => m.id === id && "portrait" in m && m.portrait));
 
 // ---------------------------------------------------------------------------
 // Un flyer (A5 paysage : 210 × 148,5 mm)
@@ -70,6 +72,29 @@ function BandeauDestinataire({ d, clair = false }: { d?: Destinataire; clair?: b
 function Flyer({ modele, nego, tel, dest }: { modele: ModeleId; nego: string; tel: string; dest?: Destinataire }) {
   const base = "relative overflow-hidden";
   const style: React.CSSProperties = { width: "210mm", height: "148.5mm", boxSizing: "border-box", padding: "12mm 14mm" };
+
+  // 0) CHASSE « Juste une visite » — visuel A5 portrait fourni par l'agence,
+  // avec la photo + les coordonnées du négociateur en bas à droite.
+  if (modele === "chasse-visite") {
+    const photo = photoNegociateur(nego);
+    return (
+      <div className="relative overflow-hidden" style={{ width: "148.5mm", height: "210mm" }}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/flyers/juste-une-visite.webp" alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+        <div style={{ position: "absolute", right: 0, bottom: 0, width: "40mm", height: "24mm", background: "#0d0b09", display: "flex", alignItems: "center", gap: "2mm", padding: "0 3mm", borderTopLeftRadius: "6mm" }}>
+          {photo && (
+            /* eslint-disable-next-line @next/next/no-img-element */
+            <img src={photo} alt="" style={{ width: "14mm", height: "14mm", borderRadius: "50%", objectFit: "cover", border: "2px solid #b8935a", flexShrink: 0 }} />
+          )}
+          <div style={{ lineHeight: 1.2, color: "#f7f3ec" }}>
+            <div style={{ fontSize: "6.5px", letterSpacing: "0.5px", color: "#b8935a", textTransform: "uppercase" }}>Votre conseiller</div>
+            <div style={{ fontSize: "10px", fontWeight: 800 }}>{nego}</div>
+            {tel && <div style={{ fontSize: "9.5px", fontWeight: 700, color: "#e7cfa0" }}>{tel}</div>}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // 1) AVIS DE RECHERCHE — style « affiche recherchée », navy + or
   if (modele === "estimation") {
@@ -220,13 +245,18 @@ export default function FlyersPage({ onRetour }: { onRetour: () => void }) {
     return out;
   }, [flyers]);
 
+  const portrait = estPortrait(modele);
   const telecharger = async () => {
     setPdf(true); setProg({ f: 0, t: feuilles.length });
     try {
-      await genererFlyersPdf(`flyers-${modele}.pdf`, (f, t) => setProg({ f, t }));
+      await genererFlyersPdf(`flyers-${modele}.pdf`, (f, t) => setProg({ f, t }), portrait ? "landscape" : "portrait");
     } catch { /* silencieux */ } finally { setPdf(false); setProg(null); }
   };
 
+  // Feuille A4 : portrait (2 flyers paysage empilés) ou paysage (2 flyers
+  // portrait côte à côte, pour « Juste une visite »).
+  const sheetW = portrait ? 297 : 210; // mm
+  const sheetH = portrait ? 210 : 297; // mm
   const SCALE = 0.62;
 
   return (
@@ -304,16 +334,18 @@ export default function FlyersPage({ onRetour }: { onRetour: () => void }) {
               Ajoutez des destinataires (ou passez en « Générique ») pour voir l&apos;aperçu.
             </div>
           ) : (
-            <div className="overflow-hidden rounded-xl border border-slate-200 bg-slate-100 p-3" style={{ height: `${feuilles.length * 297 * SCALE + 8 * feuilles.length}mm` }}>
-              <div className="flyers-doc" style={{ transform: `scale(${SCALE})`, transformOrigin: "top left", width: "210mm" }}>
+            <div className="overflow-hidden rounded-xl border border-slate-200 bg-slate-100 p-3" style={{ height: `${feuilles.length * sheetH * SCALE + 8 * feuilles.length}mm` }}>
+              <div className="flyers-doc" style={{ transform: `scale(${SCALE})`, transformOrigin: "top left", width: `${sheetW}mm` }}>
                 {feuilles.map((paire, i) => (
-                  <div key={i} className="flyer-sheet" style={{ width: "210mm", height: "297mm", boxSizing: "border-box", background: "#fff", marginBottom: "8mm" }}>
+                  <div key={i} className="flyer-sheet" style={{ width: `${sheetW}mm`, height: `${sheetH}mm`, boxSizing: "border-box", background: "#fff", marginBottom: "8mm", display: portrait ? "flex" : "block" }}>
                     {paire.map((d, j) => (
-                      <div key={j} style={{ height: "148.5mm", borderBottom: j === 0 ? "1px dashed #cbd5e1" : "none" }}>
+                      <div key={j} style={portrait
+                        ? { width: "148.5mm", height: "210mm", borderRight: j === 0 ? "1px dashed #cbd5e1" : "none" }
+                        : { height: "148.5mm", borderBottom: j === 0 ? "1px dashed #cbd5e1" : "none" }}>
                         <Flyer modele={modele} nego={nego} tel={tel} dest={d} />
                       </div>
                     ))}
-                    {paire.length === 1 && <div style={{ height: "148.5mm" }} />}
+                    {paire.length === 1 && <div style={portrait ? { width: "148.5mm", height: "210mm" } : { height: "148.5mm" }} />}
                   </div>
                 ))}
               </div>
