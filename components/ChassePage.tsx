@@ -30,8 +30,9 @@ export default function ChassePage({ onRetour }: { onRetour: () => void }) {
   const [filtreNego, setFiltreNego] = useState("");
   const [tri, setTri] = useState<"recent" | "marche" | "prix-asc" | "prix-desc" | "ecart">("recent");
   const [selection, setSelection] = useState<FicheChasse | null>(null);
-  const [vue, setVue] = useState<"liste" | "carte">("liste");
+  const [vue, setVue] = useState<"liste" | "carte">("carte");
   const [geoEnCours, setGeoEnCours] = useState(false);
+  const [showPaste, setShowPaste] = useState(false);
 
   // Nouvelle chasse
   const [texte, setTexte] = useState("");
@@ -234,35 +235,34 @@ export default function ChassePage({ onRetour }: { onRetour: () => void }) {
         <div className="mb-4 rounded-xl border border-copper/30 bg-copper/5 p-3 text-sm font-semibold text-copper">⏳ Import de l&apos;annonce pigée en cours…</div>
       )}
 
-      {/* Nouvelle chasse */}
-      <div className="mb-6 rounded-2xl border border-copper/30 bg-copper/5 p-5">
-        <div className="mb-3 flex flex-wrap items-end justify-between gap-3">
-          <h3 className="text-sm font-bold uppercase tracking-wide text-copper">Nouvelle chasse</h3>
-          <div className="flex items-end gap-2">
-            <div>
-              <label className="mb-1 block text-xs font-semibold text-slate-600">Négociateur</label>
-              <select className={`${inputCls} w-48`} value={nego} onChange={(e) => setNego(e.target.value)}>
-                {NEGOCIATEURS.map((n) => <option key={n} value={n}>{n}</option>)}
-              </select>
-            </div>
-            <button onClick={creerManuelle} disabled={analyse} className="rounded-xl bg-navy px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-navy-deep disabled:opacity-50">
-              ➕ Créer une fiche
+      {/* Bannière compacte : créer une fiche */}
+      <div className="mb-4 flex flex-wrap items-center gap-3 rounded-2xl border border-copper/30 bg-copper/5 px-5 py-3">
+        <span className="text-sm font-bold uppercase tracking-wide text-copper">Nouvelle chasse</span>
+        <div className="ml-auto flex flex-wrap items-center gap-2">
+          <select className={`${inputCls} w-40`} value={nego} onChange={(e) => setNego(e.target.value)} title="Négociateur">
+            {NEGOCIATEURS.map((n) => <option key={n} value={n}>{n}</option>)}
+          </select>
+          <button onClick={() => setShowPaste((v) => !v)} className="rounded-xl border border-copper/40 bg-white px-3 py-2 text-sm font-semibold text-copper hover:bg-copper/10">✍️ Coller le texte</button>
+          <button onClick={creerManuelle} disabled={analyse} className="rounded-xl bg-navy px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-navy-deep disabled:opacity-50">
+            ➕ Créer une fiche
+          </button>
+        </div>
+      </div>
+
+      {/* Coller le texte d'une annonce (dépliable) */}
+      {showPaste && (
+        <div className="mb-4 rounded-2xl border border-copper/30 bg-copper/5 p-4">
+          <p className="mb-2 text-xs text-slate-500">Collez le texte d&apos;une annonce (marche partout, même Leboncoin/SeLoger) : l&apos;IA remplit la fiche. Photos via « 📷 Importer des photos » dans la fiche, ou en 1 clic avec <b>Piger</b>.</p>
+          <textarea className={`${inputCls} min-h-[110px]`} placeholder="Titre, prix, surface, pièces, description…" value={texte} onChange={(e) => setTexte(e.target.value)} />
+          <div className="mt-2 flex justify-end">
+            <button onClick={analyserTexte} disabled={analyse || texte.trim().length < 30} className="rounded-xl bg-copper px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-copper/90 disabled:opacity-40">
+              {analyse ? "…" : "Créer depuis le texte collé"}
             </button>
           </div>
         </div>
-
-        <p className="mb-2 text-xs text-slate-500">
-          Créez une fiche vide et remplissez-la vous-même, <b>ou</b> collez le texte d&apos;une annonce ci-dessous et l&apos;IA la remplit (marche partout, même Leboncoin/SeLoger). Les photos s&apos;ajoutent dans la fiche avec « 📷 Importer des photos », ou en 1 clic avec le bouton <b>Piger</b>.
-        </p>
-        <textarea className={`${inputCls} min-h-[110px]`} placeholder="Facultatif — collez ici le texte d'une annonce (titre, prix, surface, pièces, description…) pour que l'IA remplisse la fiche" value={texte} onChange={(e) => setTexte(e.target.value)} />
-        <div className="mt-2 flex justify-end">
-          <button onClick={analyserTexte} disabled={analyse || texte.trim().length < 30} className="rounded-xl bg-copper px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-copper/90 disabled:opacity-40">
-            {analyse ? "…" : "Créer depuis le texte collé"}
-          </button>
-        </div>
-        {msg && <p className="mt-3 rounded-lg bg-emerald-50 p-2.5 text-sm text-emerald-700">{msg}</p>}
-        {err && <p className="mt-3 text-sm text-red-600">{err}</p>}
-      </div>
+      )}
+      {msg && <p className="mb-4 rounded-lg bg-emerald-50 p-2.5 text-sm text-emerald-700">{msg}</p>}
+      {err && <p className="mb-4 text-sm text-red-600">{err}</p>}
 
       {vue === "carte" && (
         <div>
