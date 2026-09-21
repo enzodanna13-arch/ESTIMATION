@@ -6,6 +6,7 @@ import RapprochementAcquereurs from "@/components/RapprochementAcquereurs";
 import { calculPlusValue } from "@/lib/plusvalue";
 import { medianeReferences } from "@/lib/references";
 import { surfaceDependancesHabitables, surfaceHabitableTotale } from "@/lib/surfaces";
+import { photoNegociateur } from "@/lib/equipe";
 import type { EstimateResponse, PropertyInput } from "@/lib/types";
 
 const euro = new Intl.NumberFormat("fr-FR", {
@@ -85,6 +86,11 @@ export default function Report({
   );
 
   const clientName = [input.clientCivilite, input.clientPrenom, input.clientNom].filter(Boolean).join(" ");
+  // Photo du négociateur : celle jointe à l'estimation en priorité, sinon le
+  // portrait officiel de l'équipe (rattaché au nom du négociateur).
+  const negoPhotoSrc = input.negociateurPhoto
+    ? `data:${input.negociateurPhoto.mediaType};base64,${input.negociateurPhoto.data}`
+    : photoNegociateur(input.negociateur);
   const [pdfProg, setPdfProg] = useState<{ fait: number; total: number } | null>(null);
   const telechargerPdf = async () => {
     setPdfProg({ fait: 0, total: 0 });
@@ -332,10 +338,10 @@ export default function Report({
               <div className="val">{clientName || "—"}</div>
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              {input.negociateurPhoto && (
+              {negoPhotoSrc && (
                 /* eslint-disable-next-line @next/next/no-img-element */
                 <img
-                  src={`data:${input.negociateurPhoto.mediaType};base64,${input.negociateurPhoto.data}`}
+                  src={negoPhotoSrc}
                   alt=""
                   style={{ width: "12mm", height: "12mm", borderRadius: "50%", objectFit: "cover", border: "1.5px solid rgba(180, 151, 91, 0.7)", flexShrink: 0 }}
                 />
@@ -1025,10 +1031,10 @@ export default function Report({
           <div className="sign">
             <div className="box">
               <div className="lbl">Le négociateur</div>
-              {input.negociateurPhoto && (
+              {negoPhotoSrc && (
                 /* eslint-disable-next-line @next/next/no-img-element */
                 <img
-                  src={`data:${input.negociateurPhoto.mediaType};base64,${input.negociateurPhoto.data}`}
+                  src={negoPhotoSrc}
                   alt=""
                   style={{ width: "16mm", height: "16mm", borderRadius: "50%", objectFit: "cover", border: "1.5px solid var(--gold)", margin: "6px 0 4px" }}
                 />

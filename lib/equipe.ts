@@ -12,14 +12,16 @@ export interface Membre {
   alias: string[]; // fragments reconnus (sans accents, minuscules) pour consolider les variantes
   prenom?: string; // prénom court (signatures SMS)
   tel?: string; // téléphone du négociateur au format E.164 (+33…), pour les SMS de relance signés
+  photo?: string; // portrait recadré (visage) pour estimations, flyers…
+  photoFull?: string; // visuel de marque complet (portrait entier CENTURY 21)
 }
 
 export const EQUIPE: Membre[] = [
   { id: "kevin", nom: "Kevin", role: "Gestion locative", sections: ["gestion"], alias: ["kevin"], prenom: "Kevin" },
-  { id: "emilie", nom: "Émilie Flécher", role: "Transaction", sections: ["transaction"], alias: ["flecher", "emilie"], prenom: "Émilie", tel: "+33658711643" },
-  { id: "lea", nom: "Léa Roussel", role: "Transaction", sections: ["transaction"], alias: ["roussel", "lea"], prenom: "Léa", tel: "+33768267735" },
-  { id: "anthony", nom: "Anthony Voilliard", role: "Transaction", sections: ["transaction"], alias: ["voilliard", "anthony"], prenom: "Anthony" },
-  { id: "lucie", nom: "Lucie Borja", role: "Transaction", sections: ["transaction"], alias: ["borja", "lucie"], prenom: "Lucie", tel: "+33628943868" },
+  { id: "emilie", nom: "Émilie Flécher", role: "Transaction", sections: ["transaction"], alias: ["flecher", "emilie"], prenom: "Émilie", tel: "+33658711643", photo: "/negociateurs/emilie.jpg", photoFull: "/negociateurs/emilie-full.jpg" },
+  { id: "lea", nom: "Léa Roussel", role: "Transaction", sections: ["transaction"], alias: ["roussel", "lea"], prenom: "Léa", tel: "+33768267735", photo: "/negociateurs/lea.jpg", photoFull: "/negociateurs/lea-full.jpg" },
+  { id: "anthony", nom: "Anthony Voilliard", role: "Transaction", sections: ["transaction"], alias: ["voilliard", "anthony"], prenom: "Anthony", photo: "/negociateurs/anthony.jpg", photoFull: "/negociateurs/anthony-full.jpg" },
+  { id: "lucie", nom: "Lucie Borja", role: "Transaction", sections: ["transaction"], alias: ["borja", "lucie"], prenom: "Lucie", tel: "+33628943868", photo: "/negociateurs/lucie.jpg", photoFull: "/negociateurs/lucie-full.jpg" },
   { id: "enzo", nom: "Enzo D'anna", role: "Responsable commercial", sections: ["transaction"], alias: ["enzo", "anna", "danna"], prenom: "Enzo" },
   { id: "assistante", nom: "Assistante", role: "Registre des appels", sections: ["registre"], alias: ["assistant"] },
 ];
@@ -67,4 +69,9 @@ export function telNegociateurFormate(nom?: string): string | null {
 export function prenomNegociateur(nom?: string): string {
   const m = membreDepuisNom(nom);
   return m?.prenom || (nom ?? "").trim().split(/\s+/)[0] || "";
+}
+
+// Portrait (visage recadré) d'un négociateur à partir d'un nom saisi, ou "".
+export function photoNegociateur(nom?: string): string {
+  return membreDepuisNom(nom)?.photo ?? "";
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { EQUIPE, NEGOCIATEURS } from "@/lib/equipe";
+import { EQUIPE, NEGOCIATEURS, photoNegociateur } from "@/lib/equipe";
 import { genererFlyersPdf } from "@/lib/genererFlyersPdf";
 
 const inputCls = "w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-copper focus:outline-none focus:ring-2 focus:ring-copper/20";
@@ -39,11 +39,18 @@ function Logo({ clair = false }: { clair?: boolean }) {
 }
 
 function Contact({ nego, tel, clair = false }: { nego: string; tel: string; clair?: boolean }) {
+  const photo = photoNegociateur(nego);
   return (
     <div className="flex items-end justify-between">
-      <div>
-        <div className="text-[11px] uppercase tracking-[0.15em]" style={{ color: "#b8935a" }}>Votre conseiller</div>
-        <div className="text-[15px] font-bold" style={{ color: clair ? "#f7f3ec" : "#0f1e3d" }}>{nego || "Votre agence CENTURY 21"}</div>
+      <div className="flex items-center gap-3">
+        {photo && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={photo} alt="" style={{ width: "17mm", height: "17mm", borderRadius: "50%", objectFit: "cover", border: "2px solid #b8935a", flexShrink: 0 }} />
+        )}
+        <div>
+          <div className="text-[11px] uppercase tracking-[0.15em]" style={{ color: "#b8935a" }}>Votre conseiller</div>
+          <div className="text-[15px] font-bold" style={{ color: clair ? "#f7f3ec" : "#0f1e3d" }}>{nego || "Votre agence CENTURY 21"}</div>
+        </div>
       </div>
       {tel && <div className="text-right text-[17px] font-black" style={{ color: clair ? "#f7f3ec" : "#0f1e3d" }}>📞 {tel}</div>}
     </div>
