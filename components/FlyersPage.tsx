@@ -146,6 +146,12 @@ export default function FlyersPage({ onRetour }: { onRetour: () => void }) {
   const sheetW = portrait ? 297 : 210; // mm
   const sheetH = portrait ? 210 : 297; // mm
   const SCALE = 0.62;
+  // Espace blanc entre les 2 flyers pour une découpe propre : on réduit très
+  // légèrement chaque flyer (proportions conservées) et on centre.
+  const GAP = 6; // mm
+  const flyScale = (297 - GAP) / 2 / 148.5; // ≈ 0.98
+  const cellW = 148.5 * flyScale; // mm
+  const cellH = 210 * flyScale; // mm
 
   return (
     <div className="mx-auto max-w-6xl">
@@ -225,21 +231,21 @@ export default function FlyersPage({ onRetour }: { onRetour: () => void }) {
             <div className="overflow-hidden rounded-xl border border-slate-200 bg-slate-100 p-3" style={{ height: `${feuilles.length * sheetH * SCALE + 8 * feuilles.length}mm` }}>
               <div className="flyers-doc" style={{ transform: `scale(${SCALE})`, transformOrigin: "top left", width: `${sheetW}mm` }}>
                 {feuilles.map((paire, i) => (
-                  <div key={i} className="flyer-sheet" style={{ width: `${sheetW}mm`, height: `${sheetH}mm`, boxSizing: "border-box", background: "#fff", marginBottom: "8mm", display: portrait ? "flex" : "block" }}>
+                  <div key={i} className="flyer-sheet" style={{ width: `${sheetW}mm`, height: `${sheetH}mm`, boxSizing: "border-box", background: "#fff", marginBottom: "8mm", display: "flex", flexDirection: portrait ? "row" : "column", alignItems: "center", justifyContent: "center", gap: `${GAP}mm` }}>
                     {paire.map((d, j) => (
-                      <div key={j} style={portrait
-                        ? { width: "148.5mm", height: "210mm", borderRight: j === 0 ? "1px dashed #cbd5e1" : "none" }
-                        : { height: "148.5mm", borderBottom: j === 0 ? "1px dashed #cbd5e1" : "none" }}>
-                        <Flyer modele={modele} nego={nego} tel={tel} dest={d} />
+                      <div key={j} style={{ width: `${cellW}mm`, height: `${cellH}mm`, overflow: "hidden", borderLeft: portrait && j === 1 ? "1px dashed #e2e8f0" : "none", borderTop: !portrait && j === 1 ? "1px dashed #e2e8f0" : "none" }}>
+                        <div style={{ transform: `scale(${flyScale})`, transformOrigin: "top left" }}>
+                          <Flyer modele={modele} nego={nego} tel={tel} dest={d} />
+                        </div>
                       </div>
                     ))}
-                    {paire.length === 1 && <div style={portrait ? { width: "148.5mm", height: "210mm" } : { height: "148.5mm" }} />}
+                    {paire.length === 1 && <div style={{ width: `${cellW}mm`, height: `${cellH}mm` }} />}
                   </div>
                 ))}
               </div>
             </div>
           )}
-          <p className="mt-2 text-xs text-slate-400">La ligne pointillée au milieu de la feuille est un repère de découpe entre les 2 flyers.</p>
+          <p className="mt-2 text-xs text-slate-400">Un espace blanc sépare les 2 flyers au milieu de la feuille : découpez dedans pour un bord net.</p>
         </div>
       </div>
     </div>
