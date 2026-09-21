@@ -17,6 +17,8 @@ interface Destinataire { civilite: string; prenom: string; nom: string; adresse:
 
 const MODELES = [
   { id: "chasse-visite", label: "Chasse — Juste une visite", portrait: true },
+  { id: "vendre", label: "Vendre — Estimation offerte", portrait: true },
+  { id: "estimer", label: "Faites estimer votre bien", portrait: true },
   { id: "estimation", label: "Avis de recherche" },
   { id: "acquereur", label: "Acquéreurs en attente" },
   { id: "vendu", label: "Quartier très recherché" },
@@ -24,6 +26,13 @@ const MODELES = [
 ] as const;
 type ModeleId = (typeof MODELES)[number]["id"];
 const estPortrait = (id: ModeleId) => Boolean(MODELES.find((m) => m.id === id && "portrait" in m && m.portrait));
+
+// Visuels image (portrait) dont la colonne droite du bandeau a été nettoyée.
+const IMG_PORTRAIT: Partial<Record<ModeleId, string>> = {
+  "chasse-visite": "/flyers/juste-une-visite-clean.jpg",
+  vendre: "/flyers/estimation-vendre-clean.jpg",
+  estimer: "/flyers/faites-estimer-clean.jpg",
+};
 
 // ---------------------------------------------------------------------------
 // Un flyer (A5 paysage : 210 × 148,5 mm)
@@ -75,7 +84,7 @@ function Flyer({ modele, nego, tel, dest }: { modele: ModeleId; nego: string; te
 
   // 0) CHASSE « Juste une visite » — visuel A5 portrait fourni par l'agence,
   // avec la photo + les coordonnées du négociateur en bas à droite.
-  if (modele === "chasse-visite") {
+  if (IMG_PORTRAIT[modele]) {
     const photo = photoNegociateur(nego);
     const initiales = (nego || "").split(/\s+/).filter(Boolean).map((w) => w[0]).slice(0, 2).join("").toUpperCase();
     return (
@@ -83,7 +92,7 @@ function Flyer({ modele, nego, tel, dest }: { modele: ModeleId; nego: string; te
         {/* Visuel dont la colonne droite du bandeau (illustration + tagline) a
             été nettoyée : le négociateur se pose dessus, sans cadre, et se fond. */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/flyers/juste-une-visite-clean.jpg" alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+        <img src={IMG_PORTRAIT[modele]} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
         <div style={{ position: "absolute", right: "1.5mm", bottom: "6mm", width: "35mm", height: "24mm", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "1.5mm" }}>
           {photo ? (
             /* eslint-disable-next-line @next/next/no-img-element */
