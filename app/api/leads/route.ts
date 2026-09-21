@@ -1,4 +1,5 @@
 import { verifierAccesEquipe } from "@/lib/historyAuth";
+import { verifierCleLeadsStockee } from "@/lib/serverLeadsKey";
 import { leadVide, listLeadsServer, restaurerArchivesServer, saveLeadServer, type Lead } from "@/lib/serverLeads";
 import { declencherNewLead } from "@/lib/serverSms";
 
@@ -105,7 +106,12 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   const secret = process.env.LEADS_INBOUND_SECRET;
   const cleFournie = request.headers.get("x-leads-key");
-  const autorise = (await verifierAccesEquipe(request)) || (secret && cleFournie === secret);
+  // Clé passerelle valide : soit la variable d'environnement LEADS_INBOUND_SECRET,
+  // soit la clé générée depuis les Réglages du CRM (stockée dans Blob).
+  const cleValide = Boolean(cleFournie) && (
+    (Boolean(secret) && cleFournie === secret) || (await verifierCleLeadsStockee(cleFournie ?? ""))
+  );
+  const autorise = (await verifierAccesEquipe(request)) || cleValide;
   if (!autorise) return Response.json({ error: "Accès réservé" }, { status: 401 });
 
   let body: Record<string, unknown>;
@@ -136,7 +142,7 @@ export async function POST(request: Request) {
     // SMS générique NEW_LEAD automatique — pour les leads ENTRANTS (passerelle
     // Zapier/Make/site ou source campagne). Pas d'envoi auto pour une saisie
     // manuelle dans l'app (le négociateur peut l'envoyer à la main si besoin).
-    const viaPasserelle = Boolean(secret && cleFournie === secret);
+    const viaPasserelle = cleValide;
     if (viaPasserelle || ["facebook", "instagram", "site"].includes(lead.source)) {
       await declencherNewLead(lead);
     }

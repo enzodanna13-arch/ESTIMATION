@@ -830,7 +830,7 @@ export default function Home() {
             {univers === "dashboard" && <DashboardPage onRetour={() => setUnivers("")} />}
             {univers === "negociateurs" && <NegociateursPage onRetour={() => setUnivers("")} />}
             {univers === "espace" && <EspaceNegociateurPage onRetour={() => setUnivers("")} />}
-            {univers === "reglages" && <ReglagesMotDePasse />}
+            {univers === "reglages" && <><ReglagesMotDePasse /><ClePasserelleLeads /></>}
 
             {univers === "" && (
               <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 print:hidden">
@@ -2446,6 +2446,70 @@ function ReglagesMotDePasse() {
         {diag && (
           <pre className="max-h-96 overflow-auto rounded-lg bg-slate-900 p-4 text-xs leading-relaxed text-emerald-200">{diag}</pre>
         )}
+      </div>
+    </div>
+  );
+}
+
+function ClePasserelleLeads() {
+  const [cle, setCle] = useState<string | null>(null);
+  const [chargement, setChargement] = useState(true);
+  const [busy, setBusy] = useState(false);
+  const [copie, setCopie] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/leads/key", { cache: "no-store", headers: { "x-history-key": getHistoryKey() } })
+      .then((r) => r.json())
+      .then((d) => setCle(typeof d.key === "string" ? d.key : ""))
+      .catch(() => setCle(""))
+      .finally(() => setChargement(false));
+  }, []);
+
+  const generer = async () => {
+    if (cle && !confirm("Générer une NOUVELLE clé ? L'ancienne cessera de fonctionner (il faudra remettre la nouvelle dans Zapier).")) return;
+    setBusy(true);
+    try {
+      const r = await fetch("/api/leads/key", { method: "POST", headers: { "x-history-key": getHistoryKey() } });
+      const d = await r.json();
+      if (d.key) setCle(d.key);
+    } catch { /* silencieux */ } finally { setBusy(false); }
+  };
+
+  const copier = async () => {
+    if (!cle) return;
+    try { await navigator.clipboard.writeText(cle); setCopie(true); setTimeout(() => setCopie(false), 2000); } catch { /* ignore */ }
+  };
+
+  return (
+    <div className="mx-auto mt-8 max-w-lg">
+      <h2 className="mb-1 text-2xl font-bold text-navy">🔗 Clé passerelle leads (Zapier)</h2>
+      <p className="mb-4 text-sm text-slate-500">
+        Cette clé permet à Zapier (Facebook Lead Ads…) d&apos;envoyer les leads dans le CRM, sans utiliser votre mot de passe. Générez-la ici et collez-la dans Zapier.
+      </p>
+      <div className="space-y-3 rounded-2xl border border-slate-200 bg-white p-6">
+        {chargement ? (
+          <p className="text-sm text-slate-400">Chargement…</p>
+        ) : cle ? (
+          <>
+            <label className="block text-sm font-semibold text-slate-600">Votre clé</label>
+            <div className="flex gap-2">
+              <input readOnly value={cle} onFocus={(e) => e.currentTarget.select()} className={`${inputCls} font-mono text-xs`} />
+              <button onClick={copier} className="whitespace-nowrap rounded-lg border border-slate-300 px-3 text-sm font-semibold text-slate-600 hover:bg-slate-50">{copie ? "Copié ✔" : "Copier"}</button>
+            </div>
+            <button onClick={generer} disabled={busy} className="text-xs font-semibold text-red-600 hover:underline disabled:opacity-50">{busy ? "…" : "Régénérer une nouvelle clé"}</button>
+          </>
+        ) : (
+          <button onClick={generer} disabled={busy} className="w-full rounded-xl bg-navy px-5 py-2.5 text-sm font-semibold text-white hover:bg-navy-deep disabled:opacity-50">{busy ? "Génération…" : "Générer ma clé Zapier"}</button>
+        )}
+
+        <div className="mt-2 rounded-lg bg-slate-50 p-3 text-xs text-slate-600">
+          <p className="font-semibold text-slate-700">Dans Zapier (étape « Webhooks by Zapier — POST ») :</p>
+          <ul className="mt-1 space-y-0.5">
+            <li>• <b>URL</b> : https://estimation-ia.vercel.app/api/leads</li>
+            <li>• <b>Payload Type</b> : JSON</li>
+            <li>• <b>Headers</b> → clé <code className="rounded bg-slate-200 px-1">x-leads-key</code>, valeur = la clé ci-dessus</li>
+          </ul>
+        </div>
       </div>
     </div>
   );
