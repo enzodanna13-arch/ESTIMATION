@@ -19,10 +19,6 @@ const MODELES = [
   { id: "chasse-visite", label: "Chasse — Juste une visite", portrait: true },
   { id: "vendre", label: "Vendre — Estimation offerte", portrait: true },
   { id: "estimer", label: "Faites estimer votre bien", portrait: true },
-  { id: "estimation", label: "Avis de recherche" },
-  { id: "acquereur", label: "Acquéreurs en attente" },
-  { id: "vendu", label: "Quartier très recherché" },
-  { id: "valeur", label: "Nous avons l'acheteur" },
 ] as const;
 type ModeleId = (typeof MODELES)[number]["id"];
 const estPortrait = (id: ModeleId) => Boolean(MODELES.find((m) => m.id === id && "portrait" in m && m.portrait));
@@ -37,50 +33,7 @@ const IMG_PORTRAIT: Partial<Record<ModeleId, string>> = {
 // ---------------------------------------------------------------------------
 // Un flyer (A5 paysage : 210 × 148,5 mm)
 
-function Logo({ clair = false }: { clair?: boolean }) {
-  return (
-    <div className="flex items-center gap-2">
-      <div className="flex h-9 w-9 items-center justify-center rounded-[6px] text-lg font-black" style={{ background: "#b8935a", color: "#0f1e3d" }}>21</div>
-      <div className="leading-tight">
-        <div className="text-[15px] font-semibold tracking-[0.18em]" style={{ color: clair ? "#f7f3ec" : "#0f1e3d" }}>CENTURY 21</div>
-        <div className="text-[9px] uppercase tracking-[0.2em]" style={{ color: "#b8935a" }}>Icaza Immobilier · Martigues</div>
-      </div>
-    </div>
-  );
-}
-
-function Contact({ nego, tel, clair = false }: { nego: string; tel: string; clair?: boolean }) {
-  const photo = photoNegociateur(nego);
-  return (
-    <div className="flex items-end justify-between">
-      <div className="flex items-center gap-3">
-        {photo && (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={photo} alt="" style={{ width: "17mm", height: "17mm", borderRadius: "50%", objectFit: "cover", border: "2px solid #b8935a", flexShrink: 0 }} />
-        )}
-        <div>
-          <div className="text-[11px] uppercase tracking-[0.15em]" style={{ color: "#b8935a" }}>Votre conseiller</div>
-          <div className="text-[15px] font-bold" style={{ color: clair ? "#f7f3ec" : "#0f1e3d" }}>{nego || "Votre agence CENTURY 21"}</div>
-        </div>
-      </div>
-      {tel && <div className="text-right text-[17px] font-black" style={{ color: clair ? "#f7f3ec" : "#0f1e3d" }}>📞 {tel}</div>}
-    </div>
-  );
-}
-
-function BandeauDestinataire({ d, clair = false }: { d?: Destinataire; clair?: boolean }) {
-  if (!d || (!d.nom && !d.adresse)) return null;
-  const ligne = [[d.civilite, d.prenom, d.nom].filter(Boolean).join(" "), d.adresse].filter(Boolean).join(" — ");
-  return (
-    <div className="mb-2 inline-block rounded-md px-2.5 py-1 text-[11px] font-semibold" style={{ background: clair ? "rgba(255,255,255,.12)" : "#f2ece1", color: clair ? "#f7f3ec" : "#0f1e3d" }}>
-      Pour {ligne}
-    </div>
-  );
-}
-
-function Flyer({ modele, nego, tel, dest }: { modele: ModeleId; nego: string; tel: string; dest?: Destinataire }) {
-  const base = "relative overflow-hidden";
-  const style: React.CSSProperties = { width: "210mm", height: "148.5mm", boxSizing: "border-box", padding: "12mm 14mm" };
+function Flyer({ modele, nego, tel }: { modele: ModeleId; nego: string; tel: string; dest?: Destinataire }) {
 
   // 0) CHASSE « Juste une visite » — visuel A5 portrait fourni par l'agence,
   // avec la photo + les coordonnées du négociateur en bas à droite.
@@ -110,85 +63,7 @@ function Flyer({ modele, nego, tel, dest }: { modele: ModeleId; nego: string; te
     );
   }
 
-  // 1) AVIS DE RECHERCHE — style « affiche recherchée », navy + or
-  if (modele === "estimation") {
-    return (
-      <div className={base} style={{ ...style, background: "#0f1e3d", color: "#f7f3ec" }}>
-        <div className="flex items-start justify-between">
-          <Logo clair />
-          <div className="rotate-3 rounded-md border-2 px-3 py-1 text-[12px] font-black uppercase tracking-[0.2em]" style={{ borderColor: "#b8935a", color: "#b8935a" }}>Avis de recherche</div>
-        </div>
-        <div className="mt-5 flex items-start gap-4">
-          <div className="text-[52px] leading-none">🔍</div>
-          <div>
-            <BandeauDestinataire d={dest} clair />
-            <h1 className="font-serif text-[34px] font-black leading-[1.05]">Nous recherchons un bien<br />dans <span style={{ color: "#b8935a" }}>votre quartier</span>.</h1>
-            <p className="mt-3 max-w-[128mm] text-[14px]" style={{ color: "#d9c7ad" }}>
-              Pour le compte d&apos;<b style={{ color: "#f7f3ec" }}>acquéreurs déjà sélectionnés et finançables</b>, nous cherchons activement maisons et appartements à vendre près de chez vous.
-            </p>
-          </div>
-        </div>
-        <div className="absolute inset-x-[14mm] bottom-[10mm]"><Contact nego={nego} tel={tel} clair /></div>
-      </div>
-    );
-  }
-
-  // 2) ACQUÉREURS EN ATTENTE — chiffre fort + urgence
-  if (modele === "acquereur") {
-    return (
-      <div className={base} style={{ ...style, background: "#f7f3ec", color: "#0f1e3d" }}>
-        <div className="flex items-start justify-between"><Logo /><div className="text-[11px] font-bold uppercase tracking-widest" style={{ color: "#b8935a" }}>🎯 Recherche active</div></div>
-        <div className="mt-4 flex items-center gap-5">
-          <div className="font-serif text-[92px] font-black leading-none" style={{ color: "#b8935a" }}>3</div>
-          <div>
-            <BandeauDestinataire d={dest} />
-            <h1 className="font-serif text-[30px] font-black leading-[1.08]">acquéreurs recherchent<br />un bien dans <span style={{ color: "#b8935a" }}>votre secteur</span>.</h1>
-            <p className="mt-2 max-w-[120mm] text-[14px] text-slate-700">
-              Leur projet est prêt, leur financement validé. <b>Votre bien les intéresse peut-être déjà.</b>
-            </p>
-          </div>
-        </div>
-        <div className="absolute inset-x-[14mm] bottom-[10mm]"><Contact nego={nego} tel={tel} /></div>
-      </div>
-    );
-  }
-
-  // 3) QUARTIER TRÈS RECHERCHÉ — pénurie de biens
-  if (modele === "vendu") {
-    return (
-      <div className={base} style={{ ...style, background: "#ffffff", color: "#0f1e3d" }}>
-        <div className="flex items-start justify-between">
-          <Logo />
-          <div className="rounded-md px-3 py-1.5 text-[12px] font-black uppercase tracking-widest" style={{ background: "#0f1e3d", color: "#f7f3ec" }}>🔥 Très demandé</div>
-        </div>
-        <div className="mt-6 pl-[4mm]">
-          <BandeauDestinataire d={dest} />
-          <h1 className="font-serif text-[33px] font-black leading-[1.06]">Votre quartier est<br /><span style={{ color: "#b8935a" }}>très recherché</span>.</h1>
-          <p className="mt-3 max-w-[135mm] text-[14px] text-slate-700">
-            Nous <b>manquons de biens</b> à proposer à nos acheteurs dans votre secteur. Si vous vendez (même plus tard), votre bien pourrait partir vite et au bon prix.
-          </p>
-        </div>
-        <div className="absolute left-0 top-0 h-full w-[8mm]" style={{ background: "#b8935a" }} />
-        <div className="absolute inset-x-[14mm] bottom-[10mm]"><Contact nego={nego} tel={tel} /></div>
-      </div>
-    );
-  }
-
-  // 4) NOUS AVONS DÉJÀ L'ACHETEUR — estimation offerte
-  return (
-    <div className={base} style={{ ...style, background: "#f7f3ec", color: "#0f1e3d" }}>
-      <div className="flex items-start justify-between"><Logo /><div className="text-[44px] leading-none">🏡</div></div>
-      <div className="mt-4">
-        <BandeauDestinataire d={dest} />
-        <div className="mb-2 inline-block rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-widest" style={{ background: "#b8935a", color: "#0f1e3d" }}>Estimation offerte</div>
-        <h1 className="font-serif text-[32px] font-black leading-[1.08]">Vous vendez ?<br />Nous avons peut-être <span style={{ color: "#b8935a" }}>déjà l&apos;acheteur</span>.</h1>
-        <p className="mt-3 max-w-[135mm] text-[14px] text-slate-700">
-          Grâce à notre fichier d&apos;acquéreurs en recherche active, nous rapprochons rapidement votre bien du bon acheteur. <b>Estimation offerte et sans engagement.</b>
-        </p>
-      </div>
-      <div className="absolute inset-x-[14mm] bottom-[10mm]"><Contact nego={nego} tel={tel} /></div>
-    </div>
-  );
+  return null;
 }
 
 // ---------------------------------------------------------------------------
@@ -229,7 +104,7 @@ function parseDestinataires(texte: string): Destinataire[] {
 // ---------------------------------------------------------------------------
 
 export default function FlyersPage({ onRetour }: { onRetour: () => void }) {
-  const [modele, setModele] = useState<ModeleId>("estimation");
+  const [modele, setModele] = useState<ModeleId>("chasse-visite");
   const [nego, setNego] = useState(NEGOCIATEURS[0] ?? "");
   const [tel, setTel] = useState<string>(EQUIPE.find((m) => m.nom === NEGOCIATEURS[0])?.tel ?? "04 42 00 00 00");
   const [perso, setPerso] = useState(false);
