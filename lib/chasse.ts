@@ -115,3 +115,14 @@ export async function rapprocherAcquereurs(p: { ville: string; codePostal: strin
   const body = (await res.json()) as { acquereurs?: AcquereurMatch[] };
   return body.acquereurs ?? [];
 }
+
+export async function geocoderChasse(p: { adresse: string; ville: string; codePostal: string }): Promise<{ lat: number; lon: number } | null> {
+  try {
+    const res = await fetch("/api/chasse/geocode", { method: "POST", headers: jsonHeaders(), body: JSON.stringify(p) });
+    if (!res.ok) return null;
+    const d = (await res.json()) as { trouve?: boolean; lat?: number; lon?: number };
+    return d.trouve && typeof d.lat === "number" && typeof d.lon === "number" ? { lat: d.lat, lon: d.lon } : null;
+  } catch {
+    return null;
+  }
+}

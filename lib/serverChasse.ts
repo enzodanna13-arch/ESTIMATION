@@ -16,8 +16,11 @@ export interface FicheChasse {
   // Infos du bien (extraites puis modifiables)
   titre: string;
   typeBien: string; // Appartement / Maison / Terrain / …
+  adresse: string; // rue / voie (pour la localisation sur la carte)
   ville: string;
   codePostal: string;
+  lat?: number; // latitude géocodée (carte)
+  lon?: number; // longitude géocodée (carte)
   prixAffiche: number; // prix demandé dans l'annonce (0 si inconnu)
   surface: number; // m² (0 si inconnu)
   pieces: number;
@@ -67,8 +70,11 @@ export function ficheVide(partial: Partial<FicheChasse>): FicheChasse {
     source: partial.source ?? "",
     titre: partial.titre ?? "",
     typeBien: partial.typeBien ?? "",
+    adresse: partial.adresse ?? "",
     ville: partial.ville ?? "",
     codePostal: partial.codePostal ?? "",
+    lat: partial.lat,
+    lon: partial.lon,
     prixAffiche: partial.prixAffiche ?? 0,
     surface: partial.surface ?? 0,
     pieces: partial.pieces ?? 0,

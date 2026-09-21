@@ -1,14 +1,17 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import dynamic from "next/dynamic";
 import {
   STATUTS_CHASSE, STATUT_CHASSE_COULEURS,
   extraireAnnonce, listChasse, saveChasse, deleteChasse,
   uploadPhotosChasse, fichierEnBase64,
-  estimerMarche, rapprocherAcquereurs,
+  estimerMarche, rapprocherAcquereurs, geocoderChasse,
   type FicheChasse, type AcquereurMatch,
 } from "@/lib/chasse";
 import { NEGOCIATEURS } from "@/lib/equipe";
+
+const ChasseCarte = dynamic(() => import("@/components/ChasseCarte"), { ssr: false });
 
 const inputCls = "w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-copper focus:outline-none focus:ring-2 focus:ring-copper/20";
 const int = new Intl.NumberFormat("fr-FR");
@@ -27,6 +30,8 @@ export default function ChassePage({ onRetour }: { onRetour: () => void }) {
   const [filtreNego, setFiltreNego] = useState("");
   const [tri, setTri] = useState<"recent" | "marche" | "prix-asc" | "prix-desc" | "ecart">("recent");
   const [selection, setSelection] = useState<FicheChasse | null>(null);
+  const [vue, setVue] = useState<"liste" | "carte">("liste");
+  const [geoEnCours, setGeoEnCours] = useState(false);
 
   // Nouvelle chasse
   const [texte, setTexte] = useState("");
@@ -43,6 +48,32 @@ export default function ChassePage({ onRetour }: { onRetour: () => void }) {
     listChasse().then((f) => { setFiches(f); setChargement(false); }).catch(() => setChargement(false));
   };
   useEffect(recharger, []);
+
+  // À l'ouverture de la carte : géocode les fiches sans coordonnées (adresse ou
+  // commune) et met à jour la fiche pour ne le refaire qu'une fois.
+  useEffect(() => {
+    if (vue !== "carte") return;
+    let annule = false;
+    (async () => {
+      const aFaire = fiches.filter((f) => (typeof f.lat !== "number" || typeof f.lon !== "number") && (f.adresse || f.ville || f.codePostal));
+      if (aFaire.length === 0) return;
+      setGeoEnCours(true);
+      for (const f of aFaire) {
+        if (annule) break;
+        const r = await geocoderChasse({ adresse: f.adresse, ville: f.ville, codePostal: f.codePostal });
+        if (annule) break;
+        if (r) {
+          try {
+            const saved = await saveChasse({ ...f, lat: r.lat, lon: r.lon });
+            if (!annule) setFiches((prev) => prev.map((x) => (x.id === saved.id ? saved : x)));
+          } catch { /* ignore */ }
+        }
+      }
+      if (!annule) setGeoEnCours(false);
+    })();
+    return () => { annule = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [vue]);
 
   // Import automatique déclenché par le bouton « Piger » (bookmarklet) : les
   // données de l'annonce ont été déposées dans sessionStorage par la page.
@@ -167,6 +198,10 @@ export default function ChassePage({ onRetour }: { onRetour: () => void }) {
           <p className="text-sm text-slate-500">Repérez un bien en ligne, l&apos;IA récupère la fiche, vous ajoutez votre estimation et votre suivi.</p>
         </div>
         <div className="flex items-center gap-2">
+          <div className="flex rounded-lg border border-slate-200 bg-white p-0.5 text-sm font-semibold">
+            <button onClick={() => setVue("liste")} className={`rounded-md px-3 py-1 ${vue === "liste" ? "bg-navy text-white" : "text-slate-600"}`}>Liste</button>
+            <button onClick={() => setVue("carte")} className={`rounded-md px-3 py-1 ${vue === "carte" ? "bg-navy text-white" : "text-slate-600"}`}>🗺️ Carte</button>
+          </div>
           <button onClick={() => setShowBook((v) => !v)} className="rounded-lg border border-copper/40 bg-copper/10 px-3 py-1.5 text-sm font-semibold text-copper hover:bg-copper/20">⚡ Bouton Piger</button>
           <button onClick={onRetour} className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm text-slate-600 hover:bg-slate-50">← Retour</button>
         </div>
@@ -229,6 +264,20 @@ export default function ChassePage({ onRetour }: { onRetour: () => void }) {
         {err && <p className="mt-3 text-sm text-red-600">{err}</p>}
       </div>
 
+      {vue === "carte" && (
+        <div>
+          <div className="mb-2 flex flex-wrap items-center gap-3 text-xs text-slate-500">
+            <span><span className="mr-1 inline-block h-2.5 w-2.5 rounded-full align-middle" style={{ background: "#059669" }} /> Sous le marché</span>
+            <span><span className="mr-1 inline-block h-2.5 w-2.5 rounded-full align-middle" style={{ background: "#dc2626" }} /> Au-dessus</span>
+            <span><span className="mr-1 inline-block h-2.5 w-2.5 rounded-full align-middle" style={{ background: "#b8935a" }} /> Autres</span>
+            {geoEnCours && <span className="text-copper">📍 Localisation en cours…</span>}
+            <span className="ml-auto">Cliquez un point pour ouvrir la fiche</span>
+          </div>
+          <ChasseCarte fiches={fiches} onOpen={(f) => setSelection(f)} />
+        </div>
+      )}
+
+      {vue === "liste" && (<>
       {/* Statistiques du portefeuille */}
       {fiches.length > 0 && (
         <div className="mb-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -329,6 +378,7 @@ export default function ChassePage({ onRetour }: { onRetour: () => void }) {
           ))}
         </div>
       )}
+      </>)}
     </div>
   );
 }
@@ -378,7 +428,14 @@ function FicheDetail({ fiche, onRetour, onEnregistre, onSupprime }: {
   const enregistrer = async () => {
     setBusy(true);
     try {
-      const saved = await saveChasse(f);
+      let aSauver = f;
+      // (Re)géocode si l'adresse/commune a changé ou si les coordonnées manquent.
+      const adrChange = f.adresse !== fiche.adresse || f.ville !== fiche.ville || f.codePostal !== fiche.codePostal;
+      if ((f.adresse || f.ville || f.codePostal) && (adrChange || typeof f.lat !== "number")) {
+        const r = await geocoderChasse({ adresse: f.adresse, ville: f.ville, codePostal: f.codePostal });
+        if (r) aSauver = { ...f, lat: r.lat, lon: r.lon };
+      }
+      const saved = await saveChasse(aSauver);
       setF(saved); setOk(true); onEnregistre(saved);
     } catch { /* silencieux */ } finally { setBusy(false); }
   };
@@ -469,6 +526,8 @@ function FicheDetail({ fiche, onRetour, onEnregistre, onSupprime }: {
             </div>
             <label className="mb-1 block text-xs font-semibold text-slate-600">Titre</label>
             <input className={inputCls} value={f.titre} onChange={(e) => maj("titre", e.target.value)} />
+            <label className="mb-1 mt-2 block text-xs font-semibold text-slate-600">Adresse (pour la carte)</label>
+            <input className={inputCls} placeholder="N° et rue — ex. 12 rue de la République" value={f.adresse} onChange={(e) => maj("adresse", e.target.value)} />
             <div className="mt-2 grid grid-cols-2 gap-2">
               <div><label className="mb-1 block text-xs font-semibold text-slate-600">Type</label><input className={inputCls} value={f.typeBien} onChange={(e) => maj("typeBien", e.target.value)} /></div>
               <div><label className="mb-1 block text-xs font-semibold text-slate-600">DPE</label><input className={inputCls} value={f.dpe} onChange={(e) => maj("dpe", e.target.value.toUpperCase().slice(0, 1))} /></div>
