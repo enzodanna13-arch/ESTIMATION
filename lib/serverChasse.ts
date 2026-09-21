@@ -30,6 +30,13 @@ export interface FicheChasse {
   statut: string;
   notes: string;
   contactProprietaire: string;
+  // Positionnement marché (calculé à partir des ventes réelles DVF) — mis en
+  // cache sur la fiche pour l'affichage de la liste (badge opportunité).
+  marcheM2?: number; // €/m² médian du secteur (0 si non calculé)
+  marcheValeur?: number; // valeur marché estimée (€) pour la surface
+  marcheEcartPct?: number | null; // écart prix affiché ↔ marché en % (+ = au-dessus)
+  marcheNbVentes?: number; // nombre de ventes DVF utilisées
+  marcheDate?: number; // date du calcul
   archived?: boolean;
 }
 
@@ -73,6 +80,11 @@ export function ficheVide(partial: Partial<FicheChasse>): FicheChasse {
     statut: partial.statut ?? "À contacter",
     notes: partial.notes ?? "",
     contactProprietaire: partial.contactProprietaire ?? "",
+    marcheM2: partial.marcheM2 ?? 0,
+    marcheValeur: partial.marcheValeur ?? 0,
+    marcheEcartPct: partial.marcheEcartPct ?? null,
+    marcheNbVentes: partial.marcheNbVentes ?? 0,
+    marcheDate: partial.marcheDate ?? 0,
     archived: partial.archived ?? false,
   };
 }

@@ -5,7 +5,8 @@ import {
   STATUTS_CHASSE, STATUT_CHASSE_COULEURS,
   extraireAnnonce, listChasse, saveChasse, deleteChasse,
   uploadPhotosChasse, fichierEnBase64,
-  type FicheChasse,
+  estimerMarche, rapprocherAcquereurs,
+  type FicheChasse, type AcquereurMatch,
 } from "@/lib/chasse";
 import { NEGOCIATEURS } from "@/lib/equipe";
 
@@ -24,7 +25,7 @@ export default function ChassePage({ onRetour }: { onRetour: () => void }) {
   const [q, setQ] = useState("");
   const [filtreStatut, setFiltreStatut] = useState("");
   const [filtreNego, setFiltreNego] = useState("");
-  const [tri, setTri] = useState<"recent" | "prix-asc" | "prix-desc" | "ecart">("recent");
+  const [tri, setTri] = useState<"recent" | "marche" | "prix-asc" | "prix-desc" | "ecart">("recent");
   const [selection, setSelection] = useState<FicheChasse | null>(null);
 
   // Nouvelle chasse
@@ -78,10 +79,12 @@ export default function ChassePage({ onRetour }: { onRetour: () => void }) {
       (!qt || [f.titre, f.ville, f.codePostal, f.source, f.negociateur, f.description].join(" ").toLowerCase().includes(qt)),
     );
     const ecart = (f: FicheChasse) => (f.prixAffiche > 0 && f.estimationNego > 0 ? f.estimationNego - f.prixAffiche : Number.POSITIVE_INFINITY);
+    const marche = (f: FicheChasse) => (typeof f.marcheEcartPct === "number" ? f.marcheEcartPct : Number.POSITIVE_INFINITY);
     const arr = [...list];
     if (tri === "prix-asc") arr.sort((a, b) => (a.prixAffiche || Infinity) - (b.prixAffiche || Infinity));
     else if (tri === "prix-desc") arr.sort((a, b) => (b.prixAffiche || 0) - (a.prixAffiche || 0));
-    else if (tri === "ecart") arr.sort((a, b) => ecart(a) - ecart(b)); // plus grosse opportunité (sous le prix) d'abord
+    else if (tri === "ecart") arr.sort((a, b) => ecart(a) - ecart(b)); // plus grosse opportunité (sous mon estim.) d'abord
+    else if (tri === "marche") arr.sort((a, b) => marche(a) - marche(b)); // le plus sous le marché DVF d'abord
     else arr.sort((a, b) => b.updatedAt - a.updatedAt);
     return arr;
   }, [fiches, q, filtreStatut, filtreNego, tri]);
@@ -91,9 +94,10 @@ export default function ChassePage({ onRetour }: { onRetour: () => void }) {
     const prix = fiches.filter((f) => f.prixAffiche > 0).map((f) => f.prixAffiche);
     const prixMoyen = prix.length ? Math.round(prix.reduce((s, p) => s + p, 0) / prix.length) : 0;
     const avecEstim = fiches.filter((f) => f.estimationNego > 0).length;
+    const opportunites = fiches.filter((f) => typeof f.marcheEcartPct === "number" && f.marcheEcartPct <= -5).length;
     const parStatut: Record<string, number> = {};
     for (const f of fiches) parStatut[f.statut] = (parStatut[f.statut] ?? 0) + 1;
-    return { total: fiches.length, prixMoyen, avecEstim, parStatut };
+    return { total: fiches.length, prixMoyen, avecEstim, opportunites, parStatut };
   }, [fiches]);
 
   // Code du bouton « Piger » (bookmarklet) — s'exécute sur l'annonce, dans le
@@ -241,8 +245,8 @@ export default function ChassePage({ onRetour }: { onRetour: () => void }) {
             <div className="text-xs text-slate-500">avec mon estimation</div>
           </div>
           <div className="rounded-xl border border-slate-200 bg-white p-3 text-center">
-            <div className="text-2xl font-bold text-emerald-600">{stats.parStatut["Mandat en cours"] ?? 0}</div>
-            <div className="text-xs text-slate-500">mandat en cours</div>
+            <div className="text-2xl font-bold text-emerald-600">{stats.opportunites}</div>
+            <div className="text-xs text-slate-500">opportunités (sous marché)</div>
           </div>
         </div>
       )}
@@ -266,9 +270,10 @@ export default function ChassePage({ onRetour }: { onRetour: () => void }) {
           <option value="">Tous les négociateurs</option>
           {NEGOCIATEURS.map((n) => <option key={n} value={n}>{n}</option>)}
         </select>
-        <select className={`${inputCls} max-w-[12rem]`} value={tri} onChange={(e) => setTri(e.target.value as typeof tri)}>
+        <select className={`${inputCls} max-w-[14rem]`} value={tri} onChange={(e) => setTri(e.target.value as typeof tri)}>
           <option value="recent">Plus récents</option>
-          <option value="ecart">Meilleure opportunité (sous mon estim.)</option>
+          <option value="marche">Opportunité marché (sous DVF)</option>
+          <option value="ecart">Sous mon estimation</option>
           <option value="prix-asc">Prix croissant</option>
           <option value="prix-desc">Prix décroissant</option>
         </select>
@@ -292,6 +297,12 @@ export default function ChassePage({ onRetour }: { onRetour: () => void }) {
                   ? <img src={f.photos[0]} alt="" className="h-full w-full object-cover transition group-hover:scale-[1.02]" loading="lazy" referrerPolicy="no-referrer" />
                   : <div className="flex h-full items-center justify-center text-3xl text-slate-300">🏠</div>}
                 <div className="absolute left-2 top-2"><StatutChip s={f.statut} /></div>
+                {typeof f.marcheEcartPct === "number" && f.marcheEcartPct <= -5 && (
+                  <div className="absolute right-2 top-2 rounded-md bg-emerald-500 px-1.5 py-0.5 text-xs font-bold text-white shadow">🟢 -{Math.abs(f.marcheEcartPct)}% marché</div>
+                )}
+                {typeof f.marcheEcartPct === "number" && f.marcheEcartPct >= 5 && (
+                  <div className="absolute right-2 top-2 rounded-md bg-red-500 px-1.5 py-0.5 text-xs font-bold text-white shadow">🔴 +{f.marcheEcartPct}% marché</div>
+                )}
                 {f.photos.length > 1 && <div className="absolute bottom-2 right-2 rounded-md bg-black/60 px-1.5 py-0.5 text-xs text-white">📷 {f.photos.length}</div>}
               </div>
               <div className="p-3">
@@ -336,6 +347,30 @@ function FicheDetail({ fiche, onRetour, onEnregistre, onSupprime }: {
   const [nouvellePhoto, setNouvellePhoto] = useState("");
   const [upload, setUpload] = useState(false);
   const [uploadErr, setUploadErr] = useState<string | null>(null);
+  const [marcheBusy, setMarcheBusy] = useState(false);
+  const [marcheErr, setMarcheErr] = useState<string | null>(null);
+  const [acq, setAcq] = useState<AcquereurMatch[] | null>(null);
+  const [acqBusy, setAcqBusy] = useState(false);
+
+  const estimerMarcheFiche = async () => {
+    setMarcheErr(null); setMarcheBusy(true);
+    try {
+      const r = await estimerMarche({ codePostal: f.codePostal, ville: f.ville, surface: f.surface, typeBien: f.typeBien, prixAffiche: f.prixAffiche });
+      if (!r.trouve) { setMarcheErr(r.message ?? "Pas assez de ventes DVF pour ce secteur."); return; }
+      const maj = { ...f, marcheM2: r.marcheM2 ?? 0, marcheValeur: r.valeur ?? 0, marcheEcartPct: r.ecartPct ?? null, marcheNbVentes: r.nbVentes ?? 0, marcheDate: Date.now() };
+      const saved = await saveChasse(maj);
+      setF(saved); onEnregistre(saved);
+    } catch (e) {
+      setMarcheErr(e instanceof Error ? e.message : "Estimation impossible");
+    } finally { setMarcheBusy(false); }
+  };
+
+  const chercherAcquereurs = async () => {
+    setAcqBusy(true);
+    try {
+      setAcq(await rapprocherAcquereurs({ ville: f.ville, codePostal: f.codePostal, prixAffiche: f.prixAffiche }));
+    } catch { setAcq([]); } finally { setAcqBusy(false); }
+  };
 
   const maj = <K extends keyof FicheChasse>(k: K, v: FicheChasse[K]) => { setF((p) => ({ ...p, [k]: v })); setOk(false); };
   const majNum = (k: keyof FicheChasse, v: string) => maj(k, (Number(v.replace(/[^0-9.]/g, "")) || 0) as never);
@@ -469,6 +504,70 @@ function FicheDetail({ fiche, onRetour, onEnregistre, onSupprime }: {
             <input className={inputCls} placeholder="Nom, téléphone, email…" value={f.contactProprietaire} onChange={(e) => maj("contactProprietaire", e.target.value)} />
             <label className="mb-1 mt-3 block text-xs font-semibold text-slate-600">Notes</label>
             <textarea className={`${inputCls} min-h-[90px]`} value={f.notes} onChange={(e) => maj("notes", e.target.value)} />
+          </div>
+
+          {/* Positionnement marché (DVF) */}
+          <div className="rounded-2xl border border-slate-200 bg-white p-4">
+            <div className="mb-2 flex items-center justify-between">
+              <h3 className="text-sm font-bold text-navy">📊 Positionnement marché</h3>
+              {(f.marcheDate ?? 0) > 0 && <button onClick={estimerMarcheFiche} disabled={marcheBusy} className="text-xs font-semibold text-copper hover:underline disabled:opacity-50">{marcheBusy ? "…" : "Recalculer"}</button>}
+            </div>
+            {(f.marcheDate ?? 0) === 0 ? (
+              <>
+                <p className="mb-2 text-xs text-slate-500">Estimez la valeur marché du bien à partir des ventes réelles DVF de la commune, et voyez s&apos;il est bien positionné.</p>
+                <button onClick={estimerMarcheFiche} disabled={marcheBusy} className="w-full rounded-xl bg-navy px-4 py-2 text-sm font-semibold text-white hover:bg-navy-deep disabled:opacity-50">
+                  {marcheBusy ? "Analyse DVF…" : "Estimer le marché (DVF)"}
+                </button>
+              </>
+            ) : (
+              <>
+                {(() => {
+                  const e = f.marcheEcartPct;
+                  const cls = e == null ? "bg-slate-100 text-slate-600" : e <= -5 ? "bg-emerald-100 text-emerald-700" : e >= 5 ? "bg-red-100 text-red-700" : "bg-amber-100 text-amber-700";
+                  const txt = e == null ? "Prix affiché inconnu" : e <= -5 ? `🟢 Opportunité — ${Math.abs(e)}% sous le marché` : e >= 5 ? `🔴 Surévalué — +${e}% au-dessus du marché` : "🟡 Aligné sur le marché";
+                  return <div className={`mb-2 rounded-lg px-3 py-2 text-center text-sm font-bold ${cls}`}>{txt}</div>;
+                })()}
+                <div className="grid grid-cols-2 gap-2 text-center">
+                  <div className="rounded-lg bg-slate-50 p-2"><div className="text-[15px] font-bold text-navy">{int.format(f.marcheM2 ?? 0)} €/m²</div><div className="text-[10px] text-slate-500">marché médian</div></div>
+                  <div className="rounded-lg bg-slate-50 p-2"><div className="text-[15px] font-bold text-navy">{euro(f.marcheValeur ?? 0)}</div><div className="text-[10px] text-slate-500">valeur marché estimée</div></div>
+                </div>
+                <p className="mt-2 text-center text-[11px] text-slate-400">Sur {f.marcheNbVentes ?? 0} ventes DVF · prix affiché {euro(f.prixAffiche)}</p>
+              </>
+            )}
+            {marcheErr && <p className="mt-2 text-xs text-red-600">{marcheErr}</p>}
+          </div>
+
+          {/* Rapprochement acquéreurs */}
+          <div className="rounded-2xl border border-slate-200 bg-white p-4">
+            <div className="mb-2 flex items-center justify-between">
+              <h3 className="text-sm font-bold text-navy">🤝 Acquéreurs correspondants</h3>
+              {acq !== null && <button onClick={chercherAcquereurs} disabled={acqBusy} className="text-xs font-semibold text-copper hover:underline disabled:opacity-50">{acqBusy ? "…" : "Actualiser"}</button>}
+            </div>
+            {acq === null ? (
+              <button onClick={chercherAcquereurs} disabled={acqBusy} className="w-full rounded-xl bg-navy px-4 py-2 text-sm font-semibold text-white hover:bg-navy-deep disabled:opacity-50">
+                {acqBusy ? "Recherche…" : "Trouver les acquéreurs pour ce bien"}
+              </button>
+            ) : acq.length === 0 ? (
+              <p className="text-sm text-slate-400">Aucun acquéreur en cours ne correspond (secteur + budget). Ajoutez des leads acquéreurs pour enrichir le rapprochement.</p>
+            ) : (
+              <div className="space-y-2">
+                <p className="text-xs font-semibold text-emerald-700">{acq.length} acquéreur{acq.length > 1 ? "s" : ""} correspondant{acq.length > 1 ? "s" : ""} !</p>
+                {acq.map((a) => (
+                  <div key={a.id} className="rounded-lg border border-slate-200 p-2 text-xs">
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-navy">{[a.prenom, a.nom].filter(Boolean).join(" ") || "Acquéreur"}</span>
+                      <span className="text-copper font-semibold">{a.budget ? euro(a.budget) : "budget NC"}</span>
+                    </div>
+                    <div className="mt-0.5 flex flex-wrap gap-x-3 text-slate-500">
+                      {a.tel && <a href={`tel:${a.tel}`} className="hover:underline">📞 {a.tel}</a>}
+                      {a.ville && <span>📍 {a.ville}</span>}
+                      {a.negociateur && <span>· {a.negociateur}</span>}
+                      <span className="rounded bg-slate-100 px-1.5">{a.statut}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </div>

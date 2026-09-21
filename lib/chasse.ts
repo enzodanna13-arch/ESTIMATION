@@ -83,3 +83,35 @@ export async function saveChasse(fiche: Partial<FicheChasse>): Promise<FicheChas
 export async function deleteChasse(id: string): Promise<void> {
   await fetch(`/api/chasse/${encodeURIComponent(id)}`, { method: "DELETE", headers: headers() });
 }
+
+export interface Positionnement {
+  trouve: boolean;
+  message?: string;
+  marcheM2?: number;
+  valeur?: number;
+  basse?: number;
+  haute?: number;
+  ecartPct?: number | null;
+  nbVentes?: number;
+}
+
+export async function estimerMarche(p: { codePostal: string; ville: string; surface: number; typeBien: string; prixAffiche: number }): Promise<Positionnement> {
+  const res = await fetch("/api/chasse/marche", { method: "POST", headers: jsonHeaders(), body: JSON.stringify(p) });
+  if (!res.ok) {
+    const d = (await res.json().catch(() => ({}))) as { error?: string };
+    throw new Error(d.error || "Estimation marché impossible");
+  }
+  return (await res.json()) as Positionnement;
+}
+
+export interface AcquereurMatch {
+  id: string; nom: string; prenom: string; tel: string; email: string;
+  budget: number | null; ville: string; negociateur: string; statut: string; typeProjet: string;
+}
+
+export async function rapprocherAcquereurs(p: { ville: string; codePostal: string; prixAffiche: number }): Promise<AcquereurMatch[]> {
+  const res = await fetch("/api/chasse/acquereurs", { method: "POST", headers: jsonHeaders(), body: JSON.stringify(p) });
+  if (!res.ok) return [];
+  const body = (await res.json()) as { acquereurs?: AcquereurMatch[] };
+  return body.acquereurs ?? [];
+}
