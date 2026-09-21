@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { EQUIPE, NEGOCIATEURS, photoNegociateur } from "@/lib/equipe";
+import { NEGOCIATEURS, photoNegociateur, telNegociateurFormate } from "@/lib/equipe";
 import { genererFlyersPdf } from "@/lib/genererFlyersPdf";
 
 const inputCls = "w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-copper focus:outline-none focus:ring-2 focus:ring-copper/20";
@@ -106,7 +106,7 @@ function parseDestinataires(texte: string): Destinataire[] {
 export default function FlyersPage({ onRetour }: { onRetour: () => void }) {
   const [modele, setModele] = useState<ModeleId>("chasse-visite");
   const [nego, setNego] = useState(NEGOCIATEURS[0] ?? "");
-  const [tel, setTel] = useState<string>(EQUIPE.find((m) => m.nom === NEGOCIATEURS[0])?.tel ?? "04 42 00 00 00");
+  const [tel, setTel] = useState<string>(telNegociateurFormate(NEGOCIATEURS[0]) ?? "04 42 42 80 85");
   const [perso, setPerso] = useState(false);
   const [csvTexte, setCsvTexte] = useState("");
   const [nbGenerique, setNbGenerique] = useState(2);
@@ -115,8 +115,7 @@ export default function FlyersPage({ onRetour }: { onRetour: () => void }) {
 
   const choisirNego = (nom: string) => {
     setNego(nom);
-    const m = EQUIPE.find((e) => e.nom === nom);
-    if (m?.tel) setTel(m.tel.replace("+33", "0").replace(/(\d)(\d{2})(\d{2})(\d{2})(\d{2})/, "$1$2 $3 $4 $5"));
+    setTel(telNegociateurFormate(nom) ?? "04 42 42 80 85");
   };
 
   const destinataires = useMemo(() => (perso ? parseDestinataires(csvTexte) : []), [perso, csvTexte]);
