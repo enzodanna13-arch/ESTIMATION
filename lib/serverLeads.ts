@@ -33,10 +33,6 @@ export interface Lead {
   relanceLe?: number | null; // date de prochaine relance (rappel), facultative
   exporteLe?: number | null; // date du dernier export CSV (systeme.io) — évite de ré-exporter
   suivi: SuiviLead[];
-  // Séquence de relance SMS automatique (clients non joints au téléphone).
-  relanceAutoBase?: number; // début de séquence (dernier appel non abouti) ; 0/absent = aucune
-  relanceAutoCount?: number; // nombre de relances déjà envoyées
-  relanceAutoLast?: number; // date de la dernière relance envoyée
 }
 
 const PREFIX = "leads/";

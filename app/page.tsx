@@ -830,7 +830,7 @@ export default function Home() {
             {univers === "dashboard" && <DashboardPage onRetour={() => setUnivers("")} />}
             {univers === "negociateurs" && <NegociateursPage onRetour={() => setUnivers("")} />}
             {univers === "espace" && <EspaceNegociateurPage onRetour={() => setUnivers("")} />}
-            {univers === "reglages" && <><ReglagesMotDePasse /><ClePasserelleLeads /><RelanceAuto /></>}
+            {univers === "reglages" && <><ReglagesMotDePasse /><ClePasserelleLeads /></>}
 
             {univers === "" && (
               <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 print:hidden">
@@ -2510,69 +2510,6 @@ function ClePasserelleLeads() {
             <li>• <b>Headers</b> → clé <code className="rounded bg-slate-200 px-1">x-leads-key</code>, valeur = la clé ci-dessus</li>
           </ul>
         </div>
-      </div>
-    </div>
-  );
-}
-
-function RelanceAuto() {
-  const [config, setConfig] = useState<{ actif: boolean; dernierRun?: number; dernierEnvoi?: number } | null>(null);
-  const [busy, setBusy] = useState(false);
-  const [resume, setResume] = useState<string | null>(null);
-
-  const charger = () => {
-    fetch("/api/relances/config", { cache: "no-store", headers: { "x-history-key": getHistoryKey() } })
-      .then((r) => r.json()).then((d) => setConfig(d.config ?? { actif: false })).catch(() => setConfig({ actif: false }));
-  };
-  useEffect(charger, []);
-
-  const basculer = async (actif: boolean) => {
-    setBusy(true);
-    try {
-      const r = await fetch("/api/relances/config", { method: "POST", headers: { "content-type": "application/json", "x-history-key": getHistoryKey() }, body: JSON.stringify({ actif }) });
-      const d = await r.json(); setConfig(d.config);
-    } catch { /* ignore */ } finally { setBusy(false); }
-  };
-
-  const lancer = async () => {
-    setBusy(true); setResume(null);
-    try {
-      const r = await fetch("/api/relances/config", { method: "POST", headers: { "content-type": "application/json", "x-history-key": getHistoryKey() }, body: JSON.stringify({ run: true }) });
-      const d = await r.json();
-      const res = d.resume;
-      setResume(res ? `${res.envoyes} relance(s) envoyée(s), ${res.candidats} due(s), ${res.erreurs} erreur(s).${res.details?.length ? "\n" + res.details.join("\n") : ""}` : "Terminé.");
-      if (d.config) setConfig(d.config);
-    } catch { setResume("Erreur lors du lancement."); } finally { setBusy(false); }
-  };
-
-  const dt = (t?: number) => (t ? new Date(t).toLocaleString("fr-FR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }) : "—");
-
-  return (
-    <div className="mx-auto mt-8 max-w-lg">
-      <h2 className="mb-1 text-2xl font-bold text-navy">📞 Relance SMS automatique</h2>
-      <p className="mb-4 text-sm text-slate-500">
-        Quand un négociateur marque un appel « Répondeur / message laissé » ou « À rappeler », le CRM
-        envoie automatiquement un SMS de relance (signé par le négociateur) — <b>le lendemain matin</b>,
-        puis à <b>J+3</b> et <b>J+6</b> si le client ne répond toujours pas (3 relances max). La séquence
-        s&apos;arrête dès que le statut change (client joint, RDV, converti…).
-      </p>
-      <div className="space-y-3 rounded-2xl border border-slate-200 bg-white p-6">
-        {config === null ? (
-          <p className="text-sm text-slate-400">Chargement…</p>
-        ) : (
-          <>
-            <label className="flex items-center gap-3">
-              <input type="checkbox" checked={config.actif} disabled={busy} onChange={(e) => basculer(e.target.checked)} className="h-5 w-5" />
-              <span className="text-sm font-semibold text-slate-700">{config.actif ? "Activée" : "Désactivée"}</span>
-            </label>
-            <p className="text-xs text-slate-400">Dernier passage : {dt(config.dernierRun)}{typeof config.dernierEnvoi === "number" ? ` · ${config.dernierEnvoi} SMS envoyé(s)` : ""}</p>
-            <button onClick={lancer} disabled={busy} className="rounded-xl border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-50 disabled:opacity-50">
-              {busy ? "…" : "Lancer maintenant (traiter les relances dues)"}
-            </button>
-            {resume && <pre className="whitespace-pre-wrap rounded-lg bg-slate-50 p-3 text-xs text-slate-600">{resume}</pre>}
-          </>
-        )}
-        <p className="text-xs text-slate-400">Nécessite Twilio configuré et des leads attribués à un négociateur (pour la signature). Aucun SMS n&apos;est envoyé aux leads non attribués.</p>
       </div>
     </div>
   );
