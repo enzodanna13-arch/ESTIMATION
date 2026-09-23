@@ -12,7 +12,7 @@ import {
 } from "@/lib/acquereurs";
 import { listEstimations, getEstimation } from "@/lib/history";
 import { NEGOCIATEURS } from "@/lib/equipe";
-import { bienDepuisEstimation, NIVEAUX, scorerRecherche } from "@/lib/matching";
+import { bienDepuisEstimation, NIVEAUX, scorerRecherche, type NiveauMatch, type ResultatMatch } from "@/lib/matching";
 
 const inputCls = "w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-copper focus:outline-none focus:ring-2 focus:ring-copper/20";
 const int = new Intl.NumberFormat("fr-FR");
@@ -269,8 +269,8 @@ export default function AcquereurFiche({ dossier, onRetour, onSaved, onSupprime 
           )}
         </Section>
 
-        {/* 5. Biens correspondant à cette recherche */}
-        <BiensCorrespondant recherche={recherche} />
+        {/* 5. Rapprochement estimation */}
+        <RapprochementEstimation dossier={d} />
 
         {/* 6. Historique */}
         <Section titre="🕒 Historique & suivi" defautOuvert={false}>
@@ -314,45 +314,148 @@ function AjoutEvenement({ onAdd }: { onAdd: (type: string, texte: string) => voi
   );
 }
 
-// Rapprochement inverse : les biens (estimations) correspondant à la recherche
-function BiensCorrespondant({ recherche }: { recherche: RechercheImmo }) {
-  const [ouvert, setOuvert] = useState(false);
-  const [biens, setBiens] = useState<{ nom: string; ville: string; score: number; niveau: string; prix: number | null; resume: string }[] | null>(null);
+// Rapprochement estimation — rapprochement INVERSE : parmi les biens estimés
+// par l'agence, ceux qui correspondent aux recherches de cet acquéreur. On
+// évalue chaque bien contre TOUTES les recherches actives du dossier et on
+// retient sa meilleure correspondance : changer d'onglet de recherche ne casse
+// plus l'analyse, et un bien peut matcher n'importe laquelle des recherches.
 
-  useEffect(() => {
-    if (!ouvert || biens) return;
-    (async () => {
+interface BienMatch {
+  id: string;
+  nom: string;
+  ville: string;
+  prix: number | null;
+  resume: string;
+  negociateur: string;
+  date: number;
+  rechercheLabel: string;
+  niveau: NiveauMatch;
+  score: number;
+  details: ResultatMatch["details"];
+}
+
+const BADGE_NIVEAU: Record<NiveauMatch, string> = {
+  forte: "bg-emerald-100 text-emerald-700",
+  interessante: "bg-amber-100 text-amber-700",
+  possible: "bg-slate-100 text-slate-600",
+};
+const BORD_NIVEAU: Record<NiveauMatch, string> = {
+  forte: "border-emerald-200",
+  interessante: "border-amber-200",
+  possible: "border-slate-200",
+};
+
+function resumeBien(typeBien: string, surface: number | null, nbPieces: number | null): string {
+  const t = typeBien ? typeBien.charAt(0).toUpperCase() + typeBien.slice(1) : "Bien";
+  return [t, surface != null ? `${surface} m²` : null, nbPieces != null ? `${nbPieces} p.` : null].filter(Boolean).join(" · ");
+}
+
+function RapprochementEstimation({ dossier }: { dossier: ClientDossier }) {
+  const [etat, setEtat] = useState<"idle" | "chargement" | "pret">("idle");
+  const [biens, setBiens] = useState<BienMatch[]>([]);
+  const [erreur, setErreur] = useState<string | null>(null);
+  const [detail, setDetail] = useState<string | null>(null);
+
+  const recherchesActives = (dossier.recherches ?? []).filter((r) => r.actif !== false);
+  const aucuneRecherche = recherchesActives.length === 0;
+
+  const analyser = async () => {
+    setEtat("chargement"); setErreur(null); setDetail(null);
+    try {
       const metas = await listEstimations();
-      const cibles = metas.slice(0, 40);
-      const out: { nom: string; ville: string; score: number; niveau: string; prix: number | null; resume: string }[] = [];
-      for (const m of cibles) {
-        const full = await getEstimation(m.id).catch(() => null);
-        if (!full?.input) continue;
-        const bien = bienDepuisEstimation(full.input, full.result?.report);
-        const res = scorerRecherche(bien, recherche);
-        if (res.niveau) out.push({ nom: m.bien || m.client, ville: bien.ville, score: res.score, niveau: NIVEAUX[res.niveau].label, prix: bien.prix, resume: `${bien.typeBien} · ${bien.surface ?? "?"} m² · ${bien.nbPieces ?? "?"} p.` });
-      }
-      setBiens(out.sort((a, b) => b.score - a.score));
-    })();
-  }, [ouvert, biens, recherche]);
+      const cibles = metas.slice(0, 60); // plus récentes d'abord
+      const out: BienMatch[] = [];
+      let i = 0;
+      // Chargement en parallèle borné (6 à la fois) : rapide sans saturer.
+      const worker = async () => {
+        while (i < cibles.length) {
+          const m = cibles[i++];
+          const full = await getEstimation(m.id).catch(() => null);
+          if (!full?.input) continue;
+          const bien = bienDepuisEstimation(full.input, full.result?.report);
+          let best: { r: (typeof recherchesActives)[number]; res: ResultatMatch } | null = null;
+          for (const r of recherchesActives) {
+            const res = scorerRecherche(bien, r);
+            if (res.niveau && (!best || res.score > best.res.score)) best = { r, res };
+          }
+          if (best && best.res.niveau) {
+            out.push({
+              id: m.id, nom: m.bien || m.client || "Bien estimé",
+              ville: bien.ville || m.ville, prix: bien.prix,
+              resume: resumeBien(bien.typeBien, bien.surface, bien.nbPieces),
+              negociateur: m.negociateur, date: m.createdAt,
+              rechercheLabel: best.r.libelle || "Recherche",
+              niveau: best.res.niveau, score: best.res.score, details: best.res.details,
+            });
+          }
+        }
+      };
+      await Promise.all(Array.from({ length: 6 }, worker));
+      out.sort((a, b) => b.score - a.score);
+      setBiens(out); setEtat("pret");
+    } catch {
+      setErreur("Impossible de charger les estimations (déverrouillez l'historique des estimations).");
+      setEtat("idle");
+    }
+  };
+
+  const plusieurs = recherchesActives.length > 1;
 
   return (
-    <Section titre="🏠 Biens correspondant à cette recherche" defautOuvert={false}>
-      {!ouvert ? (
-        <button type="button" onClick={() => setOuvert(true)} className="rounded-lg bg-navy px-4 py-2 text-sm font-bold text-white hover:bg-navy-deep">Rechercher les biens correspondants</button>
-      ) : biens === null ? (
-        <p className="text-sm text-slate-400">Analyse des biens de l&apos;agence…</p>
+    <Section titre="🔗 Rapprochement estimation" defautOuvert={false}>
+      <p className="mb-3 text-xs text-slate-500">
+        Parmi les biens estimés par l&apos;agence, ceux qui correspondent {plusieurs ? "à l'une des recherches actives" : "à la recherche"} de ce client.
+      </p>
+
+      {aucuneRecherche ? (
+        <p className="text-sm text-slate-400">Renseignez d&apos;abord une recherche active (villes, budget, type de bien) pour lancer le rapprochement.</p>
+      ) : etat === "idle" ? (
+        <div>
+          <button type="button" onClick={() => void analyser()} className="rounded-lg bg-navy px-4 py-2 text-sm font-bold text-white hover:bg-navy-deep">Lancer le rapprochement</button>
+          {erreur && <p className="mt-2 text-sm text-red-600">{erreur}</p>}
+        </div>
+      ) : etat === "chargement" ? (
+        <p className="text-sm text-slate-400">Analyse des biens estimés de l&apos;agence…</p>
       ) : biens.length === 0 ? (
-        <p className="text-sm text-slate-400">Aucun bien de la base ne correspond suffisamment à cette recherche pour l&apos;instant.</p>
+        <div>
+          <p className="text-sm text-slate-400">Aucun bien estimé ne correspond suffisamment aux critères pour l&apos;instant.</p>
+          <button type="button" onClick={() => void analyser()} className="mt-3 text-xs font-semibold text-copper hover:underline">↻ Relancer l&apos;analyse</button>
+        </div>
       ) : (
-        <div className="grid gap-2 sm:grid-cols-2">
-          {biens.map((b, i) => (
-            <div key={i} className="rounded-xl border border-slate-200 p-3">
-              <div className="flex items-center justify-between"><span className="font-semibold text-navy">{b.nom}</span><span className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-bold text-emerald-700">{b.score}%</span></div>
-              <div className="text-xs text-slate-500">{b.ville} · {b.resume} · {eur(b.prix)}</div>
-              <div className="mt-1 text-[11px] font-semibold text-slate-400">{b.niveau}</div>
-            </div>
-          ))}
+        <div>
+          <div className="mb-2 flex items-center justify-between">
+            <span className="text-xs font-semibold text-slate-500">{biens.length} bien{biens.length > 1 ? "s" : ""} correspondant{biens.length > 1 ? "s" : ""}</span>
+            <button type="button" onClick={() => void analyser()} className="text-xs font-semibold text-copper hover:underline">↻ Actualiser</button>
+          </div>
+          <div className="grid gap-2 sm:grid-cols-2">
+            {biens.map((b) => (
+              <div key={b.id} className={`rounded-xl border ${BORD_NIVEAU[b.niveau]} p-3`}>
+                <div className="flex items-start justify-between gap-2">
+                  <span className="font-semibold text-navy">{b.nom}</span>
+                  <span className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-bold ${BADGE_NIVEAU[b.niveau]}`}>{b.score}%</span>
+                </div>
+                <div className="mt-0.5 text-xs text-slate-500">{[b.ville, b.resume, eur(b.prix)].filter(Boolean).join(" · ")}</div>
+                <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[11px] text-slate-400">
+                  <span className={`font-semibold ${b.niveau === "forte" ? "text-emerald-600" : b.niveau === "interessante" ? "text-amber-600" : "text-slate-500"}`}>{NIVEAUX[b.niveau].label}</span>
+                  {plusieurs && <span>· {b.rechercheLabel}</span>}
+                  {b.negociateur && <span>· {b.negociateur}</span>}
+                  <span>· estimé le {dateFr(b.date)}</span>
+                </div>
+                <button type="button" onClick={() => setDetail(detail === b.id ? null : b.id)} className="mt-1.5 text-[11px] font-semibold text-copper hover:underline">
+                  {detail === b.id ? "Masquer le détail" : "Pourquoi ce bien ?"}
+                </button>
+                {detail === b.id && (
+                  <div className="mt-2 flex flex-wrap gap-1">
+                    {b.details.map((c) => (
+                      <span key={c.cle} className={`rounded px-1.5 py-0.5 text-[10px] font-medium ${c.etat === "ok" ? "bg-emerald-50 text-emerald-700" : c.etat === "partiel" ? "bg-amber-50 text-amber-700" : "bg-red-50 text-red-600"}`} title={c.label}>
+                        {c.texte}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
         </div>
       )}
     </Section>
