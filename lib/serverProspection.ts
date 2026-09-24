@@ -83,7 +83,7 @@ function fusionnerConfig(c: Partial<ProspectionConfig>): ProspectionConfig {
 export async function saveConfigProspection(patch: Partial<ProspectionConfig>): Promise<ProspectionConfig> {
   const actuel = await getConfigProspection();
   const maj = fusionnerConfig({ ...actuel, ...patch, updatedAt: Date.now() });
-  await put(CONFIG_CLE, JSON.stringify(maj), { access: "public", addRandomSuffix: false, contentType: "application/json" });
+  await put(CONFIG_CLE, JSON.stringify(maj), { access: "public", addRandomSuffix: false, allowOverwrite: true, contentType: "application/json" });
   cfgCache = maj; cfgAt = Date.now();
   return maj;
 }
@@ -107,7 +107,7 @@ export async function getSyncState(): Promise<SyncState> {
 }
 
 export async function saveSyncState(state: SyncState): Promise<void> {
-  await put(SYNC_CLE, JSON.stringify(state), { access: "public", addRandomSuffix: false, contentType: "application/json" });
+  await put(SYNC_CLE, JSON.stringify(state), { access: "public", addRandomSuffix: false, allowOverwrite: true, contentType: "application/json" });
 }
 
 // ---------------------------------------------------------------------------
@@ -116,7 +116,7 @@ function versionDe(pathname: string): number { const m = pathname.match(/~(\d+)\
 
 async function putOpp(opp: Opportunite): Promise<void> {
   const nom = `${OPP_PREFIX}${safe(opp.id)}~${opp.updatedAt}.json`;
-  await put(nom, JSON.stringify(opp), { access: "public", addRandomSuffix: false, contentType: "application/json" });
+  await put(nom, JSON.stringify(opp), { access: "public", addRandomSuffix: false, allowOverwrite: true, contentType: "application/json" });
   try {
     const { blobs } = await list({ prefix: `${OPP_PREFIX}${safe(opp.id)}~`, limit: 100 });
     const vieux = blobs.filter((b) => versionDe(b.pathname) < opp.updatedAt).map((b) => b.url);
@@ -143,7 +143,7 @@ export async function saveOpportunitesBatch(opps: Opportunite[]): Promise<void> 
       o.updatedAt = Date.now();
       const nom = `${OPP_PREFIX}${safe(o.id)}~${o.updatedAt}.json`;
       try {
-        await put(nom, JSON.stringify(o), { access: "public", addRandomSuffix: false, contentType: "application/json" });
+        await put(nom, JSON.stringify(o), { access: "public", addRandomSuffix: false, allowOverwrite: true, contentType: "application/json" });
       } catch { /* on continue le batch */ }
     }
   };
@@ -176,7 +176,7 @@ export async function deleteOpportunite(id: string): Promise<void> {
   if (opp) {
     try {
       await put(`${OPP_ARCHIVE}${safe(id)}~${Date.now()}.json`, JSON.stringify({ ...opp, archived: true }), {
-        access: "public", addRandomSuffix: false, contentType: "application/json",
+        access: "public", addRandomSuffix: false, allowOverwrite: true, contentType: "application/json",
       });
     } catch { /* archive best-effort */ }
   }
@@ -189,7 +189,7 @@ export async function deleteOpportunite(id: string): Promise<void> {
 export async function saveTournee(t: Tournee): Promise<Tournee> {
   t.updatedAt = Date.now();
   const nom = `${TOURNEE_PREFIX}${safe(t.id)}~${t.updatedAt}.json`;
-  await put(nom, JSON.stringify(t), { access: "public", addRandomSuffix: false, contentType: "application/json" });
+  await put(nom, JSON.stringify(t), { access: "public", addRandomSuffix: false, allowOverwrite: true, contentType: "application/json" });
   try {
     const { blobs } = await list({ prefix: `${TOURNEE_PREFIX}${safe(t.id)}~`, limit: 100 });
     const vieux = blobs.filter((b) => versionDe(b.pathname) < t.updatedAt).map((b) => b.url);

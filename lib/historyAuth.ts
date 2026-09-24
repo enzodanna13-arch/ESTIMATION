@@ -70,7 +70,7 @@ export async function definirMotDePasseEquipe(actuel: string, nouveau: string): 
   if (!okActuel) return { erreur: "Le mot de passe actuel est incorrect." };
   const { salt, hash } = hashPassword(nouveau);
   const enreg: MotDePasseStocke = { hash, salt, updatedAt: Date.now() };
-  await put(CLE, JSON.stringify(enreg), { access: "public", addRandomSuffix: false, contentType: "application/json" });
+  await put(CLE, JSON.stringify(enreg), { access: "public", addRandomSuffix: false, allowOverwrite: true, contentType: "application/json" });
   cache = enreg; cacheAt = Date.now();
   return { ok: true };
 }

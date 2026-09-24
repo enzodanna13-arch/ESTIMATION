@@ -32,7 +32,7 @@ export async function lireCleLeads(): Promise<string> {
 export async function definirCleLeads(): Promise<string> {
   const key = "lead_" + randomBytes(24).toString("hex");
   const enreg: Enreg = { key, updatedAt: Date.now() };
-  await put(CLE, JSON.stringify(enreg), { access: "public", addRandomSuffix: false, contentType: "application/json" });
+  await put(CLE, JSON.stringify(enreg), { access: "public", addRandomSuffix: false, allowOverwrite: true, contentType: "application/json" });
   cache = key; cacheAt = Date.now();
   return key;
 }
