@@ -222,6 +222,7 @@ export interface ReglesRelance {
 export interface ProspectionConfig {
   actif: boolean;
   communes: CommuneSurveillee[];
+  communesVersion: number;        // version de la liste par défaut (migration auto)
   typesBien: string[];            // ex. ["maison"]
   ageMaxDpeJours: number;         // ne détecter que les DPE récents (<= N jours)
   scoreMin: number;               // seuil d'entrée en tournée
@@ -248,6 +249,7 @@ export const CONFIG_PROSPECTION_DEFAUT: ProspectionConfig = {
     { code: "13033", nom: "Ensuès-la-Redonne", codePostal: "13820", prioritaire: true },
     { code: "13026", nom: "Châteauneuf-les-Martigues", codePostal: "13220" },
   ],
+  communesVersion: 2,
   typesBien: ["maison"],
   ageMaxDpeJours: 120,
   scoreMin: 40,

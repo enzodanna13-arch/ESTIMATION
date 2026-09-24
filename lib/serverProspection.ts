@@ -69,7 +69,12 @@ function fusionnerConfig(c: Partial<ProspectionConfig>): ProspectionConfig {
     seuils: { ...d.seuils, ...(c.seuils ?? {}) },
     tournee: { ...d.tournee, ...(c.tournee ?? {}) },
     relances: { ...d.relances, ...(c.relances ?? {}) },
-    communes: c.communes ?? d.communes,
+    // Migration auto de la liste des communes : si la config stockée n'est pas
+    // à la dernière version de la zone par défaut, on remplace par la zone
+    // courante (retrait d'Istres, ajout Fos/Ensuès/Châteauneuf…). Une fois
+    // ré-enregistrée par l'utilisateur, ses propres communes sont conservées.
+    communes: c.communesVersion === d.communesVersion && c.communes ? c.communes : d.communes,
+    communesVersion: d.communesVersion,
     secteurs: c.secteurs ?? d.secteurs,
     typesBien: c.typesBien ?? d.typesBien,
   };
