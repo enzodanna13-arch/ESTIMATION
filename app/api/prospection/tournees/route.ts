@@ -1,5 +1,5 @@
 import { verifierAccesEquipe } from "@/lib/historyAuth";
-import { listTournees } from "@/lib/serverProspection";
+import { deleteToutesTournees, listTournees } from "@/lib/serverProspection";
 import { genererTournees } from "@/lib/prospectionTournees";
 
 export const dynamic = "force-dynamic";
@@ -11,6 +11,18 @@ export async function GET(request: Request) {
     return Response.json({ tournees: await listTournees() });
   } catch {
     return Response.json({ tournees: [] });
+  }
+}
+
+// DELETE → supprime TOUTES les tournées (purge manuelle).
+export async function DELETE(request: Request) {
+  if (!(await verifierAccesEquipe(request))) return Response.json({ error: "Mot de passe requis" }, { status: 401 });
+  try {
+    const n = await deleteToutesTournees();
+    return Response.json({ ok: true, supprimees: n });
+  } catch (err) {
+    console.error("Suppression des tournées impossible :", err);
+    return Response.json({ ok: false, error: "Suppression impossible" }, { status: 500 });
   }
 }
 

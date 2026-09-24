@@ -124,6 +124,11 @@ export async function genererTournees(): Promise<ResultatGeneration | null> {
   if (!r.ok) return null;
   return (await r.json()) as ResultatGeneration;
 }
+export async function supprimerToutesTournees(): Promise<number | null> {
+  const r = await fetch("/api/prospection/tournees", { method: "DELETE", headers: headers() });
+  if (!r.ok) return null;
+  return ((await r.json()) as { supprimees?: number }).supprimees ?? 0;
+}
 
 // --- Résultat terrain ---
 export async function enregistrerResultat(params: {

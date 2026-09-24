@@ -5,7 +5,7 @@ import dynamic from "next/dynamic";
 import { NEGOCIATEURS } from "@/lib/equipe";
 import {
   ageJours, deleteOpportunite, genererTournees, getConfig, lienItineraireComplet,
-  listOpportunites, listTournees, rescorer, saveConfig, synchroniser, synchroniserUne,
+  listOpportunites, listTournees, rescorer, saveConfig, supprimerToutesTournees, synchroniser, synchroniserUne,
 } from "@/lib/prospection";
 import {
   CONFIG_PROSPECTION_DEFAUT, dpeCls, NIVEAUX_PROSPECTION, STATUTS_PROSPECTION, STATUT_PROSPECTION_COULEURS,
@@ -117,6 +117,15 @@ export default function ProspectionPage({ onRetour }: { onRetour: () => void }) 
     await recharger();
     setVue("tournees");
   };
+  const lancerPurge = async () => {
+    if (!confirm("Supprimer toutes les tournées existantes ?")) return;
+    setBusy("purge"); setMsg(null);
+    const n = await supprimerToutesTournees();
+    setBusy(null);
+    flash(n != null ? `${n} fichier(s) de tournée supprimé(s).` : "Suppression impossible.");
+    await recharger();
+  };
+
   const lancerRescore = async () => {
     setBusy("rescore"); const n = await rescorer(); setBusy(null);
     flash(n != null ? `${n} opportunité(s) recalculée(s).` : "Recalcul impossible.");
@@ -165,7 +174,7 @@ export default function ProspectionPage({ onRetour }: { onRetour: () => void }) 
       <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
         <div>
           <button onClick={onRetour} className="mb-2 rounded-lg border border-slate-300 bg-white px-3 py-1 text-xs font-semibold text-slate-600 hover:bg-slate-100">← Retour</button>
-          <h2 className="text-2xl font-bold text-navy">🎯 Prospection ciblée <span className="align-middle rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-bold text-emerald-700">v24.09-B</span></h2>
+          <h2 className="text-2xl font-bold text-navy">🎯 Prospection ciblée <span className="align-middle rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-bold text-emerald-700">v24.09-C</span></h2>
           <p className="text-sm text-slate-500">Les signaux Open Data (DPE, DVF…) transformés en tournées terrain prioritaires.</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
@@ -227,7 +236,7 @@ export default function ProspectionPage({ onRetour }: { onRetour: () => void }) 
       ) : vue === "liste" ? (
         <ListeOpportunites opps={oppsFiltres} oppsTabs={oppsHorsCommune} total={opps.length} communes={communes} filtres={filtres} setFiltres={setFiltres} onOpen={(o) => setSelId(o.id)} onRescore={() => void lancerRescore()} busy={busy} />
       ) : vue === "tournees" ? (
-        <TourneesVue tournees={tournees} onRegen={() => void lancerRegen()} busy={busy} />
+        <TourneesVue tournees={tournees} onRegen={() => void lancerRegen()} onPurge={() => void lancerPurge()} busy={busy} />
       ) : vue === "dashboard" ? (
         <DashboardVue opps={opps} communes={communes} />
       ) : vue === "carte" ? (
@@ -335,7 +344,7 @@ function ListeOpportunites({
 }
 
 // ---------------------------------------------------------------------------
-function TourneesVue({ tournees, onRegen, busy }: { tournees: Tournee[]; onRegen: () => void; busy: string | null }) {
+function TourneesVue({ tournees, onRegen, onPurge, busy }: { tournees: Tournee[]; onRegen: () => void; onPurge: () => void; busy: string | null }) {
   // Un menu (onglet) par négociateur ; à l'intérieur, toutes SES tournées.
   const nomDe = (t: Tournee) => t.negociateur || "Non attribué";
   const negos = [...new Set(tournees.map(nomDe))].sort();
@@ -347,7 +356,10 @@ function TourneesVue({ tournees, onRegen, busy }: { tournees: Tournee[]; onRegen
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-bold text-navy">Tournées du jour</h3>
-        <button onClick={onRegen} disabled={!!busy} className="rounded-lg bg-copper px-3 py-1.5 text-sm font-bold text-white hover:brightness-110 disabled:opacity-50">{busy === "regen" ? "Génération…" : "Regénérer"}</button>
+        <div className="flex gap-2">
+          <button onClick={onPurge} disabled={!!busy} className="rounded-lg border border-red-200 bg-white px-3 py-1.5 text-sm font-semibold text-red-600 hover:bg-red-50 disabled:opacity-50">{busy === "purge" ? "Suppression…" : "🗑 Tout supprimer"}</button>
+          <button onClick={onRegen} disabled={!!busy} className="rounded-lg bg-copper px-3 py-1.5 text-sm font-bold text-white hover:brightness-110 disabled:opacity-50">{busy === "regen" ? "Génération…" : "Regénérer"}</button>
+        </div>
       </div>
 
       {tournees.length === 0 ? (

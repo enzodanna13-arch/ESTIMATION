@@ -227,3 +227,10 @@ export async function deleteTournee(id: string): Promise<void> {
   const { blobs } = await list({ prefix: `${TOURNEE_PREFIX}${safe(id)}~`, limit: 100 });
   if (blobs.length > 0) await del(blobs.map((b) => b.url));
 }
+
+// Supprime TOUTES les tournées (purge). Renvoie le nombre de fichiers supprimés.
+export async function deleteToutesTournees(): Promise<number> {
+  const blobs = await listAll(TOURNEE_PREFIX);
+  if (blobs.length > 0) await del(blobs.map((b) => b.url));
+  return blobs.length;
+}
