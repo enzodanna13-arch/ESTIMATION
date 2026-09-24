@@ -8,7 +8,7 @@ import {
   listOpportunites, listTournees, rescorer, saveConfig, synchroniser,
 } from "@/lib/prospection";
 import {
-  dpeCls, NIVEAUX_PROSPECTION, STATUTS_PROSPECTION, STATUT_PROSPECTION_COULEURS,
+  CONFIG_PROSPECTION_DEFAUT, dpeCls, NIVEAUX_PROSPECTION, STATUTS_PROSPECTION, STATUT_PROSPECTION_COULEURS,
   type NiveauProspection, type Opportunite, type ProspectionConfig, type Tournee,
 } from "@/lib/prospectionTypes";
 import { calculerStats } from "@/lib/prospectionStats";
@@ -55,7 +55,9 @@ export default function ProspectionPage({ onRetour }: { onRetour: () => void }) 
     (async () => {
       setChargement(true);
       const [c] = await Promise.all([getConfig()]);
-      setConfig(c);
+      // Toujours disposer d'une config (défauts si l'API n'a pas répondu) pour
+      // que l'écran Réglages ne soit jamais vide.
+      setConfig(c ?? CONFIG_PROSPECTION_DEFAUT);
       await recharger();
       setChargement(false);
     })();

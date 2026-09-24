@@ -43,11 +43,21 @@ export default function ProspectionReglages({
     <div className="space-y-3 pb-24">
       {/* Activation */}
       <Section titre="Module Chasse immobilière">
-        <label className="flex items-center gap-3 text-sm">
-          <input type="checkbox" checked={c.actif} onChange={(e) => set({ actif: e.target.checked })} className="h-4 w-4" />
-          <span className="font-semibold text-navy">Module activé</span>
-          <span className="text-slate-400">— autorise la synchronisation Open Data et la génération de tournées.</span>
-        </label>
+        <div className={`flex flex-wrap items-center justify-between gap-3 rounded-xl border p-3 ${c.actif ? "border-emerald-200 bg-emerald-50" : "border-slate-200 bg-slate-50"}`}>
+          <div>
+            <div className={`text-sm font-bold ${c.actif ? "text-emerald-700" : "text-slate-600"}`}>{c.actif ? "✅ Module activé" : "⏸️ Module désactivé"}</div>
+            <div className="text-xs text-slate-500">Autorise la synchronisation Open Data et la génération de tournées.</div>
+          </div>
+          <button
+            type="button"
+            onClick={() => set({ actif: !c.actif })}
+            className={`relative h-8 w-14 shrink-0 rounded-full transition ${c.actif ? "bg-emerald-500" : "bg-slate-300"}`}
+            aria-label="Activer le module"
+          >
+            <span className={`absolute top-1 h-6 w-6 rounded-full bg-white shadow transition-all ${c.actif ? "left-7" : "left-1"}`} />
+          </button>
+        </div>
+        <p className="mt-2 text-[11px] text-slate-400">Pensez à <b>Enregistrer les réglages</b> (bouton en bas) après toute modification.</p>
         <div className="mt-3 grid gap-3 sm:grid-cols-3">
           <label className="block"><span className="text-[11px] uppercase tracking-wide text-slate-400">Types de biens</span>
             <div className="flex flex-wrap gap-2 py-1 text-sm">{["maison", "appartement"].map((t) => (

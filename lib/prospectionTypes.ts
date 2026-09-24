@@ -236,7 +236,7 @@ export interface ProspectionConfig {
 
 // Valeurs par défaut — secteur de l'agence (Martigues / étang de Berre / Côte Bleue).
 export const CONFIG_PROSPECTION_DEFAUT: ProspectionConfig = {
-  actif: false,
+  actif: true,
   communes: [
     { code: "13056", nom: "Martigues", codePostal: "13500", prioritaire: true },
     { code: "13077", nom: "Port-de-Bouc", codePostal: "13110" },
