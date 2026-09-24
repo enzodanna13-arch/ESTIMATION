@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { enregistrerResultat, getTournee, lienItineraireComplet, lienNavigation, listTournees } from "@/lib/prospection";
+import { photoNegociateur } from "@/lib/equipe";
 import {
   dpeCls, NIVEAUX_PROSPECTION, RESULTATS_PASSAGE, type EtapeTournee, type Tournee,
 } from "@/lib/prospectionTypes";
@@ -9,6 +10,15 @@ import {
 const dateLongue = (t: number) => new Date(t).toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" });
 function formatDuree(min: number): string { const h = Math.floor(min / 60), m = Math.round(min % 60); return h > 0 ? `${h} h ${m.toString().padStart(2, "0")}` : `${m} min`; }
 const estAujourdhui = (t: number) => { const d = new Date(); d.setHours(0, 0, 0, 0); return t >= d.getTime(); };
+function initiales(nom: string): string {
+  if (!nom || nom === "Non attribué") return "?";
+  return nom.trim().split(/\s+/).slice(0, 2).map((m) => m[0]?.toUpperCase() ?? "").join("");
+}
+function AvatarNego({ nom, size }: { nom: string; size: number }) {
+  const photo = photoNegociateur(nom);
+  if (photo) return <img src={photo} alt={nom} className="rounded-full object-cover" style={{ width: size, height: size }} />;
+  return <span className="flex items-center justify-center rounded-full bg-copper font-bold text-white" style={{ width: size, height: size, fontSize: size * 0.38 }}>{initiales(nom)}</span>;
+}
 
 export default function MaTourneePage({ tourneeId, onRetour }: { tourneeId?: string; onRetour: () => void }) {
   const [tournee, setTournee] = useState<Tournee | null>(null);
@@ -17,6 +27,7 @@ export default function MaTourneePage({ tourneeId, onRetour }: { tourneeId?: str
   const [note, setNote] = useState("");
   const [busy, setBusy] = useState(false);
   const [ouvertResultat, setOuvertResultat] = useState<string | null>(null);
+  const [negoSel, setNegoSel] = useState<string | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -50,21 +61,64 @@ export default function MaTourneePage({ tourneeId, onRetour }: { tourneeId?: str
   if (chargement) return <p className="p-4 text-sm text-slate-400">Chargement de la tournée…</p>;
 
   if (!tournee) {
+    const negoDe = (t: Tournee) => t.negociateur || "Non attribué";
+    const parNego = new Map<string, Tournee[]>();
+    for (const t of choix) (parNego.get(negoDe(t)) ?? parNego.set(negoDe(t), []).get(negoDe(t))!).push(t);
+    const negos = [...parNego.keys()].sort();
+    const negoActif = negoSel && parNego.has(negoSel) ? negoSel : null;
+
     return (
       <div className="mx-auto max-w-md p-4">
         <button onClick={onRetour} className="mb-3 rounded-lg border border-slate-300 bg-white px-3 py-1 text-xs font-semibold text-slate-600">← Retour</button>
-        <h2 className="mb-3 text-xl font-bold text-navy">Ma tournée</h2>
+        <h2 className="mb-3 text-xl font-bold text-navy">🧭 Ma tournée</h2>
+
         {choix.length === 0 ? (
           <p className="rounded-2xl border border-dashed border-slate-300 bg-white p-6 text-center text-sm text-slate-400">Aucune tournée aujourd&apos;hui. Demandez la génération des tournées depuis « Prospection ciblée ».</p>
+        ) : !negoActif ? (
+          /* Étape 1 : choisir le négociateur */
+          <div>
+            <p className="mb-3 text-sm text-slate-500">Qui prospecte aujourd&apos;hui ?</p>
+            <div className="grid grid-cols-2 gap-3">
+              {negos.map((n) => {
+                const g = parNego.get(n)!;
+                const biens = g.reduce((s, t) => s + t.etapes.length, 0);
+                const faits = g.reduce((s, t) => s + t.etapes.filter((e) => e.fait).length, 0);
+                return (
+                  <button key={n} onClick={() => setNegoSel(n)} className="flex flex-col items-center gap-2 rounded-2xl border border-slate-200 bg-white p-4 text-center transition hover:border-copper hover:shadow">
+                    <AvatarNego nom={n} size={56} />
+                    <div className="font-bold text-navy leading-tight">{n}</div>
+                    <div className="text-[11px] text-slate-500">{g.length} tournée{g.length > 1 ? "s" : ""} · {biens} biens</div>
+                    {faits > 0 && <div className="text-[11px] font-semibold text-emerald-600">{faits}/{biens} faits</div>}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
         ) : (
-          <div className="space-y-2">
-            <p className="text-sm text-slate-500">Choisissez votre tournée :</p>
-            {choix.map((t) => (
-              <button key={t.id} onClick={() => setTournee(t)} className="flex w-full items-center justify-between rounded-2xl border border-slate-200 bg-white p-4 text-left hover:border-copper">
-                <div><div className="font-bold text-navy">{t.negociateur || "Non attribué"}{t.index ? ` — Tournée ${t.index}` : ""}</div><div className="text-xs text-slate-500">{t.etapes.length} biens · {t.distanceKm} km · ≈ {formatDuree(t.dureeMin)}</div></div>
-                <span className="text-copper">→</span>
-              </button>
-            ))}
+          /* Étape 2 : choisir la tournée du négociateur */
+          <div>
+            <button onClick={() => setNegoSel(null)} className="mb-3 text-sm font-semibold text-copper">← Changer de négociateur</button>
+            <div className="mb-3 flex items-center gap-3 rounded-2xl bg-navy p-3 text-white">
+              <AvatarNego nom={negoActif} size={42} />
+              <div>
+                <div className="font-bold">{negoActif}</div>
+                <div className="text-xs text-white/70">{parNego.get(negoActif)!.length} tournée(s) aujourd&apos;hui</div>
+              </div>
+            </div>
+            <div className="space-y-2">
+              {parNego.get(negoActif)!.slice().sort((a, b) => (a.index ?? 0) - (b.index ?? 0)).map((t) => {
+                const faits = t.etapes.filter((e) => e.fait).length;
+                return (
+                  <button key={t.id} onClick={() => setTournee(t)} className="flex w-full items-center justify-between gap-2 rounded-2xl border border-slate-200 bg-white p-4 text-left hover:border-copper">
+                    <div className="min-w-0">
+                      <div className="font-bold text-navy">Tournée {t.index ?? "•"} · 📍 {t.etapes[0]?.ville || "—"}</div>
+                      <div className="text-xs text-slate-500">{t.etapes.length} biens · {t.distanceKm} km · ≈ {formatDuree(t.dureeMin)}{faits > 0 ? ` · ${faits} faits` : ""}</div>
+                    </div>
+                    <span className="text-copper">→</span>
+                  </button>
+                );
+              })}
+            </div>
           </div>
         )}
       </div>
