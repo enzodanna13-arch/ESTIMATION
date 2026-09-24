@@ -77,6 +77,7 @@ export interface Opportunite {
   detecteLe: number;       // 1re détection IA Estimation
   syncLe: number;          // dernière synchro
   source: string;
+  ademe: Record<string, string | number | null>; // toutes les infos ADEME utiles
 
   // --- Enrichissement DVF ---
   dvfDerniereMutationDate: string | null;
@@ -332,6 +333,7 @@ export function opportuniteVide(partial: Partial<Opportunite>): Opportunite {
     detecteLe: partial.detecteLe ?? now,
     syncLe: partial.syncLe ?? now,
     source: partial.source ?? "",
+    ademe: partial.ademe ?? {},
     dvfDerniereMutationDate: partial.dvfDerniereMutationDate ?? null,
     dvfDerniereMutationPrix: partial.dvfDerniereMutationPrix ?? null,
     dvfNature: partial.dvfNature ?? null,
@@ -372,6 +374,37 @@ export function typeBienDepuisAdeme(typeBatiment: string): string {
 }
 
 export const int = new Intl.NumberFormat("fr-FR");
+
+// Libellés lisibles des champs ADEME complémentaires (fiche « Données DPE »).
+export const LABELS_ADEME: Record<string, string> = {
+  annee_construction: "Année de construction",
+  hauteur_sous_plafond: "Hauteur sous plafond (m)",
+  nombre_niveau_logement: "Nombre de niveaux",
+  classe_inertie_batiment: "Inertie du bâtiment",
+  conso_5_usages_par_m2_ep: "Conso énergie primaire (kWh/m²/an)",
+  conso_5_usages_par_m2_ef: "Conso énergie finale (kWh/m²/an)",
+  emission_ges_5_usages_par_m2: "Émissions GES (kgCO₂/m²/an)",
+  cout_total_5_usages: "Coût énergie annuel estimé (€)",
+  type_energie_principale_chauffage: "Énergie de chauffage",
+  type_generateur_chauffage_principal: "Générateur de chauffage",
+  type_installation_chauffage: "Installation de chauffage",
+  type_energie_principale_ecs: "Énergie eau chaude",
+  type_generateur_chauffage_principal_ecs: "Générateur eau chaude",
+  type_ventilation: "Ventilation",
+  qualite_isolation_murs: "Isolation des murs",
+  qualite_isolation_menuiseries: "Isolation des menuiseries",
+  qualite_isolation_plancher_bas: "Isolation plancher bas",
+  qualite_isolation_plancher_haut: "Isolation plancher haut",
+  date_fin_validite_dpe: "Fin de validité du DPE",
+  date_derniere_modification_dpe: "Dernière modification DPE",
+  version_dpe: "Version DPE",
+  modele_dpe: "Méthode DPE",
+};
+
+// Lien vers le DPE officiel (observatoire ADEME) à partir du n° de DPE.
+export function lienDpeOfficiel(numeroDpe: string): string {
+  return numeroDpe ? `https://observatoire-dpe-audit.ademe.fr/afficher-dpe/${encodeURIComponent(numeroDpe)}` : "";
+}
 
 // Classe Tailwind pour un badge d'étiquette DPE (A..G).
 export function dpeCls(dpe: string): string {

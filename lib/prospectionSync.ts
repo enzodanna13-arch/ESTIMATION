@@ -63,6 +63,7 @@ function nouvelleOpportunite(d: DpeBrut, now: number): Opportunite {
     detecteLe: now,
     syncLe: now,
     source: SOURCE_DPE,
+    ademe: d.details,
     confiance,
     confianceMotif: motif,
   });
@@ -151,7 +152,7 @@ export async function synchroniserProspection(): Promise<ResultatSync> {
       const existante = parCle.get(cle);
       if (existante) {
         const fusion = fusionnerSignal(existante, signalDepuis(d, now), {
-          surface: d.surface, periodeConstruction: d.periodeConstruction, lat: d.lat, lon: d.lon,
+          surface: d.surface, periodeConstruction: d.periodeConstruction, lat: d.lat, lon: d.lon, ademe: d.details,
         });
         parCle.set(cle, fusion);
         if (!aTraiter.includes(fusion)) aTraiter.push(fusion);

@@ -11,14 +11,28 @@ import { typeBienDepuisAdeme } from "./prospectionTypes";
 const BASE = "https://data.ademe.fr/data-fair/api/v1/datasets/dpe03existant/lines";
 export const SOURCE_DPE = "ademe-dpe-existant";
 
-// Champs ADEME utiles (snake_case dans ce jeu de données).
-const CHAMPS = [
+// Champs ADEME de base (snake_case dans ce jeu de données).
+const CHAMPS_BASE = [
   "numero_dpe", "date_etablissement_dpe", "date_reception_dpe", "date_visite_diagnostiqueur",
   "etiquette_dpe", "etiquette_ges", "type_batiment", "surface_habitable_logement",
   "periode_construction", "adresse_ban", "numero_voie_ban", "nom_rue_ban",
   "code_postal_ban", "nom_commune_ban", "code_insee_ban", "identifiant_ban", "score_ban",
   "_geopoint", "complement_adresse_batiment",
-].join(",");
+];
+
+// Champs ADEME complémentaires exposés au négociateur (fiche « Données DPE »).
+// Libellés lisibles dans lib/prospectionTypes.ts (LABELS_ADEME).
+export const CHAMPS_DETAILS = [
+  "annee_construction", "hauteur_sous_plafond", "nombre_niveau_logement", "classe_inertie_batiment",
+  "conso_5_usages_par_m2_ep", "conso_5_usages_par_m2_ef", "emission_ges_5_usages_par_m2", "cout_total_5_usages",
+  "type_energie_principale_chauffage", "type_generateur_chauffage_principal", "type_installation_chauffage",
+  "type_energie_principale_ecs", "type_generateur_chauffage_principal_ecs",
+  "type_ventilation", "qualite_isolation_murs", "qualite_isolation_menuiseries",
+  "qualite_isolation_plancher_bas", "qualite_isolation_plancher_haut",
+  "date_fin_validite_dpe", "date_derniere_modification_dpe", "version_dpe", "modele_dpe",
+];
+
+const CHAMPS = [...CHAMPS_BASE, ...CHAMPS_DETAILS].join(",");
 
 export interface DpeBrut {
   numeroDpe: string;
@@ -41,6 +55,7 @@ export interface DpeBrut {
   scoreBan: number | null; // qualité du géocodage BAN (0..1)
   lat: number | null;
   lon: number | null;
+  details: Record<string, string | number | null>; // champs ADEME complémentaires
 }
 
 interface LigneAdeme {
@@ -80,6 +95,13 @@ function mapLigne(r: LigneAdeme): DpeBrut | null {
   const numeroDpe = String(r.numero_dpe ?? "").trim();
   if (!numeroDpe) return null;
   const { lat, lon } = parseGeo(r._geopoint);
+  const rec = r as Record<string, unknown>;
+  const details: Record<string, string | number | null> = {};
+  for (const k of CHAMPS_DETAILS) {
+    const v = rec[k];
+    if (v === undefined || v === null || v === "") continue;
+    details[k] = typeof v === "number" ? v : String(v);
+  }
   return {
     numeroDpe,
     dateEtablissement: String(r.date_etablissement_dpe ?? "").slice(0, 10),
@@ -101,6 +123,7 @@ function mapLigne(r: LigneAdeme): DpeBrut | null {
     scoreBan: num(r.score_ban),
     lat,
     lon,
+    details,
   };
 }
 

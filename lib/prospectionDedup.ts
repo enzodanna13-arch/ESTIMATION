@@ -60,6 +60,7 @@ export function fusionnerSignal(existante: Opportunite, signal: SignalDPE, bien:
           periodeConstruction: bien.periodeConstruction || existante.periodeConstruction,
           lat: bien.lat ?? existante.lat,
           lon: bien.lon ?? existante.lon,
+          ademe: bien.ademe ?? existante.ademe,
         }
       : {}),
     updatedAt: Date.now(),

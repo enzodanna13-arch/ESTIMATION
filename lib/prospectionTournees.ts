@@ -18,9 +18,17 @@ function joursDepuis(dateIso: string): number | null {
 
 // Potentiel d'un bien pour la sélection de tournée : score + fraîcheur du
 // signal + urgence de relance. La distance est arbitrée ensuite par le moteur.
+// PRIORITÉ FORTE aux DPE de la semaine écoulée (≤ 7 j) : gros bonus, pour que
+// les biens tout juste détectés passent devant lors de la génération.
 function valeurTournee(o: Opportunite, finJour: number): number {
   const age = joursDepuis(o.dpeDateEtablissement);
-  const fraicheur = age == null ? 0 : Math.max(0, 15 - age / 3); // ~15 à 0 j, 0 à ~45 j
+  let fraicheur = 0;
+  if (age != null) {
+    if (age <= 7) fraicheur = 45;             // DPE de la semaine → priorité forte
+    else if (age <= 14) fraicheur = 25;
+    else if (age <= 30) fraicheur = 12;
+    else fraicheur = Math.max(0, 8 - age / 20);
+  }
   const relanceDue = o.prochaineRelance != null && o.prochaineRelance <= finJour ? 12 : 0;
   return o.score + fraicheur + relanceDue;
 }

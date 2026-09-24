@@ -4,7 +4,8 @@ import { useState } from "react";
 import { NEGOCIATEURS } from "@/lib/equipe";
 import { enregistrerResultat, lienNavigation, updateOpportunite } from "@/lib/prospection";
 import {
-  dpeCls, NIVEAUX_PROSPECTION, RESULTATS_PASSAGE, STATUTS_PROSPECTION, STATUT_PROSPECTION_COULEURS, int,
+  dpeCls, LABELS_ADEME, lienDpeOfficiel, NIVEAUX_PROSPECTION, RESULTATS_PASSAGE,
+  STATUTS_PROSPECTION, STATUT_PROSPECTION_COULEURS, int,
   type Opportunite,
 } from "@/lib/prospectionTypes";
 
@@ -23,6 +24,15 @@ function Bloc({ titre, children }: { titre: string; children: React.ReactNode })
 }
 function Info({ label, children }: { label: string; children: React.ReactNode }) {
   return <div><div className="text-[11px] uppercase tracking-wide text-slate-400">{label}</div><div className="text-sm font-medium text-slate-800">{children}</div></div>;
+}
+
+// Mise en forme d'une valeur ADEME (date / nombre / texte).
+function fmtAdeme(cle: string, v: string | number | null): string {
+  if (v == null || v === "") return "—";
+  if (cle.startsWith("date_")) return dateIsoFr(String(v));
+  if (typeof v === "number") return cle.includes("cout") ? `${int.format(Math.round(v))} €` : int.format(v);
+  const s = String(v);
+  return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
 const CONFIANCE_LABEL: Record<string, { txt: string; cls: string }> = {
@@ -184,6 +194,27 @@ export default function OpportuniteFiche({
           <label className="block"><span className="text-[11px] uppercase tracking-wide text-slate-400">Estimation liée (id)</span><input className={inputCls} value={o.estimationId} onChange={(e) => setO({ ...o, estimationId: e.target.value })} onBlur={() => void patch({ estimationId: o.estimationId })} placeholder="id de l'estimation" /></label>
         </div>
         <p className="mt-2 text-[11px] text-slate-400">Ces liens permettent de mesurer la conversion réelle (opportunité → mandat → vente) dans le dashboard.</p>
+      </Bloc>
+
+      {/* Données ADEME complètes */}
+      <Bloc titre="📋 Données DPE (ADEME)">
+        <div className="mb-3 flex flex-wrap items-center gap-2">
+          {o.dpeNumero && <span className="rounded bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-600">N° DPE {o.dpeNumero}</span>}
+          {o.dpeNumero && <a href={lienDpeOfficiel(o.dpeNumero)} target="_blank" rel="noreferrer" className="rounded-lg bg-navy px-3 py-1.5 text-xs font-bold text-white hover:bg-navy-deep">Voir le DPE officiel ↗</a>}
+        </div>
+        {Object.keys(o.ademe ?? {}).length === 0 ? (
+          <p className="text-sm text-slate-400">Détails ADEME non disponibles pour ce bien (resynchronisez pour les récupérer).</p>
+        ) : (
+          <div className="grid grid-cols-2 gap-x-4 gap-y-2 lg:grid-cols-3">
+            {Object.entries(o.ademe).map(([cle, val]) => (
+              <div key={cle}>
+                <div className="text-[11px] uppercase tracking-wide text-slate-400">{LABELS_ADEME[cle] ?? cle}</div>
+                <div className="text-sm font-medium text-slate-800">{fmtAdeme(cle, val)}</div>
+              </div>
+            ))}
+          </div>
+        )}
+        <p className="mt-3 text-[11px] text-slate-400">Source : ADEME — Observatoire DPE. Ces données publiques décrivent le logement, jamais son occupant.</p>
       </Bloc>
 
       {/* Passages */}
