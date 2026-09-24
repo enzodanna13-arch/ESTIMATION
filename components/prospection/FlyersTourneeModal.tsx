@@ -9,6 +9,12 @@ import {
 import { FlyerRecto, FlyerVerso } from "@/components/prospection/FlyerTemplate";
 
 const PREVIEW = 0.62; // échelle d'aperçu
+// Disposition sur l'A4 paysage : marge centrale (coupe propre) + marges.
+const GUTTER = 8;                              // mm — marge de découpe au centre
+const MARGIN = 3;                              // mm — marges extérieures
+const FW = (297 - 2 * MARGIN - GUTTER) / 2;    // largeur d'un flyer
+const FH = FW * (210 / 148.5);                 // hauteur (proportion A5)
+const TOPM = (210 - FH) / 2;                   // marge haut/bas
 
 // Face vide (moitié blanche pour un nombre impair de biens).
 function FaceVide() { return <div style={{ width: "100%", height: "100%", background: "#fff" }} />; }
@@ -113,12 +119,12 @@ export default function FlyersTourneeModal({ tournee, onClose }: { tournee: Tour
                 <div key={i} className="mx-auto mb-4" style={{ width: `calc(297mm * ${PREVIEW})` }}>
                   <div className="mb-1 text-center text-[11px] font-semibold text-slate-500">Page A4 {i + 1} — {pg.face === "recto" ? "RECTO" : "VERSO"}</div>
                   <div className="flyer-a4-wrap overflow-hidden rounded bg-white shadow" style={{ width: `calc(297mm * ${PREVIEW})`, height: `calc(210mm * ${PREVIEW})` }}>
-                    <div className="flyer-a4" style={{ width: "297mm", height: "210mm", display: "flex", transform: `scale(${PREVIEW})`, transformOrigin: "top left", background: "#fff" }}>
-                      <div style={{ width: "148.5mm", height: "210mm", boxSizing: "border-box", position: "relative" }}>{face(pg.gauche, pg.face)}</div>
-                      {/* Repères de découpe discrets */}
-                      <div style={{ position: "absolute", left: "148.5mm", top: 0, height: "4mm", borderLeft: "0.3mm solid #b0b0b0" }} />
-                      <div style={{ position: "absolute", left: "148.5mm", bottom: 0, height: "4mm", borderLeft: "0.3mm solid #b0b0b0" }} />
-                      <div style={{ width: "148.5mm", height: "210mm", boxSizing: "border-box", position: "relative" }}>{face(pg.droite, pg.face)}</div>
+                    <div className="flyer-a4" style={{ width: "297mm", height: "210mm", position: "relative", transform: `scale(${PREVIEW})`, transformOrigin: "top left", background: "#fff" }}>
+                      <div style={{ position: "absolute", left: `${MARGIN}mm`, top: `${TOPM}mm`, width: `${FW}mm`, height: `${FH}mm`, boxSizing: "border-box" }}>{face(pg.gauche, pg.face)}</div>
+                      <div style={{ position: "absolute", left: `${MARGIN + FW + GUTTER}mm`, top: `${TOPM}mm`, width: `${FW}mm`, height: `${FH}mm`, boxSizing: "border-box" }}>{face(pg.droite, pg.face)}</div>
+                      {/* Repères de découpe discrets, au centre de la marge */}
+                      <div style={{ position: "absolute", left: `${MARGIN + FW + GUTTER / 2}mm`, top: 0, height: "4mm", borderLeft: "0.25mm dashed #9aa0a6" }} />
+                      <div style={{ position: "absolute", left: `${MARGIN + FW + GUTTER / 2}mm`, bottom: 0, height: "4mm", borderLeft: "0.25mm dashed #9aa0a6" }} />
                     </div>
                   </div>
                 </div>
