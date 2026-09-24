@@ -15,6 +15,7 @@ import { calculerStats } from "@/lib/prospectionStats";
 import type { ResultatSync } from "@/lib/prospectionSync";
 import OpportuniteFiche from "@/components/OpportuniteFiche";
 import ProspectionReglages from "@/components/ProspectionReglages";
+import FlyersTourneeModal from "@/components/prospection/FlyersTourneeModal";
 
 const ProspectionCarte = dynamic(() => import("@/components/ProspectionCarte"), { ssr: false, loading: () => <p className="text-sm text-slate-400">Chargement de la carte…</p> });
 
@@ -64,6 +65,7 @@ export default function ProspectionPage({ onRetour }: { onRetour: () => void }) 
   const [syncDetail, setSyncDetail] = useState<ResultatSync | null>(null);
   const [parCommune, setParCommune] = useState(false);
   const [busyCommune, setBusyCommune] = useState<string | null>(null);
+  const [flyersTournee, setFlyersTournee] = useState<Tournee | null>(null);
 
   const recharger = async () => {
     const [o, t] = await Promise.all([listOpportunites(), listTournees()]);
@@ -189,7 +191,7 @@ export default function ProspectionPage({ onRetour }: { onRetour: () => void }) 
       <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
         <div>
           <button onClick={onRetour} className="mb-2 rounded-lg border border-slate-300 bg-white px-3 py-1 text-xs font-semibold text-slate-600 hover:bg-slate-100">← Retour</button>
-          <h2 className="text-2xl font-bold text-navy">🎯 Prospection ciblée <span className="align-middle rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-bold text-emerald-700">v24.09-E</span></h2>
+          <h2 className="text-2xl font-bold text-navy">🎯 Prospection ciblée <span className="align-middle rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-bold text-emerald-700">v24.09-F</span></h2>
           <p className="text-sm text-slate-500">Les signaux Open Data (DPE, DVF…) transformés en tournées terrain prioritaires.</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
@@ -251,7 +253,7 @@ export default function ProspectionPage({ onRetour }: { onRetour: () => void }) 
       ) : vue === "liste" ? (
         <ListeOpportunites opps={oppsFiltres} oppsTabs={oppsHorsCommune} total={opps.length} communes={communes} filtres={filtres} setFiltres={setFiltres} onOpen={(o) => setSelId(o.id)} onRescore={() => void lancerRescore()} busy={busy} />
       ) : vue === "tournees" ? (
-        <TourneesVue tournees={tournees} onRegen={() => void lancerRegen()} onPurge={() => void lancerPurge()} busy={busy} />
+        <TourneesVue tournees={tournees} onRegen={() => void lancerRegen()} onPurge={() => void lancerPurge()} onFlyers={setFlyersTournee} busy={busy} />
       ) : vue === "dashboard" ? (
         <DashboardVue opps={opps} communes={communes} />
       ) : vue === "carte" ? (
@@ -259,6 +261,8 @@ export default function ProspectionPage({ onRetour }: { onRetour: () => void }) 
       ) : (
         config && <ProspectionReglages config={config} onSave={async (patch) => { const c = await saveConfig(patch); if (c) { setConfig(c); flash("Réglages enregistrés."); } }} onRescore={() => void lancerRescore()} busy={busy} />
       )}
+
+      {flyersTournee && <FlyersTourneeModal tournee={flyersTournee} onClose={() => setFlyersTournee(null)} />}
     </div>
   );
 }
@@ -359,7 +363,7 @@ function ListeOpportunites({
 }
 
 // ---------------------------------------------------------------------------
-function TourneesVue({ tournees, onRegen, onPurge, busy }: { tournees: Tournee[]; onRegen: () => void; onPurge: () => void; busy: string | null }) {
+function TourneesVue({ tournees, onRegen, onPurge, onFlyers, busy }: { tournees: Tournee[]; onRegen: () => void; onPurge: () => void; onFlyers: (t: Tournee) => void; busy: string | null }) {
   // Un menu (onglet) par négociateur ; à l'intérieur, toutes SES tournées.
   const nomDe = (t: Tournee) => t.negociateur || "Non attribué";
   const negos = [...new Set(tournees.map(nomDe))].sort();
@@ -429,6 +433,7 @@ function TourneesVue({ tournees, onRegen, onPurge, busy }: { tournees: Tournee[]
                     </div>
                   </div>
                   <div className="flex gap-2">
+                    <button onClick={() => onFlyers(t)} className="rounded-lg border border-copper/40 bg-white px-3 py-1.5 text-sm font-semibold text-copper hover:bg-copper/5">🖨️ Flyers</button>
                     <a href={lienItineraireComplet(t.etapes.map((e) => ({ lat: e.lat, lon: e.lon })))} target="_blank" rel="noreferrer" className="rounded-lg border border-navy/30 bg-white px-3 py-1.5 text-sm font-semibold text-navy hover:bg-slate-50">🧭 GPS</a>
                     <a href={`?matournee=${encodeURIComponent(t.id)}`} className="rounded-lg bg-navy px-3 py-1.5 text-sm font-bold text-white hover:bg-navy-deep">Ma tournée →</a>
                   </div>

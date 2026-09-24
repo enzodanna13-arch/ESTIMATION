@@ -6,6 +6,7 @@ import { photoNegociateur } from "@/lib/equipe";
 import {
   dpeCls, NIVEAUX_PROSPECTION, RESULTATS_PASSAGE, type EtapeTournee, type Tournee,
 } from "@/lib/prospectionTypes";
+import FlyersTourneeModal from "@/components/prospection/FlyersTourneeModal";
 
 const dateLongue = (t: number) => new Date(t).toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" });
 function formatDuree(min: number): string { const h = Math.floor(min / 60), m = Math.round(min % 60); return h > 0 ? `${h} h ${m.toString().padStart(2, "0")}` : `${m} min`; }
@@ -28,6 +29,7 @@ export default function MaTourneePage({ tourneeId, onRetour }: { tourneeId?: str
   const [busy, setBusy] = useState(false);
   const [ouvertResultat, setOuvertResultat] = useState<string | null>(null);
   const [negoSel, setNegoSel] = useState<string | null>(null);
+  const [flyers, setFlyers] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -149,7 +151,10 @@ export default function MaTourneePage({ tourneeId, onRetour }: { tourneeId?: str
             <a href={lien} target="_blank" rel="noreferrer" className="mt-3 block rounded-xl bg-copper py-2.5 text-center text-sm font-bold text-white">🧭 Itinéraire complet dans le GPS ({(aFaire.length ? aFaire : etapesTriees).length} arrêts)</a>
           ) : null;
         })()}
+        <button onClick={() => setFlyers(true)} className="mt-2 block w-full rounded-xl border border-white/30 bg-white/10 py-2.5 text-center text-sm font-bold text-white hover:bg-white/20">🖨️ Générer les flyers</button>
       </div>
+
+      {flyers && <FlyersTourneeModal tournee={tournee} onClose={() => setFlyers(false)} />}
 
       {courante ? (
         <div className="mb-4 rounded-2xl border-2 border-copper bg-white p-4 shadow-sm">

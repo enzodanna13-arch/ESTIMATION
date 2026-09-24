@@ -12,17 +12,18 @@ export interface Membre {
   alias: string[]; // fragments reconnus (sans accents, minuscules) pour consolider les variantes
   prenom?: string; // prénom court (signatures SMS)
   tel?: string; // téléphone du négociateur au format E.164 (+33…), pour les SMS de relance signés
+  email?: string; // email pro (flyers de prospection)
   photo?: string; // portrait recadré (visage) pour estimations, flyers…
   photoFull?: string; // visuel de marque complet (portrait entier CENTURY 21)
 }
 
 export const EQUIPE: Membre[] = [
   { id: "kevin", nom: "Kevin", role: "Gestion locative", sections: ["gestion"], alias: ["kevin"], prenom: "Kevin" },
-  { id: "emilie", nom: "Émilie Flécher", role: "Transaction", sections: ["transaction"], alias: ["flecher", "emilie"], prenom: "Émilie", tel: "+33658711643", photo: "/negociateurs/emilie.jpg", photoFull: "/negociateurs/emilie-full.jpg" },
-  { id: "lea", nom: "Léa Roussel", role: "Transaction", sections: ["transaction"], alias: ["roussel", "lea"], prenom: "Léa", tel: "+33768267735", photo: "/negociateurs/lea.jpg", photoFull: "/negociateurs/lea-full.jpg" },
-  { id: "anthony", nom: "Anthony Voilliard", role: "Transaction", sections: ["transaction"], alias: ["voilliard", "anthony"], prenom: "Anthony", tel: "+33614335947", photo: "/negociateurs/anthony.jpg", photoFull: "/negociateurs/anthony-full.jpg" },
-  { id: "lucie", nom: "Lucie Borja", role: "Transaction", sections: ["transaction"], alias: ["borja", "lucie"], prenom: "Lucie", tel: "+33628943868", photo: "/negociateurs/lucie.jpg", photoFull: "/negociateurs/lucie-full.jpg" },
-  { id: "enzo", nom: "Enzo D'anna", role: "Responsable commercial", sections: ["transaction"], alias: ["enzo", "anna", "danna"], prenom: "Enzo" },
+  { id: "emilie", nom: "Émilie Flécher", role: "Transaction", sections: ["transaction"], alias: ["flecher", "emilie"], prenom: "Émilie", tel: "+33658711643", email: "emilie.flecher@century21.fr", photo: "/negociateurs/emilie.jpg", photoFull: "/negociateurs/emilie-full.jpg" },
+  { id: "lea", nom: "Léa Roussel", role: "Transaction", sections: ["transaction"], alias: ["roussel", "lea"], prenom: "Léa", tel: "+33768267735", email: "lea.roussel@century21.fr", photo: "/negociateurs/lea.jpg", photoFull: "/negociateurs/lea-full.jpg" },
+  { id: "anthony", nom: "Anthony Voilliard", role: "Transaction", sections: ["transaction"], alias: ["voilliard", "anthony"], prenom: "Anthony", tel: "+33614335947", email: "anthony.voilliard@century21.fr", photo: "/negociateurs/anthony.jpg", photoFull: "/negociateurs/anthony-full.jpg" },
+  { id: "lucie", nom: "Lucie Borja", role: "Transaction", sections: ["transaction"], alias: ["borja", "lucie"], prenom: "Lucie", tel: "+33628943868", email: "lucie.borja@century21.fr", photo: "/negociateurs/lucie.jpg", photoFull: "/negociateurs/lucie-full.jpg" },
+  { id: "enzo", nom: "Enzo D'anna", role: "Responsable commercial", sections: ["transaction"], alias: ["enzo", "anna", "danna"], prenom: "Enzo", tel: "+33442428085", email: "enzo.danna@century21.fr" },
   { id: "assistante", nom: "Assistante", role: "Registre des appels", sections: ["registre"], alias: ["assistant"] },
 ];
 
@@ -75,3 +76,18 @@ export function prenomNegociateur(nom?: string): string {
 export function photoNegociateur(nom?: string): string {
   return membreDepuisNom(nom)?.photo ?? "";
 }
+
+// Email pro d'un négociateur à partir d'un nom saisi, ou "".
+export function emailNegociateur(nom?: string): string {
+  return membreDepuisNom(nom)?.email ?? "";
+}
+
+// Coordonnées communes de l'agence (flyers, pieds de page).
+export const AGENCE = {
+  nom: "CENTURY 21 Icaza Immobilier",
+  ville: "Martigues",
+  tel: "04 42 42 80 85",
+  adresse: "32 avenue de la Paix, 13500 Martigues",
+  site: "century21icazaimmobilier.fr",
+  estimationUrl: "https://www.century21icazaimmobilier.fr/estimation",
+} as const;
