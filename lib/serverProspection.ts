@@ -67,7 +67,11 @@ function fusionnerConfig(c: Partial<ProspectionConfig>): ProspectionConfig {
     ...c,
     coefficients: { ...d.coefficients, ...(c.coefficients ?? {}) },
     seuils: { ...d.seuils, ...(c.seuils ?? {}) },
-    tournee: { ...d.tournee, ...(c.tournee ?? {}) },
+    // Migration auto des paramètres de tournée : si la config stockée n'est pas
+    // à la dernière version, on repart des défauts (ex. 10 adresses/tournée
+    // pour tenir dans le GPS). Une fois ré-enregistrée, les valeurs sont gardées.
+    tournee: c.tourneeVersion === d.tourneeVersion ? { ...d.tournee, ...(c.tournee ?? {}) } : { ...d.tournee },
+    tourneeVersion: d.tourneeVersion,
     relances: { ...d.relances, ...(c.relances ?? {}) },
     // Migration auto de la liste des communes : si la config stockée n'est pas
     // à la dernière version de la zone par défaut, on remplace par la zone

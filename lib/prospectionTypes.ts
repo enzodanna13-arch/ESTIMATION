@@ -229,6 +229,7 @@ export interface ProspectionConfig {
   coefficients: CoefficientsScore;
   seuils: { tresPrioritaire: number; prioritaire: number; aTravailler: number };
   tournee: { maxAdresses: number; dureeMinutes: number; minutesParArret: number; vitesseKmh: number };
+  tourneeVersion: number;         // version des paramètres de tournée (migration auto)
   secteurs: Record<string, SecteurNegociateur>; // clé = id membre équipe
   relances: ReglesRelance;
   syncFrequence: string;          // libellé indicatif (ex. "quotidienne")
@@ -266,7 +267,8 @@ export const CONFIG_PROSPECTION_DEFAUT: ProspectionConfig = {
     penaliteProspecteJours: 30,
   },
   seuils: { tresPrioritaire: 80, prioritaire: 60, aTravailler: 40 },
-  tournee: { maxAdresses: 18, dureeMinutes: 150, minutesParArret: 5, vitesseKmh: 28 },
+  tournee: { maxAdresses: 10, dureeMinutes: 150, minutesParArret: 5, vitesseKmh: 28 },
+  tourneeVersion: 1,
   secteurs: {},
   relances: { absent1Jours: 7, absent2Jours: 15, absent3Action: "baisser_score", absent3Points: 20, aRelancerJours: 15 },
   syncFrequence: "quotidienne",
