@@ -351,7 +351,7 @@ function TourneesVue({ tournees, onRegen, busy }: { tournees: Tournee[]; onRegen
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div>
               <div className="font-bold text-navy">{t.negociateur || "Non attribué"}{t.index ? ` — Tournée ${t.index}` : ""}</div>
-              <div className="text-xs text-slate-500">{t.etapes.length} bien(s) · {t.distanceKm} km · ≈ {formatDuree(t.dureeMin)}</div>
+              <div className="text-xs text-slate-500">📍 {t.etapes[0]?.ville || "—"} · {t.etapes.length} bien(s) · {t.distanceKm} km · ≈ {formatDuree(t.dureeMin)}</div>
             </div>
             <div className="flex gap-2">
               <a href={lienItineraireComplet(t.etapes.map((e) => ({ lat: e.lat, lon: e.lon })))} target="_blank" rel="noreferrer" className="rounded-lg border border-navy/30 bg-white px-3 py-1.5 text-sm font-semibold text-navy hover:bg-slate-50">🧭 Itinéraire GPS</a>
