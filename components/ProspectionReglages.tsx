@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { EQUIPE } from "@/lib/equipe";
-import type { CommuneSurveillee, ProspectionConfig, SecteurNegociateur } from "@/lib/prospectionTypes";
+import { CONFIG_PROSPECTION_DEFAUT, type CommuneSurveillee, type ProspectionConfig, type SecteurNegociateur } from "@/lib/prospectionTypes";
 
 const inputCls = "w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-copper focus:outline-none focus:ring-2 focus:ring-copper/20";
 const JOURS = ["lun", "mar", "mer", "jeu", "ven", "sam", "dim"];
@@ -86,7 +86,10 @@ export default function ProspectionReglages({
             </div>
           ))}
         </div>
-        <button onClick={addCommune} className="mt-2 rounded-lg border border-dashed border-copper px-3 py-1 text-xs font-bold text-copper">+ Ajouter une commune</button>
+        <div className="mt-2 flex flex-wrap gap-2">
+          <button onClick={addCommune} className="rounded-lg border border-dashed border-copper px-3 py-1 text-xs font-bold text-copper">+ Ajouter une commune</button>
+          <button onClick={() => set({ communes: CONFIG_PROSPECTION_DEFAUT.communes.map((cm) => ({ ...cm })) })} className="rounded-lg border border-slate-300 px-3 py-1 text-xs font-semibold text-slate-600 hover:bg-slate-100">↺ Charger ma zone (8 communes)</button>
+        </div>
         <p className="mt-2 text-[11px] text-slate-400">Le code INSEE (ex. Martigues = 13056) est la clé de recherche ADEME. « Prioritaire » ajoute le bonus de secteur au score.</p>
       </Section>
 
