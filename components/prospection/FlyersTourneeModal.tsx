@@ -64,10 +64,11 @@ export default function FlyersTourneeModal({ tournee, onClose }: { tournee: Tour
       for (let i = 0; i < a4s.length; i++) {
         setGen({ fait: i, total: a4s.length });
         const canvas = await html2canvas(a4s[i], {
-          scale: 3, useCORS: true, backgroundColor: "#ffffff", logging: false, windowWidth: 1123, windowHeight: 794,
+          scale: 4, useCORS: true, backgroundColor: "#ffffff", logging: false, windowWidth: 1123, windowHeight: 794,
+          imageTimeout: 0,
           onclone: (doc: Document) => { const s = doc.createElement("style"); s.textContent = STYLE; doc.head.appendChild(s); },
         });
-        const img = canvas.toDataURL("image/jpeg", 0.92);
+        const img = canvas.toDataURL("image/jpeg", 0.96);
         if (i > 0) pdf.addPage();
         pdf.addImage(img, "JPEG", 0, 0, 297, 210);
       }

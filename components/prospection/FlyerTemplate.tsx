@@ -36,11 +36,15 @@ export function FlyerRecto({ d }: { d: FlyerData }) {
     <div style={{ ...face, backgroundImage: `url('${RECTO_BG}')` }}>
       <img src={RECTO_BG} alt="" style={{ display: "none" }} />
 
-      {/* Identification du bien (encart noir sur la photo) */}
-      <div style={abs({ left: "67%", top: "15.5%", width: "22%", height: "9.5%", background: "#1f2121", borderRadius: 6, padding: "4px 4px 4px 8px", boxSizing: "border-box", color: "#fff", display: "flex", flexDirection: "column", justifyContent: "center", lineHeight: 1.2 })}>
-        <div style={{ fontSize: 10, fontWeight: 700 }}>◍ Bien {d.numero}/{d.total}</div>
-        <div style={{ fontSize: 8.5, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{d.adresse}</div>
-        <div style={{ fontSize: 8.5 }}>{[d.codePostal, d.commune].filter(Boolean).join(" ")}</div>
+      {/* Identification du bien : encart repris à l'identique du visuel
+          (même teinte, coins arrondis) pour se fondre dans le flyer. */}
+      <div style={abs({ left: "67.5%", top: "15.3%", width: "24%", minHeight: "9.4%", background: "#17191a", borderRadius: 7, padding: "6px 10px", boxSizing: "border-box", color: "#fff", display: "flex", flexDirection: "column", justifyContent: "center", lineHeight: 1.28 })}>
+        <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 10.5, fontWeight: 700, marginBottom: 2 }}>
+          <svg width="10" height="12" viewBox="0 0 24 24" fill={GOLD} style={{ flexShrink: 0 }}><path d="M12 2a7 7 0 00-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 00-7-7zm0 9.5A2.5 2.5 0 1112 6.5a2.5 2.5 0 010 5z" /></svg>
+          Bien {d.numero}/{d.total}
+        </div>
+        <div style={{ fontSize: 8.6, color: "#e8e2d6", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{d.adresse}</div>
+        <div style={{ fontSize: 8.6, color: "#e8e2d6" }}>{[d.codePostal, d.commune].filter(Boolean).join(" ")}</div>
       </div>
 
       {/* Bandeau négociateur : on recouvre puis on ré-affiche (dynamique) */}
