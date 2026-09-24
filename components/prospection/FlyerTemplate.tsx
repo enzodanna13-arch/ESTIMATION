@@ -9,7 +9,6 @@ import { COULEURS_DPE, type FlyerData } from "@/lib/prospectionFlyers";
 const RECTO_BG = "/prospection/recto-src.png";
 const VERSO_BG = "/prospection/verso-src.png";
 const DARK = "#181a1a";     // bandeau négociateur (recto)
-const CTA = "#1f1f1f";      // bandeau CTA (verso)
 const PANEL = "#fbf9f5";    // panneau clair du tableau DPE (verso)
 const GOLD = "#c8a86a";
 
@@ -93,10 +92,7 @@ export function FlyerVerso({ d }: { d: FlyerData }) {
           <div style={{ background: COULEURS_DPE[classe], color: "#141210", fontWeight: 800, fontSize: 20, padding: "3px 13px", borderRadius: 4 }}>{classe}</div>
         </div>
       )}
-
-      {/* QR code réel (recouvre le QR d'exemple, sans masquer le texte du CTA) */}
-      <div style={abs({ left: "82%", top: "78.5%", width: "15%", height: "13%", background: CTA })} />
-      {d.qr && <img src={d.qr} alt="QR estimation" style={abs({ left: "83%", top: "79.8%", width: "12%", aspectRatio: "1 / 1", background: "#fff", padding: 3, borderRadius: 4, boxSizing: "border-box" })} />}
+      {/* Le QR code n'est PAS dynamique : celui du visuel fourni est conservé tel quel. */}
     </div>
   );
 }

@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { listOpportunites } from "@/lib/prospection";
 import type { Opportunite, Tournee } from "@/lib/prospectionTypes";
 import {
-  composerPagesFlyers, flyerDepuisOpportunite, genererQrEstimation, nomFichierFlyers, type FlyerData,
+  composerPagesFlyers, flyerDepuisOpportunite, nomFichierFlyers, type FlyerData,
 } from "@/lib/prospectionFlyers";
 import { FlyerRecto, FlyerVerso } from "@/components/prospection/FlyerTemplate";
 
@@ -22,17 +22,17 @@ export default function FlyersTourneeModal({ tournee, onClose }: { tournee: Tour
   useEffect(() => {
     (async () => {
       try {
-        const [opps, qr] = await Promise.all([listOpportunites(), genererQrEstimation()]);
+        const opps = await listOpportunites();
         const parId = new Map<string, Opportunite>(opps.map((o) => [o.id, o]));
         const etapes = [...tournee.etapes].sort((a, b) => a.ordre - b.ordre);
         const total = etapes.length;
         const data = etapes.map((e, i) => {
           const o = parId.get(e.opportuniteId);
-          if (o) return flyerDepuisOpportunite(o, i + 1, total, tournee.negociateur, qr);
+          if (o) return flyerDepuisOpportunite(o, i + 1, total, tournee.negociateur, "");
           // Repli minimal si l'opportunité n'est plus disponible.
           return flyerDepuisOpportunite(
             { adresse: e.adresse, ville: e.ville, codePostal: "", numero: "", voie: "", typeBien: e.typeBien, surface: e.surface, dpe: e.dpe, ges: "", dpeDateEtablissement: "", ademe: {} } as unknown as Opportunite,
-            i + 1, total, tournee.negociateur, qr,
+            i + 1, total, tournee.negociateur, "",
           );
         });
         setFlyers(data);
