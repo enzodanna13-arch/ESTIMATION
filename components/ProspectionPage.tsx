@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import dynamic from "next/dynamic";
-import { NEGOCIATEURS } from "@/lib/equipe";
+import { NEGOCIATEURS, photoNegociateur } from "@/lib/equipe";
 import {
   ageJours, deleteOpportunite, genererTournees, getConfig, lienItineraireComplet,
   listOpportunites, listTournees, rescorer, saveConfig, supprimerToutesTournees, synchroniser, synchroniserUne,
@@ -23,6 +23,21 @@ const dateFr = (t: number | null | undefined) => (t ? new Date(t).toLocaleDateSt
 const dateIsoFr = (s: string) => (s ? new Date(s).toLocaleDateString("fr-FR") : "—");
 
 type Vue = "liste" | "tournees" | "dashboard" | "carte" | "reglages";
+
+const NIV_CERCLE: Record<string, string> = { emerald: "bg-emerald-500", amber: "bg-amber-500", sky: "bg-sky-500", slate: "bg-slate-400" };
+
+function prenomOuNom(nom: string): string {
+  return nom === "Non attribué" ? nom : (nom.trim().split(/\s+/)[0] || nom);
+}
+function initiales(nom: string): string {
+  if (!nom || nom === "Non attribué") return "?";
+  return nom.trim().split(/\s+/).slice(0, 2).map((m) => m[0]?.toUpperCase() ?? "").join("");
+}
+function AvatarNego({ nom, size }: { nom: string; size: number }) {
+  const photo = photoNegociateur(nom);
+  if (photo) return <img src={photo} alt={nom} className="rounded-full object-cover" style={{ width: size, height: size }} />;
+  return <span className="flex items-center justify-center rounded-full bg-copper font-bold text-white" style={{ width: size, height: size, fontSize: size * 0.4 }}>{initiales(nom)}</span>;
+}
 
 function ScorePastille({ score, niveau }: { score: number; niveau: NiveauProspection }) {
   const c = NIVEAUX_PROSPECTION[niveau].couleur;
@@ -174,7 +189,7 @@ export default function ProspectionPage({ onRetour }: { onRetour: () => void }) 
       <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
         <div>
           <button onClick={onRetour} className="mb-2 rounded-lg border border-slate-300 bg-white px-3 py-1 text-xs font-semibold text-slate-600 hover:bg-slate-100">← Retour</button>
-          <h2 className="text-2xl font-bold text-navy">🎯 Prospection ciblée <span className="align-middle rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-bold text-emerald-700">v24.09-C</span></h2>
+          <h2 className="text-2xl font-bold text-navy">🎯 Prospection ciblée <span className="align-middle rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-bold text-emerald-700">v24.09-D</span></h2>
           <p className="text-sm text-slate-500">Les signaux Open Data (DPE, DVF…) transformés en tournées terrain prioritaires.</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
@@ -352,58 +367,91 @@ function TourneesVue({ tournees, onRegen, onPurge, busy }: { tournees: Tournee[]
   const actifValide = negos.includes(actif) ? actif : (negos[0] ?? "");
   const affichees = tournees.filter((t) => nomDe(t) === actifValide).sort((a, b) => (a.index ?? 0) - (b.index ?? 0));
 
+  const grpActif = tournees.filter((t) => nomDe(t) === actifValide);
+  const biensActif = grpActif.reduce((s, t) => s + t.etapes.length, 0);
+  const faitsActif = grpActif.reduce((s, t) => s + t.etapes.filter((e) => e.fait).length, 0);
+  const kmActif = Math.round(grpActif.reduce((s, t) => s + t.distanceKm, 0) * 10) / 10;
+
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h3 className="text-lg font-bold text-navy">Tournées du jour</h3>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h3 className="text-lg font-bold text-navy">🗺️ Espace tournées</h3>
         <div className="flex gap-2">
           <button onClick={onPurge} disabled={!!busy} className="rounded-lg border border-red-200 bg-white px-3 py-1.5 text-sm font-semibold text-red-600 hover:bg-red-50 disabled:opacity-50">{busy === "purge" ? "Suppression…" : "🗑 Tout supprimer"}</button>
-          <button onClick={onRegen} disabled={!!busy} className="rounded-lg bg-copper px-3 py-1.5 text-sm font-bold text-white hover:brightness-110 disabled:opacity-50">{busy === "regen" ? "Génération…" : "Regénérer"}</button>
+          <button onClick={onRegen} disabled={!!busy} className="rounded-lg bg-copper px-3 py-1.5 text-sm font-bold text-white hover:brightness-110 disabled:opacity-50">{busy === "regen" ? "Génération…" : "↻ Regénérer"}</button>
         </div>
       </div>
 
       {tournees.length === 0 ? (
-        <p className="rounded-2xl border border-dashed border-slate-300 bg-white p-6 text-center text-sm text-slate-400">Aucune tournée. Synchronisez puis cliquez sur « Regénérer ».</p>
+        <p className="rounded-2xl border border-dashed border-slate-300 bg-white p-8 text-center text-sm text-slate-400">Aucune tournée. Synchronisez puis cliquez sur « Regénérer ».</p>
       ) : (
         <>
-          {/* Onglets par négociateur */}
-          <div className="flex flex-wrap gap-1.5">
+          {/* Onglets par négociateur (avec avatar) */}
+          <div className="flex flex-wrap gap-2">
             {negos.map((n) => {
               const g = tournees.filter((t) => nomDe(t) === n);
               const biens = g.reduce((s, t) => s + t.etapes.length, 0);
+              const on = actifValide === n;
               return (
-                <button key={n} onClick={() => setActif(n)} className={`rounded-full px-3.5 py-1.5 text-sm font-semibold ${actifValide === n ? "bg-navy text-white" : "border border-slate-200 bg-white text-slate-600 hover:bg-slate-100"}`}>
-                  {n} <span className="opacity-70">({g.length} tournée{g.length > 1 ? "s" : ""} · {biens})</span>
+                <button key={n} onClick={() => setActif(n)} className={`flex items-center gap-2 rounded-full py-1 pl-1 pr-3 text-sm font-semibold transition ${on ? "bg-navy text-white" : "border border-slate-200 bg-white text-slate-600 hover:bg-slate-100"}`}>
+                  <AvatarNego nom={n} size={26} />
+                  <span>{prenomOuNom(n)}</span>
+                  <span className={`rounded-full px-1.5 text-[11px] ${on ? "bg-white/20" : "bg-slate-100 text-slate-500"}`}>{g.length}·{biens}</span>
                 </button>
               );
             })}
           </div>
 
-          {/* Tournées du négociateur sélectionné */}
-          {affichees.map((t) => (
-            <div key={t.id} className="rounded-2xl border border-slate-200 bg-white p-4">
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <div>
-                  <div className="font-bold text-navy">{nomDe(t)}{t.index ? ` — Tournée ${t.index}` : ""}</div>
-                  <div className="text-xs text-slate-500">📍 {t.etapes[0]?.ville || "—"} · {t.etapes.length} bien(s) · {t.distanceKm} km · ≈ {formatDuree(t.dureeMin)}</div>
-                </div>
-                <div className="flex gap-2">
-                  <a href={lienItineraireComplet(t.etapes.map((e) => ({ lat: e.lat, lon: e.lon })))} target="_blank" rel="noreferrer" className="rounded-lg border border-navy/30 bg-white px-3 py-1.5 text-sm font-semibold text-navy hover:bg-slate-50">🧭 Itinéraire GPS</a>
-                  <a href={`?matournee=${encodeURIComponent(t.id)}`} className="rounded-lg bg-navy px-3 py-1.5 text-sm font-bold text-white hover:bg-navy-deep">Ouvrir « Ma tournée » →</a>
-                </div>
-              </div>
-              <ol className="mt-3 space-y-1 text-sm">
-                {t.etapes.map((e) => (
-                  <li key={e.opportuniteId} className="flex items-center gap-2">
-                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-slate-100 text-[11px] font-bold text-slate-600">{e.ordre}</span>
-                    <span className={e.fait ? "text-slate-400 line-through" : "text-slate-700"}>{e.adresse}, {e.ville}</span>
-                    <span className="text-[11px] text-slate-400">· {e.score}/100</span>
-                    {e.fait && <span className="text-[11px] font-semibold text-emerald-600">✓ {e.resultat}</span>}
-                  </li>
-                ))}
-              </ol>
+          {/* Bandeau récap du négociateur actif */}
+          <div className="flex flex-wrap items-center gap-3 rounded-2xl bg-gradient-to-r from-navy to-navy-deep p-4 text-white">
+            <AvatarNego nom={actifValide} size={44} />
+            <div className="mr-auto">
+              <div className="font-bold">{actifValide}</div>
+              <div className="text-xs text-white/70">{grpActif.length} tournée{grpActif.length > 1 ? "s" : ""} · {biensActif} bien(s) · {kmActif} km</div>
             </div>
-          ))}
+            <div className="text-right">
+              <div className="text-lg font-bold">{faitsActif}/{biensActif}</div>
+              <div className="text-[11px] text-white/70">effectués</div>
+            </div>
+          </div>
+
+          {/* Cartes de tournées */}
+          {affichees.map((t) => {
+            const faits = t.etapes.filter((e) => e.fait).length;
+            return (
+              <div key={t.id} className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
+                <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 bg-slate-50/60 px-4 py-3">
+                  <div className="flex items-center gap-2">
+                    <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-copper text-sm font-black text-white">{t.index ?? "•"}</span>
+                    <div>
+                      <div className="font-bold text-navy">📍 {t.etapes[0]?.ville || "—"}</div>
+                      <div className="text-[11px] text-slate-500">{t.etapes.length} biens · {t.distanceKm} km · ≈ {formatDuree(t.dureeMin)}</div>
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <a href={lienItineraireComplet(t.etapes.map((e) => ({ lat: e.lat, lon: e.lon })))} target="_blank" rel="noreferrer" className="rounded-lg border border-navy/30 bg-white px-3 py-1.5 text-sm font-semibold text-navy hover:bg-slate-50">🧭 GPS</a>
+                    <a href={`?matournee=${encodeURIComponent(t.id)}`} className="rounded-lg bg-navy px-3 py-1.5 text-sm font-bold text-white hover:bg-navy-deep">Ma tournée →</a>
+                  </div>
+                </div>
+                {t.etapes.length > 0 && (
+                  <div className="h-1 bg-slate-100"><div className="h-full bg-emerald-500 transition-all" style={{ width: `${(faits / t.etapes.length) * 100}%` }} /></div>
+                )}
+                <ol className="divide-y divide-slate-50">
+                  {t.etapes.map((e) => (
+                    <li key={e.opportuniteId} className="flex items-center gap-3 px-4 py-2">
+                      <span className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[11px] font-bold text-white ${e.fait ? "bg-slate-300" : NIV_CERCLE[NIVEAUX_PROSPECTION[e.niveau].couleur]}`}>{e.fait ? "✓" : e.ordre}</span>
+                      <div className="min-w-0 flex-1">
+                        <div className={`truncate text-sm font-medium ${e.fait ? "text-slate-400 line-through" : "text-slate-800"}`}>{e.adresse || "—"}</div>
+                        {e.fait && e.resultat && <div className="text-[11px] font-semibold text-emerald-600">✓ {e.resultat}</div>}
+                      </div>
+                      <span className="shrink-0 rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-bold text-slate-600">{e.score}</span>
+                      {e.dpe && <span className={`shrink-0 rounded px-1.5 py-0.5 text-[11px] font-bold ${dpeCls(e.dpe)}`}>{e.dpe}</span>}
+                    </li>
+                  ))}
+                </ol>
+              </div>
+            );
+          })}
         </>
       )}
     </div>
