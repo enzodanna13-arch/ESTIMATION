@@ -68,7 +68,7 @@ export default function ProspectionPage({ onRetour }: { onRetour: () => void }) 
 
   const lancerSync = async () => {
     setBusy("sync"); setMsg(null);
-    const res = await synchroniser();
+    const res = await synchroniser((nom, i, total) => setMsg(`Synchronisation ${nom}… (${i}/${total})`));
     setBusy(null);
     if (!res) { flash("Synchronisation impossible."); return; }
     const totalDpe = res.communes.reduce((s, c) => s + c.dpe, 0);

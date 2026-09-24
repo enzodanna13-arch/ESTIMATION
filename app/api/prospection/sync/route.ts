@@ -8,14 +8,14 @@ export const maxDuration = 300; // synchronisation Open Data potentiellement lon
 // POST {}               → synchronisation incrémentale complète.
 export async function POST(request: Request) {
   if (!(await verifierAccesEquipe(request))) return Response.json({ error: "Mot de passe requis" }, { status: 401 });
-  let body: { rescore?: boolean } = {};
-  try { body = (await request.json().catch(() => ({}))) as { rescore?: boolean }; } catch { /* corps vide accepté */ }
+  let body: { rescore?: boolean; commune?: string } = {};
+  try { body = (await request.json().catch(() => ({}))) as { rescore?: boolean; commune?: string }; } catch { /* corps vide accepté */ }
   try {
     if (body.rescore) {
       const n = await rescorerToutes();
       return Response.json({ ok: true, rescored: n });
     }
-    const res = await synchroniserProspection();
+    const res = await synchroniserProspection(body.commune);
     return Response.json(res);
   } catch (err) {
     console.error("Synchronisation prospection impossible :", err);

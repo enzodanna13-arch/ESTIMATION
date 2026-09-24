@@ -49,16 +49,40 @@ export async function deleteOpportunite(id: string): Promise<boolean> {
 }
 
 // --- Synchronisation / scoring ---
-export async function synchroniser(): Promise<ResultatSync | null> {
+async function postSync(bodyObj: Record<string, unknown>): Promise<{ ok: boolean; body: (ResultatSync & { error?: string }) | null }> {
   try {
-    const r = await fetch("/api/prospection/sync", { method: "POST", headers: jsonHeaders(), body: "{}" });
+    const r = await fetch("/api/prospection/sync", { method: "POST", headers: jsonHeaders(), body: JSON.stringify(bodyObj) });
     const body = (await r.json().catch(() => null)) as (ResultatSync & { error?: string }) | null;
-    if (!body) return null;
-    if (!r.ok) return { ok: false, nouveaux: 0, misAJour: 0, communes: [], erreurs: [body.error ?? "Synchronisation impossible"], duréeMs: 0 };
-    return body as ResultatSync;
+    return { ok: r.ok, body };
   } catch {
-    return null;
+    return { ok: false, body: null };
   }
+}
+
+// Synchronise COMMUNE PAR COMMUNE (une requête par commune) pour rester bien
+// en-deçà du temps limite Vercel, puis agrège les résultats. `onProgress`
+// permet d'afficher l'avancement.
+export async function synchroniser(onProgress?: (nom: string, i: number, total: number) => void): Promise<ResultatSync | null> {
+  const config = await getConfig();
+  const communes = config?.communes ?? [];
+  if (communes.length === 0) {
+    const { ok, body } = await postSync({});
+    if (!body) return null;
+    return ok ? (body as ResultatSync) : { ok: false, nouveaux: 0, misAJour: 0, communes: [], erreurs: [body.error ?? "Synchronisation impossible"], duréeMs: 0 };
+  }
+  const agg: ResultatSync = { ok: true, nouveaux: 0, misAJour: 0, communes: [], erreurs: [], duréeMs: 0 };
+  for (let i = 0; i < communes.length; i++) {
+    const cm = communes[i];
+    onProgress?.(cm.nom, i + 1, communes.length);
+    const { ok, body } = await postSync({ commune: cm.code });
+    if (!body) { agg.erreurs.push(`${cm.nom} : injoignable`); agg.ok = false; continue; }
+    if (!ok) { agg.erreurs.push(`${cm.nom} : ${body.error ?? "échec"}`); agg.ok = false; continue; }
+    agg.nouveaux += body.nouveaux ?? 0;
+    agg.misAJour += body.misAJour ?? 0;
+    if (Array.isArray(body.communes)) agg.communes.push(...body.communes);
+    if (Array.isArray(body.erreurs)) agg.erreurs.push(...body.erreurs);
+  }
+  return agg;
 }
 export async function rescorer(): Promise<number | null> {
   const r = await fetch("/api/prospection/sync", { method: "POST", headers: jsonHeaders(), body: JSON.stringify({ rescore: true }) });

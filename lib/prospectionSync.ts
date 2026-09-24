@@ -107,13 +107,17 @@ export interface ResultatSync {
 // Synchronisation incrémentale complète : détection → dédup → attribution →
 // enrichissement → scoring → enregistrement. Robuste (une commune en échec
 // n'interrompt pas les autres).
-export async function synchroniserProspection(): Promise<ResultatSync> {
+// `communeCode` optionnel : ne synchroniser QUE cette commune (le client
+// enchaîne commune par commune pour garder chaque requête bien en-deçà du temps
+// limite Vercel). Sans lui, toutes les communes sont traitées (usage cron).
+export async function synchroniserProspection(communeCode?: string): Promise<ResultatSync> {
   const t0 = Date.now();
   const config = await getConfigProspection();
   const res: ResultatSync = { ok: true, nouveaux: 0, misAJour: 0, communes: [], erreurs: [], duréeMs: 0 };
 
   if (!config.actif) { res.ok = false; res.erreurs.push("Module inactif (voir Réglages)."); res.duréeMs = Date.now() - t0; return res; }
-  if (config.communes.length === 0) { res.erreurs.push("Aucune commune surveillée."); res.duréeMs = Date.now() - t0; return res; }
+  const communesCibles = communeCode ? config.communes.filter((c) => c.code === communeCode) : config.communes;
+  if (communesCibles.length === 0) { res.erreurs.push(communeCode ? "Commune inconnue." : "Aucune commune surveillée."); res.duréeMs = Date.now() - t0; return res; }
 
   const [existantes, syncState] = await Promise.all([listOpportunites(), getSyncState()]);
   const parCle = new Map<string, Opportunite>();
@@ -129,7 +133,7 @@ export async function synchroniserProspection(): Promise<ResultatSync> {
   const floorGlobal = isoJoursAvant(config.ageMaxDpeJours);
   const aTraiter: Opportunite[] = []; // créées ou fusionnées, à ré-enregistrer
 
-  for (const commune of config.communes) {
+  for (const commune of communesCibles) {
     const etat = syncState.communes[commune.code];
     // Point de reprise incrémental : dernier DPE vu (avec petit recouvrement)
     // borné par l'âge maximum configuré.
