@@ -130,13 +130,24 @@ export async function saveOpportunite(opp: Opportunite): Promise<Opportunite> {
   return opp;
 }
 
-// Enregistre plusieurs opportunités (sync). Séquentiel léger pour ne pas
-// saturer le stockage, mais tolérant aux erreurs unitaires.
+// Enregistre plusieurs opportunités (sync) — écriture PARALLÈLE bornée et SANS
+// nettoyage des anciennes versions (trop coûteux en masse ; listOpportunites
+// ne garde de toute façon que la version la plus récente par id). Tolérant aux
+// erreurs unitaires. Conçu pour rester dans le temps limite d'une requête.
 export async function saveOpportunitesBatch(opps: Opportunite[]): Promise<void> {
-  for (const o of opps) {
-    o.updatedAt = Date.now();
-    try { await putOpp(o); } catch { /* on continue le batch */ }
-  }
+  const CONC = 12;
+  let i = 0;
+  const worker = async () => {
+    while (i < opps.length) {
+      const o = opps[i++];
+      o.updatedAt = Date.now();
+      const nom = `${OPP_PREFIX}${safe(o.id)}~${o.updatedAt}.json`;
+      try {
+        await put(nom, JSON.stringify(o), { access: "public", addRandomSuffix: false, contentType: "application/json" });
+      } catch { /* on continue le batch */ }
+    }
+  };
+  await Promise.all(Array.from({ length: Math.min(CONC, opps.length || 1) }, worker));
 }
 
 export async function listOpportunites(): Promise<Opportunite[]> {

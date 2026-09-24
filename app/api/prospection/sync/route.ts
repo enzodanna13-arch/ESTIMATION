@@ -19,6 +19,7 @@ export async function POST(request: Request) {
     return Response.json(res);
   } catch (err) {
     console.error("Synchronisation prospection impossible :", err);
-    return Response.json({ ok: false, error: "Synchronisation impossible" }, { status: 500 });
+    const message = err instanceof Error ? err.message : "erreur inconnue";
+    return Response.json({ ok: false, error: `Synchronisation impossible : ${message}` }, { status: 500 });
   }
 }

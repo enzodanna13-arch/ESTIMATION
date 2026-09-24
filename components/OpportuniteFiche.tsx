@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { NEGOCIATEURS } from "@/lib/equipe";
-import { enregistrerResultat, lienNavigation, updateOpportunite } from "@/lib/prospection";
+import { enregistrerResultat, getOpportunite, lienNavigation, updateOpportunite } from "@/lib/prospection";
 import {
   dpeCls, LABELS_ADEME, lienDpeOfficiel, NIVEAUX_PROSPECTION, RESULTATS_PASSAGE,
   STATUTS_PROSPECTION, STATUT_PROSPECTION_COULEURS, int,
@@ -53,6 +53,19 @@ export default function OpportuniteFiche({
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
   const niveau = NIVEAUX_PROSPECTION[o.niveau];
+
+  // Enrichissement DVF paresseux : à la 1re ouverture, on recharge la fiche via
+  // l'API qui va chercher la dernière mutation DVF puis re-scorer (best-effort).
+  useEffect(() => {
+    if (opp.enrichiLe) return;
+    let annule = false;
+    (async () => {
+      const enrichie = await getOpportunite(opp.id);
+      if (!annule && enrichie) { setO(enrichie); onSaved(enrichie); }
+    })();
+    return () => { annule = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [opp.id]);
 
   const patch = async (p: Partial<Opportunite>, flash?: string) => {
     setBusy(true);

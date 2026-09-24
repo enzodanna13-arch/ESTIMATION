@@ -55,6 +55,32 @@ function rapprocher(opp: Opportunite, ventes: DvfSale[]): { vente: DvfSale | nul
   return { vente: best.v, confiance, motif };
 }
 
+// Enrichit UNE opportunité (à l'ouverture d'une fiche) — coût borné : quelques
+// millésimes DVF récents de sa commune. Best-effort : renvoie l'opportunité
+// inchangée en cas d'indisponibilité.
+export async function enrichirOpportuniteDvf(opp: Opportunite): Promise<Opportunite> {
+  if (!opp.codeInsee) return { ...opp, enrichiLe: Date.now() };
+  let ventes: DvfSale[] = [];
+  try {
+    const typeLocal = opp.typeBien === "maison" ? "Maison" : opp.typeBien === "appartement" ? "Appartement" : "";
+    for (let y = anneeCourante; y >= anneeCourante - 4 && ventes.length < 3000; y--) {
+      try { ventes.push(...(await fetchOfficialDvf(opp.codeInsee, y, typeLocal))); } catch { /* millésime indispo */ }
+    }
+  } catch { ventes = []; }
+  if (ventes.length === 0) return { ...opp, enrichiLe: Date.now() };
+  const { vente, confiance, motif } = rapprocher(opp, ventes);
+  return {
+    ...opp,
+    dvfDerniereMutationDate: vente?.date ?? opp.dvfDerniereMutationDate,
+    dvfDerniereMutationPrix: vente?.valeurFonciere ?? opp.dvfDerniereMutationPrix,
+    dvfNature: vente?.typeLocal ?? opp.dvfNature,
+    dvfSurface: vente?.surface ?? opp.dvfSurface,
+    confiance: vente ? confiance : opp.confiance,
+    confianceMotif: vente ? motif : opp.confianceMotif,
+    enrichiLe: Date.now(),
+  };
+}
+
 // Enrichit un lot d'opportunités (groupées par commune pour mutualiser DVF).
 export async function enrichirDvf(opps: Opportunite[]): Promise<Opportunite[]> {
   const parInsee = new Map<string, Opportunite[]>();

@@ -1,7 +1,6 @@
 import { EQUIPE } from "./equipe";
 import { fetchDpeCommune, SOURCE_DPE, type DpeBrut } from "./ademe";
 import { cleDedup, fusionnerSignal } from "./prospectionDedup";
-import { enrichirDvf } from "./prospectionEnrich";
 import { appliquerScore } from "./prospectionScoring";
 import {
   opportuniteVide, type Opportunite, type ProspectionConfig, type SignalDPE,
@@ -175,10 +174,11 @@ export async function synchroniserProspection(): Promise<ResultatSync> {
 
   res.misAJour = aTraiter.length - res.nouveaux;
 
-  // Enrichissement DVF (best-effort) puis scoring de tout ce qui a bougé.
-  let enrichies = aTraiter;
-  try { enrichies = await enrichirDvf(aTraiter); } catch { /* DVF indispo : on garde tel quel */ }
-  const scorees = enrichies.map((o) => appliquerScore(o, config));
+  // Scoring (sans DVF ici : l'enrichissement DVF télécharge de gros CSV par
+  // commune et ferait dépasser le temps limite de la requête. Il est fait à la
+  // demande à l'ouverture d'une fiche — voir enrichirOpportuniteDvf). Le score
+  // fonctionne sans (le bonus « mutation ancienne » s'ajoute une fois enrichi).
+  const scorees = aTraiter.map((o) => appliquerScore(o, config));
 
   await saveOpportunitesBatch(scorees);
   syncState.lastRunAt = now;

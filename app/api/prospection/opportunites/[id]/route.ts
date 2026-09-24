@@ -1,9 +1,11 @@
 import { verifierAccesEquipe } from "@/lib/historyAuth";
 import { deleteOpportunite, getConfigProspection, getOpportunite, saveOpportunite } from "@/lib/serverProspection";
 import { appliquerScore } from "@/lib/prospectionScoring";
+import { enrichirOpportuniteDvf } from "@/lib/prospectionEnrich";
 import type { Opportunite } from "@/lib/prospectionTypes";
 
 export const dynamic = "force-dynamic";
+export const maxDuration = 60;
 
 // Champs modifiables depuis la fiche (jamais l'identité/dédup ni l'historique brut).
 const CHAMPS: (keyof Opportunite)[] = [
@@ -18,6 +20,16 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
   const { id } = await params;
   const opp = await getOpportunite(id);
   if (!opp) return Response.json({ error: "Opportunité introuvable" }, { status: 404 });
+  // Enrichissement DVF paresseux : à la 1re ouverture d'une fiche non enrichie,
+  // on récupère la dernière mutation DVF puis on re-score (best-effort).
+  if (!opp.enrichiLe) {
+    try {
+      const config = await getConfigProspection();
+      const enrichie = appliquerScore(await enrichirOpportuniteDvf(opp), config);
+      const saved = await saveOpportunite(enrichie);
+      return Response.json({ opportunite: saved });
+    } catch { /* on renvoie la version non enrichie */ }
+  }
   return Response.json({ opportunite: opp });
 }
 

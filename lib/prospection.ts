@@ -50,9 +50,15 @@ export async function deleteOpportunite(id: string): Promise<boolean> {
 
 // --- Synchronisation / scoring ---
 export async function synchroniser(): Promise<ResultatSync | null> {
-  const r = await fetch("/api/prospection/sync", { method: "POST", headers: jsonHeaders(), body: "{}" });
-  if (!r.ok) return null;
-  return (await r.json()) as ResultatSync;
+  try {
+    const r = await fetch("/api/prospection/sync", { method: "POST", headers: jsonHeaders(), body: "{}" });
+    const body = (await r.json().catch(() => null)) as (ResultatSync & { error?: string }) | null;
+    if (!body) return null;
+    if (!r.ok) return { ok: false, nouveaux: 0, misAJour: 0, communes: [], erreurs: [body.error ?? "Synchronisation impossible"], duréeMs: 0 };
+    return body as ResultatSync;
+  } catch {
+    return null;
+  }
 }
 export async function rescorer(): Promise<number | null> {
   const r = await fetch("/api/prospection/sync", { method: "POST", headers: jsonHeaders(), body: JSON.stringify({ rescore: true }) });
