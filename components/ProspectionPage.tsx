@@ -12,6 +12,7 @@ import {
   type NiveauProspection, type Opportunite, type ProspectionConfig, type Tournee,
 } from "@/lib/prospectionTypes";
 import { calculerStats } from "@/lib/prospectionStats";
+import type { ResultatSync } from "@/lib/prospectionSync";
 import OpportuniteFiche from "@/components/OpportuniteFiche";
 import ProspectionReglages from "@/components/ProspectionReglages";
 
@@ -45,6 +46,7 @@ export default function ProspectionPage({ onRetour }: { onRetour: () => void }) 
   const [chargement, setChargement] = useState(true);
   const [busy, setBusy] = useState<string | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
+  const [syncDetail, setSyncDetail] = useState<ResultatSync | null>(null);
 
   const recharger = async () => {
     const [o, t] = await Promise.all([listOpportunites(), listTournees()]);
@@ -70,6 +72,7 @@ export default function ProspectionPage({ onRetour }: { onRetour: () => void }) 
     setBusy("sync"); setMsg(null);
     const res = await synchroniser((nom, i, total) => setMsg(`Synchronisation ${nom}… (${i}/${total})`));
     setBusy(null);
+    setSyncDetail(res);
     if (!res) { flash("Synchronisation impossible."); return; }
     const totalDpe = res.communes.reduce((s, c) => s + c.dpe, 0);
     if (!res.ok) { flash(res.erreurs[0] ?? "Synchronisation impossible (module inactif ?)."); }
@@ -150,6 +153,21 @@ export default function ProspectionPage({ onRetour }: { onRetour: () => void }) 
         </div>
       )}
       {msg && <div className="mb-4 rounded-xl border border-slate-200 bg-white p-3 text-sm font-medium text-navy">{msg}</div>}
+      {syncDetail && (
+        <div className="mb-4 rounded-xl border border-slate-200 bg-white p-3 text-xs">
+          <div className="mb-1 flex items-center justify-between">
+            <span className="font-bold text-navy">Détail de la dernière synchronisation</span>
+            <button onClick={() => setSyncDetail(null)} className="text-slate-400 hover:text-slate-600">✕</button>
+          </div>
+          <table className="w-full text-left">
+            <thead className="text-[10px] uppercase text-slate-400"><tr><th>Commune</th><th className="text-right">DPE analysés</th><th className="text-right">Nouveaux</th></tr></thead>
+            <tbody>{syncDetail.communes.map((c) => (
+              <tr key={c.code} className="border-t border-slate-50"><td className="py-0.5 text-slate-600">{c.nom}</td><td className="text-right font-semibold text-slate-700">{c.dpe}</td><td className="text-right font-semibold text-emerald-600">{c.nouveaux}</td></tr>
+            ))}</tbody>
+          </table>
+          {syncDetail.erreurs.length > 0 && <div className="mt-2 text-red-600">⚠ {syncDetail.erreurs.join(" · ")}</div>}
+        </div>
+      )}
 
       {/* Onglets */}
       <div className="mb-4 flex flex-wrap gap-1.5">

@@ -135,11 +135,11 @@ export async function synchroniserProspection(communeCode?: string): Promise<Res
 
   for (const commune of communesCibles) {
     const etat = syncState.communes[commune.code];
-    // Point de reprise incrémental : dernier DPE vu (avec petit recouvrement)
-    // borné par l'âge maximum configuré.
-    const depuis = etat?.dernierEtablissement
-      ? [etat.dernierEtablissement, floorGlobal].sort()[1] // = max(dernier, floor) en tri lexico ISO
-      : floorGlobal;
+    // On (re)balaie TOUJOURS toute la fenêtre récente (âge max configuré) : la
+    // déduplication (par n° de DPE / clé de bien) évite les doublons, donc pas
+    // besoin d'un curseur incrémental — qui, s'il était avancé par un run
+    // partiel, pouvait faire remonter « 0 bien » alors que des DPE existent.
+    const depuis = floorGlobal;
     let dpes: DpeBrut[] = [];
     try {
       dpes = await fetchDpeCommune(commune.code, config.typesBien, depuis);

@@ -128,14 +128,20 @@ function mapLigne(r: LigneAdeme): DpeBrut | null {
 }
 
 async function fetchJson(url: string, ms = 20000, retries = 2): Promise<{ results?: LigneAdeme[]; next?: string } | null> {
+  let dernierStatut = 0;
   for (let attempt = 0; attempt <= retries; attempt++) {
     try {
-      const res = await fetch(url, { signal: AbortSignal.timeout(ms), headers: { accept: "application/json" } });
+      const res = await fetch(url, {
+        signal: AbortSignal.timeout(ms),
+        headers: { accept: "application/json", "user-agent": "IA-Estimation/1.0 (CENTURY21 Icaza; prospection)" },
+      });
       if (res.ok) return (await res.json()) as { results?: LigneAdeme[]; next?: string };
+      dernierStatut = res.status;
       if (res.status === 404) return null;
     } catch { /* aléa réseau : on réessaie */ }
     if (attempt < retries) await new Promise((r) => setTimeout(r, 500 * (attempt + 1)));
   }
+  if (dernierStatut) throw new Error(`ADEME a répondu ${dernierStatut}`);
   return null;
 }
 
@@ -177,7 +183,7 @@ export async function fetchDpeCommune(
   const vus = new Set<string>();
   for (let page = 0; page < maxPages && url; page++) {
     const body = await fetchJson(url);
-    if (!body) break;
+    if (!body) { if (page === 0) throw new Error("ADEME injoignable"); break; }
     const lignes = body.results ?? [];
     if (lignes.length === 0) break;
     for (const l of lignes) {
