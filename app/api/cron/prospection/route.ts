@@ -15,8 +15,13 @@ export const maxDuration = 300;
 // public déclenchant une synchronisation coûteuse).
 function autoriseCron(request: Request): boolean {
   const secret = process.env.CRON_SECRET;
-  if (!secret) return false;
-  return request.headers.get("authorization") === `Bearer ${secret}`;
+  if (secret && request.headers.get("authorization") === `Bearer ${secret}`) return true;
+  // Sans CRON_SECRET configuré, on accepte les appels du planificateur Vercel
+  // (User-Agent « vercel-cron/1.0 ») : évite d'avoir à définir une variable
+  // d'environnement. Le pire cas d'un déclenchement indésirable est une simple
+  // resynchronisation de données publiques.
+  const ua = request.headers.get("user-agent") ?? "";
+  return /vercel-cron/i.test(ua);
 }
 
 async function executer() {

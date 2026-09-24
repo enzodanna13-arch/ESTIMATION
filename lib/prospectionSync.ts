@@ -131,7 +131,7 @@ export async function synchroniserProspection(communeCode?: string): Promise<Res
 
   const now = Date.now();
   const floorGlobal = isoJoursAvant(config.ageMaxDpeJours);
-  const aTraiter: Opportunite[] = []; // créées ou fusionnées, à ré-enregistrer
+  let touchesTotal = 0;
 
   for (const commune of communesCibles) {
     const etat = syncState.communes[commune.code];
@@ -149,6 +149,10 @@ export async function synchroniserProspection(communeCode?: string): Promise<Res
     }
     let nouveauxCommune = 0;
     let maxEtab = etat?.dernierEtablissement ?? "";
+    // Opportunités touchées pour CETTE commune, enregistrées immédiatement
+    // après (sauvegarde par commune) : plus robuste (le cron persiste au fur et
+    // à mesure et ne perd pas tout s'il est interrompu).
+    const touchees = new Map<string, Opportunite>();
     for (const d of dpes) {
       if (d.dateEtablissement > maxEtab) maxEtab = d.dateEtablissement;
       const cle = cleDedup(d);
@@ -158,15 +162,21 @@ export async function synchroniserProspection(communeCode?: string): Promise<Res
           surface: d.surface, periodeConstruction: d.periodeConstruction, lat: d.lat, lon: d.lon, ademe: d.details,
         });
         parCle.set(cle, fusion);
-        if (!aTraiter.includes(fusion)) aTraiter.push(fusion);
+        touchees.set(fusion.id, fusion);
       } else {
         const opp = nouvelleOpportunite(d, now);
         opp.negociateur = attribuer(opp, config, charges);
         parCle.set(cle, opp);
-        aTraiter.push(opp);
+        touchees.set(opp.id, opp);
         nouveauxCommune++;
       }
     }
+    // Scoring (sans DVF ici — enrichissement DVF à la demande à l'ouverture
+    // d'une fiche) puis enregistrement immédiat de cette commune.
+    const scorees = [...touchees.values()].map((o) => appliquerScore(o, config));
+    await saveOpportunitesBatch(scorees);
+    touchesTotal += touchees.size;
+
     res.nouveaux += nouveauxCommune;
     res.communes.push({ code: commune.code, nom: commune.nom, dpe: dpes.length, nouveaux: nouveauxCommune });
     syncState.communes[commune.code] = {
@@ -176,15 +186,7 @@ export async function synchroniserProspection(communeCode?: string): Promise<Res
     };
   }
 
-  res.misAJour = aTraiter.length - res.nouveaux;
-
-  // Scoring (sans DVF ici : l'enrichissement DVF télécharge de gros CSV par
-  // commune et ferait dépasser le temps limite de la requête. Il est fait à la
-  // demande à l'ouverture d'une fiche — voir enrichirOpportuniteDvf). Le score
-  // fonctionne sans (le bonus « mutation ancienne » s'ajoute une fois enrichi).
-  const scorees = aTraiter.map((o) => appliquerScore(o, config));
-
-  await saveOpportunitesBatch(scorees);
+  res.misAJour = touchesTotal - res.nouveaux;
   syncState.lastRunAt = now;
   await saveSyncState(syncState);
 

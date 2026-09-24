@@ -23,6 +23,7 @@ export default function ProspectionCarte({
   const ref = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
   const layerRef = useRef<L.LayerGroup | null>(null);
+  const signatureRef = useRef<string>("");
 
   useEffect(() => {
     if (!ref.current || mapRef.current) return;
@@ -69,7 +70,14 @@ export default function ProspectionCarte({
       m.addTo(layer);
       pts.push([o.lat, o.lon]);
     }
-    if (pts.length > 0) { try { map.fitBounds(L.latLngBounds(pts).pad(0.2), { maxZoom: 15 }); } catch { /* ignore */ } }
+    // On ne recadre la carte QUE si l'ensemble des points a changé (nouvelle
+    // synchro, filtre…) — pas à chaque rafraîchissement automatique, pour ne
+    // pas annuler le déplacement/zoom en cours de l'utilisateur.
+    const signature = opportunites.filter((o) => o.lat != null && o.lon != null).map((o) => o.id).sort().join(",");
+    if (pts.length > 0 && signature !== signatureRef.current) {
+      signatureRef.current = signature;
+      try { map.fitBounds(L.latLngBounds(pts).pad(0.2), { maxZoom: 15 }); } catch { /* ignore */ }
+    }
   }, [opportunites, ordre, onOpen]);
 
   return <div ref={ref} style={{ width: "100%", height: "70vh", minHeight: 420, borderRadius: 16, overflow: "hidden", zIndex: 0 }} />;

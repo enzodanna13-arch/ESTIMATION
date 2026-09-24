@@ -67,6 +67,15 @@ export default function ProspectionPage({ onRetour }: { onRetour: () => void }) 
     })();
   }, []);
 
+  // Rafraîchissement automatique des données (opportunités + tournées) toutes
+  // les 3 min : la liste et la carte se mettent à jour toutes seules, y compris
+  // après une synchronisation automatique quotidienne. En pause pendant une
+  // action en cours ou l'ouverture d'une fiche.
+  useEffect(() => {
+    const id = setInterval(() => { if (!busy && !selId) void recharger(); }, 180_000);
+    return () => clearInterval(id);
+  }, [busy, selId]);
+
   const communes = config?.communes ?? [];
   const flash = (m: string) => { setMsg(m); setTimeout(() => setMsg(null), 4000); };
 
