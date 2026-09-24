@@ -336,43 +336,64 @@ function ListeOpportunites({
 
 // ---------------------------------------------------------------------------
 function TourneesVue({ tournees, onRegen, busy }: { tournees: Tournee[]; onRegen: () => void; busy: string | null }) {
-  const dujour = tournees.filter((t) => estAujourdhui(t.date));
-  const passees = tournees.filter((t) => !estAujourdhui(t.date));
+  // Un menu (onglet) par négociateur ; à l'intérieur, toutes SES tournées.
+  const nomDe = (t: Tournee) => t.negociateur || "Non attribué";
+  const negos = [...new Set(tournees.map(nomDe))].sort();
+  const [actif, setActif] = useState("");
+  const actifValide = negos.includes(actif) ? actif : (negos[0] ?? "");
+  const affichees = tournees.filter((t) => nomDe(t) === actifValide).sort((a, b) => (a.index ?? 0) - (b.index ?? 0));
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-bold text-navy">Tournées du jour</h3>
         <button onClick={onRegen} disabled={!!busy} className="rounded-lg bg-copper px-3 py-1.5 text-sm font-bold text-white hover:brightness-110 disabled:opacity-50">{busy === "regen" ? "Génération…" : "Regénérer"}</button>
       </div>
-      {dujour.length === 0 ? (
-        <p className="rounded-2xl border border-dashed border-slate-300 bg-white p-6 text-center text-sm text-slate-400">Aucune tournée aujourd&apos;hui. Cliquez sur « Regénérer ».</p>
-      ) : dujour.map((t) => (
-        <div key={t.id} className="rounded-2xl border border-slate-200 bg-white p-4">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <div>
-              <div className="font-bold text-navy">{t.negociateur || "Non attribué"}{t.index ? ` — Tournée ${t.index}` : ""}</div>
-              <div className="text-xs text-slate-500">📍 {t.etapes[0]?.ville || "—"} · {t.etapes.length} bien(s) · {t.distanceKm} km · ≈ {formatDuree(t.dureeMin)}</div>
-            </div>
-            <div className="flex gap-2">
-              <a href={lienItineraireComplet(t.etapes.map((e) => ({ lat: e.lat, lon: e.lon })))} target="_blank" rel="noreferrer" className="rounded-lg border border-navy/30 bg-white px-3 py-1.5 text-sm font-semibold text-navy hover:bg-slate-50">🧭 Itinéraire GPS</a>
-              <a href={`?matournee=${encodeURIComponent(t.id)}`} className="rounded-lg bg-navy px-3 py-1.5 text-sm font-bold text-white hover:bg-navy-deep">Ouvrir « Ma tournée » →</a>
-            </div>
+
+      {tournees.length === 0 ? (
+        <p className="rounded-2xl border border-dashed border-slate-300 bg-white p-6 text-center text-sm text-slate-400">Aucune tournée. Synchronisez puis cliquez sur « Regénérer ».</p>
+      ) : (
+        <>
+          {/* Onglets par négociateur */}
+          <div className="flex flex-wrap gap-1.5">
+            {negos.map((n) => {
+              const g = tournees.filter((t) => nomDe(t) === n);
+              const biens = g.reduce((s, t) => s + t.etapes.length, 0);
+              return (
+                <button key={n} onClick={() => setActif(n)} className={`rounded-full px-3.5 py-1.5 text-sm font-semibold ${actifValide === n ? "bg-navy text-white" : "border border-slate-200 bg-white text-slate-600 hover:bg-slate-100"}`}>
+                  {n} <span className="opacity-70">({g.length} tournée{g.length > 1 ? "s" : ""} · {biens})</span>
+                </button>
+              );
+            })}
           </div>
-          <ol className="mt-3 space-y-1 text-sm">
-            {t.etapes.map((e) => (
-              <li key={e.opportuniteId} className="flex items-center gap-2">
-                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-slate-100 text-[11px] font-bold text-slate-600">{e.ordre}</span>
-                <span className={e.fait ? "text-slate-400 line-through" : "text-slate-700"}>{e.adresse}, {e.ville}</span>
-                <span className="text-[11px] text-slate-400">· {e.score}/100</span>
-                {e.fait && <span className="text-[11px] font-semibold text-emerald-600">✓ {e.resultat}</span>}
-              </li>
-            ))}
-          </ol>
-        </div>
-      ))}
-      {passees.length > 0 && <details className="rounded-2xl border border-slate-200 bg-white p-4"><summary className="cursor-pointer text-sm font-semibold text-slate-600">Tournées passées ({passees.length})</summary>
-        <ul className="mt-2 space-y-1 text-sm text-slate-500">{passees.slice(0, 30).map((t) => <li key={t.id}>{dateFr(t.date)} — {t.negociateur} · {t.etapes.length} biens · {t.etapes.filter((e) => e.fait).length} faits</li>)}</ul>
-      </details>}
+
+          {/* Tournées du négociateur sélectionné */}
+          {affichees.map((t) => (
+            <div key={t.id} className="rounded-2xl border border-slate-200 bg-white p-4">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div>
+                  <div className="font-bold text-navy">{nomDe(t)}{t.index ? ` — Tournée ${t.index}` : ""}</div>
+                  <div className="text-xs text-slate-500">📍 {t.etapes[0]?.ville || "—"} · {t.etapes.length} bien(s) · {t.distanceKm} km · ≈ {formatDuree(t.dureeMin)}</div>
+                </div>
+                <div className="flex gap-2">
+                  <a href={lienItineraireComplet(t.etapes.map((e) => ({ lat: e.lat, lon: e.lon })))} target="_blank" rel="noreferrer" className="rounded-lg border border-navy/30 bg-white px-3 py-1.5 text-sm font-semibold text-navy hover:bg-slate-50">🧭 Itinéraire GPS</a>
+                  <a href={`?matournee=${encodeURIComponent(t.id)}`} className="rounded-lg bg-navy px-3 py-1.5 text-sm font-bold text-white hover:bg-navy-deep">Ouvrir « Ma tournée » →</a>
+                </div>
+              </div>
+              <ol className="mt-3 space-y-1 text-sm">
+                {t.etapes.map((e) => (
+                  <li key={e.opportuniteId} className="flex items-center gap-2">
+                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-slate-100 text-[11px] font-bold text-slate-600">{e.ordre}</span>
+                    <span className={e.fait ? "text-slate-400 line-through" : "text-slate-700"}>{e.adresse}, {e.ville}</span>
+                    <span className="text-[11px] text-slate-400">· {e.score}/100</span>
+                    {e.fait && <span className="text-[11px] font-semibold text-emerald-600">✓ {e.resultat}</span>}
+                  </li>
+                ))}
+              </ol>
+            </div>
+          ))}
+        </>
+      )}
     </div>
   );
 }

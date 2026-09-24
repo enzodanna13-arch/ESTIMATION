@@ -69,10 +69,11 @@ export async function genererTournees(): Promise<ResultatGeneration> {
     modifs.set(o.id, { ...ref, statut, updatedAt: Date.now() });
   };
 
-  // Nettoyage des tournées du jour (on les reconstruit entièrement, y compris
-  // le nombre de tournées qui peut varier selon les biens disponibles).
+  // Nettoyage : on supprime TOUTES les anciennes tournées pour laisser place à
+  // la nouvelle génération (l'historique de prospection est conservé sur les
+  // opportunités elles-mêmes, pas sur les tournées).
   const dejaLa = await listTournees();
-  for (const t of dejaLa) if (t.date === jour) await deleteTournee(t.id);
+  for (const t of dejaLa) await deleteTournee(t.id);
 
   // Remise à plat : toute opportunité « Tournée planifiée » redevient « À
   // prospecter » (on reconstruit les tournées ci-dessous).
