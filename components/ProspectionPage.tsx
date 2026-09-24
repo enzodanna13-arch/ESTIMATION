@@ -114,12 +114,12 @@ export default function ProspectionPage({ onRetour }: { onRetour: () => void }) 
     await recharger();
   };
 
-  // Filtrage
-  const oppsFiltres = useMemo(() => {
+  // Filtrage — hors commune (sert à construire les onglets par commune avec
+  // leur compteur), puis on applique l'onglet commune sélectionné par-dessus.
+  const oppsHorsCommune = useMemo(() => {
     const rech = filtres.recherche.trim().toLowerCase();
     return opps.filter((o) => {
-      if (filtres.commune && o.codeInsee !== filtres.commune) return false;
-      if (filtres.negociateur && o.negociateur !== filtres.negociateur) return false;
+      if (filtres.negociateur && filtres.negociateur !== "__none__" && o.negociateur !== filtres.negociateur) return false;
       if (filtres.negociateur === "__none__" && o.negociateur) return false;
       if (filtres.niveau && o.niveau !== filtres.niveau) return false;
       if (filtres.type && o.typeBien !== filtres.type) return false;
@@ -132,6 +132,10 @@ export default function ProspectionPage({ onRetour }: { onRetour: () => void }) 
       return true;
     });
   }, [opps, filtres]);
+  const oppsFiltres = useMemo(
+    () => (filtres.commune ? oppsHorsCommune.filter((o) => o.codeInsee === filtres.commune) : oppsHorsCommune),
+    [oppsHorsCommune, filtres.commune],
+  );
 
   const selOpp = selId ? opps.find((o) => o.id === selId) ?? null : null;
 
@@ -212,7 +216,7 @@ export default function ProspectionPage({ onRetour }: { onRetour: () => void }) 
       {chargement ? (
         <p className="text-sm text-slate-400">Chargement…</p>
       ) : vue === "liste" ? (
-        <ListeOpportunites opps={oppsFiltres} total={opps.length} communes={communes} filtres={filtres} setFiltres={setFiltres} onOpen={(o) => setSelId(o.id)} onRescore={() => void lancerRescore()} busy={busy} />
+        <ListeOpportunites opps={oppsFiltres} oppsTabs={oppsHorsCommune} total={opps.length} communes={communes} filtres={filtres} setFiltres={setFiltres} onOpen={(o) => setSelId(o.id)} onRescore={() => void lancerRescore()} busy={busy} />
       ) : vue === "tournees" ? (
         <TourneesVue tournees={tournees} onRegen={() => void lancerRegen()} busy={busy} />
       ) : vue === "dashboard" ? (
@@ -233,18 +237,38 @@ function estAujourdhui(t: number): boolean {
 
 // ---------------------------------------------------------------------------
 function ListeOpportunites({
-  opps, total, communes, filtres, setFiltres, onOpen, onRescore, busy,
+  opps, oppsTabs, total, communes, filtres, setFiltres, onOpen, onRescore, busy,
 }: {
-  opps: Opportunite[]; total: number; communes: ProspectionConfig["communes"];
+  opps: Opportunite[]; oppsTabs: Opportunite[]; total: number; communes: ProspectionConfig["communes"];
   filtres: Filtres; setFiltres: (f: Filtres) => void; onOpen: (o: Opportunite) => void; onRescore: () => void; busy: string | null;
 }) {
   const set = (patch: Partial<Filtres>) => setFiltres({ ...filtres, ...patch });
+
+  // Onglets par commune, construits à partir des opportunités (hors filtre
+  // commune) : un onglet par commune présente, avec son compteur.
+  const parCommune = new Map<string, { nom: string; n: number }>();
+  for (const o of oppsTabs) {
+    const nom = communes.find((c) => c.code === o.codeInsee)?.nom || o.ville || o.codeInsee || "—";
+    const e = parCommune.get(o.codeInsee) ?? { nom, n: 0 };
+    e.n += 1; parCommune.set(o.codeInsee, e);
+  }
+  const onglets = [...parCommune.entries()]
+    .map(([code, v]) => ({ code, nom: v.nom, n: v.n }))
+    .sort((a, b) => (communes.findIndex((c) => c.code === a.code) - communes.findIndex((c) => c.code === b.code)) || b.n - a.n);
+
   return (
     <div>
+      {/* Onglets par commune */}
+      <div className="mb-3 flex flex-wrap gap-1.5">
+        <button onClick={() => set({ commune: "" })} className={`rounded-full px-3.5 py-1.5 text-sm font-semibold ${filtres.commune === "" ? "bg-navy text-white" : "border border-slate-200 bg-white text-slate-600 hover:bg-slate-100"}`}>Toutes <span className="opacity-70">({oppsTabs.length})</span></button>
+        {onglets.map((t) => (
+          <button key={t.code} onClick={() => set({ commune: t.code })} className={`rounded-full px-3.5 py-1.5 text-sm font-semibold ${filtres.commune === t.code ? "bg-navy text-white" : "border border-slate-200 bg-white text-slate-600 hover:bg-slate-100"}`}>{t.nom} <span className="opacity-70">({t.n})</span></button>
+        ))}
+      </div>
+
       {/* Filtres */}
       <div className="mb-3 grid gap-2 rounded-2xl border border-slate-200 bg-white p-3 sm:grid-cols-2 lg:grid-cols-4">
         <input className={inputCls} placeholder="Rechercher (adresse, ville…)" value={filtres.recherche} onChange={(e) => set({ recherche: e.target.value })} />
-        <select className={inputCls} value={filtres.commune} onChange={(e) => set({ commune: e.target.value })}><option value="">Toutes communes</option>{communes.map((c) => <option key={c.code} value={c.code}>{c.nom}</option>)}</select>
         <select className={inputCls} value={filtres.negociateur} onChange={(e) => set({ negociateur: e.target.value })}><option value="">Tous négociateurs</option><option value="__none__">Non attribué</option>{NEGOCIATEURS.map((n) => <option key={n} value={n}>{n}</option>)}</select>
         <select className={inputCls} value={filtres.niveau} onChange={(e) => set({ niveau: e.target.value })}><option value="">Toutes priorités</option>{Object.entries(NIVEAUX_PROSPECTION).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}</select>
         <select className={inputCls} value={filtres.type} onChange={(e) => set({ type: e.target.value })}><option value="">Tous types</option><option value="maison">Maison</option><option value="appartement">Appartement</option></select>
