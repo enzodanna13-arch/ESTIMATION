@@ -71,8 +71,9 @@ export default function ProspectionPage({ onRetour }: { onRetour: () => void }) 
     const res = await synchroniser();
     setBusy(null);
     if (!res) { flash("Synchronisation impossible."); return; }
-    if (!res.ok && res.erreurs.length) { flash(res.erreurs[0]); }
-    else flash(`Synchro terminée : ${res.nouveaux} nouveau(x) bien(s), ${res.misAJour} mis à jour.`);
+    const totalDpe = res.communes.reduce((s, c) => s + c.dpe, 0);
+    if (!res.ok) { flash(res.erreurs[0] ?? "Synchronisation impossible (module inactif ?)."); }
+    else flash(`Synchro : ${res.nouveaux} nouveau(x) bien(s), ${res.misAJour} mis à jour — ${totalDpe} DPE analysés.${res.erreurs.length ? " ⚠ " + res.erreurs[0] : ""}`);
     await recharger();
   };
   const lancerRegen = async () => {
@@ -80,7 +81,13 @@ export default function ProspectionPage({ onRetour }: { onRetour: () => void }) 
     const res = await genererTournees();
     setBusy(null);
     if (!res) { flash("Génération impossible."); return; }
-    flash(`Tournées générées : ${res.totalBiens} bien(s) répartis sur ${res.tournees.length} négociateur(s).${res.nonAttribuees ? ` ${res.nonAttribuees} non attribué(s).` : ""}`);
+    if (res.totalBiens === 0) {
+      flash(opps.length === 0
+        ? "Aucune opportunité : cliquez d'abord sur « ⟳ Synchroniser » pour détecter les biens, puis regénérez."
+        : "Aucun bien éligible pour une tournée aujourd'hui (score sous le minimum, biens déjà traités ou à relancer plus tard). Baissez le score minimum dans Réglages si besoin.");
+      await recharger(); setVue("tournees"); return;
+    }
+    flash(`Tournées générées : ${res.totalBiens} bien(s) sur ${res.tournees.length} tournée(s).${res.nonAttribuees ? ` ${res.nonAttribuees} en « non attribué » (configurez les secteurs pour répartir).` : ""}`);
     await recharger();
     setVue("tournees");
   };
