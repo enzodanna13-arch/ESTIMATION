@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { enregistrerResultat, getTournee, lienNavigation, listTournees } from "@/lib/prospection";
+import { enregistrerResultat, getTournee, lienItineraireComplet, lienNavigation, listTournees } from "@/lib/prospection";
 import {
   dpeCls, NIVEAUX_PROSPECTION, RESULTATS_PASSAGE, type EtapeTournee, type Tournee,
 } from "@/lib/prospectionTypes";
@@ -88,6 +88,13 @@ export default function MaTourneePage({ tourneeId, onRetour }: { tourneeId?: str
         </div>
         <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-white/20"><div className="h-full rounded-full bg-copper transition-all" style={{ width: `${etapesTriees.length ? (faites / etapesTriees.length) * 100 : 0}%` }} /></div>
         <div className="mt-1 text-xs text-white/70">{faites} / {etapesTriees.length} effectués</div>
+        {(() => {
+          const aFaire = etapesTriees.filter((e) => !e.fait);
+          const lien = lienItineraireComplet((aFaire.length ? aFaire : etapesTriees).map((e) => ({ lat: e.lat, lon: e.lon })));
+          return lien ? (
+            <a href={lien} target="_blank" rel="noreferrer" className="mt-3 block rounded-xl bg-copper py-2.5 text-center text-sm font-bold text-white">🧭 Itinéraire complet dans le GPS ({(aFaire.length ? aFaire : etapesTriees).length} arrêts)</a>
+          ) : null;
+        })()}
       </div>
 
       {courante ? (
@@ -106,7 +113,7 @@ export default function MaTourneePage({ tourneeId, onRetour }: { tourneeId?: str
           </div>
 
           <div className="mt-4 grid grid-cols-2 gap-2">
-            <a href={lienNavigation(courante)} target="_blank" rel="noreferrer" className="rounded-xl bg-navy py-3 text-center text-sm font-bold text-white">🧭 NAVIGATION</a>
+            <a href={lienNavigation(courante)} target="_blank" rel="noreferrer" className="rounded-xl bg-navy py-3 text-center text-sm font-bold text-white">🧭 Y ALLER</a>
             <button onClick={() => setOuvertResultat(ouvertResultat === courante.opportuniteId ? null : courante.opportuniteId)} className="rounded-xl bg-copper py-3 text-center text-sm font-bold text-white">RÉSULTAT DU PASSAGE</button>
           </div>
 

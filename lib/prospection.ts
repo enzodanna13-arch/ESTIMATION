@@ -141,6 +141,22 @@ export function lienNavigation(o: { lat: number | null; lon: number | null; adre
   return `https://www.google.com/maps/dir/?api=1&destination=${q}&travelmode=driving`;
 }
 
+// Itinéraire COMPLET d'une tournée dans Google Maps (tous les arrêts, dans
+// l'ordre). ≤ 10 arrêts : origine = position actuelle + waypoints ordonnés
+// (meilleure expérience). > 10 : format multi-points (origine = 1er arrêt),
+// qui accepte davantage d'étapes.
+export function lienItineraireComplet(points: { lat: number | null; lon: number | null }[]): string {
+  const v = points.filter((p): p is { lat: number; lon: number } => p.lat != null && p.lon != null);
+  if (v.length === 0) return "";
+  if (v.length === 1) return `https://www.google.com/maps/dir/?api=1&destination=${v[0].lat},${v[0].lon}&travelmode=driving`;
+  if (v.length <= 10) {
+    const dest = v[v.length - 1];
+    const wp = v.slice(0, -1).map((p) => `${p.lat},${p.lon}`).join("|");
+    return `https://www.google.com/maps/dir/?api=1&destination=${dest.lat},${dest.lon}&waypoints=${encodeURIComponent(wp)}&travelmode=driving`;
+  }
+  return `https://www.google.com/maps/dir/${v.map((p) => `${p.lat},${p.lon}`).join("/")}`;
+}
+
 export function ageJours(dateIso: string): number | null {
   if (!dateIso) return null;
   const t = Date.parse(dateIso);

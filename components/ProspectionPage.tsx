@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import dynamic from "next/dynamic";
 import { NEGOCIATEURS } from "@/lib/equipe";
 import {
-  ageJours, deleteOpportunite, genererTournees, getConfig,
+  ageJours, deleteOpportunite, genererTournees, getConfig, lienItineraireComplet,
   listOpportunites, listTournees, rescorer, saveConfig, synchroniser, synchroniserUne,
 } from "@/lib/prospection";
 import {
@@ -320,7 +320,10 @@ function TourneesVue({ tournees, onRegen, busy }: { tournees: Tournee[]; onRegen
               <div className="font-bold text-navy">{t.negociateur || "Non attribué"}{t.index ? ` — Tournée ${t.index}` : ""}</div>
               <div className="text-xs text-slate-500">{t.etapes.length} bien(s) · {t.distanceKm} km · ≈ {formatDuree(t.dureeMin)}</div>
             </div>
-            <a href={`?matournee=${encodeURIComponent(t.id)}`} className="rounded-lg bg-navy px-3 py-1.5 text-sm font-bold text-white hover:bg-navy-deep">Ouvrir « Ma tournée » →</a>
+            <div className="flex gap-2">
+              <a href={lienItineraireComplet(t.etapes.map((e) => ({ lat: e.lat, lon: e.lon })))} target="_blank" rel="noreferrer" className="rounded-lg border border-navy/30 bg-white px-3 py-1.5 text-sm font-semibold text-navy hover:bg-slate-50">🧭 Itinéraire GPS</a>
+              <a href={`?matournee=${encodeURIComponent(t.id)}`} className="rounded-lg bg-navy px-3 py-1.5 text-sm font-bold text-white hover:bg-navy-deep">Ouvrir « Ma tournée » →</a>
+            </div>
           </div>
           <ol className="mt-3 space-y-1 text-sm">
             {t.etapes.map((e) => (
