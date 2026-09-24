@@ -11,6 +11,8 @@ import VisitesPage from "@/components/VisitesPage";
 import RegistrePage from "@/components/RegistrePage";
 import LeadsPage from "@/components/LeadsPage";
 import ChassePage from "@/components/ChassePage";
+import ProspectionPage from "@/components/ProspectionPage";
+import MaTourneePage from "@/components/MaTourneePage";
 import FlyersPage from "@/components/FlyersPage";
 import EstimationsClientsPage from "@/components/EstimationsClientsPage";
 import { consommerPrefillEstimation } from "@/lib/prefillEstimation";
@@ -240,7 +242,8 @@ export default function Home() {
   const [step, setStep] = useState(0);
   // Accueil à deux univers : Estimation (les 4 missions) et Génération de
   // documents (menu des documents de l'agence)
-  const [univers, setUnivers] = useState<"" | "estimation" | "documents" | "clients" | "historique" | "visites" | "registre" | "leads" | "chasse" | "flyers" | "estimations-clients" | "dashboard" | "negociateurs" | "espace" | "sauvegarde" | "reglages">("");
+  const [univers, setUnivers] = useState<"" | "estimation" | "documents" | "clients" | "historique" | "visites" | "registre" | "leads" | "chasse" | "prospection" | "ma-tournee" | "flyers" | "estimations-clients" | "dashboard" | "negociateurs" | "espace" | "sauvegarde" | "reglages">("");
+  const [tourneeCible, setTourneeCible] = useState<string | undefined>(undefined);
   // Métier actif (compartimentage CRM) : Transaction contient tout l'existant ;
   // Syndic et Gestion locative sont préparés (écran « à venir »).
   const [metier, setMetier] = useState<Metier>("transaction");
@@ -436,6 +439,19 @@ export default function Home() {
       setEspace("transaction");
       setUnivers("chasse");
     }
+    // Ouverture directe de « Ma tournée » via ?matournee=<id> (lien depuis la
+    // liste des tournées ou raccourci mobile du négociateur).
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const idT = params.get("matournee");
+      if (idT !== null) {
+        setTourneeCible(idT || undefined);
+        setMetier("transaction");
+        setEspace("transaction");
+        setUnivers("ma-tournee");
+        window.history.replaceState(null, "", window.location.pathname);
+      }
+    } catch { /* ignore */ }
   }, []);
 
   const openEntry = async (id: string, print: boolean) => {
@@ -825,6 +841,8 @@ export default function Home() {
 
             {univers === "leads" && <LeadsPage onRetour={() => setUnivers("")} />}
             {univers === "chasse" && <ChassePage onRetour={() => setUnivers("")} />}
+            {univers === "prospection" && <ProspectionPage onRetour={() => setUnivers("")} />}
+            {univers === "ma-tournee" && <MaTourneePage tourneeId={tourneeCible} onRetour={() => { setTourneeCible(undefined); setUnivers("prospection"); }} />}
             {univers === "flyers" && <FlyersPage onRetour={() => setUnivers("")} />}
             {univers === "estimations-clients" && <EstimationsClientsPage onRetour={() => setUnivers("")} />}
             {univers === "dashboard" && <DashboardPage onRetour={() => setUnivers("")} />}
@@ -967,6 +985,36 @@ export default function Home() {
                   </p>
                   <span className="mt-4 inline-block rounded-lg bg-copper px-4 py-2 text-sm font-semibold text-white transition group-hover:brightness-110">
                     Ouvrir la chasse →
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setUnivers("prospection")}
+                  className="group rounded-3xl border-2 border-slate-200 bg-white p-8 text-left shadow-sm transition hover:border-copper hover:shadow-lg"
+                >
+                  <div className="mb-3 text-4xl">🎯</div>
+                  <div className="text-xl font-bold text-navy">Prospection ciblée</div>
+                  <p className="mt-1 text-sm text-slate-500">
+                    Les signaux Open Data (nouveaux DPE, DVF…) transformés en opportunités
+                    scorées, attribuées et regroupées en tournées terrain optimisées.
+                  </p>
+                  <span className="mt-4 inline-block rounded-lg bg-copper px-4 py-2 text-sm font-semibold text-white transition group-hover:brightness-110">
+                    Ouvrir la prospection →
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setTourneeCible(undefined); setUnivers("ma-tournee"); }}
+                  className="group rounded-3xl border-2 border-slate-200 bg-white p-8 text-left shadow-sm transition hover:border-copper hover:shadow-lg"
+                >
+                  <div className="mb-3 text-4xl">🧭</div>
+                  <div className="text-xl font-bold text-navy">Ma tournée</div>
+                  <p className="mt-1 text-sm text-slate-500">
+                    Le négociateur voit directement les biens prioritaires à prospecter
+                    aujourd&apos;hui, dans l&apos;ordre de passage déjà optimisé. Pensé pour le mobile.
+                  </p>
+                  <span className="mt-4 inline-block rounded-lg bg-navy px-4 py-2 text-sm font-semibold text-white transition group-hover:bg-navy-deep">
+                    Ouvrir ma tournée →
                   </span>
                 </button>
                 <button
