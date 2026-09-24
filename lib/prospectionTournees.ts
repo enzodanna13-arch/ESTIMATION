@@ -4,7 +4,7 @@ import {
   STATUTS_HORS_TOURNEE, type EtapeTournee, type Opportunite, type ProspectionConfig, type Tournee,
 } from "./prospectionTypes";
 import {
-  getConfigProspection, listOpportunites, saveOpportunitesBatch, saveTournee,
+  deleteTournee, getConfigProspection, listOpportunites, listTournees, saveOpportunitesBatch, saveTournee,
 } from "./serverProspection";
 
 const JOUR = 86_400_000;
@@ -69,6 +69,11 @@ export async function genererTournees(): Promise<ResultatGeneration> {
     modifs.set(o.id, { ...ref, statut, updatedAt: Date.now() });
   };
 
+  // Nettoyage des tournées du jour (on les reconstruit entièrement, y compris
+  // le nombre de tournées qui peut varier selon les biens disponibles).
+  const dejaLa = await listTournees();
+  for (const t of dejaLa) if (t.date === jour) await deleteTournee(t.id);
+
   // Remise à plat : toute opportunité « Tournée planifiée » redevient « À
   // prospecter » (on reconstruit les tournées ci-dessous).
   for (const o of opps) if (o.statut === "Tournée planifiée") majStatut(o, "À prospecter");
@@ -93,34 +98,43 @@ export async function genererTournees(): Promise<ResultatGeneration> {
     const secteur = membre ? config.secteurs[membre.id] : undefined;
     const maxAdresses = secteur?.maxAdresses || config.tournee.maxAdresses;
     const dureeMinutes = secteur?.dureeMinutes || config.tournee.dureeMinutes;
+    const baseId = `tour-${jour}-${membre ? membre.id : nom ? slug(nom) : "non-attribue"}`;
 
-    const candidats = lot.map<PointTournee>((o) => ({ id: o.id, lat: o.lat as number, lon: o.lon as number, valeur: valeurTournee(o, finJour) }));
-    const opt = construireTournee(candidats, {
-      maxAdresses, dureeMinutes,
-      minutesParArret: config.tournee.minutesParArret,
-      vitesseKmh: config.tournee.vitesseKmh,
-    });
-    if (opt.ordre.length === 0) continue;
-
-    const etapes: EtapeTournee[] = opt.ordre.map((oppId, i) => {
-      const o = lot.find((x) => x.id === oppId)!;
-      majStatut(o, "Tournée planifiée");
-      return {
-        opportuniteId: o.id, ordre: i + 1, adresse: o.adresse, ville: o.ville,
-        lat: o.lat, lon: o.lon, typeBien: o.typeBien, surface: o.surface, dpe: o.dpe,
-        score: o.score, niveau: o.niveau, fait: false, resultat: "",
+    // On découpe TOUS les biens éligibles du négociateur en PLUSIEURS tournées
+    // successives (chacune ≤ maxAdresses, géographiquement cohérente), jusqu'à
+    // épuisement. Chaque tour retire ses biens du vivier restant.
+    let restants = lot.map<PointTournee>((o) => ({ id: o.id, lat: o.lat as number, lon: o.lon as number, valeur: valeurTournee(o, finJour) }));
+    let index = 0;
+    const MAX_TOURNEES = 40; // garde-fou
+    while (restants.length > 0 && index < MAX_TOURNEES) {
+      const opt = construireTournee(restants, {
+        maxAdresses, dureeMinutes,
+        minutesParArret: config.tournee.minutesParArret,
+        vitesseKmh: config.tournee.vitesseKmh,
+      });
+      if (opt.ordre.length === 0) break; // plus aucun bien géolocalisable
+      index++;
+      const pris = new Set(opt.ordre);
+      const etapes: EtapeTournee[] = opt.ordre.map((oppId, i) => {
+        const o = lot.find((x) => x.id === oppId)!;
+        majStatut(o, "Tournée planifiée");
+        return {
+          opportuniteId: o.id, ordre: i + 1, adresse: o.adresse, ville: o.ville,
+          lat: o.lat, lon: o.lon, typeBien: o.typeBien, surface: o.surface, dpe: o.dpe,
+          score: o.score, niveau: o.niveau, fait: false, resultat: "",
+        };
+      });
+      const tournee: Tournee = {
+        id: `${baseId}-${index}`,
+        createdAt: Date.now(), updatedAt: Date.now(), date: jour, negociateur: nom, index,
+        etapes, distanceKm: opt.distanceKm, dureeMin: opt.dureeMin, statut: "planifiee",
       };
-    });
-
-    const tournee: Tournee = {
-      id: `tour-${jour}-${membre ? membre.id : nom ? slug(nom) : "non-attribue"}`,
-      createdAt: Date.now(), updatedAt: Date.now(), date: jour, negociateur: nom,
-      etapes, distanceKm: opt.distanceKm, dureeMin: opt.dureeMin, statut: "planifiee",
-    };
-    await saveTournee(tournee);
-    resultat.tournees.push({ negociateur: nom || "Non attribué", biens: etapes.length, distanceKm: opt.distanceKm, dureeMin: opt.dureeMin });
-    resultat.totalBiens += etapes.length;
-    if (!nom) resultat.nonAttribuees += etapes.length;
+      await saveTournee(tournee);
+      resultat.tournees.push({ negociateur: `${nom || "Non attribué"} — Tournée ${index}`, biens: etapes.length, distanceKm: opt.distanceKm, dureeMin: opt.dureeMin });
+      resultat.totalBiens += etapes.length;
+      if (!nom) resultat.nonAttribuees += etapes.length;
+      restants = restants.filter((r) => !pris.has(r.id));
+    }
   }
 
   if (modifs.size > 0) await saveOpportunitesBatch([...modifs.values()]);

@@ -61,7 +61,7 @@ export default function MaTourneePage({ tourneeId, onRetour }: { tourneeId?: str
             <p className="text-sm text-slate-500">Choisissez votre tournée :</p>
             {choix.map((t) => (
               <button key={t.id} onClick={() => setTournee(t)} className="flex w-full items-center justify-between rounded-2xl border border-slate-200 bg-white p-4 text-left hover:border-copper">
-                <div><div className="font-bold text-navy">{t.negociateur || "Non attribué"}</div><div className="text-xs text-slate-500">{t.etapes.length} biens · {t.distanceKm} km · ≈ {formatDuree(t.dureeMin)}</div></div>
+                <div><div className="font-bold text-navy">{t.negociateur || "Non attribué"}{t.index ? ` — Tournée ${t.index}` : ""}</div><div className="text-xs text-slate-500">{t.etapes.length} biens · {t.distanceKm} km · ≈ {formatDuree(t.dureeMin)}</div></div>
                 <span className="text-copper">→</span>
               </button>
             ))}
@@ -79,7 +79,7 @@ export default function MaTourneePage({ tourneeId, onRetour }: { tourneeId?: str
 
       {/* Résumé */}
       <div className="mb-4 rounded-2xl bg-navy p-4 text-white">
-        <div className="text-xs uppercase tracking-wide text-white/60">Ma tournée — {tournee.negociateur}</div>
+        <div className="text-xs uppercase tracking-wide text-white/60">Ma tournée — {tournee.negociateur || "Non attribué"}{tournee.index ? ` (n° ${tournee.index})` : ""}</div>
         <div className="text-lg font-bold capitalize">{dateLongue(tournee.date)}</div>
         <div className="mt-1 flex gap-4 text-sm text-white/90">
           <span><b>{tournee.etapes.length}</b> biens</span>

@@ -298,6 +298,7 @@ export interface Tournee {
   updatedAt: number;
   date: number;              // jour de la tournée (timestamp minuit)
   negociateur: string;
+  index?: number;            // n° de tournée quand un négociateur en a plusieurs
   etapes: EtapeTournee[];
   distanceKm: number;
   dureeMin: number;
