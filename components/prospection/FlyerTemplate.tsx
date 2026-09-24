@@ -99,9 +99,10 @@ export function FlyerVerso({ d }: { d: FlyerData }) {
       {/* Vrai QR code fonctionnel (vers l'estimation) — recouvre le QR du visuel
           qui n'est pas scannable, sans masquer le texte du CTA. */}
       {d.qr && <>
-        {/* cache uniquement la zone du QR d'origine (sans toucher au texte du CTA) */}
-        <div style={abs({ left: "81.5%", top: "81%", width: "15.5%", height: "11.5%", background: CTA })} />
-        <img src={d.qr} alt="QR estimation" style={abs({ left: "82%", top: "82%", width: "14%", aspectRatio: "1 / 1", background: "#fff", padding: 3, borderRadius: 3, boxSizing: "border-box" })} />
+        {/* couvre entièrement le QR d'origine (mesuré : x 83,2→96,7 %, y 83,5→93,3 %)
+            sans mordre sur le texte du CTA, puis on pose le vrai QR par-dessus */}
+        <div style={abs({ left: "82.4%", top: "82.7%", width: "15.4%", height: "11.6%", background: CTA })} />
+        <img src={d.qr} alt="QR estimation" style={abs({ left: "83.2%", top: "83.5%", width: "13%", aspectRatio: "1 / 1", background: "#fff", padding: 3, borderRadius: 3, boxSizing: "border-box" })} />
       </>}
     </div>
   );
