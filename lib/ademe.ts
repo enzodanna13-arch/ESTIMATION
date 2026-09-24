@@ -28,7 +28,7 @@ export const CHAMPS_DETAILS = [
   "type_energie_principale_chauffage", "type_generateur_chauffage_principal", "type_installation_chauffage",
   "type_energie_principale_ecs", "type_generateur_chauffage_principal_ecs",
   "type_ventilation", "qualite_isolation_murs", "qualite_isolation_menuiseries",
-  "qualite_isolation_plancher_bas", "qualite_isolation_plancher_haut",
+  "qualite_isolation_plancher_bas",
   "date_fin_validite_dpe", "date_derniere_modification_dpe", "version_dpe", "modele_dpe",
 ];
 
@@ -171,18 +171,31 @@ export async function fetchDpeCommune(
   if (depuisDate) clauses.push(`date_etablissement_dpe:[${depuisDate} TO *]`);
   const qs = clauses.join(" AND ");
 
-  const params = new URLSearchParams({
-    size: String(taille),
-    select: CHAMPS,
-    sort: "-date_etablissement_dpe",
-    qs,
-  });
-  let url: string | undefined = `${BASE}?${params.toString()}`;
+  const bâtirUrl = (avecSelect: boolean) => {
+    const params = new URLSearchParams({ size: String(taille), sort: "-date_etablissement_dpe", qs });
+    if (avecSelect) params.set("select", CHAMPS);
+    return `${BASE}?${params.toString()}`;
+  };
 
   const out: DpeBrut[] = [];
   const vus = new Set<string>();
+  let url: string | undefined = bâtirUrl(true);
+  let avecSelect = true;
   for (let page = 0; page < maxPages && url; page++) {
-    const body = await fetchJson(url);
+    let body: { results?: LigneAdeme[]; next?: string } | null;
+    try {
+      body = await fetchJson(url);
+    } catch (e) {
+      // Un 400 vient en général d'un champ `select` invalide : on réessaie sans
+      // `select` (l'API renvoie alors tous les champs). Sinon on propage.
+      if (page === 0 && avecSelect && e instanceof Error && /\b400\b/.test(e.message)) {
+        avecSelect = false;
+        url = bâtirUrl(false);
+        body = await fetchJson(url);
+      } else {
+        throw e;
+      }
+    }
     if (!body) { if (page === 0) throw new Error("ADEME injoignable"); break; }
     const lignes = body.results ?? [];
     if (lignes.length === 0) break;

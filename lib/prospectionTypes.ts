@@ -396,7 +396,6 @@ export const LABELS_ADEME: Record<string, string> = {
   qualite_isolation_murs: "Isolation des murs",
   qualite_isolation_menuiseries: "Isolation des menuiseries",
   qualite_isolation_plancher_bas: "Isolation plancher bas",
-  qualite_isolation_plancher_haut: "Isolation plancher haut",
   date_fin_validite_dpe: "Fin de validité du DPE",
   date_derniere_modification_dpe: "Dernière modification DPE",
   version_dpe: "Version DPE",
