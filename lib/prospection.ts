@@ -70,13 +70,30 @@ export async function synchroniser(onProgress?: (nom: string, i: number, total: 
     if (!body) return null;
     return ok ? (body as ResultatSync) : { ok: false, nouveaux: 0, misAJour: 0, communes: [], erreurs: [body.error ?? "Synchronisation impossible"], duréeMs: 0 };
   }
+  return synchroniserPlusieurs(communes.map((c) => c.code), communes, onProgress);
+}
+
+// Synchronise UNE seule commune (déclenchement manuel depuis l'interface pour
+// limiter le volume de requêtes / étaler dans le temps).
+export async function synchroniserUne(code: string): Promise<ResultatSync | null> {
+  const { ok, body } = await postSync({ commune: code });
+  if (!body) return null;
+  return ok ? (body as ResultatSync) : { ok: false, nouveaux: 0, misAJour: 0, communes: [], erreurs: [body.error ?? "Échec"], duréeMs: 0 };
+}
+
+async function synchroniserPlusieurs(
+  codes: string[],
+  communes: { code: string; nom: string }[],
+  onProgress?: (nom: string, i: number, total: number) => void,
+): Promise<ResultatSync> {
   const agg: ResultatSync = { ok: true, nouveaux: 0, misAJour: 0, communes: [], erreurs: [], duréeMs: 0 };
-  for (let i = 0; i < communes.length; i++) {
-    const cm = communes[i];
-    onProgress?.(cm.nom, i + 1, communes.length);
-    const { ok, body } = await postSync({ commune: cm.code });
-    if (!body) { agg.erreurs.push(`${cm.nom} : injoignable`); agg.ok = false; continue; }
-    if (!ok) { agg.erreurs.push(`${cm.nom} : ${body.error ?? "échec"}`); agg.ok = false; continue; }
+  const nomDe = (code: string) => communes.find((c) => c.code === code)?.nom ?? code;
+  for (let i = 0; i < codes.length; i++) {
+    const code = codes[i];
+    onProgress?.(nomDe(code), i + 1, codes.length);
+    const { ok, body } = await postSync({ commune: code });
+    if (!body) { agg.erreurs.push(`${nomDe(code)} : injoignable`); agg.ok = false; continue; }
+    if (!ok) { agg.erreurs.push(`${nomDe(code)} : ${body.error ?? "échec"}`); agg.ok = false; continue; }
     agg.nouveaux += body.nouveaux ?? 0;
     agg.misAJour += body.misAJour ?? 0;
     if (Array.isArray(body.communes)) agg.communes.push(...body.communes);
@@ -84,6 +101,7 @@ export async function synchroniser(onProgress?: (nom: string, i: number, total: 
   }
   return agg;
 }
+
 export async function rescorer(): Promise<number | null> {
   const r = await fetch("/api/prospection/sync", { method: "POST", headers: jsonHeaders(), body: JSON.stringify({ rescore: true }) });
   if (!r.ok) return null;

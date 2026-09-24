@@ -5,7 +5,7 @@ import dynamic from "next/dynamic";
 import { NEGOCIATEURS } from "@/lib/equipe";
 import {
   ageJours, deleteOpportunite, genererTournees, getConfig,
-  listOpportunites, listTournees, rescorer, saveConfig, synchroniser,
+  listOpportunites, listTournees, rescorer, saveConfig, synchroniser, synchroniserUne,
 } from "@/lib/prospection";
 import {
   CONFIG_PROSPECTION_DEFAUT, dpeCls, NIVEAUX_PROSPECTION, STATUTS_PROSPECTION, STATUT_PROSPECTION_COULEURS,
@@ -47,6 +47,8 @@ export default function ProspectionPage({ onRetour }: { onRetour: () => void }) 
   const [busy, setBusy] = useState<string | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
   const [syncDetail, setSyncDetail] = useState<ResultatSync | null>(null);
+  const [parCommune, setParCommune] = useState(false);
+  const [busyCommune, setBusyCommune] = useState<string | null>(null);
 
   const recharger = async () => {
     const [o, t] = await Promise.all([listOpportunites(), listTournees()]);
@@ -79,6 +81,18 @@ export default function ProspectionPage({ onRetour }: { onRetour: () => void }) 
     else flash(`Synchro : ${res.nouveaux} nouveau(x) bien(s), ${res.misAJour} mis à jour — ${totalDpe} DPE analysés.${res.erreurs.length ? " ⚠ " + res.erreurs[0] : ""}`);
     await recharger();
   };
+  const lancerSyncCommune = async (code: string, nom: string) => {
+    setBusyCommune(code); setMsg(null);
+    const res = await synchroniserUne(code);
+    setBusyCommune(null);
+    if (!res) { flash(`Synchronisation ${nom} impossible.`); return; }
+    setSyncDetail(res);
+    const dpe = res.communes.reduce((s, c) => s + c.dpe, 0);
+    if (!res.ok) flash(res.erreurs[0] ?? `Échec ${nom}.`);
+    else flash(`${nom} : ${res.nouveaux} nouveau(x) — ${dpe} DPE analysés.`);
+    await recharger();
+  };
+
   const lancerRegen = async () => {
     setBusy("regen"); setMsg(null);
     const res = await genererTournees();
@@ -142,7 +156,8 @@ export default function ProspectionPage({ onRetour }: { onRetour: () => void }) 
           <p className="text-sm text-slate-500">Les signaux Open Data (DPE, DVF…) transformés en tournées terrain prioritaires.</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <button onClick={() => void lancerSync()} disabled={!!busy} className="rounded-lg bg-navy px-3 py-1.5 text-sm font-bold text-white hover:bg-navy-deep disabled:opacity-50">{busy === "sync" ? "Synchronisation…" : "⟳ Synchroniser"}</button>
+          <button onClick={() => void lancerSync()} disabled={!!busy} className="rounded-lg bg-navy px-3 py-1.5 text-sm font-bold text-white hover:bg-navy-deep disabled:opacity-50">{busy === "sync" ? "Synchronisation…" : "⟳ Tout synchroniser"}</button>
+          <button onClick={() => setParCommune((v) => !v)} disabled={!!busy} className="rounded-lg border border-navy/30 bg-white px-3 py-1.5 text-sm font-semibold text-navy hover:bg-slate-50 disabled:opacity-50">🏙️ Par commune</button>
           <button onClick={() => void lancerRegen()} disabled={!!busy} className="rounded-lg bg-copper px-3 py-1.5 text-sm font-bold text-white hover:brightness-110 disabled:opacity-50">{busy === "regen" ? "Génération…" : "🧭 Regénérer les tournées"}</button>
         </div>
       </div>
@@ -150,6 +165,24 @@ export default function ProspectionPage({ onRetour }: { onRetour: () => void }) 
       {config && !config.actif && (
         <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
           Module désactivé. Activez-le dans <button onClick={() => setVue("reglages")} className="font-bold underline">Réglages</button> pour lancer la synchronisation Open Data.
+        </div>
+      )}
+      {parCommune && (
+        <div className="mb-4 rounded-xl border border-slate-200 bg-white p-3">
+          <div className="mb-2 text-sm font-bold text-navy">Synchroniser une commune à la fois</div>
+          <p className="mb-2 text-xs text-slate-500">Lancez les communes une par une pour étaler les requêtes (utile si vous préférez ne pas tout charger d&apos;un coup).</p>
+          <div className="flex flex-wrap gap-2">
+            {communes.map((c) => (
+              <button
+                key={c.code}
+                onClick={() => void lancerSyncCommune(c.code, c.nom)}
+                disabled={busyCommune !== null || !!busy}
+                className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:border-copper hover:text-copper disabled:opacity-50"
+              >
+                {busyCommune === c.code ? "⏳ " : "⟳ "}{c.nom}
+              </button>
+            ))}
+          </div>
         </div>
       )}
       {msg && <div className="mb-4 rounded-xl border border-slate-200 bg-white p-3 text-sm font-medium text-navy">{msg}</div>}
