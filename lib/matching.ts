@@ -98,16 +98,39 @@ export function scorerRecherche(bien: BienCriteres, r: RechercheImmo): ResultatM
     add(25, s, { cle: "loc", label: "Localisation", etat: etat(s), texte: s >= 1 ? `${bien.ville} recherchée` : s >= 0.9 ? "Secteur recherché" : `${bien.ville} hors zone prioritaire` });
   }
 
-  // Budget vs prix (25)
+  // Budget vs prix (25) — SÉLECTIF sur la PROXIMITÉ. On privilégie les
+  // acquéreurs dont le budget colle au prix du bien : un bien à 400 000 €
+  // cible idéalement un budget ~400 000–450 000 €. Un acquéreur qui vise
+  // nettement plus cher (budget très au-dessus) n'est PAS un bon rapprochement
+  // (il cherche plus grand / plus haut de gamme) et est fortement déclassé ;
+  // un acquéreur qui ne peut pas suivre le prix l'est aussi.
+  let budgetSub: number | null = null;
   if (bien.prix != null && (r.budgetMax != null || r.budgetMin != null)) {
-    const max = r.budgetMax ?? Infinity;
-    let s: number;
-    if (bien.prix <= max) s = 1;
-    else if (bien.prix <= max * 1.1) s = 1 - ((bien.prix - max) / (max * 0.1)) * 0.5; // -10% → 0,5
-    else if (bien.prix <= max * 1.25) s = 0.5 - ((bien.prix - max * 1.1) / (max * 0.15)) * 0.35;
-    else s = 0.15;
-    if (r.budgetMin != null && bien.prix < r.budgetMin * 0.85) s = Math.min(s, 0.6); // très en dessous
-    add(25, s, { cle: "budget", label: "Budget", etat: etat(s), texte: bien.prix <= max ? "Dans le budget" : `${Math.round(((bien.prix - max) / max) * 100)} % au-dessus du budget` });
+    const P = bien.prix;
+    const max = r.budgetMax;
+    const min = r.budgetMin;
+    let s: number, txt: string;
+    if (max != null) {
+      if (P <= max) {
+        const over = (max - P) / P;                       // dépassement du plafond / prix
+        if (over <= 0.125) { s = 1; txt = "Budget aligné sur le prix"; }
+        else if (over <= 0.40) { s = 1 - ((over - 0.125) / 0.275) * 0.45; txt = `Budget ~${Math.round(over * 100)} % au-dessus du prix`; }
+        else if (over <= 0.60) { s = 0.55 - ((over - 0.40) / 0.20) * 0.35; txt = "Vise plus cher que ce bien"; }
+        else { s = 0.15; txt = "Vise bien plus cher"; }
+      } else {
+        const short = (P - max) / P;                       // prix au-dessus du budget
+        if (short <= 0.05) { s = 0.7; txt = "Prix juste au-dessus (négociable)"; }
+        else if (short <= 0.12) { s = 0.45; txt = `${Math.round(short * 100)} % au-dessus du budget`; }
+        else { s = 0.12; txt = `${Math.round(short * 100)} % au-dessus du budget`; }
+      }
+    } else {
+      // seul un budget plancher est renseigné
+      s = min != null && P >= min * 0.95 ? 0.8 : 0.5; txt = "Budget indicatif";
+    }
+    // Bien nettement SOUS le budget minimum visé → l'acquéreur cherche plus haut de gamme.
+    if (min != null && P < min * 0.9) { s = Math.min(s, 0.4); txt = "Sous le budget minimum visé"; }
+    budgetSub = s;
+    add(25, s, { cle: "budget", label: "Budget", etat: etat(s), texte: txt });
   }
 
   // Type de bien (15)
@@ -170,6 +193,17 @@ export function scorerRecherche(bien: BienCriteres, r: RechercheImmo): ResultatM
   }
 
   let score = poidsTotal > 0 ? Math.round((total / poidsTotal) * 100) : 0;
+
+  // Sélectivité BUDGET : le budget est un critère décisif du rapprochement.
+  // - budget nettement hors cible (vise BIEN plus cher, ou ne peut pas suivre)
+  //   → l'acquéreur est ÉCARTÉ (score sous le seuil d'affichage).
+  // - budget moyennement décalé → il ne peut pas ressortir en correspondance
+  //   forte / intéressante haute : plafonné en « correspondance possible ».
+  if (budgetSub != null) {
+    if (budgetSub <= 0.2) score = Math.min(score, 40);                                 // écarté (hors cible)
+    else if (budgetSub < 0.5) score = Math.min(score, NIVEAUX.interessante.min - 1);   // au mieux « possible »
+    else if (budgetSub < 0.999) score = Math.min(score, NIVEAUX.forte.min - 1);        // au mieux « intéressante »
+  }
 
   // Rédhibitoires : si un mot rédhibitoire apparaît dans les caractéristiques
   // clés du bien, on plafonne fortement le score.
