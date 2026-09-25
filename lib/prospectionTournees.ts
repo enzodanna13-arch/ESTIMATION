@@ -10,6 +10,12 @@ import {
 const JOUR = 86_400_000;
 const minuitAujourdhui = () => { const d = new Date(); d.setHours(0, 0, 0, 0); return d.getTime(); };
 
+// Compacité géographique des tournées (à l'intérieur d'une même commune).
+// RAYON = saut max autorisé vers le bien voisin le plus proche ; DIAMETRE =
+// étalement max autour du 1er bien. Petits → tournées serrées, trajets courts.
+const RAYON_COMPACITE_KM = 2.5;
+const DIAMETRE_TOURNEE_KM = 5;
+
 function joursDepuis(dateIso: string): number | null {
   if (!dateIso) return null;
   const t = Date.parse(dateIso);
@@ -92,20 +98,30 @@ export async function genererTournees(): Promise<ResultatGeneration> {
 
   // 1) Regrouper les biens éligibles PAR COMMUNE : une tournée ne mélange
   //    JAMAIS deux communes (une tournée Martigues n'inclut pas Châteauneuf).
+  //    Clé robuste : le code INSEE s'il existe, sinon la ville, sinon le code
+  //    postal — pour qu'un bien sans code INSEE ne soit pas fondu avec les
+  //    autres dans un même paquet « vide » multi-villes.
+  const cleCommune = (o: Opportunite) => o.codeInsee || slug(o.ville) || o.codePostal || "?";
   const parCommune = new Map<string, Opportunite[]>();
   for (const o of opps) {
     if (!eligible(o, config, finJour)) continue;
-    (parCommune.get(o.codeInsee) ?? parCommune.set(o.codeInsee, []).get(o.codeInsee)!).push(o);
+    const cle = cleCommune(o);
+    (parCommune.get(cle) ?? parCommune.set(cle, []).get(cle)!).push(o);
   }
 
-  // 2) Découper chaque commune en tournées (≤ maxAdresses, cohérentes).
+  // 2) Découper chaque commune en tournées COMPACTES (≤ maxAdresses). Le rayon
+  //    de compacité borne les trajets : chaque tournée reste un petit paquet de
+  //    rues voisines au lieu de traverser toute la commune.
   interface TourBrut { ordreIds: string[]; distanceKm: number; dureeMin: number; taille: number }
   const toursBruts: TourBrut[] = [];
   for (const [, lot] of parCommune) {
     let restants = lot.map<PointTournee>((o) => ({ id: o.id, lat: o.lat as number, lon: o.lon as number, valeur: valeurTournee(o, finJour) }));
     let g = 0;
-    while (restants.length > 0 && g++ < 40) {
-      const opt = construireTournee(restants, { maxAdresses, dureeMinutes, minutesParArret: config.tournee.minutesParArret, vitesseKmh: config.tournee.vitesseKmh });
+    while (restants.length > 0 && g++ < 200) {
+      const opt = construireTournee(restants, {
+        maxAdresses, dureeMinutes, minutesParArret: config.tournee.minutesParArret, vitesseKmh: config.tournee.vitesseKmh,
+        beta: 9, rayonKm: RAYON_COMPACITE_KM, diametreKm: DIAMETRE_TOURNEE_KM,
+      });
       if (opt.ordre.length === 0) break;
       toursBruts.push({ ordreIds: opt.ordre, distanceKm: opt.distanceKm, dureeMin: opt.dureeMin, taille: opt.ordre.length });
       const pris = new Set(opt.ordre);

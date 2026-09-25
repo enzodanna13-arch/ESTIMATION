@@ -24,6 +24,11 @@ export interface OptionsTournee {
   vitesseKmh: number;      // vitesse moyenne de déplacement
   depart?: { lat: number; lon: number } | null; // point de départ (agence)
   beta?: number;           // pénalité de détour (points/km) — défaut 6
+  // Compacité : un bien ne rejoint la tournée que s'il est à ≤ rayonKm du bien
+  // sélectionné le plus proche ET à ≤ diametreKm de la graine. Empêche les
+  // grands trajets : chaque tournée reste un petit paquet géographique.
+  rayonKm?: number;        // saut max au voisin le plus proche — défaut ∞
+  diametreKm?: number;     // éloignement max à la graine — défaut 2,4·rayonKm
 }
 
 export interface ResultatTournee {
@@ -109,21 +114,27 @@ export function construireTournee(candidats: PointTournee[], opts: OptionsTourne
   if (geoloc.length === 0) return { ordre: [], distanceKm: 0, dureeMin: 0 };
 
   const beta = opts.beta ?? 6;
+  const rayonKm = opts.rayonKm ?? Infinity;              // saut max au voisin proche
+  const diametreKm = opts.diametreKm ?? rayonKm * 2.4;   // étalement max autour de la graine
   // On borne le vivier au meilleur potentiel pour rester performant.
   const pool = [...geoloc].sort((a, b) => b.valeur - a.valeur).slice(0, Math.max(opts.maxAdresses * 4, 40));
 
-  const selection: PointTournee[] = [pool.shift()!]; // graine = meilleur potentiel
+  const graine = pool.shift()!;
+  const selection: PointTournee[] = [graine];           // graine = meilleur potentiel
   const distMin = (c: PointTournee) => Math.min(...selection.map((s) => haversineKm(s, c)));
 
   while (selection.length < opts.maxAdresses && pool.length) {
-    // Meilleur compromis potentiel / détour.
+    // Meilleur compromis potentiel / détour, DANS le rayon de compacité.
     let best = -1;
     let bestGain = -Infinity;
     for (let i = 0; i < pool.length; i++) {
-      const gain = pool[i].valeur - beta * distMin(pool[i]);
+      const proche = distMin(pool[i]);
+      // Compacité : jamais de long saut, jamais trop loin de la graine.
+      if (proche > rayonKm || haversineKm(graine, pool[i]) > diametreKm) continue;
+      const gain = pool[i].valeur - beta * proche;
       if (gain > bestGain) { bestGain = gain; best = i; }
     }
-    if (best < 0) break;
+    if (best < 0) break; // plus aucun bien assez proche → la tournée s'arrête là
     const candidat = pool[best];
     const essai = deuxOpt(plusProcheVoisin([...selection, candidat], opts.depart), opts.depart);
     const { dureeMin } = dureeDe(essai, opts);
