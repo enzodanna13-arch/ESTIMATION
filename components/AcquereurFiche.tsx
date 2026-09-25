@@ -49,7 +49,7 @@ function Chips<T extends { id: string; label: string }>({ options, values, onTog
   );
 }
 
-export default function AcquereurFiche({ dossier, onRetour, onSaved, onSupprime }: { dossier: ClientDossier; onRetour: () => void; onSaved?: (d: ClientDossier) => void; onSupprime?: () => void }) {
+export default function AcquereurFiche({ dossier, onRetour, onSaved, onSupprime, onOuvrirEstimation }: { dossier: ClientDossier; onRetour: () => void; onSaved?: (d: ClientDossier) => void; onSupprime?: () => void; onOuvrirEstimation?: (id: string) => void }) {
   const [d, setD] = useState<ClientDossier>({
     ...dossier,
     recherches: dossier.recherches?.length ? dossier.recherches : [rechercheVide()],
@@ -270,7 +270,7 @@ export default function AcquereurFiche({ dossier, onRetour, onSaved, onSupprime 
         </Section>
 
         {/* 5. Rapprochement estimation */}
-        <RapprochementEstimation dossier={d} />
+        <RapprochementEstimation dossier={d} onOuvrir={onOuvrirEstimation} />
 
         {/* 6. Historique */}
         <Section titre="🕒 Historique & suivi" defautOuvert={false}>
@@ -350,8 +350,10 @@ function resumeBien(typeBien: string, surface: number | null, nbPieces: number |
   return [t, surface != null ? `${surface} m²` : null, nbPieces != null ? `${nbPieces} p.` : null].filter(Boolean).join(" · ");
 }
 
-function RapprochementEstimation({ dossier }: { dossier: ClientDossier }) {
-  const [etat, setEtat] = useState<"idle" | "chargement" | "pret">("idle");
+function RapprochementEstimation({ dossier, onOuvrir }: { dossier: ClientDossier; onOuvrir?: (id: string) => void }) {
+  const [etat, setEtat] = useState<"idle" | "chargement" | "pret">(
+    () => ((dossier.recherches ?? []).some((r) => r.actif !== false) ? "chargement" : "idle"),
+  );
   const [biens, setBiens] = useState<BienMatch[]>([]);
   const [erreur, setErreur] = useState<string | null>(null);
   const [detail, setDetail] = useState<string | null>(null);
@@ -399,12 +401,20 @@ function RapprochementEstimation({ dossier }: { dossier: ClientDossier }) {
     }
   };
 
+  // Rapprochement AUTOMATIQUE à l'ouverture de la fiche : les biens estimés
+  // correspondants ressortent directement, sans clic. (Se relance si on change
+  // de dossier.) L'historique des estimations doit être déverrouillé.
+  useEffect(() => {
+    if (!aucuneRecherche) void analyser();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dossier.id]);
+
   const plusieurs = recherchesActives.length > 1;
 
   return (
-    <Section titre="🔗 Rapprochement estimation" defautOuvert={false}>
+    <Section titre="🔗 Estimations correspondantes" defautOuvert>
       <p className="mb-3 text-xs text-slate-500">
-        Parmi les biens estimés par l&apos;agence, ceux qui correspondent {plusieurs ? "à l'une des recherches actives" : "à la recherche"} de ce client.
+        Parmi les biens estimés par l&apos;agence, ceux qui correspondent {plusieurs ? "à l'une des recherches actives" : "à la recherche"} de ce client. Cliquez sur <b>« Ouvrir le dossier »</b> pour consulter l&apos;estimation complète.
       </p>
 
       {aucuneRecherche ? (
@@ -441,9 +451,16 @@ function RapprochementEstimation({ dossier }: { dossier: ClientDossier }) {
                   {b.negociateur && <span>· {b.negociateur}</span>}
                   <span>· estimé le {dateFr(b.date)}</span>
                 </div>
-                <button type="button" onClick={() => setDetail(detail === b.id ? null : b.id)} className="mt-1.5 text-[11px] font-semibold text-copper hover:underline">
-                  {detail === b.id ? "Masquer le détail" : "Pourquoi ce bien ?"}
-                </button>
+                <div className="mt-2 flex flex-wrap items-center gap-2">
+                  {onOuvrir && (
+                    <button type="button" onClick={() => onOuvrir(b.id)} className="rounded-lg bg-navy px-3 py-1.5 text-[11px] font-bold text-white transition hover:bg-navy-deep">
+                      📄 Ouvrir le dossier
+                    </button>
+                  )}
+                  <button type="button" onClick={() => setDetail(detail === b.id ? null : b.id)} className="text-[11px] font-semibold text-copper hover:underline">
+                    {detail === b.id ? "Masquer le détail" : "Pourquoi ce bien ?"}
+                  </button>
+                </div>
                 {detail === b.id && (
                   <div className="mt-2 flex flex-wrap gap-1">
                     {b.details.map((c) => (

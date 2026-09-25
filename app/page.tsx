@@ -833,7 +833,7 @@ export default function Home() {
           />
         ) : (
           <>
-            {univers === "clients" && <ClientsPage onRetour={() => setUnivers("")} />}
+            {univers === "clients" && <ClientsPage onRetour={() => setUnivers("")} onOuvrirEstimation={(id) => void openEntry(id, false)} />}
             {univers === "visites" && <VisitesPage onRetour={() => setUnivers("")} />}
 
             {univers === "registre" && <RegistrePage onRetour={() => setUnivers("")} />}

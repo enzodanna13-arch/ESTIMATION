@@ -318,7 +318,7 @@ export function SelecteurPiecesClient({
 // ---------------------------------------------------------------------------
 // L'univers « Dossiers clients »
 // ---------------------------------------------------------------------------
-export default function ClientsPage({ onRetour }: { onRetour: () => void }) {
+export default function ClientsPage({ onRetour, onOuvrirEstimation }: { onRetour: () => void; onOuvrirEstimation?: (id: string) => void }) {
   const [dossiers, setDossiers] = useState<ClientDossier[] | null>(null);
   const [q, setQ] = useState("");
   const [ouvert, setOuvert] = useState<ClientDossier | null>(null);
@@ -460,6 +460,7 @@ export default function ClientsPage({ onRetour }: { onRetour: () => void }) {
         onRetour={() => { setOuvert(null); void recharger(); }}
         onSaved={(d) => { setOuvert(d); void recharger(); }}
         onSupprime={() => void supprimerDossier(true)}
+        onOuvrirEstimation={onOuvrirEstimation}
       />
     );
   }
