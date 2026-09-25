@@ -37,11 +37,13 @@ export function FlyerRecto({ d }: { d: FlyerData }) {
     <div style={{ ...face, backgroundImage: `url('${RECTO_BG}')` }}>
       <img src={RECTO_BG} alt="" style={{ display: "none" }} />
 
-      {/* Identification du bien : encart repris à l'identique du visuel
-          (même teinte, coins arrondis) pour se fondre dans le flyer. */}
-      <div style={abs({ left: "67.5%", top: "15.3%", width: "24%", minHeight: "9.4%", background: "#17191a", borderRadius: 7, padding: "7px 10px", boxSizing: "border-box", color: "#fff", display: "flex", alignItems: "flex-start", gap: 6, lineHeight: 1.3 })}>
-        <svg width="11" height="13" viewBox="0 0 24 24" fill={GOLD} style={{ flexShrink: 0, marginTop: 1 }}><path d="M12 2a7 7 0 00-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 00-7-7zm0 9.5A2.5 2.5 0 1112 6.5a2.5 2.5 0 010 5z" /></svg>
-        <div>
+      {/* Identification du bien : l'encart d'origine (« Bien 1/10 · 12 rue des
+          Tamaris… ») est RECOUVERT À L'IDENTIQUE — mesuré au pixel : x 68,8→93,2 %,
+          y 17,1→24,3 % — pour qu'aucun bord noir ne dépasse, puis on ré-affiche
+          l'adresse dynamique par-dessus. Coins arrondis alignés sur le visuel. */}
+      <div style={abs({ left: "68.1%", top: "16.4%", width: "25.7%", height: "8.5%", background: "#17191a", borderRadius: 9, padding: "0 11px", boxSizing: "border-box", color: "#fff", display: "flex", alignItems: "center", gap: 7 })}>
+        <svg width="12" height="14" viewBox="0 0 24 24" fill={GOLD} style={{ flexShrink: 0 }}><path d="M12 2a7 7 0 00-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 00-7-7zm0 9.5A2.5 2.5 0 1112 6.5a2.5 2.5 0 010 5z" /></svg>
+        <div style={{ minWidth: 0, lineHeight: 1.24 }}>
           <div style={{ fontSize: 10, fontWeight: 700, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{d.adresse || "Adresse"}</div>
           <div style={{ fontSize: 9, color: "#e8e2d6", marginTop: 1 }}>{[d.codePostal, d.commune].filter(Boolean).join(" ")}</div>
         </div>
