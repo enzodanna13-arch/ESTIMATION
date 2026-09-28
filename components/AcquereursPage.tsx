@@ -30,44 +30,64 @@ function mediane(vals: number[]): number | null {
 }
 
 // ---- Analyse automatique des BESOINS (agrégation de la demande) ----
-// Un besoin = un couple (type + nombre de pièces « T ») dans une commune, avec
-// sa fourchette de budget propre. On sépare bien « Villa T4 à 400-450 k€ » de
-// « Villa T5 à 500-600 k€ » : ce sont deux besoins distincts.
-interface Besoin {
-  cle: string; type: string; commune: string; pieces: number | null;
-  acquereurs: number; noms: string[];
+// Deux niveaux : 1) la TYPOLOGIE (type + nombre de pièces « T », ex. Maison T4)
+// puis 2) à l'intérieur, les BUDGETS séparés par tranche (ex. 400-450 k€ vs
+// 500-600 k€ sont deux segments distincts sous « Maison T4 »).
+const PALIER_BUDGET = 50_000; // finesse des tranches de budget
+interface SegmentBesoin {
+  cle: string;
   budgetMin: number | null; budgetMax: number | null; budgetMedian: number | null;
-  surfaceMin: number | null;
+  acquereurs: number; noms: string[]; communes: string[]; surfaceMin: number | null;
 }
-function analyserBesoins(dossiers: ClientDossier[]): Besoin[] {
-  const groupes = new Map<string, { type: string; commune: string; pieces: number | null; ids: Set<string>; noms: Set<string>; bmin: number[]; bmax: number[]; smin: number[] }>();
+interface BesoinTypologie {
+  cle: string; typologie: string; type: string; pieces: number | null;
+  acquereurs: number; segments: SegmentBesoin[];
+}
+function analyserBesoins(dossiers: ClientDossier[]): BesoinTypologie[] {
+  // Un segment = (type + pièces + tranche de budget).
+  const segs = new Map<string, { type: string; pieces: number | null; ids: Set<string>; noms: Set<string>; communes: Set<string>; bmin: number[]; bmax: number[]; smin: number[] }>();
   for (const d of dossiers) {
     const nom = [d.prenom, d.nom].filter(Boolean).join(" ").trim() || d.nom || "Acquéreur";
     for (const r of (d.recherches ?? []).filter((x) => x.actif !== false)) {
       const types = r.typesBien.length ? r.typesBien : ["indifférent"];
-      const villes = r.villes.length ? r.villes : ["Zone non précisée"];
       const pieces = r.piecesMin && r.piecesMin > 0 ? r.piecesMin : null;
-      for (const t of types) for (const v of villes) {
+      const tranche = r.budgetMax ? String(Math.floor(r.budgetMax / PALIER_BUDGET)) : "?";
+      for (const t of types) {
         const type = capitalise(t.toLowerCase());
-        const commune = v.trim();
-        const cle = `${type.toLowerCase()}|${commune.toLowerCase()}|${pieces ?? "?"}`;
-        const g = groupes.get(cle) ?? { type, commune, pieces, ids: new Set<string>(), noms: new Set<string>(), bmin: [], bmax: [], smin: [] };
+        const cle = `${type.toLowerCase()}|${pieces ?? "?"}|${tranche}`;
+        const g = segs.get(cle) ?? { type, pieces, ids: new Set<string>(), noms: new Set<string>(), communes: new Set<string>(), bmin: [], bmax: [], smin: [] };
         g.ids.add(d.id); g.noms.add(nom);
         if (r.budgetMin) g.bmin.push(r.budgetMin);
         if (r.budgetMax) g.bmax.push(r.budgetMax);
         if (r.surfaceMin) g.smin.push(r.surfaceMin);
-        groupes.set(cle, g);
+        for (const v of r.villes) if (v.trim()) g.communes.add(v.trim());
+        segs.set(cle, g);
       }
     }
   }
-  return [...groupes.entries()].map(([cle, g]) => ({
-    cle, type: g.type, commune: g.commune, pieces: g.pieces,
-    acquereurs: g.ids.size, noms: [...g.noms],
-    budgetMin: g.bmin.length ? Math.min(...g.bmin) : (g.bmax.length ? Math.min(...g.bmax) : null),
-    budgetMax: g.bmax.length ? Math.max(...g.bmax) : null,
-    budgetMedian: mediane(g.bmax),
-    surfaceMin: g.smin.length ? Math.min(...g.smin) : null,
-  })).sort((a, b) => b.acquereurs - a.acquereurs || (b.budgetMax ?? 0) - (a.budgetMax ?? 0));
+  // Regroupe les segments par typologie (type + pièces).
+  const typos = new Map<string, { type: string; pieces: number | null; ids: Set<string>; segments: SegmentBesoin[] }>();
+  for (const [cle, g] of segs) {
+    const segment: SegmentBesoin = {
+      cle,
+      budgetMin: g.bmin.length ? Math.min(...g.bmin) : (g.bmax.length ? Math.min(...g.bmax) : null),
+      budgetMax: g.bmax.length ? Math.max(...g.bmax) : null,
+      budgetMedian: mediane(g.bmax),
+      acquereurs: g.ids.size, noms: [...g.noms], communes: [...g.communes],
+      surfaceMin: g.smin.length ? Math.min(...g.smin) : null,
+    };
+    const typoKey = `${g.type.toLowerCase()}|${g.pieces ?? "?"}`;
+    const tg = typos.get(typoKey) ?? { type: g.type, pieces: g.pieces, ids: new Set<string>(), segments: [] };
+    for (const id of g.ids) tg.ids.add(id);
+    tg.segments.push(segment);
+    typos.set(typoKey, tg);
+  }
+  return [...typos.entries()].map(([cle, tg]) => ({
+    cle, type: tg.type, pieces: tg.pieces,
+    typologie: `${tg.type}${tg.pieces ? ` T${tg.pieces}` : ""}`,
+    acquereurs: tg.ids.size,
+    segments: tg.segments.sort((a, b) => (a.budgetMax ?? 0) - (b.budgetMax ?? 0)),
+  })).sort((a, b) => b.acquereurs - a.acquereurs || a.typologie.localeCompare(b.typologie));
 }
 
 export default function AcquereursPage({ onRetour, onOuvrirEstimation }: { onRetour: () => void; onOuvrirEstimation?: (id: string) => void }) {
@@ -151,20 +171,27 @@ export default function AcquereursPage({ onRetour, onOuvrirEstimation }: { onRet
         </div>
         <p className="mb-3 text-xs text-slate-500">Ce que vos acquéreurs recherchent, agrégé automatiquement — les biens à prospecter en priorité.</p>
         {besoins.length === 0 ? (
-          <p className="text-sm text-slate-400">Renseignez les recherches des acquéreurs (villes, type, budget) pour voir apparaître les besoins.</p>
+          <p className="text-sm text-slate-400">Renseignez les recherches des acquéreurs (type, pièces, budget) pour voir apparaître les besoins.</p>
         ) : (
-          <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-            {besoins.slice(0, 12).map((b) => (
+          <div className="grid gap-3 md:grid-cols-2">
+            {besoins.map((b) => (
               <div key={b.cle} className="rounded-xl border border-slate-200 bg-white p-3">
-                <div className="flex items-start justify-between gap-2">
-                  <span className="font-semibold text-navy">{b.type}{b.pieces ? ` T${b.pieces}` : ""} · {b.commune}</span>
-                  <span className="shrink-0 rounded-full bg-navy px-2 py-0.5 text-[11px] font-bold text-white" title={b.noms.join(", ")}>{b.acquereurs} acq.</span>
+                <div className="mb-2 flex items-center justify-between gap-2 border-b border-slate-100 pb-2">
+                  <span className="font-bold text-navy">🏠 {b.typologie}</span>
+                  <span className="shrink-0 rounded-full bg-navy px-2 py-0.5 text-[11px] font-bold text-white">{b.acquereurs} acquéreur{b.acquereurs > 1 ? "s" : ""}</span>
                 </div>
-                <div className="mt-1 text-xs text-slate-600">
-                  💶 {b.budgetMin || b.budgetMax ? `${eur(b.budgetMin)} – ${eur(b.budgetMax)}` : "budget non précisé"}{b.budgetMedian ? ` · médian ${eur(b.budgetMedian)}` : ""}
-                </div>
-                <div className="mt-0.5 text-[11px] text-slate-400">
-                  {b.pieces ? `${b.pieces} pièces` : "pièces indiff."}{b.surfaceMin ? ` · ≥ ${b.surfaceMin} m²` : ""}
+                <div className="space-y-1.5">
+                  {b.segments.map((s) => (
+                    <div key={s.cle} className="flex items-start justify-between gap-2 text-sm">
+                      <div className="min-w-0">
+                        <div className="font-semibold text-slate-700">💶 {s.budgetMin || s.budgetMax ? `${eur(s.budgetMin)} – ${eur(s.budgetMax)}` : "budget non précisé"}</div>
+                        <div className="truncate text-[11px] text-slate-400" title={[...s.communes, ...s.noms].join(" · ")}>
+                          {s.surfaceMin ? `≥ ${s.surfaceMin} m²` : ""}{s.communes.length ? `${s.surfaceMin ? " · " : ""}${s.communes.slice(0, 3).join(", ")}${s.communes.length > 3 ? "…" : ""}` : ""}
+                        </div>
+                      </div>
+                      <span className="shrink-0 rounded-full bg-copper/15 px-2 py-0.5 text-[11px] font-bold text-copper" title={s.noms.join(", ")}>{s.acquereurs}</span>
+                    </div>
+                  ))}
                 </div>
               </div>
             ))}
