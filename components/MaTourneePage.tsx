@@ -146,7 +146,7 @@ export default function MaTourneePage({ tourneeId, onRetour }: { tourneeId?: str
         <div className="mt-1 text-xs text-white/70">{faites} / {etapesTriees.length} effectués</div>
         {(() => {
           const aFaire = etapesTriees.filter((e) => !e.fait);
-          const lien = lienItineraireComplet((aFaire.length ? aFaire : etapesTriees).map((e) => ({ lat: e.lat, lon: e.lon })));
+          const lien = lienItineraireComplet((aFaire.length ? aFaire : etapesTriees).map((e) => ({ adresse: e.adresse, ville: e.ville, lat: e.lat, lon: e.lon })));
           return lien ? (
             <a href={lien} target="_blank" rel="noreferrer" className="mt-3 block rounded-xl bg-copper py-2.5 text-center text-sm font-bold text-white">🧭 Itinéraire complet dans le GPS ({(aFaire.length ? aFaire : etapesTriees).length} arrêts)</a>
           ) : null;

@@ -140,26 +140,37 @@ export async function enregistrerResultat(params: {
 }
 
 // --- Utilitaires d'affichage ---
+// Un arrêt GPS : on privilégie l'ADRESSE (Google la géocode précisément et
+// affiche la BONNE adresse) ; les coordonnées ne servent que de repli, car
+// Google « raccroche » une coordonnée brute à l'adresse la plus proche, qui
+// n'est pas toujours la bonne.
+function arretGps(p: { adresse?: string; ville?: string; lat: number | null; lon: number | null }): string {
+  const adr = (p.adresse ?? "").replace(/\s+/g, " ").trim();
+  if (adr) return /\d{5}/.test(adr) ? adr : [adr, p.ville].filter(Boolean).join(" ").trim();
+  if (p.lat != null && p.lon != null) return `${p.lat},${p.lon}`;
+  return "";
+}
+
 export function lienNavigation(o: { lat: number | null; lon: number | null; adresse: string; ville: string }): string {
-  if (o.lat != null && o.lon != null) return `https://www.google.com/maps/dir/?api=1&destination=${o.lat},${o.lon}&travelmode=driving`;
-  const q = encodeURIComponent([o.adresse, o.ville].filter(Boolean).join(" "));
-  return `https://www.google.com/maps/dir/?api=1&destination=${q}&travelmode=driving`;
+  const q = arretGps(o);
+  if (!q) return "";
+  return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(q)}&travelmode=driving`;
 }
 
 // Itinéraire COMPLET d'une tournée dans Google Maps (tous les arrêts, dans
-// l'ordre). ≤ 10 arrêts : origine = position actuelle + waypoints ordonnés
-// (meilleure expérience). > 10 : format multi-points (origine = 1er arrêt),
-// qui accepte davantage d'étapes.
-export function lienItineraireComplet(points: { lat: number | null; lon: number | null }[]): string {
-  const v = points.filter((p): p is { lat: number; lon: number } => p.lat != null && p.lon != null);
-  if (v.length === 0) return "";
-  if (v.length === 1) return `https://www.google.com/maps/dir/?api=1&destination=${v[0].lat},${v[0].lon}&travelmode=driving`;
-  if (v.length <= 10) {
-    const dest = v[v.length - 1];
-    const wp = v.slice(0, -1).map((p) => `${p.lat},${p.lon}`).join("|");
-    return `https://www.google.com/maps/dir/?api=1&destination=${dest.lat},${dest.lon}&waypoints=${encodeURIComponent(wp)}&travelmode=driving`;
+// l'ordre). Chaque arrêt est passé par son ADRESSE (repli coordonnées) pour
+// que Google affiche exactement les adresses de la tournée. ≤ 10 arrêts :
+// origine = position actuelle + waypoints ordonnés. > 10 : format multi-points.
+export function lienItineraireComplet(points: { adresse?: string; ville?: string; lat: number | null; lon: number | null }[]): string {
+  const toks = points.map(arretGps).filter(Boolean);
+  if (toks.length === 0) return "";
+  if (toks.length === 1) return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(toks[0])}&travelmode=driving`;
+  if (toks.length <= 10) {
+    const dest = encodeURIComponent(toks[toks.length - 1]);
+    const wp = encodeURIComponent(toks.slice(0, -1).join("|"));
+    return `https://www.google.com/maps/dir/?api=1&destination=${dest}&waypoints=${wp}&travelmode=driving`;
   }
-  return `https://www.google.com/maps/dir/${v.map((p) => `${p.lat},${p.lon}`).join("/")}`;
+  return `https://www.google.com/maps/dir/${toks.map(encodeURIComponent).join("/")}`;
 }
 
 export function ageJours(dateIso: string): number | null {
