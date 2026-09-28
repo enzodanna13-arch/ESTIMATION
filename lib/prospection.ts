@@ -140,14 +140,15 @@ export async function enregistrerResultat(params: {
 }
 
 // --- Utilitaires d'affichage ---
-// Un arrêt GPS : on privilégie l'ADRESSE (Google la géocode précisément et
-// affiche la BONNE adresse) ; les coordonnées ne servent que de repli, car
-// Google « raccroche » une coordonnée brute à l'adresse la plus proche, qui
-// n'est pas toujours la bonne.
+// Un arrêt GPS : on privilégie les COORDONNÉES (géocodées au numéro par la BAN
+// via l'ADEME) — Google route alors sur le point EXACT du bien. On évite le
+// texte d'adresse, car le géocodeur de Google lui préfère souvent un commerce
+// du même secteur (ex. « CENTRE AFFAIRES… »), ce qui envoie au mauvais endroit.
+// L'adresse ne sert que de repli si la coordonnée manque.
 function arretGps(p: { adresse?: string; ville?: string; lat: number | null; lon: number | null }): string {
+  if (p.lat != null && p.lon != null) return `${p.lat},${p.lon}`;
   const adr = (p.adresse ?? "").replace(/\s+/g, " ").trim();
   if (adr) return /\d{5}/.test(adr) ? adr : [adr, p.ville].filter(Boolean).join(" ").trim();
-  if (p.lat != null && p.lon != null) return `${p.lat},${p.lon}`;
   return "";
 }
 
