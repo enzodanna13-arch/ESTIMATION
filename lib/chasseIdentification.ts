@@ -18,7 +18,9 @@ export interface CandidatIdentification {
   dateDpe: string;
   scoreBan: number | null;
   superficieFonciere: number | null; // cadastre (m²)
+  terrainEtat: "in" | "near" | "out" | "unknown" | "na";
   parcelle: { idu: string; section: string; numero: string } | null;
+  piscine: boolean | null; // détection sur la vue aérienne (si demandée)
   orthophoto: string | null;
   geoportail: string | null;
   streetView: string | null;
@@ -37,7 +39,10 @@ export interface ParamsIdentification {
   ville?: string;
   surface: number;
   dpe?: string;
-  type?: string; // maison | appartement | immeuble
+  type?: string;       // maison | appartement | immeuble
+  terrainMin?: number; // fourchette de superficie du terrain (m²)
+  terrainMax?: number;
+  piscine?: boolean;   // détecter une piscine sur la vue aérienne
 }
 
 export async function identifierBien(p: ParamsIdentification): Promise<ResultatIdentification> {

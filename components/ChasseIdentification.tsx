@@ -28,6 +28,9 @@ export default function ChasseIdentification({ fiches, negociateurDefaut, onCree
   const [ville, setVille] = useState("");
   const [surface, setSurface] = useState("");
   const [dpe, setDpe] = useState("");
+  const [terrainMin, setTerrainMin] = useState("");
+  const [terrainMax, setTerrainMax] = useState("");
+  const [piscine, setPiscine] = useState(false);
   const [etat, setEtat] = useState<"idle" | "chargement" | "pret">("idle");
   const [candidats, setCandidats] = useState<CandidatIdentification[]>([]);
   const [total, setTotal] = useState(0);
@@ -52,8 +55,15 @@ export default function ChasseIdentification({ fiches, negociateurDefaut, onCree
     if (!/^\d{5}$/.test(codePostal.trim())) { setErr("Renseignez un code postal à 5 chiffres."); return; }
     if (!(s > 0)) { setErr("Renseignez la surface habitable."); return; }
     setEtat("chargement"); setCandidats([]);
+    const tMin = parseFloat(terrainMin.replace(",", ".")), tMax = parseFloat(terrainMax.replace(",", "."));
     try {
-      const r = await identifierBien({ codePostal: codePostal.trim(), ville: ville.trim() || undefined, surface: s, dpe: dpe || undefined, type: type || undefined });
+      const r = await identifierBien({
+        codePostal: codePostal.trim(), ville: ville.trim() || undefined, surface: s,
+        dpe: dpe || undefined, type: type || undefined,
+        terrainMin: Number.isFinite(tMin) ? tMin : undefined,
+        terrainMax: Number.isFinite(tMax) ? tMax : undefined,
+        piscine: piscine || undefined,
+      });
       setCandidats(r.candidats); setTotal(r.totalTrouves); setEtat("pret");
     } catch (e) {
       setErr(e instanceof Error ? e.message : "Identification impossible"); setEtat("idle");
@@ -116,6 +126,23 @@ export default function ChasseIdentification({ fiches, negociateurDefaut, onCree
             <select className={inputCls} value={dpe} onChange={(e) => setDpe(e.target.value)}><option value="">Indifférent</option>{["A", "B", "C", "D", "E", "F", "G"].map((x) => <option key={x}>{x}</option>)}</select>
           </label>
         </div>
+
+        {/* Fourchette de terrain (critère le plus discriminant) + piscine */}
+        <div className="mt-3 grid items-end gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <label className="block">
+            <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-copper">Terrain min (m²)</span>
+            <input className={inputCls} value={terrainMin} onChange={(e) => setTerrainMin(e.target.value.replace(/[^\d]/g, ""))} placeholder="500" inputMode="numeric" />
+          </label>
+          <label className="block">
+            <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-copper">Terrain max (m²)</span>
+            <input className={inputCls} value={terrainMax} onChange={(e) => setTerrainMax(e.target.value.replace(/[^\d]/g, ""))} placeholder="700" inputMode="numeric" />
+          </label>
+          <label className="flex items-center gap-2 py-2 text-sm text-slate-700 lg:col-span-2">
+            <input type="checkbox" checked={piscine} onChange={(e) => setPiscine(e.target.checked)} className="h-4 w-4 accent-copper" />
+            🏊 Rechercher une <b>piscine</b> sur la vue aérienne (l&apos;IA analyse l&apos;orthophoto)
+          </label>
+        </div>
+        <p className="mt-1 text-[11px] text-slate-400">Astuce : la <b>fourchette de terrain</b> est le filtre le plus précis (ex. annonce « terrain 600 m² » → min 550 / max 650). Laissez vide si inconnu.</p>
         <div className="mt-3 flex items-center gap-3">
           <button onClick={() => void lancer()} disabled={etat === "chargement"} className="rounded-lg bg-navy px-5 py-2.5 text-sm font-bold text-white transition hover:bg-navy-deep disabled:opacity-50">
             {etat === "chargement" ? "Recherche des adresses…" : "🔍 Identifier les adresses"}
@@ -149,7 +176,13 @@ export default function ChasseIdentification({ fiches, negociateurDefaut, onCree
                       </div>
                       <div className="mt-1 flex flex-wrap gap-1.5 text-[11px]">
                         {c.surfaceHabitable != null && <span className="rounded bg-slate-100 px-1.5 py-0.5 font-semibold text-slate-600">🏠 {c.surfaceHabitable} m² hab.</span>}
-                        {c.superficieFonciere != null && <span className="rounded bg-emerald-50 px-1.5 py-0.5 font-semibold text-emerald-700">🌳 {int.format(c.superficieFonciere)} m² terrain</span>}
+                        {c.superficieFonciere != null && (
+                          <span className={`rounded px-1.5 py-0.5 font-semibold ${c.terrainEtat === "in" ? "bg-emerald-100 text-emerald-700" : c.terrainEtat === "near" ? "bg-amber-50 text-amber-700" : c.terrainEtat === "out" ? "bg-red-50 text-red-600" : "bg-emerald-50 text-emerald-700"}`}>
+                            🌳 {int.format(c.superficieFonciere)} m² terrain{c.terrainEtat === "in" ? " ✓" : c.terrainEtat === "out" ? " ✗" : ""}
+                          </span>
+                        )}
+                        {c.piscine === true && <span className="rounded bg-sky-100 px-1.5 py-0.5 font-semibold text-sky-700">🏊 Piscine</span>}
+                        {c.piscine === false && <span className="rounded bg-slate-100 px-1.5 py-0.5 font-medium text-slate-400">Sans piscine</span>}
                         {c.dpe && <span className="rounded bg-slate-100 px-1.5 py-0.5 font-semibold text-slate-600">DPE {c.dpe}</span>}
                         {c.parcelle && <span className="rounded bg-slate-100 px-1.5 py-0.5 font-semibold text-slate-600">Parc. {c.parcelle.section} {c.parcelle.numero}</span>}
                         <span className="rounded bg-slate-100 px-1.5 py-0.5 text-slate-500">DPE du {dateFr(c.dateDpe)}</span>
