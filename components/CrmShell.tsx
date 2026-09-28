@@ -32,6 +32,7 @@ const GROUPES: Groupe[] = [
     { v: "ma-tournee", t: "Ma tournée", i: "🧭" },
     { v: "leads", t: "Leads entrant", i: "📥" },
     { v: "chasse", t: "Chasse immobilière", i: "🏹" },
+    { v: "veille", t: "Veille mise en vente", i: "🔔" },
     { v: "estimations-clients", t: "Estimations clients", i: "🏛️" },
     { v: "registre", t: "Registre des appels", i: "📞" },
   ] },

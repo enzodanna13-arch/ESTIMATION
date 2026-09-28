@@ -1,5 +1,6 @@
 {
   "crons": [
-    { "path": "/api/cron/prospection", "schedule": "0 17 * * *" }
+    { "path": "/api/cron/prospection", "schedule": "0 17 * * *" },
+    { "path": "/api/cron/veille-dpe", "schedule": "0 6 * * *" }
   ]
 }

@@ -194,6 +194,29 @@ export async function fetchDpeCandidats(insee: string, p: DpeCandidatParams): Pr
   return out;
 }
 
+// VEILLE : tous les DPE d'une adresse précise (via son identifiant BAN). Sert à
+// détecter qu'un DPE a été réalisé sur un bien qu'on a estimé (signal de vente).
+export async function fetchDpeParBanId(banId: string): Promise<DpeBrut[]> {
+  if (!banId) return [];
+  const qs = `identifiant_ban:"${banId}"`;
+  const bâtir = (avecSelect: boolean) => {
+    const params = new URLSearchParams({ size: "20", sort: "-date_etablissement_dpe", qs });
+    if (avecSelect) params.set("select", CHAMPS);
+    return `${BASE}?${params.toString()}`;
+  };
+  let body: { results?: LigneAdeme[]; next?: string } | null;
+  try { body = await fetchJson(bâtir(true)); }
+  catch (e) {
+    if (e instanceof Error && /\b400\b/.test(e.message)) body = await fetchJson(bâtir(false)).catch(() => null);
+    else return [];
+  }
+  if (!body) return [];
+  const out: DpeBrut[] = [];
+  const vus = new Set<string>();
+  for (const l of body.results ?? []) { const d = mapLigne(l); if (d && !vus.has(d.numeroDpe)) { vus.add(d.numeroDpe); out.push(d); } }
+  return out;
+}
+
 function clauseTypes(typesBien: string[]): string {
   const types = typesBien.filter(Boolean);
   if (types.length === 0) return "";
