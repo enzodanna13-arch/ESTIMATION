@@ -15,6 +15,10 @@ export interface CandidatIdentification {
   dpe: string;
   ges: string;
   anneeConstruction: number | null; // ADEME
+  conso: number | null;        // kWh/m²/an (ADEME)
+  emissionGes: number | null;  // kg CO2/m²/an (ADEME)
+  energie: string;             // catégorie d'énergie de chauffage
+  nbNiveaux: number | null;
   typeBien: string;
   dateDpe: string;
   scoreBan: number | null;
@@ -35,6 +39,7 @@ export interface ExtraitAnnonce {
   type: string; ville: string; codePostal: string;
   surface: number; pieces: number; dpe: string; ges: string;
   surfaceTerrain: number; anneeConstruction: number; prix: number; dateDiagnostic: string;
+  consoEnergie: number; emissionGes: number; energieChauffage: string; nbNiveaux: number; indiceLieu: string; typeVoie: string;
 }
 
 export interface ResultatIdentification {

@@ -264,6 +264,8 @@ export default function ChasseIdentification({ fiches, negociateurDefaut, onCree
                         {c.dpe && <span className="rounded bg-slate-100 px-1.5 py-0.5 font-semibold text-slate-600">DPE {c.dpe}</span>}
                         {c.ges && <span className="rounded bg-slate-100 px-1.5 py-0.5 font-semibold text-slate-600">GES {c.ges}</span>}
                         {c.anneeConstruction && <span className="rounded bg-slate-100 px-1.5 py-0.5 font-semibold text-slate-600">🏗️ {c.anneeConstruction}</span>}
+                        {c.conso != null && c.conso > 0 && <span className="rounded bg-slate-100 px-1.5 py-0.5 font-semibold text-slate-600">⚡ {c.conso} kWh/m²</span>}
+                        {c.energie && <span className="rounded bg-slate-100 px-1.5 py-0.5 font-semibold text-slate-600">🔥 {c.energie}</span>}
                         {c.parcelle && <span className="rounded bg-slate-100 px-1.5 py-0.5 font-semibold text-slate-600">Parc. {c.parcelle.section} {c.parcelle.numero}</span>}
                         <span className={`rounded px-1.5 py-0.5 font-semibold ${c.dateMatch ? "bg-emerald-100 text-emerald-700" : "bg-slate-100 text-slate-500"}`}>DPE du {dateFr(c.dateDpe)}{c.dateMatch ? " ✓ date annonce" : ""}</span>
                       </div>
