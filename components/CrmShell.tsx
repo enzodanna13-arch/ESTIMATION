@@ -42,6 +42,7 @@ const GROUPES: Groupe[] = [
   ] },
   { label: "Clients & dossiers", items: [
     { v: "clients", t: "Dossiers clients", i: "📁" },
+    { v: "acquereurs", t: "Acquéreurs", i: "🔑" },
   ] },
   { label: "Marketing & médias", items: [
     { v: "documents", t: "Génération de documents", i: "📄" },

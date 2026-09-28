@@ -12,6 +12,7 @@ import RegistrePage from "@/components/RegistrePage";
 import LeadsPage from "@/components/LeadsPage";
 import ChassePage from "@/components/ChassePage";
 import VeilleDpePage from "@/components/VeilleDpePage";
+import AcquereursPage from "@/components/AcquereursPage";
 import ProspectionPage from "@/components/ProspectionPage";
 import MaTourneePage from "@/components/MaTourneePage";
 import FlyersPage from "@/components/FlyersPage";
@@ -243,7 +244,7 @@ export default function Home() {
   const [step, setStep] = useState(0);
   // Accueil à deux univers : Estimation (les 4 missions) et Génération de
   // documents (menu des documents de l'agence)
-  const [univers, setUnivers] = useState<"" | "estimation" | "documents" | "clients" | "historique" | "visites" | "registre" | "leads" | "chasse" | "veille" | "prospection" | "ma-tournee" | "flyers" | "estimations-clients" | "dashboard" | "negociateurs" | "espace" | "sauvegarde" | "reglages">("");
+  const [univers, setUnivers] = useState<"" | "estimation" | "documents" | "clients" | "historique" | "visites" | "registre" | "leads" | "chasse" | "veille" | "acquereurs" | "prospection" | "ma-tournee" | "flyers" | "estimations-clients" | "dashboard" | "negociateurs" | "espace" | "sauvegarde" | "reglages">("");
   const [tourneeCible, setTourneeCible] = useState<string | undefined>(undefined);
   // Métier actif (compartimentage CRM) : Transaction contient tout l'existant ;
   // Syndic et Gestion locative sont préparés (écran « à venir »).
@@ -843,6 +844,7 @@ export default function Home() {
             {univers === "leads" && <LeadsPage onRetour={() => setUnivers("")} />}
             {univers === "chasse" && <ChassePage onRetour={() => setUnivers("")} />}
             {univers === "veille" && <VeilleDpePage onRetour={() => setUnivers("")} onOuvrirEstimation={(id) => void openEntry(id, false)} />}
+            {univers === "acquereurs" && <AcquereursPage onRetour={() => setUnivers("")} onOuvrirEstimation={(id) => void openEntry(id, false)} />}
             {univers === "prospection" && <ProspectionPage onRetour={() => setUnivers("")} />}
             {univers === "ma-tournee" && <MaTourneePage tourneeId={tourneeCible} onRetour={() => { setTourneeCible(undefined); setUnivers("prospection"); }} />}
             {univers === "flyers" && <FlyersPage onRetour={() => setUnivers("")} />}
