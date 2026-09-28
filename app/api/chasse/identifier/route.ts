@@ -23,6 +23,7 @@ interface Corps {
   surface: number;         // surface habitable cible
   dpe?: string;
   ges?: string;            // classe GES A..G
+  anneeConstruction?: number; // année de construction
   type?: string;           // maison | appartement | immeuble
   terrainMin?: number;     // fourchette de superficie du terrain (m²)
   terrainMax?: number;
@@ -35,7 +36,7 @@ interface Corps {
 interface Extrait {
   type: string; ville: string; codePostal: string;
   surface: number; pieces: number; dpe: string; ges: string;
-  surfaceTerrain: number; prix: number; dateDiagnostic: string;
+  surfaceTerrain: number; anneeConstruction: number; prix: number; dateDiagnostic: string;
 }
 
 // Extraction IA des caractéristiques (dont la DATE de diagnostic) depuis un
@@ -51,10 +52,11 @@ const SCHEMA_EXTRAIT = {
     dpe: { type: "string", description: "Classe DPE / énergie : la lettre A à G qui suit « DPE » (ex. « DPE D » → D). Vide si inconnue." },
     ges: { type: "string", description: "Classe GES / émissions : la lettre A à G qui suit « GES » (ex. « GES B » → B). Vide si inconnue." },
     surfaceTerrain: { type: "number", description: "Surface du TERRAIN / de la parcelle en m² (nombre seul), ex. « Terrain 535 m² » → 535. Prends la valeur chiffrée exacte de l'entête plutôt qu'un « environ » du texte. 0 si inconnue ou non applicable (appartement)." },
+    anneeConstruction: { type: "number", description: "Année de construction (4 chiffres), ex. « Construit en 1987 » → 1987. 0 si inconnue." },
     prix: { type: "number", description: "Prix affiché en euros, nombre seul sans espaces (ex. « 499 000 € » → 499000). 0 si inconnu." },
     dateDiagnostic: { type: "string", description: "Date d'établissement du DPE au format AAAA-MM-JJ, UNIQUEMENT si l'annonce donne explicitement la date du DPE/diagnostic (ex. « DPE réalisé le 12/03/2025 », « diagnostic établi le… »). NE PAS utiliser la date de publication de l'annonce (« Publiée le… »), l'année de construction (« Construit en… »), ni une date de visite. Si aucune date de diagnostic n'est explicitement donnée → \"\" (vide). Convertis « 12/03/2025 » ou « 12 mars 2025 » en 2025-03-12." },
   },
-  required: ["type", "ville", "codePostal", "surface", "pieces", "dpe", "ges", "surfaceTerrain", "prix", "dateDiagnostic"],
+  required: ["type", "ville", "codePostal", "surface", "pieces", "dpe", "ges", "surfaceTerrain", "anneeConstruction", "prix", "dateDiagnostic"],
 } as const;
 
 async function extraireAnnonce(input: { texte?: string; pdf?: string }): Promise<Extrait | null> {
@@ -90,7 +92,7 @@ async function extraireAnnonce(input: { texte?: string; pdf?: string }): Promise
     return {
       type: str("type").toLowerCase(), ville: str("ville"), codePostal: str("codePostal"),
       surface: num("surface"), pieces: num("pieces"), dpe: str("dpe").toUpperCase().slice(0, 1), ges: str("ges").toUpperCase().slice(0, 1),
-      surfaceTerrain: num("surfaceTerrain"), prix: num("prix"), dateDiagnostic: dateIso,
+      surfaceTerrain: num("surfaceTerrain"), anneeConstruction: num("anneeConstruction"), prix: num("prix"), dateDiagnostic: dateIso,
     };
   } catch { return null; }
 }
@@ -129,6 +131,11 @@ function scoreHabitable(d: DpeBrut, b: Corps): number {
   }
   if (b.dpe && d.etiquetteDpe && d.etiquetteDpe === b.dpe.toUpperCase().slice(0, 1)) s += 6;
   if (b.ges && d.etiquetteGes && d.etiquetteGes === b.ges.toUpperCase().slice(0, 1)) s += 5;
+  // Année de construction : critère très discriminant (± tolérance ADEME).
+  if (b.anneeConstruction && d.anneeConstruction) {
+    const diff = Math.abs(d.anneeConstruction - b.anneeConstruction);
+    if (diff === 0) s += 14; else if (diff <= 2) s += 8; else if (diff <= 5) s += 3; else s -= 4;
+  }
   if (d.scoreBan != null) s += d.scoreBan * 4;
   const an = anneeDe(d.dateEtablissement);
   if (an) { const age = new Date().getFullYear() - an; if (age <= 1) s += 5; else if (age <= 2) s += 2; }
@@ -167,6 +174,10 @@ function raisons(d: DpeBrut, b: Corps, par: ParcelleCadastre | null, etatT: Etat
     r.push(`Terrain ${par.contenance} m²${tag}`);
   } else if (etatT === "unknown") r.push("Terrain non trouvé au cadastre");
   if (d.etiquetteDpe) r.push(`DPE ${d.etiquetteDpe}${d.etiquetteGes ? ` · GES ${d.etiquetteGes}` : ""}`);
+  if (d.anneeConstruction) {
+    const tag = b.anneeConstruction ? (d.anneeConstruction === b.anneeConstruction ? " ✓" : Math.abs(d.anneeConstruction - b.anneeConstruction) <= 2 ? " ~" : " ✗") : "";
+    r.push(`Construit en ${d.anneeConstruction}${tag}`);
+  }
   const an = anneeDe(d.dateEtablissement);
   if (an) r.push(`Diagnostic ${an}`);
   if (par?.section && par?.numero) r.push(`Parcelle ${par.section} ${par.numero}`);
@@ -193,6 +204,7 @@ export async function POST(request: Request) {
         surface: body.surface > 0 ? body.surface : extrait.surface,
         dpe: body.dpe || extrait.dpe || undefined,
         ges: body.ges || extrait.ges || undefined,
+        anneeConstruction: body.anneeConstruction || (extrait.anneeConstruction > 1700 ? extrait.anneeConstruction : undefined),
         terrainMin: body.terrainMin ?? (extrait.surfaceTerrain > 0 ? Math.round(extrait.surfaceTerrain * 0.9) : undefined),
         terrainMax: body.terrainMax ?? (extrait.surfaceTerrain > 0 ? Math.round(extrait.surfaceTerrain * 1.1) : undefined),
         dateDiagnostic: body.dateDiagnostic || extrait.dateDiagnostic || undefined,
@@ -251,6 +263,7 @@ export async function POST(request: Request) {
       adresse: d.adresse, ville: d.ville, codePostal: d.codePostal, codeInsee: d.codeInsee,
       lat: d.lat, lon: d.lon,
       surfaceHabitable: d.surface, dpe: d.etiquetteDpe, ges: d.etiquetteGes, typeBien: d.typeBien,
+      anneeConstruction: d.anneeConstruction,
       dateDpe: d.dateEtablissement, scoreBan: d.scoreBan,
       superficieFonciere: par?.contenance ?? null,
       terrainEtat: etatT,

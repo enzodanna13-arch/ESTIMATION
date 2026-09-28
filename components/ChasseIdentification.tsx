@@ -29,6 +29,7 @@ export default function ChasseIdentification({ fiches, negociateurDefaut, onCree
   const [surface, setSurface] = useState("");
   const [dpe, setDpe] = useState("");
   const [ges, setGes] = useState("");
+  const [annee, setAnnee] = useState("");
   const [terrainMin, setTerrainMin] = useState("");
   const [terrainMax, setTerrainMax] = useState("");
   const [piscine, setPiscine] = useState(false);
@@ -62,6 +63,7 @@ export default function ChasseIdentification({ fiches, negociateurDefaut, onCree
     const r = await identifierBien({
       codePostal: codePostal.trim(), ville: ville.trim() || undefined, surface: s,
       dpe: dpe || undefined, ges: ges || undefined, type: type || undefined,
+      anneeConstruction: /^\d{4}$/.test(annee) ? Number(annee) : undefined,
       terrainMin: Number.isFinite(tMin) ? tMin : undefined,
       terrainMax: Number.isFinite(tMax) ? tMax : undefined,
       piscine: piscine || undefined,
@@ -82,6 +84,7 @@ export default function ChasseIdentification({ fiches, negociateurDefaut, onCree
       if (e.surface) setSurface(String(e.surface));
       if (e.dpe) setDpe(e.dpe);
       if (e.ges) setGes(e.ges);
+      if (e.anneeConstruction && e.anneeConstruction > 1700) setAnnee(String(e.anneeConstruction));
       if (e.surfaceTerrain) { setTerrainMin(String(Math.round(e.surfaceTerrain * 0.9))); setTerrainMax(String(Math.round(e.surfaceTerrain * 1.1))); }
       setDateDiag(e.dateDiagnostic || "");
     }
@@ -205,6 +208,10 @@ export default function ChasseIdentification({ fiches, negociateurDefaut, onCree
             <input className={inputCls} value={terrainMax} onChange={(e) => setTerrainMax(e.target.value.replace(/[^\d]/g, ""))} placeholder="700" inputMode="numeric" />
           </label>
           <label className="block">
+            <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-copper">Année constr.</span>
+            <input className={inputCls} value={annee} onChange={(e) => setAnnee(e.target.value.replace(/\D/g, "").slice(0, 4))} placeholder="1987" inputMode="numeric" />
+          </label>
+          <label className="block">
             <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-copper">Date du DPE</span>
             <input type="date" className={inputCls} value={dateDiag} onChange={(e) => setDateDiag(e.target.value)} />
           </label>
@@ -256,6 +263,7 @@ export default function ChasseIdentification({ fiches, negociateurDefaut, onCree
                         {c.piscine === false && <span className="rounded bg-slate-100 px-1.5 py-0.5 font-medium text-slate-400">Sans piscine</span>}
                         {c.dpe && <span className="rounded bg-slate-100 px-1.5 py-0.5 font-semibold text-slate-600">DPE {c.dpe}</span>}
                         {c.ges && <span className="rounded bg-slate-100 px-1.5 py-0.5 font-semibold text-slate-600">GES {c.ges}</span>}
+                        {c.anneeConstruction && <span className="rounded bg-slate-100 px-1.5 py-0.5 font-semibold text-slate-600">🏗️ {c.anneeConstruction}</span>}
                         {c.parcelle && <span className="rounded bg-slate-100 px-1.5 py-0.5 font-semibold text-slate-600">Parc. {c.parcelle.section} {c.parcelle.numero}</span>}
                         <span className={`rounded px-1.5 py-0.5 font-semibold ${c.dateMatch ? "bg-emerald-100 text-emerald-700" : "bg-slate-100 text-slate-500"}`}>DPE du {dateFr(c.dateDpe)}{c.dateMatch ? " ✓ date annonce" : ""}</span>
                       </div>

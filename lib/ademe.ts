@@ -45,6 +45,7 @@ export interface DpeBrut {
   typeBatiment: string;    // valeur brute ADEME
   surface: number | null;
   periodeConstruction: string;
+  anneeConstruction: number | null; // année de construction (ADEME) si connue
   adresse: string;
   numero: string;
   voie: string;
@@ -113,6 +114,7 @@ function mapLigne(r: LigneAdeme): DpeBrut | null {
     typeBatiment: String(r.type_batiment ?? ""),
     surface: num(r.surface_habitable_logement),
     periodeConstruction: String(r.periode_construction ?? ""),
+    anneeConstruction: (() => { const a = num(rec.annee_construction); return a != null && a > 1700 && a <= new Date().getFullYear() + 1 ? a : null; })(),
     adresse: String(r.adresse_ban ?? "").replace(/\s+/g, " ").trim(),
     numero: String(r.numero_voie_ban ?? "").trim(),
     voie: String(r.nom_rue_ban ?? "").trim(),

@@ -14,6 +14,7 @@ export interface CandidatIdentification {
   surfaceHabitable: number | null; // ADEME (m²)
   dpe: string;
   ges: string;
+  anneeConstruction: number | null; // ADEME
   typeBien: string;
   dateDpe: string;
   scoreBan: number | null;
@@ -33,7 +34,7 @@ export interface CandidatIdentification {
 export interface ExtraitAnnonce {
   type: string; ville: string; codePostal: string;
   surface: number; pieces: number; dpe: string; ges: string;
-  surfaceTerrain: number; prix: number; dateDiagnostic: string;
+  surfaceTerrain: number; anneeConstruction: number; prix: number; dateDiagnostic: string;
 }
 
 export interface ResultatIdentification {
@@ -48,6 +49,7 @@ export interface ParamsIdentification {
   surface?: number;
   dpe?: string;
   ges?: string;          // classe GES A..G
+  anneeConstruction?: number; // année de construction
   type?: string;         // maison | appartement | immeuble
   terrainMin?: number;   // fourchette de superficie du terrain (m²)
   terrainMax?: number;
