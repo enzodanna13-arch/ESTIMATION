@@ -32,7 +32,9 @@ function IcoMini({ name }: { name: "phone" | "mail" | "pin" }) {
 
 // ---------------------------------------------------------------------------
 export function FlyerRecto({ d }: { d: FlyerData }) {
-  const nomComplet = [d.negoPrenom, d.negoNom].filter(Boolean).join(" ").replace(/\s+/g, " ").trim() || d.negoNom;
+  // negoNom contient déjà le nom complet (« Léa Roussel ») : on NE re-préfixe
+  // PAS le prénom, sinon il ressort deux fois (« Léa Léa Roussel »).
+  const nomComplet = (d.negoNom || d.negoPrenom || "").replace(/\s+/g, " ").trim();
   return (
     <div style={{ ...face, backgroundImage: `url('${RECTO_BG}')` }}>
       <img src={RECTO_BG} alt="" style={{ display: "none" }} />
