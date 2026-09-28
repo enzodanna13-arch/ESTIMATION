@@ -12,6 +12,7 @@ import {
 import { NEGOCIATEURS } from "@/lib/equipe";
 
 const ChasseCarte = dynamic(() => import("@/components/ChasseCarte"), { ssr: false });
+const ChasseIdentification = dynamic(() => import("@/components/ChasseIdentification"), { ssr: false });
 
 const inputCls = "w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-copper focus:outline-none focus:ring-2 focus:ring-copper/20";
 const int = new Intl.NumberFormat("fr-FR");
@@ -30,7 +31,7 @@ export default function ChassePage({ onRetour }: { onRetour: () => void }) {
   const [filtreNego, setFiltreNego] = useState("");
   const [tri, setTri] = useState<"recent" | "marche" | "prix-asc" | "prix-desc" | "ecart">("recent");
   const [selection, setSelection] = useState<FicheChasse | null>(null);
-  const [vue, setVue] = useState<"liste" | "carte">("carte");
+  const [vue, setVue] = useState<"liste" | "carte" | "identification">("carte");
   const [geoEnCours, setGeoEnCours] = useState(false);
   const [showPaste, setShowPaste] = useState(false);
 
@@ -202,6 +203,7 @@ export default function ChassePage({ onRetour }: { onRetour: () => void }) {
           <div className="flex rounded-lg border border-slate-200 bg-white p-0.5 text-sm font-semibold">
             <button onClick={() => setVue("liste")} className={`rounded-md px-3 py-1 ${vue === "liste" ? "bg-navy text-white" : "text-slate-600"}`}>Liste</button>
             <button onClick={() => setVue("carte")} className={`rounded-md px-3 py-1 ${vue === "carte" ? "bg-navy text-white" : "text-slate-600"}`}>🗺️ Carte</button>
+            <button onClick={() => setVue("identification")} className={`rounded-md px-3 py-1 ${vue === "identification" ? "bg-navy text-white" : "text-slate-600"}`}>🔎 Identification</button>
           </div>
           <button onClick={() => setShowBook((v) => !v)} className="rounded-lg border border-copper/40 bg-copper/10 px-3 py-1.5 text-sm font-semibold text-copper hover:bg-copper/20">⚡ Bouton Piger</button>
           <button onClick={onRetour} className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm text-slate-600 hover:bg-slate-50">← Retour</button>
@@ -275,6 +277,10 @@ export default function ChassePage({ onRetour }: { onRetour: () => void }) {
           </div>
           <ChasseCarte fiches={fiches} onOpen={(f) => setSelection(f)} />
         </div>
+      )}
+
+      {vue === "identification" && (
+        <ChasseIdentification fiches={fiches} negociateurDefaut={nego} onCree={recharger} />
       )}
 
       {vue === "liste" && (<>

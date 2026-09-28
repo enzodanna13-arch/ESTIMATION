@@ -145,6 +145,55 @@ async function fetchJson(url: string, ms = 20000, retries = 2): Promise<{ result
   return null;
 }
 
+// ---------------------------------------------------------------------------
+// IDENTIFICATION (module Chasse) : à partir des quelques champs connus d'une
+// annonce (commune + surface habitable + classe DPE + type), on retrouve dans
+// l'ADEME les DPE qui collent — donc les ADRESSES candidates du bien à vendre.
+export interface DpeCandidatParams {
+  surface: number;        // surface habitable cible (m²)
+  type?: string;          // maison | appartement | immeuble (optionnel)
+  dpe?: string;           // classe A..G (optionnel)
+  tolerancePct?: number;  // marge de surface en % (défaut 8)
+  toleranceMin?: number;  // marge de surface minimale en m² (défaut 6)
+  taille?: number;        // nombre de candidats à récupérer (défaut 60, max 100)
+}
+
+export async function fetchDpeCandidats(insee: string, p: DpeCandidatParams): Promise<DpeBrut[]> {
+  if (!insee || !(p.surface > 0)) return [];
+  const marge = Math.max(p.surface * ((p.tolerancePct ?? 8) / 100), p.toleranceMin ?? 6);
+  const sMin = Math.max(1, Math.round(p.surface - marge));
+  const sMax = Math.round(p.surface + marge);
+  const clauses = [`code_insee_ban:"${insee}"`];
+  if (p.type) { const c = clauseTypes([p.type]); if (c) clauses.push(c); }
+  if (p.dpe) clauses.push(`etiquette_dpe:"${p.dpe.toUpperCase().slice(0, 1)}"`);
+  clauses.push(`surface_habitable_logement:[${sMin} TO ${sMax}]`);
+  const qs = clauses.join(" AND ");
+  const taille = Math.min(p.taille ?? 60, 100);
+
+  const bâtirUrl = (avecSelect: boolean) => {
+    const params = new URLSearchParams({ size: String(taille), sort: "-date_etablissement_dpe", qs });
+    if (avecSelect) params.set("select", CHAMPS);
+    return `${BASE}?${params.toString()}`;
+  };
+
+  let body: { results?: LigneAdeme[]; next?: string } | null;
+  try {
+    body = await fetchJson(bâtirUrl(true));
+  } catch (e) {
+    // 400 = souvent un champ `select` non résolu : on réessaie sans select.
+    if (e instanceof Error && /\b400\b/.test(e.message)) body = await fetchJson(bâtirUrl(false)).catch(() => null);
+    else return [];
+  }
+  if (!body) return [];
+  const out: DpeBrut[] = [];
+  const vus = new Set<string>();
+  for (const l of body.results ?? []) {
+    const d = mapLigne(l);
+    if (d && !vus.has(d.numeroDpe)) { vus.add(d.numeroDpe); out.push(d); }
+  }
+  return out;
+}
+
 function clauseTypes(typesBien: string[]): string {
   const types = typesBien.filter(Boolean);
   if (types.length === 0) return "";
