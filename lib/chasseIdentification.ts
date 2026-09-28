@@ -32,7 +32,7 @@ export interface CandidatIdentification {
 
 export interface ExtraitAnnonce {
   type: string; ville: string; codePostal: string;
-  surface: number; pieces: number; dpe: string;
+  surface: number; pieces: number; dpe: string; ges: string;
   surfaceTerrain: number; prix: number; dateDiagnostic: string;
 }
 
@@ -47,6 +47,7 @@ export interface ParamsIdentification {
   ville?: string;
   surface?: number;
   dpe?: string;
+  ges?: string;          // classe GES A..G
   type?: string;         // maison | appartement | immeuble
   terrainMin?: number;   // fourchette de superficie du terrain (m²)
   terrainMax?: number;

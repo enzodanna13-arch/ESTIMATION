@@ -152,7 +152,8 @@ async function fetchJson(url: string, ms = 20000, retries = 2): Promise<{ result
 export interface DpeCandidatParams {
   surface: number;        // surface habitable cible (m²)
   type?: string;          // maison | appartement | immeuble (optionnel)
-  dpe?: string;           // classe A..G (optionnel)
+  dpe?: string;           // classe DPE A..G (optionnel)
+  ges?: string;           // classe GES A..G (optionnel)
   tolerancePct?: number;  // marge de surface en % (défaut 8)
   toleranceMin?: number;  // marge de surface minimale en m² (défaut 6)
   taille?: number;        // nombre de candidats à récupérer (défaut 60, max 100)
@@ -166,6 +167,7 @@ export async function fetchDpeCandidats(insee: string, p: DpeCandidatParams): Pr
   const clauses = [`code_insee_ban:"${insee}"`];
   if (p.type) { const c = clauseTypes([p.type]); if (c) clauses.push(c); }
   if (p.dpe) clauses.push(`etiquette_dpe:"${p.dpe.toUpperCase().slice(0, 1)}"`);
+  if (p.ges) clauses.push(`etiquette_ges:"${p.ges.toUpperCase().slice(0, 1)}"`);
   clauses.push(`surface_habitable_logement:[${sMin} TO ${sMax}]`);
   const qs = clauses.join(" AND ");
   const taille = Math.min(p.taille ?? 60, 100);

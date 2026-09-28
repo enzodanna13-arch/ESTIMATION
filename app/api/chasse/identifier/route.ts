@@ -22,6 +22,7 @@ interface Corps {
   codeInsee?: string;
   surface: number;         // surface habitable cible
   dpe?: string;
+  ges?: string;            // classe GES A..G
   type?: string;           // maison | appartement | immeuble
   terrainMin?: number;     // fourchette de superficie du terrain (m²)
   terrainMax?: number;
@@ -32,7 +33,7 @@ interface Corps {
 
 interface Extrait {
   type: string; ville: string; codePostal: string;
-  surface: number; pieces: number; dpe: string;
+  surface: number; pieces: number; dpe: string; ges: string;
   surfaceTerrain: number; prix: number; dateDiagnostic: string;
 }
 
@@ -46,12 +47,13 @@ const SCHEMA_EXTRAIT = {
     codePostal: { type: "string", description: "Code postal à 5 chiffres. Vide si inconnu." },
     surface: { type: "number", description: "Surface habitable en m² (nombre seul). 0 si inconnue." },
     pieces: { type: "number", description: "Nombre de pièces. 0 si inconnu." },
-    dpe: { type: "string", description: "Classe DPE (A à G). Vide si inconnue." },
+    dpe: { type: "string", description: "Classe DPE / énergie (A à G). Vide si inconnue." },
+    ges: { type: "string", description: "Classe GES / émissions (A à G). Vide si inconnue." },
     surfaceTerrain: { type: "number", description: "Surface du terrain en m² (nombre seul). 0 si inconnue ou non applicable." },
     prix: { type: "number", description: "Prix affiché en euros (nombre seul). 0 si inconnu." },
     dateDiagnostic: { type: "string", description: "Date d'établissement du DPE/diagnostic si mentionnée dans le texte, au format AAAA-MM-JJ. Vide si absente. Convertis « 12/03/2025 » ou « 12 mars 2025 » en 2025-03-12." },
   },
-  required: ["type", "ville", "codePostal", "surface", "pieces", "dpe", "surfaceTerrain", "prix", "dateDiagnostic"],
+  required: ["type", "ville", "codePostal", "surface", "pieces", "dpe", "ges", "surfaceTerrain", "prix", "dateDiagnostic"],
 } as const;
 
 async function extraireTexteAnnonce(texte: string): Promise<Extrait | null> {
@@ -73,7 +75,7 @@ async function extraireTexteAnnonce(texte: string): Promise<Extrait | null> {
     const dateIso = (() => { const m = str("dateDiagnostic").match(/(\d{4})-(\d{2})-(\d{2})/); return m ? m[0] : ""; })();
     return {
       type: str("type").toLowerCase(), ville: str("ville"), codePostal: str("codePostal"),
-      surface: num("surface"), pieces: num("pieces"), dpe: str("dpe").toUpperCase().slice(0, 1),
+      surface: num("surface"), pieces: num("pieces"), dpe: str("dpe").toUpperCase().slice(0, 1), ges: str("ges").toUpperCase().slice(0, 1),
       surfaceTerrain: num("surfaceTerrain"), prix: num("prix"), dateDiagnostic: dateIso,
     };
   } catch { return null; }
@@ -112,6 +114,7 @@ function scoreHabitable(d: DpeBrut, b: Corps): number {
     s += Math.max(0, 34 * (1 - ecart / 0.1)); // 0 % → +34 ; ≥10 % → 0
   }
   if (b.dpe && d.etiquetteDpe && d.etiquetteDpe === b.dpe.toUpperCase().slice(0, 1)) s += 6;
+  if (b.ges && d.etiquetteGes && d.etiquetteGes === b.ges.toUpperCase().slice(0, 1)) s += 5;
   if (d.scoreBan != null) s += d.scoreBan * 4;
   const an = anneeDe(d.dateEtablissement);
   if (an) { const age = new Date().getFullYear() - an; if (age <= 1) s += 5; else if (age <= 2) s += 2; }
@@ -175,6 +178,7 @@ export async function POST(request: Request) {
         codePostal: body.codePostal || (/^\d{5}$/.test(extrait.codePostal) ? extrait.codePostal : undefined),
         surface: body.surface > 0 ? body.surface : extrait.surface,
         dpe: body.dpe || extrait.dpe || undefined,
+        ges: body.ges || extrait.ges || undefined,
         terrainMin: body.terrainMin ?? (extrait.surfaceTerrain > 0 ? Math.round(extrait.surfaceTerrain * 0.9) : undefined),
         terrainMax: body.terrainMax ?? (extrait.surfaceTerrain > 0 ? Math.round(extrait.surfaceTerrain * 1.1) : undefined),
         dateDiagnostic: body.dateDiagnostic || extrait.dateDiagnostic || undefined,
@@ -196,7 +200,7 @@ export async function POST(request: Request) {
   const brut: DpeBrut[] = [];
   const vus = new Set<string>();
   for (const insee of insees.slice(0, 4)) {
-    const c = await fetchDpeCandidats(insee, { surface: body.surface, type: body.type, dpe: body.dpe, taille: 80 }).catch(() => []);
+    const c = await fetchDpeCandidats(insee, { surface: body.surface, type: body.type, dpe: body.dpe, ges: body.ges, taille: 80 }).catch(() => []);
     for (const d of c) if (!vus.has(d.numeroDpe)) { vus.add(d.numeroDpe); brut.push(d); }
   }
 
