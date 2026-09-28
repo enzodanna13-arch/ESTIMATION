@@ -31,6 +31,8 @@ export default function ChasseIdentification({ fiches, negociateurDefaut, onCree
   const [terrainMin, setTerrainMin] = useState("");
   const [terrainMax, setTerrainMax] = useState("");
   const [piscine, setPiscine] = useState(false);
+  const [texte, setTexte] = useState("");
+  const [dateDiag, setDateDiag] = useState("");
   const [etat, setEtat] = useState<"idle" | "chargement" | "pret">("idle");
   const [candidats, setCandidats] = useState<CandidatIdentification[]>([]);
   const [total, setTotal] = useState(0);
@@ -56,18 +58,37 @@ export default function ChasseIdentification({ fiches, negociateurDefaut, onCree
     if (!(s > 0)) { setErr("Renseignez la surface habitable."); return; }
     setEtat("chargement"); setCandidats([]);
     const tMin = parseFloat(terrainMin.replace(",", ".")), tMax = parseFloat(terrainMax.replace(",", "."));
-    try {
-      const r = await identifierBien({
-        codePostal: codePostal.trim(), ville: ville.trim() || undefined, surface: s,
-        dpe: dpe || undefined, type: type || undefined,
-        terrainMin: Number.isFinite(tMin) ? tMin : undefined,
-        terrainMax: Number.isFinite(tMax) ? tMax : undefined,
-        piscine: piscine || undefined,
-      });
-      setCandidats(r.candidats); setTotal(r.totalTrouves); setEtat("pret");
-    } catch (e) {
-      setErr(e instanceof Error ? e.message : "Identification impossible"); setEtat("idle");
+    const r = await identifierBien({
+      codePostal: codePostal.trim(), ville: ville.trim() || undefined, surface: s,
+      dpe: dpe || undefined, type: type || undefined,
+      terrainMin: Number.isFinite(tMin) ? tMin : undefined,
+      terrainMax: Number.isFinite(tMax) ? tMax : undefined,
+      piscine: piscine || undefined,
+      dateDiagnostic: /^\d{4}-\d{2}-\d{2}$/.test(dateDiag) ? dateDiag : undefined,
+    });
+    if (r.error) { setErr(r.error); setEtat("idle"); return; }
+    setCandidats(r.candidats); setTotal(r.totalTrouves); setEtat("pret");
+  };
+
+  // Analyse d'un TEXTE d'annonce : l'IA extrait tout (dont la date de DPE),
+  // pré-remplit le formulaire, et lance la recherche.
+  const lancerTexte = async () => {
+    setErr(null);
+    if (texte.trim().length < 20) { setErr("Collez le texte de l'annonce."); return; }
+    setEtat("chargement"); setCandidats([]);
+    const r = await identifierBien({ texte: texte.trim(), piscine: piscine || undefined });
+    if (r.extrait) {
+      const e = r.extrait;
+      if (e.type) setType(/maison/i.test(e.type) ? "maison" : /appart/i.test(e.type) ? "appartement" : /immeuble/i.test(e.type) ? "immeuble" : "");
+      if (e.codePostal) setCodePostal(e.codePostal);
+      if (e.ville) setVille(e.ville);
+      if (e.surface) setSurface(String(e.surface));
+      if (e.dpe) setDpe(e.dpe);
+      if (e.surfaceTerrain) { setTerrainMin(String(Math.round(e.surfaceTerrain * 0.9))); setTerrainMax(String(Math.round(e.surfaceTerrain * 1.1))); }
+      setDateDiag(e.dateDiagnostic || "");
     }
+    if (r.error) { setErr(`${r.error}${r.extrait ? " (champs pré-remplis ci-dessous, complétez puis relancez)" : ""}`); setEtat("idle"); return; }
+    setCandidats(r.candidats); setTotal(r.totalTrouves); setEtat("pret");
   };
 
   const creerFiche = async (c: CandidatIdentification) => {
@@ -93,7 +114,23 @@ export default function ChasseIdentification({ fiches, negociateurDefaut, onCree
         <p>À partir des caractéristiques d&apos;une annonce (commune + surface + DPE + type), on retrouve la ou les <b>adresses probables</b> via la base <b>ADEME</b> (open data), complétées de la <b>surface du terrain</b> (cadastre) et d&apos;une <b>vue aérienne IGN</b>. Vous confirmez visuellement l&apos;adresse.</p>
       </div>
 
-      {/* Formulaire */}
+      {/* Coller le texte de l'annonce : l'IA extrait tout et cherche seule */}
+      <div className="rounded-2xl border border-copper/30 bg-copper/5 p-4">
+        <div className="mb-1 flex items-center gap-2">
+          <h3 className="text-base font-bold text-navy">📝 Coller le texte d&apos;une annonce</h3>
+          <span className="rounded-full bg-copper/15 px-2 py-0.5 text-[10px] font-bold text-copper">le plus rapide</span>
+        </div>
+        <p className="mb-2 text-xs text-slate-500">L&apos;IA extrait tout (type, surface, DPE, terrain…) et lance la recherche. Astuce : si l&apos;annonce mentionne la <b>date du DPE</b>, la correspondance devient quasi certaine.</p>
+        <textarea className={`${inputCls} min-h-[100px]`} placeholder="Collez ici le texte de l'annonce (Leboncoin, SeLoger…)…" value={texte} onChange={(e) => setTexte(e.target.value)} />
+        <div className="mt-2 flex items-center gap-3">
+          <button onClick={() => void lancerTexte()} disabled={etat === "chargement" || texte.trim().length < 20} className="rounded-lg bg-copper px-5 py-2.5 text-sm font-bold text-white transition hover:brightness-110 disabled:opacity-40">
+            {etat === "chargement" ? "Analyse…" : "🔍 Analyser le texte et chercher"}
+          </button>
+          {dateDiag && <span className="rounded-lg bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700">📅 DPE détecté : {dateDiag.split("-").reverse().join("/")}</span>}
+        </div>
+      </div>
+
+      {/* Formulaire (manuel / ajustement) */}
       <div className="rounded-2xl border border-slate-200 bg-white p-4">
         {fichesUtiles.length > 0 && (
           <label className="mb-3 block">
@@ -137,9 +174,13 @@ export default function ChasseIdentification({ fiches, negociateurDefaut, onCree
             <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-copper">Terrain max (m²)</span>
             <input className={inputCls} value={terrainMax} onChange={(e) => setTerrainMax(e.target.value.replace(/[^\d]/g, ""))} placeholder="700" inputMode="numeric" />
           </label>
-          <label className="flex items-center gap-2 py-2 text-sm text-slate-700 lg:col-span-2">
+          <label className="block">
+            <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-copper">Date du DPE</span>
+            <input type="date" className={inputCls} value={dateDiag} onChange={(e) => setDateDiag(e.target.value)} />
+          </label>
+          <label className="flex items-center gap-2 py-2 text-sm text-slate-700">
             <input type="checkbox" checked={piscine} onChange={(e) => setPiscine(e.target.checked)} className="h-4 w-4 accent-copper" />
-            🏊 Rechercher une <b>piscine</b> sur la vue aérienne (l&apos;IA analyse l&apos;orthophoto)
+            🏊 <b>Piscine</b> (vue aérienne)
           </label>
         </div>
         <p className="mt-1 text-[11px] text-slate-400">Astuce : la <b>fourchette de terrain</b> est le filtre le plus précis (ex. annonce « terrain 600 m² » → min 550 / max 650). Laissez vide si inconnu.</p>
@@ -185,7 +226,7 @@ export default function ChasseIdentification({ fiches, negociateurDefaut, onCree
                         {c.piscine === false && <span className="rounded bg-slate-100 px-1.5 py-0.5 font-medium text-slate-400">Sans piscine</span>}
                         {c.dpe && <span className="rounded bg-slate-100 px-1.5 py-0.5 font-semibold text-slate-600">DPE {c.dpe}</span>}
                         {c.parcelle && <span className="rounded bg-slate-100 px-1.5 py-0.5 font-semibold text-slate-600">Parc. {c.parcelle.section} {c.parcelle.numero}</span>}
-                        <span className="rounded bg-slate-100 px-1.5 py-0.5 text-slate-500">DPE du {dateFr(c.dateDpe)}</span>
+                        <span className={`rounded px-1.5 py-0.5 font-semibold ${c.dateMatch ? "bg-emerald-100 text-emerald-700" : "bg-slate-100 text-slate-500"}`}>DPE du {dateFr(c.dateDpe)}{c.dateMatch ? " ✓ date annonce" : ""}</span>
                       </div>
                       <div className="mt-2 flex flex-wrap items-center gap-2">
                         {c.streetView && <a href={c.streetView} target="_blank" rel="noreferrer" className="rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-semibold text-slate-600 hover:bg-slate-50">👁️ Street View</a>}

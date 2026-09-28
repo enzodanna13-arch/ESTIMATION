@@ -1,3 +1,4 @@
+import Anthropic from "@anthropic-ai/sdk";
 import { verifierAccesEquipe } from "@/lib/historyAuth";
 import { fetchDpeCandidats, type DpeBrut } from "@/lib/ademe";
 import { getInseeCodes } from "@/lib/dvf";
@@ -9,9 +10,11 @@ export const dynamic = "force-dynamic";
 export const maxDuration = 120;
 
 // IDENTIFICATION d'un bien à vendre : champs connus de l'annonce
-// (commune + surface habitable + DPE + type + FOURCHETTE de terrain + piscine)
-// → adresses probables via ADEME (adresse), cadastre (surface FONCIÈRE) et
-// orthophoto IGN (vue aérienne + détection de piscine).
+// (commune + surface habitable + DPE + type + FOURCHETTE de terrain + piscine
+// + DATE de diagnostic) → adresses probables via ADEME (adresse), cadastre
+// (surface FONCIÈRE) et orthophoto IGN (vue aérienne + détection de piscine).
+// On peut aussi fournir directement le TEXTE de l'annonce : l'IA en extrait
+// tous les champs (dont la date de DPE) avant de lancer la recherche.
 
 interface Corps {
   ville?: string;
@@ -23,6 +26,69 @@ interface Corps {
   terrainMin?: number;     // fourchette de superficie du terrain (m²)
   terrainMax?: number;
   piscine?: boolean;       // détecter la présence d'une piscine sur la vue aérienne
+  dateDiagnostic?: string; // date d'établissement du DPE si connue (AAAA-MM-JJ)
+  texte?: string;          // texte brut d'une annonce à analyser par l'IA
+}
+
+interface Extrait {
+  type: string; ville: string; codePostal: string;
+  surface: number; pieces: number; dpe: string;
+  surfaceTerrain: number; prix: number; dateDiagnostic: string;
+}
+
+// Extraction IA des caractéristiques (dont la DATE de diagnostic) depuis un
+// texte d'annonce collé.
+const SCHEMA_EXTRAIT = {
+  type: "object",
+  properties: {
+    type: { type: "string", description: "maison | appartement | immeuble | terrain | local. Vide si inconnu." },
+    ville: { type: "string", description: "Commune du bien. Vide si inconnue." },
+    codePostal: { type: "string", description: "Code postal à 5 chiffres. Vide si inconnu." },
+    surface: { type: "number", description: "Surface habitable en m² (nombre seul). 0 si inconnue." },
+    pieces: { type: "number", description: "Nombre de pièces. 0 si inconnu." },
+    dpe: { type: "string", description: "Classe DPE (A à G). Vide si inconnue." },
+    surfaceTerrain: { type: "number", description: "Surface du terrain en m² (nombre seul). 0 si inconnue ou non applicable." },
+    prix: { type: "number", description: "Prix affiché en euros (nombre seul). 0 si inconnu." },
+    dateDiagnostic: { type: "string", description: "Date d'établissement du DPE/diagnostic si mentionnée dans le texte, au format AAAA-MM-JJ. Vide si absente. Convertis « 12/03/2025 » ou « 12 mars 2025 » en 2025-03-12." },
+  },
+  required: ["type", "ville", "codePostal", "surface", "pieces", "dpe", "surfaceTerrain", "prix", "dateDiagnostic"],
+} as const;
+
+async function extraireTexteAnnonce(texte: string): Promise<Extrait | null> {
+  if (!process.env.ANTHROPIC_API_KEY) return null;
+  try {
+    const client = new Anthropic();
+    const msg = await client.messages.create({
+      model: process.env.EXTRACT_MODEL ?? "claude-haiku-4-5-20251001",
+      max_tokens: 500,
+      system: "Tu extrais les caractéristiques d'un bien depuis une annonce immobilière française. Tu réponds EXCLUSIVEMENT par un objet JSON conforme au schéma. Tu n'inventes jamais : un champ absent reste vide (\"\") ou 0.",
+      messages: [{ role: "user", content: `SCHÉMA : ${JSON.stringify(SCHEMA_EXTRAIT)}\n\nANNONCE :\n${texte.slice(0, 8000)}` }],
+    });
+    const txt = msg.content.filter((b): b is Anthropic.TextBlock => b.type === "text").map((b) => b.text).join("");
+    const s = txt.indexOf("{"), e = txt.lastIndexOf("}");
+    if (s < 0 || e <= s) return null;
+    const r = JSON.parse(txt.slice(s, e + 1)) as Record<string, unknown>;
+    const str = (k: string) => (typeof r[k] === "string" ? (r[k] as string).trim() : "");
+    const num = (k: string) => (typeof r[k] === "number" && isFinite(r[k] as number) ? (r[k] as number) : 0);
+    const dateIso = (() => { const m = str("dateDiagnostic").match(/(\d{4})-(\d{2})-(\d{2})/); return m ? m[0] : ""; })();
+    return {
+      type: str("type").toLowerCase(), ville: str("ville"), codePostal: str("codePostal"),
+      surface: num("surface"), pieces: num("pieces"), dpe: str("dpe").toUpperCase().slice(0, 1),
+      surfaceTerrain: num("surfaceTerrain"), prix: num("prix"), dateDiagnostic: dateIso,
+    };
+  } catch { return null; }
+}
+
+// Commune → code INSEE à partir du nom (repli quand pas de code postal).
+async function inseeDepuisVille(ville: string): Promise<string[]> {
+  if (!ville.trim()) return [];
+  try {
+    const url = `https://geo.api.gouv.fr/communes?nom=${encodeURIComponent(ville.trim())}&fields=code&boost=population&limit=1`;
+    const r = await fetch(url, { signal: AbortSignal.timeout(8000), headers: { accept: "application/json" } });
+    if (!r.ok) return [];
+    const d = (await r.json()) as { code?: string }[];
+    return d[0]?.code ? [d[0].code] : [];
+  } catch { return []; }
 }
 
 const norm = (s: string) => (s || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").trim();
@@ -50,6 +116,11 @@ function scoreHabitable(d: DpeBrut, b: Corps): number {
   const an = anneeDe(d.dateEtablissement);
   if (an) { const age = new Date().getFullYear() - an; if (age <= 1) s += 5; else if (age <= 2) s += 2; }
   if (b.ville && norm(d.ville).includes(norm(b.ville))) s += 3;
+  // DATE de diagnostic (fournie par l'annonce) : signal quasi-unique.
+  if (b.dateDiagnostic && d.dateEtablissement) {
+    if (d.dateEtablissement === b.dateDiagnostic) s += 45;                                  // date exacte → quasi certain
+    else if (d.dateEtablissement.slice(0, 7) === b.dateDiagnostic.slice(0, 7)) s += 18;     // même mois
+  }
   return s;
 }
 
@@ -91,14 +162,35 @@ export async function POST(request: Request) {
   if (!(await verifierAccesEquipe(request))) return Response.json({ error: "Mot de passe requis" }, { status: 401 });
   let body: Corps;
   try { body = (await request.json()) as Corps; } catch { return Response.json({ error: "Requête invalide" }, { status: 400 }); }
-  if (!(body.surface > 0)) return Response.json({ error: "Renseignez la surface habitable." }, { status: 400 });
+
+  // 0) Texte d'annonce collé → l'IA extrait les champs (dont la date de DPE).
+  let extrait: Extrait | null = null;
+  if (body.texte && body.texte.trim().length >= 20) {
+    extrait = await extraireTexteAnnonce(body.texte).catch(() => null);
+    if (extrait) {
+      body = {
+        ...body,
+        type: body.type || extrait.type || undefined,
+        ville: body.ville || extrait.ville || undefined,
+        codePostal: body.codePostal || (/^\d{5}$/.test(extrait.codePostal) ? extrait.codePostal : undefined),
+        surface: body.surface > 0 ? body.surface : extrait.surface,
+        dpe: body.dpe || extrait.dpe || undefined,
+        terrainMin: body.terrainMin ?? (extrait.surfaceTerrain > 0 ? Math.round(extrait.surfaceTerrain * 0.9) : undefined),
+        terrainMax: body.terrainMax ?? (extrait.surfaceTerrain > 0 ? Math.round(extrait.surfaceTerrain * 1.1) : undefined),
+        dateDiagnostic: body.dateDiagnostic || extrait.dateDiagnostic || undefined,
+      };
+    }
+  }
+
+  if (!(body.surface > 0)) return Response.json({ error: extrait ? "Surface habitable introuvable dans l'annonce — complétez-la." : "Renseignez la surface habitable.", extrait }, { status: 400 });
   const terrainActif = body.terrainMin != null || body.terrainMax != null;
 
-  // 1) Code(s) INSEE.
+  // 1) Code(s) INSEE : code postal, sinon nom de commune.
   let insees: string[] = [];
   if (body.codeInsee) insees = [body.codeInsee];
   else if (body.codePostal) insees = await getInseeCodes(body.codePostal.trim()).catch(() => []);
-  if (insees.length === 0) return Response.json({ error: "Commune introuvable — renseignez un code postal valide." }, { status: 400 });
+  if (insees.length === 0 && body.ville) insees = await inseeDepuisVille(body.ville).catch(() => []);
+  if (insees.length === 0) return Response.json({ error: "Commune introuvable — renseignez un code postal.", extrait }, { status: 400 });
 
   // 2) Candidats DPE (adresses) par surface habitable + DPE + type.
   const brut: DpeBrut[] = [];
@@ -133,6 +225,9 @@ export async function POST(request: Request) {
   const candidats = meilleurs.map(({ d, par, etatT, score }, i) => {
     const geo = d.lat != null && d.lon != null;
     const piscine = piscines[i];
+    const dateMatch = !!(body.dateDiagnostic && d.dateEtablissement === body.dateDiagnostic);
+    const rs = raisons(d, body, par, etatT, piscine);
+    if (dateMatch) rs.unshift("📅 Date de diagnostic identique à l'annonce");
     return {
       adresse: d.adresse, ville: d.ville, codePostal: d.codePostal, codeInsee: d.codeInsee,
       lat: d.lat, lon: d.lon,
@@ -141,15 +236,15 @@ export async function POST(request: Request) {
       superficieFonciere: par?.contenance ?? null,
       terrainEtat: etatT,
       parcelle: par ? { idu: par.idu, section: par.section, numero: par.numero } : null,
-      piscine,
+      piscine, dateMatch,
       orthophoto: geo ? orthophotoUrl(d.lat as number, d.lon as number) : null,
       geoportail: geo ? geoportailUrl(d.lat as number, d.lon as number) : null,
       streetView: geo ? streetViewUrl(d.lat as number, d.lon as number) : null,
       maps: geo ? googleMapsUrl(d.lat as number, d.lon as number) : null,
       score,
-      raisons: raisons(d, body, par, etatT, piscine),
+      raisons: rs,
     };
   });
 
-  return Response.json({ candidats, totalTrouves: brut.length });
+  return Response.json({ candidats, totalTrouves: brut.length, extrait });
 }

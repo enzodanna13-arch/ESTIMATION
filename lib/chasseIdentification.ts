@@ -21,6 +21,7 @@ export interface CandidatIdentification {
   terrainEtat: "in" | "near" | "out" | "unknown" | "na";
   parcelle: { idu: string; section: string; numero: string } | null;
   piscine: boolean | null; // détection sur la vue aérienne (si demandée)
+  dateMatch: boolean;      // la date de DPE correspond à celle de l'annonce
   orthophoto: string | null;
   geoportail: string | null;
   streetView: string | null;
@@ -29,31 +30,40 @@ export interface CandidatIdentification {
   raisons: string[];
 }
 
+export interface ExtraitAnnonce {
+  type: string; ville: string; codePostal: string;
+  surface: number; pieces: number; dpe: string;
+  surfaceTerrain: number; prix: number; dateDiagnostic: string;
+}
+
 export interface ResultatIdentification {
   candidats: CandidatIdentification[];
   totalTrouves: number;
+  extrait?: ExtraitAnnonce | null;
 }
 
 export interface ParamsIdentification {
-  codePostal: string;
+  codePostal?: string;
   ville?: string;
-  surface: number;
+  surface?: number;
   dpe?: string;
-  type?: string;       // maison | appartement | immeuble
-  terrainMin?: number; // fourchette de superficie du terrain (m²)
+  type?: string;         // maison | appartement | immeuble
+  terrainMin?: number;   // fourchette de superficie du terrain (m²)
   terrainMax?: number;
-  piscine?: boolean;   // détecter une piscine sur la vue aérienne
+  piscine?: boolean;     // détecter une piscine sur la vue aérienne
+  dateDiagnostic?: string; // AAAA-MM-JJ si connue
+  texte?: string;        // texte d'annonce à faire analyser par l'IA
 }
 
-export async function identifierBien(p: ParamsIdentification): Promise<ResultatIdentification> {
+// Ne lève pas : renvoie l'erreur (et l'éventuel `extrait`) dans l'objet, pour
+// pouvoir pré-remplir le formulaire même quand un champ manque.
+export async function identifierBien(p: ParamsIdentification): Promise<ResultatIdentification & { error?: string }> {
   const res = await fetch("/api/chasse/identifier", {
     method: "POST",
     headers: { "content-type": "application/json", "x-history-key": getHistoryKey() },
     body: JSON.stringify(p),
   });
-  if (!res.ok) {
-    const d = (await res.json().catch(() => ({}))) as { error?: string };
-    throw new Error(d.error || "Identification impossible");
-  }
-  return (await res.json()) as ResultatIdentification;
+  const data = (await res.json().catch(() => ({}))) as ResultatIdentification & { error?: string };
+  if (!res.ok) return { candidats: [], totalTrouves: 0, extrait: data.extrait ?? null, error: data.error || "Identification impossible" };
+  return data;
 }
