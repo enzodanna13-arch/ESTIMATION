@@ -632,7 +632,7 @@ export default function Report({
             {pageIdx === 0 && (
               <p className="section-lead" style={{ marginBottom: 14 }}>
                 {hasVisuel
-                  ? "Chaque vue de votre bien est analysée : les atouts que nous mettrons en avant, et les points de vigilance à anticiper pour la vente."
+                  ? "Les photographies de votre bien, telles qu'elles seront valorisées dans la présentation à la vente."
                   : report.analyse_photos}
               </p>
             )}
@@ -645,17 +645,9 @@ export default function Report({
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={`data:${photo.mediaType};base64,${photo.data}`} alt={pa.titre || `Photo ${pa.photo}`} />
                     <div className="pc-body">
+                      {/* Commentaires par photo (atouts / défauts) retirés à la
+                          demande : on ne garde que la photo et son titre. */}
                       <div className="pc-title">{pa.titre || `Photo ${pa.photo}`}</div>
-                      {(pa.bons_points.length > 0 || pa.defauts.length > 0) && (
-                        <ul>
-                          {pa.bons_points.slice(0, 3).map((b, i) => (
-                            <li key={`b${i}`} className="plus">{b}</li>
-                          ))}
-                          {pa.defauts.slice(0, 3).map((d, i) => (
-                            <li key={`d${i}`} className="moins">{d}</li>
-                          ))}
-                        </ul>
-                      )}
                     </div>
                   </div>
                 );
