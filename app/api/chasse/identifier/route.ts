@@ -211,20 +211,21 @@ export async function POST(request: Request) {
     return { d, par, etatT: t.etat, score };
   });
 
-  // 4) Tri final + on garde les meilleurs.
-  const meilleurs = enrichis.sort((a, b) => b.score - a.score).slice(0, 8);
+  // 4) La PISCINE est un FILTRE : on la détecte sur un lot élargi (vue aérienne
+  //    IGN), puis on garde soit les biens AVEC piscine (case cochée), soit ceux
+  //    SANS piscine (case décochée). On ne masque que les piscines CONFIRMÉES.
+  const large = enrichis.sort((a, b) => b.score - a.score).slice(0, 14);
+  const piscines = await mapLimit(large, 4, async ({ d }) =>
+    d.lat != null && d.lon != null ? await detecterPiscine(orthophotoUrl(d.lat, d.lon, { width: 360, height: 360, half: 45 })).catch(() => null) : null,
+  );
+  const veutPiscine = body.piscine === true;
+  const meilleurs = large
+    .map((x, i) => ({ ...x, piscine: piscines[i] }))
+    .filter((x) => (veutPiscine ? x.piscine === true : x.piscine !== true))
+    .slice(0, 8);
 
-  // 5) Détection de piscine (opt-in) sur la vue aérienne des finalistes.
-  let piscines: (boolean | null)[] = meilleurs.map(() => null);
-  if (body.piscine) {
-    piscines = await mapLimit(meilleurs, 4, async ({ d }) =>
-      d.lat != null && d.lon != null ? await detecterPiscine(orthophotoUrl(d.lat, d.lon, { width: 360, height: 360, half: 45 })).catch(() => null) : null,
-    );
-  }
-
-  const candidats = meilleurs.map(({ d, par, etatT, score }, i) => {
+  const candidats = meilleurs.map(({ d, par, etatT, score, piscine }) => {
     const geo = d.lat != null && d.lon != null;
-    const piscine = piscines[i];
     const dateMatch = !!(body.dateDiagnostic && d.dateEtablissement === body.dateDiagnostic);
     const rs = raisons(d, body, par, etatT, piscine);
     if (dateMatch) rs.unshift("📅 Date de diagnostic identique à l'annonce");

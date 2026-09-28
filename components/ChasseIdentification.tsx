@@ -180,10 +180,10 @@ export default function ChasseIdentification({ fiches, negociateurDefaut, onCree
           </label>
           <label className="flex items-center gap-2 py-2 text-sm text-slate-700">
             <input type="checkbox" checked={piscine} onChange={(e) => setPiscine(e.target.checked)} className="h-4 w-4 accent-copper" />
-            🏊 <b>Piscine</b> (vue aérienne)
+            🏊 <b>Avec piscine</b>
           </label>
         </div>
-        <p className="mt-1 text-[11px] text-slate-400">Astuce : la <b>fourchette de terrain</b> est le filtre le plus précis (ex. annonce « terrain 600 m² » → min 550 / max 650). Laissez vide si inconnu.</p>
+        <p className="mt-1 text-[11px] text-slate-400">La <b>fourchette de terrain</b> est le filtre le plus précis (ex. « terrain 600 m² » → 550 / 650). La case <b>piscine</b> filtre les résultats : cochée = uniquement les biens <b>avec</b> piscine, décochée = uniquement <b>sans</b> piscine (détection sur la vue aérienne IGN).</p>
         <div className="mt-3 flex items-center gap-3">
           <button onClick={() => void lancer()} disabled={etat === "chargement"} className="rounded-lg bg-navy px-5 py-2.5 text-sm font-bold text-white transition hover:bg-navy-deep disabled:opacity-50">
             {etat === "chargement" ? "Recherche des adresses…" : "🔍 Identifier les adresses"}
@@ -196,7 +196,7 @@ export default function ChasseIdentification({ fiches, negociateurDefaut, onCree
       {etat === "pret" && (
         candidats.length === 0 ? (
           <p className="rounded-2xl border border-dashed border-slate-300 bg-white p-6 text-center text-sm text-slate-400">
-            Aucune adresse candidate trouvée pour ces critères. Élargissez (retirez le DPE, vérifiez la surface / le code postal).
+            Aucune adresse candidate trouvée pour ces critères. Élargissez (retirez le DPE, vérifiez la surface / le code postal){piscine ? ", ou décochez « Avec piscine » si le bien n'en a pas" : ""}.
           </p>
         ) : (
           <div>
