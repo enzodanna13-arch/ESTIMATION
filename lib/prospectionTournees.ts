@@ -4,7 +4,7 @@ import {
   STATUTS_HORS_TOURNEE, type EtapeTournee, type Opportunite, type ProspectionConfig, type Tournee,
 } from "./prospectionTypes";
 import {
-  deleteTournee, getConfigProspection, listOpportunites, listTournees, saveOpportunitesBatch, saveTournee,
+  getConfigProspection, listOpportunites, listTournees, saveOpportunitesBatch, saveTournee,
 } from "./serverProspection";
 
 const JOUR = 86_400_000;
@@ -60,9 +60,10 @@ export interface ResultatGeneration {
   nonAttribuees: number;
 }
 
-// Génère les tournées du jour pour chaque négociateur ayant un secteur.
-// Idempotent par (jour, négociateur) : relancer la génération remplace la
-// tournée du jour et remet à plat les statuts « Tournée planifiée » périmés.
+// Génère de NOUVELLES tournées pour les biens à prospecter, SANS supprimer les
+// tournées existantes (elles restent pour le suivi terrain). Génération
+// additive : on n'ajoute des tournées que pour les biens pas encore engagés
+// dans une tournée en cours ou planifiée. Pour repartir de zéro → purge manuelle.
 export async function genererTournees(): Promise<ResultatGeneration> {
   const config = await getConfigProspection();
   const jour = minuitAujourdhui();
@@ -70,20 +71,19 @@ export async function genererTournees(): Promise<ResultatGeneration> {
   const opps = await listOpportunites();
 
   const modifs = new Map<string, Opportunite>();
-  const majStatut = (o: Opportunite, statut: string) => {
-    const ref = modifs.get(o.id) ?? o;
-    modifs.set(o.id, { ...ref, statut, updatedAt: Date.now() });
-  };
 
-  // Nettoyage : on supprime TOUTES les anciennes tournées pour laisser place à
-  // la nouvelle génération (l'historique de prospection est conservé sur les
-  // opportunités elles-mêmes, pas sur les tournées).
+  // PERSISTANCE DES TOURNÉES : on ne supprime PLUS les tournées existantes —
+  // elles restent pour le suivi terrain (étapes faites, résultats, statut). La
+  // génération est ADDITIVE : elle ne crée de nouvelles tournées que pour les
+  // biens qui ne sont PAS déjà à visiter dans une tournée en cours ou planifiée.
+  // Les étapes déjà réalisées repassent, elles, par la logique de relance
+  // habituelle. Pour repartir de zéro : la purge manuelle des tournées.
   const dejaLa = await listTournees();
-  for (const t of dejaLa) await deleteTournee(t.id);
-
-  // Remise à plat : toute opportunité « Tournée planifiée » redevient « À
-  // prospecter » (on reconstruit les tournées ci-dessous).
-  for (const o of opps) if (o.statut === "Tournée planifiée") majStatut(o, "À prospecter");
+  const engagees = new Set<string>();
+  for (const t of dejaLa) {
+    if (t.statut === "terminee") continue;                 // tournée bouclée → biens rendus à la relance
+    for (const e of t.etapes) if (!e.fait) engagees.add(e.opportuniteId); // biens restant à visiter
+  }
 
   const resultat: ResultatGeneration = { tournees: [], totalBiens: 0, nonAttribuees: 0 };
 
@@ -95,6 +95,9 @@ export async function genererTournees(): Promise<ResultatGeneration> {
   const pool = EQUIPE.filter((m) => m.role === "Transaction").map((m) => m.nom);
   const negos = pool.length > 0 ? pool : [...new Set(opps.map((o) => o.negociateur).filter(Boolean))];
   const charges = new Map<string, number>(negos.map((n) => [n, 0]));
+  // Équité : on tient compte de la charge déjà engagée (tournées non terminées)
+  // pour que les nouvelles tournées aillent aux négociateurs les moins chargés.
+  for (const t of dejaLa) if (t.statut !== "terminee" && charges.has(t.negociateur)) charges.set(t.negociateur, (charges.get(t.negociateur) ?? 0) + t.etapes.length);
 
   // 1) Regrouper les biens éligibles PAR COMMUNE : une tournée ne mélange
   //    JAMAIS deux communes (une tournée Martigues n'inclut pas Châteauneuf).
@@ -104,6 +107,7 @@ export async function genererTournees(): Promise<ResultatGeneration> {
   const cleCommune = (o: Opportunite) => o.codeInsee || slug(o.ville) || o.codePostal || "?";
   const parCommune = new Map<string, Opportunite[]>();
   for (const o of opps) {
+    if (engagees.has(o.id)) continue;                 // déjà à visiter dans une tournée existante
     if (!eligible(o, config, finJour)) continue;
     const cle = cleCommune(o);
     (parCommune.get(cle) ?? parCommune.set(cle, []).get(cle)!).push(o);
@@ -134,6 +138,10 @@ export async function genererTournees(): Promise<ResultatGeneration> {
   toursBruts.sort((a, b) => b.taille - a.taille);
   const oppById = new Map(opps.map((o) => [o.id, o]));
   const indexParNego = new Map<string, number>();
+  // Reprend la numérotation APRÈS les tournées existantes du même jour : les
+  // nouveaux identifiants (tour-<jour>-<nego>-<index>) restent uniques et
+  // n'écrasent jamais une tournée déjà en cours de suivi.
+  for (const t of dejaLa) if (t.date === jour) indexParNego.set(t.negociateur, Math.max(indexParNego.get(t.negociateur) ?? 0, t.index ?? 0));
 
   for (const tb of toursBruts) {
     let nego = "";

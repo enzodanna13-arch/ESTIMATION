@@ -126,11 +126,11 @@ export default function ProspectionPage({ onRetour }: { onRetour: () => void }) 
     if (!res) { flash("Génération impossible."); return; }
     if (res.totalBiens === 0) {
       flash(opps.length === 0
-        ? "Aucune opportunité : cliquez d'abord sur « ⟳ Synchroniser » pour détecter les biens, puis regénérez."
-        : "Aucun bien éligible pour une tournée aujourd'hui (score sous le minimum, biens déjà traités ou à relancer plus tard). Baissez le score minimum dans Réglages si besoin.");
+        ? "Aucune opportunité : cliquez d'abord sur « ⟳ Synchroniser » pour détecter les biens, puis générez."
+        : "Aucun nouveau bien à ajouter (les biens éligibles sont déjà dans une tournée, ou sous le score minimum / à relancer plus tard). Vos tournées existantes sont conservées.");
       await recharger(); setVue("tournees"); return;
     }
-    flash(`Tournées générées : ${res.totalBiens} bien(s) sur ${res.tournees.length} tournée(s).${res.nonAttribuees ? ` ${res.nonAttribuees} en « non attribué » (configurez les secteurs pour répartir).` : ""}`);
+    flash(`${res.tournees.length} nouvelle(s) tournée(s) ajoutée(s) · ${res.totalBiens} bien(s). Les tournées existantes sont conservées.${res.nonAttribuees ? ` ${res.nonAttribuees} en « non attribué » (configurez les secteurs pour répartir).` : ""}`);
     await recharger();
     setVue("tournees");
   };
@@ -191,13 +191,13 @@ export default function ProspectionPage({ onRetour }: { onRetour: () => void }) 
       <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
         <div>
           <button onClick={onRetour} className="mb-2 rounded-lg border border-slate-300 bg-white px-3 py-1 text-xs font-semibold text-slate-600 hover:bg-slate-100">← Retour</button>
-          <h2 className="text-2xl font-bold text-navy">🎯 Prospection ciblée <span className="align-middle rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-bold text-emerald-700">v24.09-P</span></h2>
+          <h2 className="text-2xl font-bold text-navy">🎯 Prospection ciblée <span className="align-middle rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-bold text-emerald-700">v24.09-Q</span></h2>
           <p className="text-sm text-slate-500">Les signaux Open Data (DPE, DVF…) transformés en tournées terrain prioritaires.</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <button onClick={() => void lancerSync()} disabled={!!busy} className="rounded-lg bg-navy px-3 py-1.5 text-sm font-bold text-white hover:bg-navy-deep disabled:opacity-50">{busy === "sync" ? "Synchronisation…" : "⟳ Tout synchroniser"}</button>
           <button onClick={() => setParCommune((v) => !v)} disabled={!!busy} className="rounded-lg border border-navy/30 bg-white px-3 py-1.5 text-sm font-semibold text-navy hover:bg-slate-50 disabled:opacity-50">🏙️ Par commune</button>
-          <button onClick={() => void lancerRegen()} disabled={!!busy} className="rounded-lg bg-copper px-3 py-1.5 text-sm font-bold text-white hover:brightness-110 disabled:opacity-50">{busy === "regen" ? "Génération…" : "🧭 Regénérer les tournées"}</button>
+          <button onClick={() => void lancerRegen()} disabled={!!busy} className="rounded-lg bg-copper px-3 py-1.5 text-sm font-bold text-white hover:brightness-110 disabled:opacity-50">{busy === "regen" ? "Génération…" : "🧭 Générer les tournées"}</button>
         </div>
       </div>
 
@@ -243,7 +243,7 @@ export default function ProspectionPage({ onRetour }: { onRetour: () => void }) 
 
       {/* Onglets */}
       <div className="mb-4 flex flex-wrap gap-1.5">
-        {([["liste", `Opportunités (${opps.length})`], ["tournees", `Tournées (${tournees.filter((t) => estAujourdhui(t.date)).length})`], ["dashboard", "Dashboard"], ["carte", "Carte"], ["reglages", "Réglages"]] as [Vue, string][]).map(([v, label]) => (
+        {([["liste", `Opportunités (${opps.length})`], ["tournees", `Tournées (${tournees.length})`], ["dashboard", "Dashboard"], ["carte", "Carte"], ["reglages", "Réglages"]] as [Vue, string][]).map(([v, label]) => (
           <button key={v} onClick={() => setVue(v)} className={`rounded-full px-3.5 py-1.5 text-sm font-semibold ${vue === v ? "bg-navy text-white" : "border border-slate-200 bg-white text-slate-600 hover:bg-slate-100"}`}>{label}</button>
         ))}
       </div>
@@ -267,10 +267,6 @@ export default function ProspectionPage({ onRetour }: { onRetour: () => void }) 
   );
 }
 
-function estAujourdhui(t: number): boolean {
-  const d = new Date(); d.setHours(0, 0, 0, 0);
-  return t >= d.getTime();
-}
 
 // ---------------------------------------------------------------------------
 function ListeOpportunites({
@@ -369,7 +365,8 @@ function TourneesVue({ tournees, onRegen, onPurge, onFlyers, busy }: { tournees:
   const negos = [...new Set(tournees.map(nomDe))].sort();
   const [actif, setActif] = useState("");
   const actifValide = negos.includes(actif) ? actif : (negos[0] ?? "");
-  const affichees = tournees.filter((t) => nomDe(t) === actifValide).sort((a, b) => (a.index ?? 0) - (b.index ?? 0));
+  // Les plus récentes d'abord (les tournées persistent pour le suivi terrain).
+  const affichees = tournees.filter((t) => nomDe(t) === actifValide).sort((a, b) => (b.date - a.date) || (a.index ?? 0) - (b.index ?? 0));
 
   const grpActif = tournees.filter((t) => nomDe(t) === actifValide);
   const biensActif = grpActif.reduce((s, t) => s + t.etapes.length, 0);
@@ -382,12 +379,12 @@ function TourneesVue({ tournees, onRegen, onPurge, onFlyers, busy }: { tournees:
         <h3 className="text-lg font-bold text-navy">🗺️ Espace tournées</h3>
         <div className="flex gap-2">
           <button onClick={onPurge} disabled={!!busy} className="rounded-lg border border-red-200 bg-white px-3 py-1.5 text-sm font-semibold text-red-600 hover:bg-red-50 disabled:opacity-50">{busy === "purge" ? "Suppression…" : "🗑 Tout supprimer"}</button>
-          <button onClick={onRegen} disabled={!!busy} className="rounded-lg bg-copper px-3 py-1.5 text-sm font-bold text-white hover:brightness-110 disabled:opacity-50">{busy === "regen" ? "Génération…" : "↻ Regénérer"}</button>
+          <button onClick={onRegen} disabled={!!busy} className="rounded-lg bg-copper px-3 py-1.5 text-sm font-bold text-white hover:brightness-110 disabled:opacity-50">{busy === "regen" ? "Génération…" : "➕ Générer les nouvelles"}</button>
         </div>
       </div>
 
       {tournees.length === 0 ? (
-        <p className="rounded-2xl border border-dashed border-slate-300 bg-white p-8 text-center text-sm text-slate-400">Aucune tournée. Synchronisez puis cliquez sur « Regénérer ».</p>
+        <p className="rounded-2xl border border-dashed border-slate-300 bg-white p-8 text-center text-sm text-slate-400">Aucune tournée. Synchronisez puis cliquez sur « Générer les tournées ».</p>
       ) : (
         <>
           {/* Onglets par négociateur (avec avatar) */}
@@ -428,8 +425,14 @@ function TourneesVue({ tournees, onRegen, onPurge, onFlyers, busy }: { tournees:
                   <div className="flex items-center gap-2">
                     <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-copper text-sm font-black text-white">{t.index ?? "•"}</span>
                     <div>
-                      <div className="font-bold text-navy">📍 {t.etapes[0]?.ville || "—"}</div>
-                      <div className="text-[11px] text-slate-500">{t.etapes.length} biens · {t.distanceKm} km · ≈ {formatDuree(t.dureeMin)}</div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold text-navy">📍 {t.etapes[0]?.ville || "—"}</span>
+                        {(() => {
+                          const st = faits === 0 ? { l: "Planifiée", c: "bg-slate-100 text-slate-600" } : faits < t.etapes.length ? { l: "En cours", c: "bg-amber-100 text-amber-700" } : { l: "Terminée", c: "bg-emerald-100 text-emerald-700" };
+                          return <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${st.c}`}>{st.l}</span>;
+                        })()}
+                      </div>
+                      <div className="text-[11px] text-slate-500">🗓️ {dateFr(t.date)} · {t.etapes.length} biens · {faits}/{t.etapes.length} faits · {t.distanceKm} km · ≈ {formatDuree(t.dureeMin)}</div>
                     </div>
                   </div>
                   <div className="flex gap-2">
