@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { saveChasse, type FicheChasse } from "@/lib/chasse";
-import { identifierBien, type CandidatIdentification } from "@/lib/chasseIdentification";
+import { identifierBien, type CandidatIdentification, type ExtraitAnnonce } from "@/lib/chasseIdentification";
 
 const inputCls = "w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-copper focus:outline-none focus:ring-2 focus:ring-copper/20";
 const int = new Intl.NumberFormat("fr-FR");
@@ -36,6 +36,7 @@ export default function ChasseIdentification({ fiches, negociateurDefaut, onCree
   const [texte, setTexte] = useState("");
   const [dateDiag, setDateDiag] = useState("");
   const [secteur, setSecteur] = useState("");
+  const [luParIa, setLuParIa] = useState<ExtraitAnnonce | null>(null);
   const [etat, setEtat] = useState<"idle" | "chargement" | "pret">("idle");
   const [candidats, setCandidats] = useState<CandidatIdentification[]>([]);
   const [total, setTotal] = useState(0);
@@ -79,6 +80,7 @@ export default function ChasseIdentification({ fiches, negociateurDefaut, onCree
   const appliquerResultat = (r: Awaited<ReturnType<typeof identifierBien>>) => {
     if (r.extrait) {
       const e = r.extrait;
+      setLuParIa(e);
       if (e.type) setType(/maison/i.test(e.type) ? "maison" : /appart/i.test(e.type) ? "appartement" : /immeuble/i.test(e.type) ? "immeuble" : "");
       if (e.codePostal) setCodePostal(e.codePostal);
       if (e.ville) setVille(e.ville);
@@ -163,6 +165,36 @@ export default function ChasseIdentification({ fiches, negociateurDefaut, onCree
           {piscineFiltre === "avec" && <span className="rounded-lg bg-sky-50 px-2.5 py-1 text-xs font-semibold text-sky-700">🏊 Piscine détectée</span>}
         </div>
       </div>
+
+      {/* Ce que l'IA a lu (transparence + correction) */}
+      {luParIa && (
+        <div className="rounded-2xl border border-emerald-200 bg-emerald-50/60 p-4">
+          <h3 className="mb-2 text-sm font-bold text-emerald-800">🧠 Ce que l&apos;IA a lu dans l&apos;annonce</h3>
+          <div className="flex flex-wrap gap-1.5 text-xs">
+            {([
+              ["Type", luParIa.type],
+              ["Surface", luParIa.surface > 0 ? `${luParIa.surface} m²` : ""],
+              ["Pièces", luParIa.pieces > 0 ? luParIa.pieces : ""],
+              ["DPE", luParIa.dpe],
+              ["GES", luParIa.ges],
+              ["Conso", luParIa.consoEnergie > 0 ? `${luParIa.consoEnergie} kWh/m²` : ""],
+              ["Émissions", luParIa.emissionGes > 0 ? `${luParIa.emissionGes} kg CO₂` : ""],
+              ["Terrain", luParIa.surfaceTerrain > 0 ? `${luParIa.surfaceTerrain} m²` : ""],
+              ["Construit", luParIa.anneeConstruction > 1700 ? luParIa.anneeConstruction : ""],
+              ["Chauffage", luParIa.energieChauffage],
+              ["Niveaux", luParIa.nbNiveaux > 0 ? luParIa.nbNiveaux : ""],
+              ["Secteur", luParIa.indiceLieu],
+              ["Voie", luParIa.typeVoie],
+              ["Piscine", luParIa.piscine ? "oui" : ""],
+              ["Date DPE", luParIa.dateDiagnostic ? luParIa.dateDiagnostic.split("-").reverse().join("/") : ""],
+              ["Prix", luParIa.prix > 0 ? `${int.format(luParIa.prix)} €` : ""],
+            ] as [string, string | number][]).filter(([, v]) => v !== "" && v != null).map(([k, v]) => (
+              <span key={k} className="rounded-full border border-emerald-200 bg-white px-2 py-0.5"><b className="text-emerald-800">{k}</b> <span className="text-slate-700">{v}</span></span>
+            ))}
+          </div>
+          <p className="mt-2 text-[11px] text-emerald-700">Un champ manque ou est faux ? Corrigez-le ci-dessous puis relancez « 🔍 Identifier les adresses ».</p>
+        </div>
+      )}
 
       {/* Formulaire (manuel / ajustement) */}
       <div className="rounded-2xl border border-slate-200 bg-white p-4">

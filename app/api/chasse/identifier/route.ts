@@ -71,7 +71,7 @@ const SCHEMA_EXTRAIT = {
     typeVoie: { type: "string", description: "Type de voie du bien SEULEMENT s'il est indiqué : rue | impasse | allee | avenue | boulevard | chemin | place. Ex. « au fond d'une impasse » → impasse. Vide sinon." },
     piscine: { type: "boolean", description: "true si l'annonce indique la présence d'une piscine (mot « piscine », « bassin », piscine enterrée/hors-sol), false sinon." },
     prix: { type: "number", description: "Prix affiché en euros, nombre seul sans espaces (ex. « 499 000 € » → 499000). 0 si inconnu." },
-    dateDiagnostic: { type: "string", description: "Date d'établissement du DPE au format AAAA-MM-JJ, UNIQUEMENT si l'annonce donne explicitement la date du DPE/diagnostic (ex. « DPE réalisé le 12/03/2025 », « diagnostic établi le… »). NE PAS utiliser la date de publication de l'annonce (« Publiée le… »), l'année de construction (« Construit en… »), ni une date de visite. Si aucune date de diagnostic n'est explicitement donnée → \"\" (vide). Convertis « 12/03/2025 » ou « 12 mars 2025 » en 2025-03-12." },
+    dateDiagnostic: { type: "string", description: "Date d'établissement / de réalisation du DPE. Cherche activement toute date liée au DPE ou aux diagnostics : « DPE réalisé le… », « diagnostic établi/réalisé le… », « DPE en date du… », « date du DPE : … », une date figurant dans le bloc/étiquette DPE. Renvoie-la telle quelle (n'importe quel format : « 12/03/2025 », « 12 mars 2025 », « 2025-03-12 »). Si l'annonce ne donne QUE la date de VALIDITÉ (« DPE valable jusqu'au 12/03/2035 »), renvoie cette date de validité. N'utilise pas la date de publication de l'annonce ni l'année de construction. Vide si vraiment aucune date de diagnostic n'apparaît." },
   },
   required: ["type", "ville", "codePostal", "surface", "pieces", "dpe", "ges", "surfaceTerrain", "anneeConstruction", "consoEnergie", "emissionGes", "energieChauffage", "nbNiveaux", "indiceLieu", "typeVoie", "piscine", "prix", "dateDiagnostic"],
 } as const;
@@ -86,7 +86,7 @@ async function extraireAnnonce(input: { texte?: string; pdf?: string }): Promise
       : [{ type: "text", text: `${consigne}\n\nANNONCE :\n${(input.texte ?? "").slice(0, 8000)}` }];
     const msg = await client.messages.create({
       model: process.env.EXTRACT_MODEL ?? "claude-opus-4-8",
-      max_tokens: 500,
+      max_tokens: 1024,
       system: [
         "Tu extrais les caractéristiques d'un bien depuis une annonce immobilière française (texte ou fiche PDF).",
         "Tu réponds EXCLUSIVEMENT par un objet JSON conforme au schéma, sans commentaire.",
@@ -103,9 +103,11 @@ async function extraireAnnonce(input: { texte?: string; pdf?: string }): Promise
     const s = txt.indexOf("{"), e = txt.lastIndexOf("}");
     if (s < 0 || e <= s) return null;
     const r = JSON.parse(txt.slice(s, e + 1)) as Record<string, unknown>;
-    const str = (k: string) => (typeof r[k] === "string" ? (r[k] as string).trim() : "");
-    const num = (k: string) => (typeof r[k] === "number" && isFinite(r[k] as number) ? (r[k] as number) : 0);
-    const dateIso = (() => { const m = str("dateDiagnostic").match(/(\d{4})-(\d{2})-(\d{2})/); return m ? m[0] : ""; })();
+    const str = (k: string) => (typeof r[k] === "string" ? (r[k] as string).trim() : (typeof r[k] === "number" ? String(r[k]) : ""));
+    const num = (k: string) => { const v = r[k]; if (typeof v === "number" && isFinite(v)) return v; const n = parseFloat(String(v ?? "").replace(/[^\d.,-]/g, "").replace(",", ".")); return Number.isFinite(n) ? n : 0; };
+    let dateIso = toIsoDate(str("dateDiagnostic"));
+    // Une date dans le futur = date de VALIDITÉ du DPE → l'établissement est 10 ans avant.
+    if (dateIso) { const y = Number(dateIso.slice(0, 4)); if (y > new Date().getFullYear() + 1) dateIso = `${y - 10}${dateIso.slice(4)}`; }
     return {
       type: str("type").toLowerCase(), ville: str("ville"), codePostal: str("codePostal"),
       surface: num("surface"), pieces: num("pieces"), dpe: str("dpe").toUpperCase().slice(0, 1), ges: str("ges").toUpperCase().slice(0, 1),
@@ -130,6 +132,16 @@ async function inseeDepuisVille(ville: string): Promise<string[]> {
 
 const norm = (s: string) => (s || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").trim();
 const anneeDe = (iso: string): number | null => { const m = (iso || "").match(/^(\d{4})/); return m ? Number(m[1]) : null; };
+// Normalise une date FR (« 15/03/2024 », « 15 mars 2024 », « 2024-03-15 ») en AAAA-MM-JJ.
+const MOIS_FR: Record<string, string> = { janvier: "01", fevrier: "02", mars: "03", avril: "04", mai: "05", juin: "06", juillet: "07", aout: "08", septembre: "09", octobre: "10", novembre: "11", decembre: "12" };
+function toIsoDate(s: string): string {
+  s = (s || "").trim();
+  if (!s) return "";
+  let m = s.match(/(\d{4})-(\d{2})-(\d{2})/); if (m) return `${m[1]}-${m[2]}-${m[3]}`;
+  m = s.match(/(\d{1,2})[\/.\-](\d{1,2})[\/.\-](\d{4})/); if (m) return `${m[3]}-${m[2].padStart(2, "0")}-${m[1].padStart(2, "0")}`;
+  m = s.match(/(\d{1,2})\s+([A-Za-zéûàè]+)\.?\s+(\d{4})/); if (m) { const mo = MOIS_FR[norm(m[2])]; if (mo) return `${m[3]}-${mo}-${m[1].padStart(2, "0")}`; }
+  return "";
+}
 const detailNum = (d: DpeBrut, k: string): number | null => { const v = d.details[k]; const n = typeof v === "number" ? v : parseFloat(String(v ?? "").replace(",", ".")); return Number.isFinite(n) ? n : null; };
 const detailStr = (d: DpeBrut, k: string): string => { const v = d.details[k]; return v == null ? "" : String(v); };
 const consoDe = (d: DpeBrut) => detailNum(d, "conso_5_usages_par_m2_ep") ?? detailNum(d, "conso_5_usages_par_m2_ef");
