@@ -8,6 +8,13 @@ import AcquereurFiche from "@/components/AcquereurFiche";
 
 const int = new Intl.NumberFormat("fr-FR");
 const eur = (n: number | null | undefined) => (n != null && n > 0 ? `${int.format(n)} €` : "—");
+// Budget compact et lisible : « 400 k€ », « 1,2 M€ ».
+const kEur = (n: number) => (n >= 1_000_000 ? `${(n / 1_000_000).toLocaleString("fr-FR", { maximumFractionDigits: 1 })} M€` : `${Math.round(n / 1000)} k€`);
+function budgetCourt(min: number | null, max: number | null): string {
+  if (!min && !max) return "budget libre";
+  if (min && max) return max < 1_000_000 && min < 1_000_000 ? `${Math.round(min / 1000)}–${Math.round(max / 1000)} k€` : `${kEur(min)} – ${kEur(max)}`;
+  return kEur((max ?? min) as number);
+}
 
 function prenomOuNom(nom: string): string { return (nom || "").trim().split(/\s+/)[0] || nom; }
 function initiales(nom: string): string { return !nom ? "?" : nom.trim().split(/\s+/).slice(0, 2).map((m) => m[0]?.toUpperCase() ?? "").join(""); }
@@ -172,31 +179,34 @@ export default function AcquereursPage({ onRetour, onOuvrirEstimation }: { onRet
         <p className="mb-3 text-xs text-slate-500">Ce que vos acquéreurs recherchent, agrégé automatiquement — les biens à prospecter en priorité.</p>
         {besoins.length === 0 ? (
           <p className="text-sm text-slate-400">Renseignez les recherches des acquéreurs (type, pièces, budget) pour voir apparaître les besoins.</p>
-        ) : (
-          <div className="grid gap-3 md:grid-cols-2">
-            {besoins.map((b) => (
-              <div key={b.cle} className="rounded-xl border border-slate-200 bg-white p-3">
-                <div className="mb-2 flex items-center justify-between gap-2 border-b border-slate-100 pb-2">
-                  <span className="font-bold text-navy">🏠 {b.typologie}</span>
-                  <span className="shrink-0 rounded-full bg-navy px-2 py-0.5 text-[11px] font-bold text-white">{b.acquereurs} acquéreur{b.acquereurs > 1 ? "s" : ""}</span>
+        ) : (() => {
+          const maxAcq = Math.max(...besoins.map((b) => b.acquereurs), 1);
+          return (
+            <div className="grid gap-2.5 md:grid-cols-2">
+              {besoins.map((b) => (
+                <div key={b.cle} className="rounded-xl border border-slate-200 bg-white p-3">
+                  <div className="flex items-baseline justify-between gap-2">
+                    <span className="text-[15px] font-bold text-navy">🏠 {b.typologie}</span>
+                    <span className="shrink-0 text-xs font-semibold text-slate-500">{b.acquereurs} acquéreur{b.acquereurs > 1 ? "s" : ""}</span>
+                  </div>
+                  {/* Barre de demande (priorité en un coup d'œil) */}
+                  <div className="my-2 h-1.5 w-full overflow-hidden rounded-full bg-slate-100">
+                    <div className="h-full rounded-full bg-copper" style={{ width: `${Math.round((b.acquereurs / maxAcq) * 100)}%` }} />
+                  </div>
+                  {/* Budgets : gros et lisibles */}
+                  <div className="flex flex-wrap gap-1.5">
+                    {b.segments.map((s) => (
+                      <span key={s.cle} className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1" title={[s.surfaceMin ? `≥ ${s.surfaceMin} m²` : "", s.communes.length ? s.communes.join(", ") : "", s.noms.join(", ")].filter(Boolean).join(" · ")}>
+                        <span className="text-[15px] font-extrabold text-navy">{budgetCourt(s.budgetMin, s.budgetMax)}</span>
+                        <span className="rounded-full bg-copper/15 px-1.5 text-[11px] font-bold text-copper">×{s.acquereurs}</span>
+                      </span>
+                    ))}
+                  </div>
                 </div>
-                <div className="space-y-1.5">
-                  {b.segments.map((s) => (
-                    <div key={s.cle} className="flex items-start justify-between gap-2 text-sm">
-                      <div className="min-w-0">
-                        <div className="font-semibold text-slate-700">💶 {s.budgetMin || s.budgetMax ? `${eur(s.budgetMin)} – ${eur(s.budgetMax)}` : "budget non précisé"}</div>
-                        <div className="truncate text-[11px] text-slate-400" title={[...s.communes, ...s.noms].join(" · ")}>
-                          {s.surfaceMin ? `≥ ${s.surfaceMin} m²` : ""}{s.communes.length ? `${s.surfaceMin ? " · " : ""}${s.communes.slice(0, 3).join(", ")}${s.communes.length > 3 ? "…" : ""}` : ""}
-                        </div>
-                      </div>
-                      <span className="shrink-0 rounded-full bg-copper/15 px-2 py-0.5 text-[11px] font-bold text-copper" title={s.noms.join(", ")}>{s.acquereurs}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
+              ))}
+            </div>
+          );
+        })()}
       </section>
 
       {/* LISTE DES ACQUÉREURS */}
