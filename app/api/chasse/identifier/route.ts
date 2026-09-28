@@ -43,16 +43,16 @@ interface Extrait {
 const SCHEMA_EXTRAIT = {
   type: "object",
   properties: {
-    type: { type: "string", description: "maison | appartement | immeuble | terrain | local. Vide si inconnu." },
-    ville: { type: "string", description: "Commune du bien. Vide si inconnue." },
-    codePostal: { type: "string", description: "Code postal à 5 chiffres. Vide si inconnu." },
-    surface: { type: "number", description: "Surface habitable en m² (nombre seul). 0 si inconnue." },
-    pieces: { type: "number", description: "Nombre de pièces. 0 si inconnu." },
-    dpe: { type: "string", description: "Classe DPE / énergie (A à G). Vide si inconnue." },
-    ges: { type: "string", description: "Classe GES / émissions (A à G). Vide si inconnue." },
-    surfaceTerrain: { type: "number", description: "Surface du terrain en m² (nombre seul). 0 si inconnue ou non applicable." },
-    prix: { type: "number", description: "Prix affiché en euros (nombre seul). 0 si inconnu." },
-    dateDiagnostic: { type: "string", description: "Date d'établissement du DPE/diagnostic si mentionnée dans le texte, au format AAAA-MM-JJ. Vide si absente. Convertis « 12/03/2025 » ou « 12 mars 2025 » en 2025-03-12." },
+    type: { type: "string", description: "Type de bien en minuscule : maison | appartement | immeuble | terrain | local. Une « villa » = maison. Vide si inconnu." },
+    ville: { type: "string", description: "Commune du bien (ex. « Martigues - 13500 » → Martigues). Vide si inconnue." },
+    codePostal: { type: "string", description: "Code postal à 5 chiffres (ex. « Martigues - 13500 » → 13500). Vide si inconnu." },
+    surface: { type: "number", description: "Surface HABITABLE du logement en m² (nombre seul). C'est la surface du bien lui-même (ex. « Maison: 101 m² » → 101). N'utilise JAMAIS la surface de la terrasse, du jardin ni du terrain. Si le résumé/entête et le texte diffèrent, privilégie la valeur de l'entête. 0 si inconnue." },
+    pieces: { type: "number", description: "Nombre de pièces (ex. « 4 pièces » → 4). 0 si inconnu." },
+    dpe: { type: "string", description: "Classe DPE / énergie : la lettre A à G qui suit « DPE » (ex. « DPE D » → D). Vide si inconnue." },
+    ges: { type: "string", description: "Classe GES / émissions : la lettre A à G qui suit « GES » (ex. « GES B » → B). Vide si inconnue." },
+    surfaceTerrain: { type: "number", description: "Surface du TERRAIN / de la parcelle en m² (nombre seul), ex. « Terrain 535 m² » → 535. Prends la valeur chiffrée exacte de l'entête plutôt qu'un « environ » du texte. 0 si inconnue ou non applicable (appartement)." },
+    prix: { type: "number", description: "Prix affiché en euros, nombre seul sans espaces (ex. « 499 000 € » → 499000). 0 si inconnu." },
+    dateDiagnostic: { type: "string", description: "Date d'établissement du DPE au format AAAA-MM-JJ, UNIQUEMENT si l'annonce donne explicitement la date du DPE/diagnostic (ex. « DPE réalisé le 12/03/2025 », « diagnostic établi le… »). NE PAS utiliser la date de publication de l'annonce (« Publiée le… »), l'année de construction (« Construit en… »), ni une date de visite. Si aucune date de diagnostic n'est explicitement donnée → \"\" (vide). Convertis « 12/03/2025 » ou « 12 mars 2025 » en 2025-03-12." },
   },
   required: ["type", "ville", "codePostal", "surface", "pieces", "dpe", "ges", "surfaceTerrain", "prix", "dateDiagnostic"],
 } as const;
@@ -66,9 +66,18 @@ async function extraireAnnonce(input: { texte?: string; pdf?: string }): Promise
       ? [{ type: "document", source: { type: "base64", media_type: "application/pdf", data: input.pdf } }, { type: "text", text: consigne }]
       : [{ type: "text", text: `${consigne}\n\nANNONCE :\n${(input.texte ?? "").slice(0, 8000)}` }];
     const msg = await client.messages.create({
-      model: process.env.EXTRACT_MODEL ?? "claude-haiku-4-5-20251001",
+      model: process.env.EXTRACT_MODEL ?? "claude-opus-4-8",
       max_tokens: 500,
-      system: "Tu extrais les caractéristiques d'un bien depuis une annonce immobilière française (texte ou fiche PDF). Tu réponds EXCLUSIVEMENT par un objet JSON conforme au schéma. Tu n'inventes jamais : un champ absent reste vide (\"\") ou 0.",
+      system: [
+        "Tu extrais les caractéristiques d'un bien depuis une annonce immobilière française (texte ou fiche PDF).",
+        "Tu réponds EXCLUSIVEMENT par un objet JSON conforme au schéma, sans commentaire.",
+        "Règles STRICTES :",
+        "- surface = surface HABITABLE du logement, jamais la terrasse, le jardin ni le terrain.",
+        "- surfaceTerrain = superficie de la parcelle (« Terrain X m² »).",
+        "- dpe / ges = la lettre A–G qui suit « DPE » / « GES ».",
+        "- dateDiagnostic = date du DPE UNIQUEMENT si explicitement donnée ; jamais la date de publication ni l'année de construction ; sinon vide.",
+        "- Tu n'inventes jamais : un champ absent reste vide (\"\") ou 0.",
+      ].join("\n"),
       messages: [{ role: "user", content }],
     });
     const txt = msg.content.filter((b): b is Anthropic.TextBlock => b.type === "text").map((b) => b.text).join("");
