@@ -71,13 +71,9 @@ export default function ChasseIdentification({ fiches, negociateurDefaut, onCree
     setCandidats(r.candidats); setTotal(r.totalTrouves); setEtat("pret");
   };
 
-  // Analyse d'un TEXTE d'annonce : l'IA extrait tout (dont la date de DPE),
-  // pré-remplit le formulaire, et lance la recherche.
-  const lancerTexte = async () => {
-    setErr(null);
-    if (texte.trim().length < 20) { setErr("Collez le texte de l'annonce."); return; }
-    setEtat("chargement"); setCandidats([]);
-    const r = await identifierBien({ texte: texte.trim(), piscine: piscine || undefined });
+  // Applique un résultat d'analyse (texte ou PDF) : pré-remplit le formulaire
+  // depuis les champs extraits, puis affiche les candidats (ou l'erreur).
+  const appliquerResultat = (r: Awaited<ReturnType<typeof identifierBien>>) => {
     if (r.extrait) {
       const e = r.extrait;
       if (e.type) setType(/maison/i.test(e.type) ? "maison" : /appart/i.test(e.type) ? "appartement" : /immeuble/i.test(e.type) ? "immeuble" : "");
@@ -91,6 +87,29 @@ export default function ChasseIdentification({ fiches, negociateurDefaut, onCree
     }
     if (r.error) { setErr(`${r.error}${r.extrait ? " (champs pré-remplis ci-dessous, complétez puis relancez)" : ""}`); setEtat("idle"); return; }
     setCandidats(r.candidats); setTotal(r.totalTrouves); setEtat("pret");
+  };
+
+  // Analyse d'un TEXTE d'annonce.
+  const lancerTexte = async () => {
+    setErr(null);
+    if (texte.trim().length < 20) { setErr("Collez le texte de l'annonce."); return; }
+    setEtat("chargement"); setCandidats([]);
+    const r = await identifierBien({ texte: texte.trim(), piscine: piscine || undefined });
+    appliquerResultat(r);
+  };
+
+  // Analyse d'une FICHE PDF d'annonce.
+  const lancerPdf = async (file: File | null) => {
+    if (!file) return;
+    setErr(null);
+    if (!/\.pdf$/i.test(file.name) && file.type !== "application/pdf") { setErr("Choisissez un fichier PDF."); return; }
+    if (file.size > 3_000_000) { setErr("PDF trop lourd (max 3 Mo) — collez plutôt le texte."); return; }
+    setEtat("chargement"); setCandidats([]);
+    try {
+      const b64 = await new Promise<string>((res, rej) => { const rd = new FileReader(); rd.onload = () => res(String(rd.result).replace(/^data:.*?;base64,/, "")); rd.onerror = () => rej(new Error("lecture")); rd.readAsDataURL(file); });
+      const r = await identifierBien({ pdf: b64, piscine: piscine || undefined });
+      appliquerResultat(r);
+    } catch { setErr("Lecture du PDF impossible."); setEtat("idle"); }
   };
 
   const creerFiche = async (c: CandidatIdentification) => {
@@ -116,18 +135,23 @@ export default function ChasseIdentification({ fiches, negociateurDefaut, onCree
         <p>À partir des caractéristiques d&apos;une annonce (commune + surface + DPE + type), on retrouve la ou les <b>adresses probables</b> via la base <b>ADEME</b> (open data), complétées de la <b>surface du terrain</b> (cadastre) et d&apos;une <b>vue aérienne IGN</b>. Vous confirmez visuellement l&apos;adresse.</p>
       </div>
 
-      {/* Coller le texte de l'annonce : l'IA extrait tout et cherche seule */}
+      {/* Coller le texte OU importer un PDF : l'IA extrait tout et cherche seule */}
       <div className="rounded-2xl border border-copper/30 bg-copper/5 p-4">
         <div className="mb-1 flex items-center gap-2">
-          <h3 className="text-base font-bold text-navy">📝 Coller le texte d&apos;une annonce</h3>
+          <h3 className="text-base font-bold text-navy">📝 Coller le texte ou importer une fiche PDF</h3>
           <span className="rounded-full bg-copper/15 px-2 py-0.5 text-[10px] font-bold text-copper">le plus rapide</span>
         </div>
-        <p className="mb-2 text-xs text-slate-500">L&apos;IA extrait tout (type, surface, DPE, terrain…) et lance la recherche. Astuce : si l&apos;annonce mentionne la <b>date du DPE</b>, la correspondance devient quasi certaine.</p>
+        <p className="mb-2 text-xs text-slate-500">L&apos;IA lit l&apos;annonce (texte collé ou <b>fiche PDF</b>) et en extrait tout (type, surface, DPE, GES, terrain…) puis lance la recherche. Astuce : si la <b>date du DPE</b> y figure, la correspondance devient quasi certaine.</p>
         <textarea className={`${inputCls} min-h-[100px]`} placeholder="Collez ici le texte de l'annonce (Leboncoin, SeLoger…)…" value={texte} onChange={(e) => setTexte(e.target.value)} />
-        <div className="mt-2 flex items-center gap-3">
+        <div className="mt-2 flex flex-wrap items-center gap-3">
           <button onClick={() => void lancerTexte()} disabled={etat === "chargement" || texte.trim().length < 20} className="rounded-lg bg-copper px-5 py-2.5 text-sm font-bold text-white transition hover:brightness-110 disabled:opacity-40">
             {etat === "chargement" ? "Analyse…" : "🔍 Analyser le texte et chercher"}
           </button>
+          <span className="text-xs font-semibold text-slate-400">ou</span>
+          <label className={`cursor-pointer rounded-lg border border-copper/40 bg-white px-4 py-2.5 text-sm font-bold text-copper transition hover:bg-copper/10 ${etat === "chargement" ? "pointer-events-none opacity-50" : ""}`}>
+            📄 Importer un PDF
+            <input type="file" accept="application/pdf,.pdf" className="hidden" onChange={(e) => { void lancerPdf(e.target.files?.[0] ?? null); e.target.value = ""; }} />
+          </label>
           {dateDiag && <span className="rounded-lg bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700">📅 DPE détecté : {dateDiag.split("-").reverse().join("/")}</span>}
         </div>
       </div>

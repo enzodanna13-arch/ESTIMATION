@@ -29,6 +29,7 @@ interface Corps {
   piscine?: boolean;       // détecter la présence d'une piscine sur la vue aérienne
   dateDiagnostic?: string; // date d'établissement du DPE si connue (AAAA-MM-JJ)
   texte?: string;          // texte brut d'une annonce à analyser par l'IA
+  pdf?: string;            // fiche PDF (base64, sans préfixe data:) à analyser
 }
 
 interface Extrait {
@@ -56,15 +57,19 @@ const SCHEMA_EXTRAIT = {
   required: ["type", "ville", "codePostal", "surface", "pieces", "dpe", "ges", "surfaceTerrain", "prix", "dateDiagnostic"],
 } as const;
 
-async function extraireTexteAnnonce(texte: string): Promise<Extrait | null> {
+async function extraireAnnonce(input: { texte?: string; pdf?: string }): Promise<Extrait | null> {
   if (!process.env.ANTHROPIC_API_KEY) return null;
   try {
     const client = new Anthropic();
+    const consigne = `Extrais les caractéristiques du bien de cette fiche/annonce immobilière dans le schéma JSON.\nSCHÉMA : ${JSON.stringify(SCHEMA_EXTRAIT)}`;
+    const content: Anthropic.ContentBlockParam[] = input.pdf
+      ? [{ type: "document", source: { type: "base64", media_type: "application/pdf", data: input.pdf } }, { type: "text", text: consigne }]
+      : [{ type: "text", text: `${consigne}\n\nANNONCE :\n${(input.texte ?? "").slice(0, 8000)}` }];
     const msg = await client.messages.create({
       model: process.env.EXTRACT_MODEL ?? "claude-haiku-4-5-20251001",
       max_tokens: 500,
-      system: "Tu extrais les caractéristiques d'un bien depuis une annonce immobilière française. Tu réponds EXCLUSIVEMENT par un objet JSON conforme au schéma. Tu n'inventes jamais : un champ absent reste vide (\"\") ou 0.",
-      messages: [{ role: "user", content: `SCHÉMA : ${JSON.stringify(SCHEMA_EXTRAIT)}\n\nANNONCE :\n${texte.slice(0, 8000)}` }],
+      system: "Tu extrais les caractéristiques d'un bien depuis une annonce immobilière française (texte ou fiche PDF). Tu réponds EXCLUSIVEMENT par un objet JSON conforme au schéma. Tu n'inventes jamais : un champ absent reste vide (\"\") ou 0.",
+      messages: [{ role: "user", content }],
     });
     const txt = msg.content.filter((b): b is Anthropic.TextBlock => b.type === "text").map((b) => b.text).join("");
     const s = txt.indexOf("{"), e = txt.lastIndexOf("}");
@@ -166,10 +171,10 @@ export async function POST(request: Request) {
   let body: Corps;
   try { body = (await request.json()) as Corps; } catch { return Response.json({ error: "Requête invalide" }, { status: 400 }); }
 
-  // 0) Texte d'annonce collé → l'IA extrait les champs (dont la date de DPE).
+  // 0) Texte collé OU fiche PDF → l'IA extrait les champs (dont la date de DPE).
   let extrait: Extrait | null = null;
-  if (body.texte && body.texte.trim().length >= 20) {
-    extrait = await extraireTexteAnnonce(body.texte).catch(() => null);
+  if (body.pdf || (body.texte && body.texte.trim().length >= 20)) {
+    extrait = await extraireAnnonce({ texte: body.texte, pdf: body.pdf }).catch(() => null);
     if (extrait) {
       body = {
         ...body,

@@ -54,6 +54,7 @@ export interface ParamsIdentification {
   piscine?: boolean;     // détecter une piscine sur la vue aérienne
   dateDiagnostic?: string; // AAAA-MM-JJ si connue
   texte?: string;        // texte d'annonce à faire analyser par l'IA
+  pdf?: string;          // fiche PDF (base64 sans préfixe) à faire analyser
 }
 
 // Ne lève pas : renvoie l'erreur (et l'éventuel `extrait`) dans l'objet, pour
