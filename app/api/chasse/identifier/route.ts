@@ -27,7 +27,7 @@ interface Corps {
   type?: string;           // maison | appartement | immeuble
   terrainMin?: number;     // fourchette de superficie du terrain (m²)
   terrainMax?: number;
-  piscine?: boolean;       // détecter la présence d'une piscine sur la vue aérienne
+  piscine?: "avec" | "sans"; // filtre piscine (absent = indifférent, pas de filtre)
   dateDiagnostic?: string; // date d'établissement du DPE si connue (AAAA-MM-JJ)
   // Signaux fins (surtout issus de l'extraction annonce) :
   consoEnergie?: number;   // kWh/m²/an (valeur exacte du DPE)
@@ -46,7 +46,7 @@ interface Extrait {
   surface: number; pieces: number; dpe: string; ges: string;
   surfaceTerrain: number; anneeConstruction: number; prix: number; dateDiagnostic: string;
   consoEnergie: number; emissionGes: number; energieChauffage: string; nbNiveaux: number;
-  indiceLieu: string; typeVoie: string;
+  indiceLieu: string; typeVoie: string; piscine: boolean;
 }
 
 // Extraction IA des caractéristiques (dont la DATE de diagnostic) depuis un
@@ -67,12 +67,13 @@ const SCHEMA_EXTRAIT = {
     emissionGes: { type: "number", description: "Émissions du GES en kg CO2/m²/an (nombre seul), si l'annonce donne la valeur chiffrée (ex. « 25 kg »). 0 si absente." },
     energieChauffage: { type: "string", description: "Énergie principale de chauffage si mentionnée, en un mot : gaz | electricite | bois | pac | fioul. « poêle à bois » → bois, « pompe à chaleur » → pac. Vide si absente." },
     nbNiveaux: { type: "number", description: "Nombre de niveaux du logement : 1 si de plain-pied, 2 si R+1 / étage, etc. 0 si inconnu." },
-    indiceLieu: { type: "string", description: "Nom de quartier ou lieu-dit permettant de localiser (ex. « quartier de Barboussade » → Barboussade). Vide si absent. Ne mets pas un point d'intérêt (parc, école)." },
+    indiceLieu: { type: "string", description: "Quartier, hameau, secteur ou lieu-dit qui localise le bien dans la commune. Inclut les hameaux et sous-communes (ex. « à Saint-Julien-les-Martigues » → Saint-Julien-les-Martigues ; « quartier de Barboussade » → Barboussade ; « secteur de la Couronne » → La Couronne ; « aux Laurons »). Reprends le nom tel quel, complet. Vide si aucun n'est cité. N'utilise pas un point d'intérêt seul (parc, école)." },
     typeVoie: { type: "string", description: "Type de voie du bien SEULEMENT s'il est indiqué : rue | impasse | allee | avenue | boulevard | chemin | place. Ex. « au fond d'une impasse » → impasse. Vide sinon." },
+    piscine: { type: "boolean", description: "true si l'annonce indique la présence d'une piscine (mot « piscine », « bassin », piscine enterrée/hors-sol), false sinon." },
     prix: { type: "number", description: "Prix affiché en euros, nombre seul sans espaces (ex. « 499 000 € » → 499000). 0 si inconnu." },
     dateDiagnostic: { type: "string", description: "Date d'établissement du DPE au format AAAA-MM-JJ, UNIQUEMENT si l'annonce donne explicitement la date du DPE/diagnostic (ex. « DPE réalisé le 12/03/2025 », « diagnostic établi le… »). NE PAS utiliser la date de publication de l'annonce (« Publiée le… »), l'année de construction (« Construit en… »), ni une date de visite. Si aucune date de diagnostic n'est explicitement donnée → \"\" (vide). Convertis « 12/03/2025 » ou « 12 mars 2025 » en 2025-03-12." },
   },
-  required: ["type", "ville", "codePostal", "surface", "pieces", "dpe", "ges", "surfaceTerrain", "anneeConstruction", "consoEnergie", "emissionGes", "energieChauffage", "nbNiveaux", "indiceLieu", "typeVoie", "prix", "dateDiagnostic"],
+  required: ["type", "ville", "codePostal", "surface", "pieces", "dpe", "ges", "surfaceTerrain", "anneeConstruction", "consoEnergie", "emissionGes", "energieChauffage", "nbNiveaux", "indiceLieu", "typeVoie", "piscine", "prix", "dateDiagnostic"],
 } as const;
 
 async function extraireAnnonce(input: { texte?: string; pdf?: string }): Promise<Extrait | null> {
@@ -110,7 +111,7 @@ async function extraireAnnonce(input: { texte?: string; pdf?: string }): Promise
       surface: num("surface"), pieces: num("pieces"), dpe: str("dpe").toUpperCase().slice(0, 1), ges: str("ges").toUpperCase().slice(0, 1),
       surfaceTerrain: num("surfaceTerrain"), anneeConstruction: num("anneeConstruction"), prix: num("prix"), dateDiagnostic: dateIso,
       consoEnergie: num("consoEnergie"), emissionGes: num("emissionGes"), energieChauffage: normEnergie(str("energieChauffage")), nbNiveaux: num("nbNiveaux"),
-      indiceLieu: str("indiceLieu"), typeVoie: norm(str("typeVoie")),
+      indiceLieu: str("indiceLieu"), typeVoie: norm(str("typeVoie")), piscine: r.piscine === true || /oui|true|1/i.test(str("piscine")),
     };
   } catch { return null; }
 }
@@ -200,8 +201,9 @@ function scoreHabitable(d: DpeBrut, b: Corps): number {
   if (b.typeVoie && norm(`${d.voie} ${d.adresse}`).includes(b.typeVoie)) s += 6;
   // Proximité de l'indice de lieu (quartier / lieu-dit géocodé).
   if (b.hintLat != null && b.hintLon != null && d.lat != null && d.lon != null) {
+    // Quartier / hameau : fort discriminant (un hameau est loin du centre-commune).
     const km = haversineKm({ lat: b.hintLat, lon: b.hintLon }, { lat: d.lat, lon: d.lon });
-    if (km <= 0.6) s += 12; else if (km <= 1.2) s += 6; else if (km <= 2) s += 2; else if (km > 4) s -= 4;
+    if (km <= 1) s += 16; else if (km <= 2) s += 9; else if (km <= 3.5) s += 3; else if (km > 5) s -= 8;
   }
   if (d.scoreBan != null) s += d.scoreBan * 4;
   const an = anneeDe(d.dateEtablissement);
@@ -283,6 +285,9 @@ export async function POST(request: Request) {
         energieChauffage: body.energieChauffage || extrait.energieChauffage || undefined,
         nbNiveaux: body.nbNiveaux ?? (extrait.nbNiveaux > 0 ? extrait.nbNiveaux : undefined),
         typeVoie: body.typeVoie || extrait.typeVoie || undefined,
+        // L'annonce mentionne une piscine → on filtre sur les biens AVEC piscine
+        // (sauf si le négociateur a explicitement choisi un filtre).
+        piscine: body.piscine ?? (extrait.piscine ? "avec" : undefined),
       };
     }
   }
@@ -325,13 +330,13 @@ export async function POST(request: Request) {
   //    IGN), puis on garde soit les biens AVEC piscine (case cochée), soit ceux
   //    SANS piscine (case décochée). On ne masque que les piscines CONFIRMÉES.
   const large = enrichis.sort((a, b) => b.score - a.score).slice(0, 14);
-  const piscines = await mapLimit(large, 4, async ({ d }) =>
-    d.lat != null && d.lon != null ? await detecterPiscine(orthophotoUrl(d.lat, d.lon, { width: 360, height: 360, half: 45 })).catch(() => null) : null,
-  );
-  const veutPiscine = body.piscine === true;
+  const filtrePiscine = body.piscine === "avec" || body.piscine === "sans";
+  const piscines = filtrePiscine
+    ? await mapLimit(large, 4, async ({ d }) => (d.lat != null && d.lon != null ? await detecterPiscine(orthophotoUrl(d.lat, d.lon, { width: 360, height: 360, half: 45 })).catch(() => null) : null))
+    : large.map(() => null);
   const meilleurs = large
     .map((x, i) => ({ ...x, piscine: piscines[i] }))
-    .filter((x) => (veutPiscine ? x.piscine === true : x.piscine !== true))
+    .filter((x) => (!filtrePiscine ? true : body.piscine === "avec" ? x.piscine === true : x.piscine !== true))
     .slice(0, 8);
 
   const candidats = meilleurs.map(({ d, par, etatT, score, piscine }) => {

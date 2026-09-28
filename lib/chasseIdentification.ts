@@ -39,7 +39,7 @@ export interface ExtraitAnnonce {
   type: string; ville: string; codePostal: string;
   surface: number; pieces: number; dpe: string; ges: string;
   surfaceTerrain: number; anneeConstruction: number; prix: number; dateDiagnostic: string;
-  consoEnergie: number; emissionGes: number; energieChauffage: string; nbNiveaux: number; indiceLieu: string; typeVoie: string;
+  consoEnergie: number; emissionGes: number; energieChauffage: string; nbNiveaux: number; indiceLieu: string; typeVoie: string; piscine: boolean;
 }
 
 export interface ResultatIdentification {
@@ -58,7 +58,7 @@ export interface ParamsIdentification {
   type?: string;         // maison | appartement | immeuble
   terrainMin?: number;   // fourchette de superficie du terrain (m²)
   terrainMax?: number;
-  piscine?: boolean;     // détecter une piscine sur la vue aérienne
+  piscine?: "avec" | "sans"; // filtre piscine (absent = indifférent)
   dateDiagnostic?: string; // AAAA-MM-JJ si connue
   texte?: string;        // texte d'annonce à faire analyser par l'IA
   pdf?: string;          // fiche PDF (base64 sans préfixe) à faire analyser

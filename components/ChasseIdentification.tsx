@@ -32,9 +32,10 @@ export default function ChasseIdentification({ fiches, negociateurDefaut, onCree
   const [annee, setAnnee] = useState("");
   const [terrainMin, setTerrainMin] = useState("");
   const [terrainMax, setTerrainMax] = useState("");
-  const [piscine, setPiscine] = useState(false);
+  const [piscineFiltre, setPiscineFiltre] = useState<"" | "avec" | "sans">("");
   const [texte, setTexte] = useState("");
   const [dateDiag, setDateDiag] = useState("");
+  const [secteur, setSecteur] = useState("");
   const [etat, setEtat] = useState<"idle" | "chargement" | "pret">("idle");
   const [candidats, setCandidats] = useState<CandidatIdentification[]>([]);
   const [total, setTotal] = useState(0);
@@ -66,7 +67,7 @@ export default function ChasseIdentification({ fiches, negociateurDefaut, onCree
       anneeConstruction: /^\d{4}$/.test(annee) ? Number(annee) : undefined,
       terrainMin: Number.isFinite(tMin) ? tMin : undefined,
       terrainMax: Number.isFinite(tMax) ? tMax : undefined,
-      piscine: piscine || undefined,
+      piscine: piscineFiltre || undefined,
       dateDiagnostic: /^\d{4}-\d{2}-\d{2}$/.test(dateDiag) ? dateDiag : undefined,
     });
     if (r.error) { setErr(r.error); setEtat("idle"); return; }
@@ -85,6 +86,8 @@ export default function ChasseIdentification({ fiches, negociateurDefaut, onCree
       if (e.dpe) setDpe(e.dpe);
       if (e.ges) setGes(e.ges);
       if (e.anneeConstruction && e.anneeConstruction > 1700) setAnnee(String(e.anneeConstruction));
+      if (e.piscine) setPiscineFiltre("avec"); // l'annonce mentionne une piscine → on filtre dessus
+      setSecteur(e.indiceLieu || "");
       if (e.surfaceTerrain) { setTerrainMin(String(Math.round(e.surfaceTerrain * 0.9))); setTerrainMax(String(Math.round(e.surfaceTerrain * 1.1))); }
       setDateDiag(e.dateDiagnostic || "");
     }
@@ -97,7 +100,7 @@ export default function ChasseIdentification({ fiches, negociateurDefaut, onCree
     setErr(null);
     if (texte.trim().length < 20) { setErr("Collez le texte de l'annonce."); return; }
     setEtat("chargement"); setCandidats([]);
-    const r = await identifierBien({ texte: texte.trim(), piscine: piscine || undefined });
+    const r = await identifierBien({ texte: texte.trim(), piscine: piscineFiltre || undefined });
     appliquerResultat(r);
   };
 
@@ -110,7 +113,7 @@ export default function ChasseIdentification({ fiches, negociateurDefaut, onCree
     setEtat("chargement"); setCandidats([]);
     try {
       const b64 = await new Promise<string>((res, rej) => { const rd = new FileReader(); rd.onload = () => res(String(rd.result).replace(/^data:.*?;base64,/, "")); rd.onerror = () => rej(new Error("lecture")); rd.readAsDataURL(file); });
-      const r = await identifierBien({ pdf: b64, piscine: piscine || undefined });
+      const r = await identifierBien({ pdf: b64, piscine: piscineFiltre || undefined });
       appliquerResultat(r);
     } catch { setErr("Lecture du PDF impossible."); setEtat("idle"); }
   };
@@ -156,6 +159,8 @@ export default function ChasseIdentification({ fiches, negociateurDefaut, onCree
             <input type="file" accept="application/pdf,.pdf" className="hidden" onChange={(e) => { void lancerPdf(e.target.files?.[0] ?? null); e.target.value = ""; }} />
           </label>
           {dateDiag && <span className="rounded-lg bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700">📅 DPE détecté : {dateDiag.split("-").reverse().join("/")}</span>}
+          {secteur && <span className="rounded-lg bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700">📍 Secteur : {secteur}</span>}
+          {piscineFiltre === "avec" && <span className="rounded-lg bg-sky-50 px-2.5 py-1 text-xs font-semibold text-sky-700">🏊 Piscine détectée</span>}
         </div>
       </div>
 
@@ -215,12 +220,16 @@ export default function ChasseIdentification({ fiches, negociateurDefaut, onCree
             <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-copper">Date du DPE</span>
             <input type="date" className={inputCls} value={dateDiag} onChange={(e) => setDateDiag(e.target.value)} />
           </label>
-          <label className="flex items-center gap-2 py-2 text-sm text-slate-700">
-            <input type="checkbox" checked={piscine} onChange={(e) => setPiscine(e.target.checked)} className="h-4 w-4 accent-copper" />
-            🏊 <b>Avec piscine</b>
+          <label className="block">
+            <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-copper">🏊 Piscine</span>
+            <select className={inputCls} value={piscineFiltre} onChange={(e) => setPiscineFiltre(e.target.value as "" | "avec" | "sans")}>
+              <option value="">Indifférent</option>
+              <option value="avec">Avec piscine</option>
+              <option value="sans">Sans piscine</option>
+            </select>
           </label>
         </div>
-        <p className="mt-1 text-[11px] text-slate-400">La <b>fourchette de terrain</b> est le filtre le plus précis (ex. « terrain 600 m² » → 550 / 650). La case <b>piscine</b> filtre les résultats : cochée = uniquement les biens <b>avec</b> piscine, décochée = uniquement <b>sans</b> piscine (détection sur la vue aérienne IGN).</p>
+        <p className="mt-1 text-[11px] text-slate-400">La <b>fourchette de terrain</b> est le filtre le plus précis (ex. « terrain 600 m² » → 550 / 650). Le <b>quartier/hameau</b> et la <b>piscine</b> sont détectés automatiquement depuis l&apos;annonce. Piscine : « Avec » = uniquement les biens avec piscine (détectée sur la vue aérienne IGN), « Sans » = uniquement sans.</p>
         <div className="mt-3 flex items-center gap-3">
           <button onClick={() => void lancer()} disabled={etat === "chargement"} className="rounded-lg bg-navy px-5 py-2.5 text-sm font-bold text-white transition hover:bg-navy-deep disabled:opacity-50">
             {etat === "chargement" ? "Recherche des adresses…" : "🔍 Identifier les adresses"}
@@ -233,7 +242,7 @@ export default function ChasseIdentification({ fiches, negociateurDefaut, onCree
       {etat === "pret" && (
         candidats.length === 0 ? (
           <p className="rounded-2xl border border-dashed border-slate-300 bg-white p-6 text-center text-sm text-slate-400">
-            Aucune adresse candidate trouvée pour ces critères. Élargissez (retirez le DPE, vérifiez la surface / le code postal){piscine ? ", ou décochez « Avec piscine » si le bien n'en a pas" : ""}.
+            Aucune adresse candidate trouvée pour ces critères. Élargissez (retirez le DPE, vérifiez la surface / le code postal){piscineFiltre === "avec" ? ", ou repassez la piscine sur « Indifférent »" : ""}.
           </p>
         ) : (
           <div>
