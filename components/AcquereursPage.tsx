@@ -29,72 +29,76 @@ function AvatarNego({ nom, size }: { nom: string; size: number }) {
 
 const estAcq = (d: ClientDossier) => d.typeClient === "acquereur" || d.typeClient === "investisseur";
 const capitalise = (s: string) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s);
-function mediane(vals: number[]): number | null {
-  const v = vals.filter((x) => x > 0).sort((a, b) => a - b);
-  if (v.length === 0) return null;
-  const m = Math.floor(v.length / 2);
-  return v.length % 2 ? v[m] : Math.round((v[m - 1] + v[m]) / 2);
-}
 
-// ---- Analyse automatique des BESOINS (agrégation de la demande) ----
-// Deux niveaux : 1) la TYPOLOGIE (type + nombre de pièces « T », ex. Maison T4)
-// puis 2) à l'intérieur, les BUDGETS séparés par tranche (ex. 400-450 k€ vs
-// 500-600 k€ sont deux segments distincts sous « Maison T4 »).
-const PALIER_BUDGET = 50_000; // finesse des tranches de budget
-interface SegmentBesoin {
-  cle: string;
-  budgetMin: number | null; budgetMax: number | null; budgetMedian: number | null;
-  acquereurs: number; noms: string[]; communes: string[]; surfaceMin: number | null;
+// ---- Analyse automatique de la DEMANDE ----
+// Unité fine = (commune × typologie [type+T] × tranche de budget). On en tire
+// (1) le classement des biens les plus demandés, (2) une vue par commune →
+// typologie → budget, pour que le négociateur sache quoi chasser et à quel prix.
+const PALIER_BUDGET = 50_000;
+
+interface Segment { cle: string; budgetMin: number | null; budgetMax: number | null; acquereurs: number; surfaceMin: number | null; noms: string[] }
+interface DemandeFine {
+  cle: string; commune: string; type: string; pieces: number | null; typologie: string;
+  budgetMin: number | null; budgetMax: number | null; acquereurs: number; noms: string[]; surfaceMin: number | null;
 }
-interface BesoinTypologie {
-  cle: string; typologie: string; type: string; pieces: number | null;
-  acquereurs: number; segments: SegmentBesoin[];
-}
-function analyserBesoins(dossiers: ClientDossier[]): BesoinTypologie[] {
-  // Un segment = (type + pièces + tranche de budget).
-  const segs = new Map<string, { type: string; pieces: number | null; ids: Set<string>; noms: Set<string>; communes: Set<string>; bmin: number[]; bmax: number[]; smin: number[] }>();
+interface TypoCommune { cle: string; typologie: string; type: string; pieces: number | null; acquereurs: number; segments: Segment[] }
+interface CommuneDemande { commune: string; acquereurs: number; typologies: TypoCommune[] }
+interface Demande { fines: DemandeFine[]; communes: CommuneDemande[]; totalAcq: number }
+
+function analyserDemande(dossiers: ClientDossier[]): Demande {
+  const fin = new Map<string, { commune: string; type: string; pieces: number | null; ids: Set<string>; noms: Set<string>; bmin: number[]; bmax: number[]; smin: number[] }>();
+  const allIds = new Set<string>();
   for (const d of dossiers) {
     const nom = [d.prenom, d.nom].filter(Boolean).join(" ").trim() || d.nom || "Acquéreur";
     for (const r of (d.recherches ?? []).filter((x) => x.actif !== false)) {
       const types = r.typesBien.length ? r.typesBien : ["indifférent"];
+      const villes = r.villes.length ? r.villes : ["Zone non précisée"];
       const pieces = r.piecesMin && r.piecesMin > 0 ? r.piecesMin : null;
-      const tranche = r.budgetMax ? String(Math.floor(r.budgetMax / PALIER_BUDGET)) : "?";
-      for (const t of types) {
+      const band = r.budgetMax ? String(Math.floor(r.budgetMax / PALIER_BUDGET)) : "?";
+      for (const t of types) for (const v of villes) {
+        const commune = v.trim();
         const type = capitalise(t.toLowerCase());
-        const cle = `${type.toLowerCase()}|${pieces ?? "?"}|${tranche}`;
-        const g = segs.get(cle) ?? { type, pieces, ids: new Set<string>(), noms: new Set<string>(), communes: new Set<string>(), bmin: [], bmax: [], smin: [] };
-        g.ids.add(d.id); g.noms.add(nom);
+        const cle = `${commune.toLowerCase()}|${type.toLowerCase()}|${pieces ?? "?"}|${band}`;
+        const g = fin.get(cle) ?? { commune, type, pieces, ids: new Set<string>(), noms: new Set<string>(), bmin: [], bmax: [], smin: [] };
+        g.ids.add(d.id); g.noms.add(nom); allIds.add(d.id);
         if (r.budgetMin) g.bmin.push(r.budgetMin);
         if (r.budgetMax) g.bmax.push(r.budgetMax);
         if (r.surfaceMin) g.smin.push(r.surfaceMin);
-        for (const v of r.villes) if (v.trim()) g.communes.add(v.trim());
-        segs.set(cle, g);
+        fin.set(cle, g);
       }
     }
   }
-  // Regroupe les segments par typologie (type + pièces).
-  const typos = new Map<string, { type: string; pieces: number | null; ids: Set<string>; segments: SegmentBesoin[] }>();
-  for (const [cle, g] of segs) {
-    const segment: SegmentBesoin = {
-      cle,
-      budgetMin: g.bmin.length ? Math.min(...g.bmin) : (g.bmax.length ? Math.min(...g.bmax) : null),
-      budgetMax: g.bmax.length ? Math.max(...g.bmax) : null,
-      budgetMedian: mediane(g.bmax),
-      acquereurs: g.ids.size, noms: [...g.noms], communes: [...g.communes],
-      surfaceMin: g.smin.length ? Math.min(...g.smin) : null,
-    };
-    const typoKey = `${g.type.toLowerCase()}|${g.pieces ?? "?"}`;
-    const tg = typos.get(typoKey) ?? { type: g.type, pieces: g.pieces, ids: new Set<string>(), segments: [] };
-    for (const id of g.ids) tg.ids.add(id);
-    tg.segments.push(segment);
-    typos.set(typoKey, tg);
+  // Structures internes avec ids pour compter les acquéreurs distincts.
+  interface FineInterne extends DemandeFine { ids: Set<string> }
+  const fines: FineInterne[] = [...fin.entries()].map(([cle, g]) => ({
+    cle, commune: g.commune, type: g.type, pieces: g.pieces,
+    typologie: `${g.type}${g.pieces ? ` T${g.pieces}` : ""}`,
+    budgetMin: g.bmin.length ? Math.min(...g.bmin) : (g.bmax.length ? Math.min(...g.bmax) : null),
+    budgetMax: g.bmax.length ? Math.max(...g.bmax) : null,
+    acquereurs: g.ids.size, noms: [...g.noms], surfaceMin: g.smin.length ? Math.min(...g.smin) : null,
+    ids: g.ids,
+  })).sort((a, b) => b.acquereurs - a.acquereurs || (b.budgetMax ?? 0) - (a.budgetMax ?? 0));
+
+  // Regroupement commune → typologie → segments budget.
+  const communes = new Map<string, { commune: string; ids: Set<string>; typos: Map<string, { typologie: string; type: string; pieces: number | null; ids: Set<string>; segments: Segment[] }> }>();
+  for (const f of fines) {
+    const cKey = f.commune.toLowerCase();
+    const c = communes.get(cKey) ?? { commune: f.commune, ids: new Set<string>(), typos: new Map() };
+    for (const id of f.ids) c.ids.add(id);
+    const tKey = `${f.type.toLowerCase()}|${f.pieces ?? "?"}`;
+    const t = c.typos.get(tKey) ?? { typologie: f.typologie, type: f.type, pieces: f.pieces, ids: new Set<string>(), segments: [] };
+    for (const id of f.ids) t.ids.add(id);
+    t.segments.push({ cle: f.cle, budgetMin: f.budgetMin, budgetMax: f.budgetMax, acquereurs: f.acquereurs, surfaceMin: f.surfaceMin, noms: f.noms });
+    c.typos.set(tKey, t); communes.set(cKey, c);
   }
-  return [...typos.entries()].map(([cle, tg]) => ({
-    cle, type: tg.type, pieces: tg.pieces,
-    typologie: `${tg.type}${tg.pieces ? ` T${tg.pieces}` : ""}`,
-    acquereurs: tg.ids.size,
-    segments: tg.segments.sort((a, b) => (a.budgetMax ?? 0) - (b.budgetMax ?? 0)),
-  })).sort((a, b) => b.acquereurs - a.acquereurs || a.typologie.localeCompare(b.typologie));
+  const communesList: CommuneDemande[] = [...communes.values()].map((c) => ({
+    commune: c.commune, acquereurs: c.ids.size,
+    typologies: [...c.typos.entries()].map(([tk, t]) => ({ cle: `${c.commune}|${tk}`, typologie: t.typologie, type: t.type, pieces: t.pieces, acquereurs: t.ids.size, segments: t.segments.sort((a, b) => (a.budgetMax ?? 0) - (b.budgetMax ?? 0)) }))
+      .sort((a, b) => b.acquereurs - a.acquereurs || a.typologie.localeCompare(b.typologie)),
+  })).sort((a, b) => b.acquereurs - a.acquereurs || a.commune.localeCompare(b.commune));
+
+  const finesPubliques: DemandeFine[] = fines.map(({ ids: _i, ...f }) => f); // eslint-disable-line @typescript-eslint/no-unused-vars
+  return { fines: finesPubliques, communes: communesList, totalAcq: allIds.size };
 }
 
 export default function AcquereursPage({ onRetour, onOuvrirEstimation }: { onRetour: () => void; onOuvrirEstimation?: (id: string) => void }) {
@@ -103,6 +107,8 @@ export default function AcquereursPage({ onRetour, onOuvrirEstimation }: { onRet
   const [ouvert, setOuvert] = useState<ClientDossier | null>(null);
   const [actif, setActif] = useState("Tous");
   const [busy, setBusy] = useState(false);
+  const [vue, setVue] = useState<"liste" | "besoins">("besoins");
+  const [negoBesoins, setNegoBesoins] = useState("Tous");
 
   const recharger = () => { setChargement(true); listClients().then((c) => { setDossiers(c.filter(estAcq)); setChargement(false); }).catch(() => setChargement(false)); };
   useEffect(() => {
@@ -114,7 +120,8 @@ export default function AcquereursPage({ onRetour, onOuvrirEstimation }: { onRet
   }, []);
 
   const scope = useMemo(() => (actif === "Tous" ? dossiers : dossiers.filter((d) => d.negociateur === actif)), [dossiers, actif]);
-  const besoins = useMemo(() => analyserBesoins(scope), [scope]);
+  const demandeScope = useMemo(() => (negoBesoins === "Tous" ? dossiers : dossiers.filter((d) => d.negociateur === negoBesoins)), [dossiers, negoBesoins]);
+  const demande = useMemo(() => analyserDemande(demandeScope), [demandeScope]);
   const parNego = useMemo(() => { const m = new Map<string, number>(); for (const d of dossiers) m.set(d.negociateur || "Non attribué", (m.get(d.negociateur || "Non attribué") ?? 0) + 1); return m; }, [dossiers]);
   const tabs = useMemo(() => ["Tous", ...NEGOCIATEURS], []);
 
@@ -155,90 +162,131 @@ export default function AcquereursPage({ onRetour, onOuvrirEstimation }: { onRet
         <button onClick={() => void nouvel()} disabled={busy} className="rounded-lg bg-copper px-4 py-2 text-sm font-bold text-white hover:brightness-110 disabled:opacity-50">➕ Nouvel acquéreur</button>
       </div>
 
-      {/* Onglets négociateurs (avatars) */}
-      <div className="mb-4 flex flex-wrap gap-2">
-        {tabs.map((n) => {
-          const on = actif === n;
-          const nb = n === "Tous" ? dossiers.length : (parNego.get(n) ?? 0);
-          return (
-            <button key={n} onClick={() => setActif(n)} className={`flex items-center gap-2 rounded-full py-1 pl-1 pr-3 text-sm font-semibold transition ${on ? "bg-navy text-white" : "border border-slate-200 bg-white text-slate-600 hover:bg-slate-100"}`}>
-              {n === "Tous" ? <span className="flex h-[26px] w-[26px] items-center justify-center rounded-full bg-slate-200 text-slate-600">👥</span> : <AvatarNego nom={n} size={26} />}
-              <span>{n === "Tous" ? "Tous" : prenomOuNom(n)}</span>
-              <span className={`rounded-full px-1.5 text-[11px] ${on ? "bg-white/20" : "bg-slate-100 text-slate-500"}`}>{nb}</span>
-            </button>
-          );
-        })}
+      {/* Bascule Acquéreurs / Besoins */}
+      <div className="mb-4 inline-flex rounded-xl border border-slate-200 bg-white p-0.5 text-sm font-semibold">
+        <button onClick={() => setVue("besoins")} className={`rounded-lg px-4 py-1.5 ${vue === "besoins" ? "bg-navy text-white" : "text-slate-600"}`}>📊 Besoins</button>
+        <button onClick={() => setVue("liste")} className={`rounded-lg px-4 py-1.5 ${vue === "liste" ? "bg-navy text-white" : "text-slate-600"}`}>👥 Acquéreurs</button>
       </div>
 
-      {/* ANALYSE DES BESOINS */}
-      <section className="mb-5 rounded-2xl border border-copper/25 bg-copper/5 p-4">
-        <div className="mb-1 flex items-center justify-between">
-          <h3 className="text-base font-bold text-navy">📊 Besoins {actif === "Tous" ? "du portefeuille" : `de ${prenomOuNom(actif)}`}</h3>
-          <span className="text-xs text-slate-500">{scope.length} acquéreur(s) · {besoins.length} besoin(s) identifié(s)</span>
-        </div>
-        <p className="mb-3 text-xs text-slate-500">Ce que vos acquéreurs recherchent, agrégé automatiquement — les biens à prospecter en priorité.</p>
-        {besoins.length === 0 ? (
-          <p className="text-sm text-slate-400">Renseignez les recherches des acquéreurs (type, pièces, budget) pour voir apparaître les besoins.</p>
-        ) : (() => {
-          const maxAcq = Math.max(...besoins.map((b) => b.acquereurs), 1);
-          return (
-            <div className="grid gap-2.5 md:grid-cols-2">
-              {besoins.map((b) => (
-                <div key={b.cle} className="rounded-xl border border-slate-200 bg-white p-3">
-                  <div className="flex items-baseline justify-between gap-2">
-                    <span className="text-[15px] font-bold text-navy">🏠 {b.typologie}</span>
-                    <span className="shrink-0 text-xs font-semibold text-slate-500">{b.acquereurs} acquéreur{b.acquereurs > 1 ? "s" : ""}</span>
-                  </div>
-                  {/* Barre de demande (priorité en un coup d'œil) */}
-                  <div className="my-2 h-1.5 w-full overflow-hidden rounded-full bg-slate-100">
-                    <div className="h-full rounded-full bg-copper" style={{ width: `${Math.round((b.acquereurs / maxAcq) * 100)}%` }} />
-                  </div>
-                  {/* Budgets : gros et lisibles */}
-                  <div className="flex flex-wrap gap-1.5">
-                    {b.segments.map((s) => (
-                      <span key={s.cle} className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1" title={[s.surfaceMin ? `≥ ${s.surfaceMin} m²` : "", s.communes.length ? s.communes.join(", ") : "", s.noms.join(", ")].filter(Boolean).join(" · ")}>
-                        <span className="text-[15px] font-extrabold text-navy">{budgetCourt(s.budgetMin, s.budgetMax)}</span>
-                        <span className="rounded-full bg-copper/15 px-1.5 text-[11px] font-bold text-copper">×{s.acquereurs}</span>
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-          );
-        })()}
-      </section>
-
-      {/* LISTE DES ACQUÉREURS */}
-      {chargement ? (
-        <p className="text-sm text-slate-400">Chargement…</p>
-      ) : scope.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-8 text-center text-sm text-slate-400">
-          {actif === "Tous" ? "Aucun acquéreur pour l'instant. Cliquez sur « Nouvel acquéreur »." : `Aucun acquéreur pour ${prenomOuNom(actif)}.`}
-        </div>
-      ) : (
-        <div className="grid gap-2 sm:grid-cols-2">
-          {scope.slice().sort((a, b) => (b.updatedAt ?? 0) - (a.updatedAt ?? 0)).map((d) => {
-            const comp = completudeDossier(d);
-            const nom = [d.prenom, d.nom].filter(Boolean).join(" ").trim() || d.nom || "Acquéreur";
-            const invest = d.typeClient === "investisseur";
-            const budgetMax = Math.max(0, ...(d.recherches ?? []).map((r) => r.budgetMax ?? 0));
+      {vue === "besoins" ? (
+        <BesoinsVue demande={demande} nego={negoBesoins} setNego={setNegoBesoins} nbAcq={demandeScope.length} />
+      ) : (<>
+        {/* Onglets négociateurs (avatars) */}
+        <div className="mb-4 flex flex-wrap gap-2">
+          {tabs.map((n) => {
+            const on = actif === n;
+            const nb = n === "Tous" ? dossiers.length : (parNego.get(n) ?? 0);
             return (
-              <button key={d.id} onClick={() => setOuvert(d)} className="rounded-2xl border border-slate-200 bg-white p-3 text-left transition hover:border-copper/40 hover:shadow-sm">
-                <div className="flex items-start justify-between gap-2">
-                  <span className="font-bold text-navy">{invest ? "📈" : "🔑"} {nom}</span>
-                  <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold ${STATUT_COULEURS[d.statut ?? "Nouveau"] ?? "bg-slate-100 text-slate-600"}`}>{d.statut ?? "Nouveau"}</span>
-                </div>
-                <div className="mt-0.5 truncate text-xs text-slate-500">{resumeRecherche(d) || "Projet à renseigner"}</div>
-                <div className="mt-1 flex items-center justify-between text-[11px] text-slate-400">
-                  <span>{budgetMax > 0 ? `Budget ≤ ${eur(budgetMax)}` : "Budget à préciser"}{d.negociateur ? ` · ${prenomOuNom(d.negociateur)}` : ""}</span>
-                  <span className={comp.pct >= 70 ? "text-emerald-600" : comp.pct >= 40 ? "text-amber-600" : "text-slate-400"}>{comp.pct}%</span>
-                </div>
+              <button key={n} onClick={() => setActif(n)} className={`flex items-center gap-2 rounded-full py-1 pl-1 pr-3 text-sm font-semibold transition ${on ? "bg-navy text-white" : "border border-slate-200 bg-white text-slate-600 hover:bg-slate-100"}`}>
+                {n === "Tous" ? <span className="flex h-[26px] w-[26px] items-center justify-center rounded-full bg-slate-200 text-slate-600">👥</span> : <AvatarNego nom={n} size={26} />}
+                <span>{n === "Tous" ? "Tous" : prenomOuNom(n)}</span>
+                <span className={`rounded-full px-1.5 text-[11px] ${on ? "bg-white/20" : "bg-slate-100 text-slate-500"}`}>{nb}</span>
               </button>
             );
           })}
         </div>
-      )}
+
+        {chargement ? (
+          <p className="text-sm text-slate-400">Chargement…</p>
+        ) : scope.length === 0 ? (
+          <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-8 text-center text-sm text-slate-400">
+            {actif === "Tous" ? "Aucun acquéreur pour l'instant. Cliquez sur « Nouvel acquéreur »." : `Aucun acquéreur pour ${prenomOuNom(actif)}.`}
+          </div>
+        ) : (
+          <div className="grid gap-2 sm:grid-cols-2">
+            {scope.slice().sort((a, b) => (b.updatedAt ?? 0) - (a.updatedAt ?? 0)).map((d) => {
+              const comp = completudeDossier(d);
+              const nom = [d.prenom, d.nom].filter(Boolean).join(" ").trim() || d.nom || "Acquéreur";
+              const invest = d.typeClient === "investisseur";
+              const budgetMax = Math.max(0, ...(d.recherches ?? []).map((r) => r.budgetMax ?? 0));
+              return (
+                <button key={d.id} onClick={() => setOuvert(d)} className="rounded-2xl border border-slate-200 bg-white p-3 text-left transition hover:border-copper/40 hover:shadow-sm">
+                  <div className="flex items-start justify-between gap-2">
+                    <span className="font-bold text-navy">{invest ? "📈" : "🔑"} {nom}</span>
+                    <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold ${STATUT_COULEURS[d.statut ?? "Nouveau"] ?? "bg-slate-100 text-slate-600"}`}>{d.statut ?? "Nouveau"}</span>
+                  </div>
+                  <div className="mt-0.5 truncate text-xs text-slate-500">{resumeRecherche(d) || "Projet à renseigner"}</div>
+                  <div className="mt-1 flex items-center justify-between text-[11px] text-slate-400">
+                    <span>{budgetMax > 0 ? `Budget ≤ ${eur(budgetMax)}` : "Budget à préciser"}{d.negociateur ? ` · ${prenomOuNom(d.negociateur)}` : ""}</span>
+                    <span className={comp.pct >= 70 ? "text-emerald-600" : comp.pct >= 40 ? "text-amber-600" : "text-slate-400"}>{comp.pct}%</span>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        )}
+      </>)}
+    </div>
+  );
+}
+
+// ================= Onglet BESOINS : quoi chasser, par ville / typologie / budget =================
+function BesoinsVue({ demande, nego, setNego, nbAcq }: { demande: Demande; nego: string; setNego: (n: string) => void; nbAcq: number }) {
+  const maxFine = Math.max(...demande.fines.map((f) => f.acquereurs), 1);
+  return (
+    <div className="space-y-5">
+      {/* En-tête + filtre négociateur */}
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <p className="text-sm text-slate-600"><b>{nbAcq}</b> acquéreur(s) · <b>{demande.communes.length}</b> commune(s) · les biens à chasser en priorité.</p>
+        <select className="rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-sm" value={nego} onChange={(e) => setNego(e.target.value)}>
+          <option value="Tous">Tous les négociateurs</option>
+          {NEGOCIATEURS.map((n) => <option key={n} value={n}>{n}</option>)}
+        </select>
+      </div>
+
+      {demande.fines.length === 0 ? (
+        <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-8 text-center text-sm text-slate-400">
+          Aucun besoin identifié. Renseignez les recherches des acquéreurs (ville, type, pièces, budget).
+        </div>
+      ) : (<>
+        {/* 🔥 LES PLUS DEMANDÉS */}
+        <section className="rounded-2xl border border-copper/30 bg-copper/5 p-4">
+          <h3 className="mb-3 text-base font-bold text-navy">🔥 Les biens les plus demandés</h3>
+          <div className="space-y-2">
+            {demande.fines.slice(0, 6).map((f, i) => (
+              <div key={f.cle} className="flex items-center gap-3 rounded-xl bg-white p-2.5 shadow-sm">
+                <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-black text-white ${i === 0 ? "bg-copper" : i < 3 ? "bg-navy" : "bg-slate-400"}`}>{i + 1}</span>
+                <div className="min-w-0 flex-1">
+                  <div className="truncate font-bold text-navy">{f.typologie} · {f.commune}</div>
+                  <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-slate-100"><div className="h-full rounded-full bg-copper" style={{ width: `${Math.round((f.acquereurs / maxFine) * 100)}%` }} /></div>
+                </div>
+                <span className="shrink-0 text-[15px] font-extrabold text-navy">{budgetCourt(f.budgetMin, f.budgetMax)}</span>
+                <span className="shrink-0 rounded-full bg-copper px-2 py-0.5 text-xs font-bold text-white" title={f.noms.join(", ")}>{f.acquereurs} acq.</span>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* PAR COMMUNE → TYPOLOGIE → BUDGET */}
+        <section>
+          <h3 className="mb-3 text-base font-bold text-navy">📍 Détail par commune</h3>
+          <div className="space-y-3">
+            {demande.communes.map((c) => (
+              <div key={c.commune} className="rounded-2xl border border-slate-200 bg-white p-4">
+                <div className="mb-3 flex items-center justify-between border-b border-slate-100 pb-2">
+                  <span className="text-[15px] font-bold text-navy">📍 {c.commune}</span>
+                  <span className="text-xs font-semibold text-slate-500">{c.acquereurs} acquéreur{c.acquereurs > 1 ? "s" : ""}</span>
+                </div>
+                <div className="space-y-2.5">
+                  {c.typologies.map((t) => (
+                    <div key={t.cle} className="flex flex-wrap items-center gap-2">
+                      <span className="w-32 shrink-0 font-bold text-navy">🏠 {t.typologie}</span>
+                      <div className="flex flex-1 flex-wrap gap-1.5">
+                        {t.segments.map((s) => (
+                          <span key={s.cle} className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1" title={[s.surfaceMin ? `≥ ${s.surfaceMin} m²` : "", s.noms.join(", ")].filter(Boolean).join(" · ")}>
+                            <span className="text-[15px] font-extrabold text-navy">{budgetCourt(s.budgetMin, s.budgetMax)}</span>
+                            <span className="rounded-full bg-copper/15 px-1.5 text-[11px] font-bold text-copper">×{s.acquereurs}</span>
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      </>)}
     </div>
   );
 }
