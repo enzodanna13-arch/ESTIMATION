@@ -8,12 +8,11 @@ import AcquereurFiche from "@/components/AcquereurFiche";
 
 const int = new Intl.NumberFormat("fr-FR");
 const eur = (n: number | null | undefined) => (n != null && n > 0 ? `${int.format(n)} €` : "—");
-// Budget compact et lisible : « 400 k€ », « 1,2 M€ ».
-const kEur = (n: number) => (n >= 1_000_000 ? `${(n / 1_000_000).toLocaleString("fr-FR", { maximumFractionDigits: 1 })} M€` : `${Math.round(n / 1000)} k€`);
-function budgetCourt(min: number | null, max: number | null): string {
-  if (!min && !max) return "budget libre";
-  if (min && max) return max < 1_000_000 && min < 1_000_000 ? `${Math.round(min / 1000)}–${Math.round(max / 1000)} k€` : `${kEur(min)} – ${kEur(max)}`;
-  return kEur((max ?? min) as number);
+// Grille FIXE de tranches de 50 000 € : « 400–450 k€ », « 450–500 k€ »…
+// `band` = n° de palier (ceil(budgetMax / 50 000)) → tranche [(band-1)·50, band·50] k€.
+function bracketLabel(band: number | null): string {
+  if (band == null) return "budget libre";
+  return `${(band - 1) * 50}–${band * 50} k€`;
 }
 
 function prenomOuNom(nom: string): string { return (nom || "").trim().split(/\s+/)[0] || nom; }
@@ -36,17 +35,17 @@ const capitalise = (s: string) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : 
 // typologie → budget, pour que le négociateur sache quoi chasser et à quel prix.
 const PALIER_BUDGET = 50_000;
 
-interface Segment { cle: string; budgetMin: number | null; budgetMax: number | null; acquereurs: number; surfaceMin: number | null; noms: string[] }
+interface Segment { cle: string; band: number | null; bracket: string; acquereurs: number; surfaceMin: number | null; noms: string[] }
 interface DemandeFine {
   cle: string; commune: string; type: string; pieces: number | null; typologie: string;
-  budgetMin: number | null; budgetMax: number | null; acquereurs: number; noms: string[]; surfaceMin: number | null;
+  band: number | null; bracket: string; acquereurs: number; noms: string[]; surfaceMin: number | null;
 }
 interface TypoCommune { cle: string; typologie: string; type: string; pieces: number | null; acquereurs: number; segments: Segment[] }
 interface CommuneDemande { commune: string; acquereurs: number; typologies: TypoCommune[] }
 interface Demande { fines: DemandeFine[]; communes: CommuneDemande[]; totalAcq: number }
 
 function analyserDemande(dossiers: ClientDossier[]): Demande {
-  const fin = new Map<string, { commune: string; type: string; pieces: number | null; ids: Set<string>; noms: Set<string>; bmin: number[]; bmax: number[]; smin: number[] }>();
+  const fin = new Map<string, { commune: string; type: string; pieces: number | null; band: number | null; ids: Set<string>; noms: Set<string>; smin: number[] }>();
   const allIds = new Set<string>();
   for (const d of dossiers) {
     const nom = [d.prenom, d.nom].filter(Boolean).join(" ").trim() || d.nom || "Acquéreur";
@@ -54,15 +53,14 @@ function analyserDemande(dossiers: ClientDossier[]): Demande {
       const types = r.typesBien.length ? r.typesBien : ["indifférent"];
       const villes = r.villes.length ? r.villes : ["Zone non précisée"];
       const pieces = r.piecesMin && r.piecesMin > 0 ? r.piecesMin : null;
-      const band = r.budgetMax ? String(Math.floor(r.budgetMax / PALIER_BUDGET)) : "?";
+      // Tranche fixe de 50 k€ : un plafond de 450 000 € → palier 9 → « 400–450 k€ ».
+      const band = r.budgetMax ? Math.ceil(r.budgetMax / PALIER_BUDGET) : null;
       for (const t of types) for (const v of villes) {
         const commune = v.trim();
         const type = capitalise(t.toLowerCase());
-        const cle = `${commune.toLowerCase()}|${type.toLowerCase()}|${pieces ?? "?"}|${band}`;
-        const g = fin.get(cle) ?? { commune, type, pieces, ids: new Set<string>(), noms: new Set<string>(), bmin: [], bmax: [], smin: [] };
+        const cle = `${commune.toLowerCase()}|${type.toLowerCase()}|${pieces ?? "?"}|${band ?? "?"}`;
+        const g = fin.get(cle) ?? { commune, type, pieces, band, ids: new Set<string>(), noms: new Set<string>(), smin: [] };
         g.ids.add(d.id); g.noms.add(nom); allIds.add(d.id);
-        if (r.budgetMin) g.bmin.push(r.budgetMin);
-        if (r.budgetMax) g.bmax.push(r.budgetMax);
         if (r.surfaceMin) g.smin.push(r.surfaceMin);
         fin.set(cle, g);
       }
@@ -73,11 +71,10 @@ function analyserDemande(dossiers: ClientDossier[]): Demande {
   const fines: FineInterne[] = [...fin.entries()].map(([cle, g]) => ({
     cle, commune: g.commune, type: g.type, pieces: g.pieces,
     typologie: `${g.type}${g.pieces ? ` T${g.pieces}` : ""}`,
-    budgetMin: g.bmin.length ? Math.min(...g.bmin) : (g.bmax.length ? Math.min(...g.bmax) : null),
-    budgetMax: g.bmax.length ? Math.max(...g.bmax) : null,
+    band: g.band, bracket: bracketLabel(g.band),
     acquereurs: g.ids.size, noms: [...g.noms], surfaceMin: g.smin.length ? Math.min(...g.smin) : null,
     ids: g.ids,
-  })).sort((a, b) => b.acquereurs - a.acquereurs || (b.budgetMax ?? 0) - (a.budgetMax ?? 0));
+  })).sort((a, b) => b.acquereurs - a.acquereurs || (b.band ?? 0) - (a.band ?? 0));
 
   // Regroupement commune → typologie → segments budget.
   const communes = new Map<string, { commune: string; ids: Set<string>; typos: Map<string, { typologie: string; type: string; pieces: number | null; ids: Set<string>; segments: Segment[] }> }>();
@@ -88,12 +85,12 @@ function analyserDemande(dossiers: ClientDossier[]): Demande {
     const tKey = `${f.type.toLowerCase()}|${f.pieces ?? "?"}`;
     const t = c.typos.get(tKey) ?? { typologie: f.typologie, type: f.type, pieces: f.pieces, ids: new Set<string>(), segments: [] };
     for (const id of f.ids) t.ids.add(id);
-    t.segments.push({ cle: f.cle, budgetMin: f.budgetMin, budgetMax: f.budgetMax, acquereurs: f.acquereurs, surfaceMin: f.surfaceMin, noms: f.noms });
+    t.segments.push({ cle: f.cle, band: f.band, bracket: f.bracket, acquereurs: f.acquereurs, surfaceMin: f.surfaceMin, noms: f.noms });
     c.typos.set(tKey, t); communes.set(cKey, c);
   }
   const communesList: CommuneDemande[] = [...communes.values()].map((c) => ({
     commune: c.commune, acquereurs: c.ids.size,
-    typologies: [...c.typos.entries()].map(([tk, t]) => ({ cle: `${c.commune}|${tk}`, typologie: t.typologie, type: t.type, pieces: t.pieces, acquereurs: t.ids.size, segments: t.segments.sort((a, b) => (a.budgetMax ?? 0) - (b.budgetMax ?? 0)) }))
+    typologies: [...c.typos.entries()].map(([tk, t]) => ({ cle: `${c.commune}|${tk}`, typologie: t.typologie, type: t.type, pieces: t.pieces, acquereurs: t.ids.size, segments: t.segments.sort((a, b) => (a.band ?? 0) - (b.band ?? 0)) }))
       .sort((a, b) => b.acquereurs - a.acquereurs || a.typologie.localeCompare(b.typologie)),
   })).sort((a, b) => b.acquereurs - a.acquereurs || a.commune.localeCompare(b.commune));
 
@@ -250,7 +247,7 @@ function BesoinsVue({ demande, nego, setNego, nbAcq }: { demande: Demande; nego:
                   <div className="truncate font-bold text-navy">{f.typologie} · {f.commune}</div>
                   <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-slate-100"><div className="h-full rounded-full bg-copper" style={{ width: `${Math.round((f.acquereurs / maxFine) * 100)}%` }} /></div>
                 </div>
-                <span className="shrink-0 text-[15px] font-extrabold text-navy">{budgetCourt(f.budgetMin, f.budgetMax)}</span>
+                <span className="shrink-0 text-[15px] font-extrabold text-navy">{f.bracket}</span>
                 <span className="shrink-0 rounded-full bg-copper px-2 py-0.5 text-xs font-bold text-white" title={f.noms.join(", ")}>{f.acquereurs} acq.</span>
               </div>
             ))}
@@ -274,7 +271,7 @@ function BesoinsVue({ demande, nego, setNego, nbAcq }: { demande: Demande; nego:
                       <div className="flex flex-1 flex-wrap gap-1.5">
                         {t.segments.map((s) => (
                           <span key={s.cle} className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1" title={[s.surfaceMin ? `≥ ${s.surfaceMin} m²` : "", s.noms.join(", ")].filter(Boolean).join(" · ")}>
-                            <span className="text-[15px] font-extrabold text-navy">{budgetCourt(s.budgetMin, s.budgetMax)}</span>
+                            <span className="text-[15px] font-extrabold text-navy">{s.bracket}</span>
                             <span className="rounded-full bg-copper/15 px-1.5 text-[11px] font-bold text-copper">×{s.acquereurs}</span>
                           </span>
                         ))}
