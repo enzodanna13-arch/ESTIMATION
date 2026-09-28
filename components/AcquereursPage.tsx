@@ -30,41 +30,43 @@ function mediane(vals: number[]): number | null {
 }
 
 // ---- Analyse automatique des BESOINS (agrégation de la demande) ----
+// Un besoin = un couple (type + nombre de pièces « T ») dans une commune, avec
+// sa fourchette de budget propre. On sépare bien « Villa T4 à 400-450 k€ » de
+// « Villa T5 à 500-600 k€ » : ce sont deux besoins distincts.
 interface Besoin {
-  cle: string; type: string; commune: string;
+  cle: string; type: string; commune: string; pieces: number | null;
   acquereurs: number; noms: string[];
   budgetMin: number | null; budgetMax: number | null; budgetMedian: number | null;
-  surfaceMin: number | null; piecesMin: number | null;
+  surfaceMin: number | null;
 }
 function analyserBesoins(dossiers: ClientDossier[]): Besoin[] {
-  const groupes = new Map<string, { type: string; commune: string; ids: Set<string>; noms: Set<string>; bmin: number[]; bmax: number[]; smin: number[]; pmin: number[] }>();
+  const groupes = new Map<string, { type: string; commune: string; pieces: number | null; ids: Set<string>; noms: Set<string>; bmin: number[]; bmax: number[]; smin: number[] }>();
   for (const d of dossiers) {
     const nom = [d.prenom, d.nom].filter(Boolean).join(" ").trim() || d.nom || "Acquéreur";
     for (const r of (d.recherches ?? []).filter((x) => x.actif !== false)) {
       const types = r.typesBien.length ? r.typesBien : ["indifférent"];
       const villes = r.villes.length ? r.villes : ["Zone non précisée"];
+      const pieces = r.piecesMin && r.piecesMin > 0 ? r.piecesMin : null;
       for (const t of types) for (const v of villes) {
         const type = capitalise(t.toLowerCase());
         const commune = v.trim();
-        const cle = `${type.toLowerCase()}|${commune.toLowerCase()}`;
-        const g = groupes.get(cle) ?? { type, commune, ids: new Set<string>(), noms: new Set<string>(), bmin: [], bmax: [], smin: [], pmin: [] };
+        const cle = `${type.toLowerCase()}|${commune.toLowerCase()}|${pieces ?? "?"}`;
+        const g = groupes.get(cle) ?? { type, commune, pieces, ids: new Set<string>(), noms: new Set<string>(), bmin: [], bmax: [], smin: [] };
         g.ids.add(d.id); g.noms.add(nom);
         if (r.budgetMin) g.bmin.push(r.budgetMin);
         if (r.budgetMax) g.bmax.push(r.budgetMax);
         if (r.surfaceMin) g.smin.push(r.surfaceMin);
-        if (r.piecesMin) g.pmin.push(r.piecesMin);
         groupes.set(cle, g);
       }
     }
   }
   return [...groupes.entries()].map(([cle, g]) => ({
-    cle, type: g.type, commune: g.commune,
+    cle, type: g.type, commune: g.commune, pieces: g.pieces,
     acquereurs: g.ids.size, noms: [...g.noms],
     budgetMin: g.bmin.length ? Math.min(...g.bmin) : (g.bmax.length ? Math.min(...g.bmax) : null),
     budgetMax: g.bmax.length ? Math.max(...g.bmax) : null,
     budgetMedian: mediane(g.bmax),
     surfaceMin: g.smin.length ? Math.min(...g.smin) : null,
-    piecesMin: g.pmin.length ? Math.min(...g.pmin) : null,
   })).sort((a, b) => b.acquereurs - a.acquereurs || (b.budgetMax ?? 0) - (a.budgetMax ?? 0));
 }
 
@@ -155,14 +157,14 @@ export default function AcquereursPage({ onRetour, onOuvrirEstimation }: { onRet
             {besoins.slice(0, 12).map((b) => (
               <div key={b.cle} className="rounded-xl border border-slate-200 bg-white p-3">
                 <div className="flex items-start justify-between gap-2">
-                  <span className="font-semibold text-navy">{b.type} · {b.commune}</span>
+                  <span className="font-semibold text-navy">{b.type}{b.pieces ? ` T${b.pieces}` : ""} · {b.commune}</span>
                   <span className="shrink-0 rounded-full bg-navy px-2 py-0.5 text-[11px] font-bold text-white" title={b.noms.join(", ")}>{b.acquereurs} acq.</span>
                 </div>
                 <div className="mt-1 text-xs text-slate-600">
                   💶 {b.budgetMin || b.budgetMax ? `${eur(b.budgetMin)} – ${eur(b.budgetMax)}` : "budget non précisé"}{b.budgetMedian ? ` · médian ${eur(b.budgetMedian)}` : ""}
                 </div>
                 <div className="mt-0.5 text-[11px] text-slate-400">
-                  {b.surfaceMin ? `≥ ${b.surfaceMin} m²` : "surface indiff."}{b.piecesMin ? ` · ≥ ${b.piecesMin} pièces` : ""}
+                  {b.pieces ? `${b.pieces} pièces` : "pièces indiff."}{b.surfaceMin ? ` · ≥ ${b.surfaceMin} m²` : ""}
                 </div>
               </div>
             ))}
