@@ -108,8 +108,8 @@ async function fabriquerItems(nomDossier: string, personnes: DonneesTracfin[]) {
     i++;
     const bytes = await remplirFicheTracfin(donnees);
     const nomLisible = (donnees.nomPrenoms || `vendeur ${i}`).replace(/[\\/:*?"<>|\r\n]+/g, " ").trim().slice(0, 80);
-    const suffixe = personnes.length > 1 ? ` — ${nomLisible}` : "";
-    items.push({ nom: `Fiche Tracfin (KYC)${suffixe} — ${nomDossier}.pdf`, categorie: "Tracfin", bytes });
+    const suffixe = personnes.length > 1 ? ` - ${nomLisible}` : "";
+    items.push({ nom: `Fiche Tracfin (KYC)${suffixe} - ${nomDossier}.pdf`, categorie: "Tracfin", bytes });
   }
   return items;
 }
