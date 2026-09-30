@@ -12,8 +12,12 @@ export const maxDuration = 120;
 // fiche. La partie « notation des risques » reste vierge — à l'appréciation et
 // sous la responsabilité de l'agent.
 
-const CATS_SOURCES = ["Pièce d'identité", "Mandat", "Titre de propriété"];
+// Ordre de priorité des pièces envoyées à l'IA (les plus riches d'abord) ;
+// au-delà on prend tout le reste du dossier.
+const CATS_PRIORITAIRES = ["Pièce d'identité", "Mandat", "Titre de propriété", "Offre d'achat", "Taxe foncière"];
 const MAX_DOC_OCTETS = 8 * 1024 * 1024; // on ignore une source trop lourde
+const MAX_DOCS = 8; // nombre de pièces envoyées à l'IA
+const BUDGET_B64_TOTAL = 24 * 1024 * 1024; // enveloppe totale envoyée (base64)
 
 function dateDuJour(): string {
   return new Date().toLocaleDateString("fr-FR", { day: "2-digit", month: "long", year: "numeric" });
@@ -37,31 +41,43 @@ function personneDe(o: Record<string, unknown>): Partial<DonneesTracfin> {
   };
 }
 
-// Extrait la liste des VENDEURS (un couple ou une indivision = plusieurs
-// personnes). Renvoie un tableau, un objet par personne physique identifiée.
-async function extraireKyc(docs: { b64: string }[]): Promise<Partial<DonneesTracfin>[] | null> {
+interface ExtraitKyc {
+  vendeurs: Partial<DonneesTracfin>[];
+  numeroMandat: string;
+  dureeDetention: string;
+}
+
+// Analyse TOUS les documents fournis du dossier vendeur et en extrait : les
+// vendeurs (état civil + coordonnées), le numéro de mandat et la durée de
+// détention du bien. Renvoie null si l'analyse échoue.
+async function extraireKyc(docs: { b64: string }[]): Promise<ExtraitKyc | null> {
   if (!process.env.ANTHROPIC_API_KEY || docs.length === 0) return null;
   const client = new Anthropic();
   const consigne = [
-    "Ces documents sont la/les pièce(s) d'identité et/ou le mandat d'un dossier de vente immobilière.",
-    "Il peut y avoir PLUSIEURS vendeurs (couple, indivision, co-propriétaires). Identifie CHAQUE personne physique vendeuse.",
-    "Renvoie EXCLUSIVEMENT un JSON : un tableau « vendeurs » avec UN objet par personne (chaîne vide si l'info est absente) :",
-    '{ "vendeurs": [',
-    "  {",
-    '    "nomPrenoms": "NOM en majuscules puis Prénom(s)",',
-    '    "dateNaissance": "JJ/MM/AAAA",',
-    '    "lieuNaissance": "ville (pays si étranger)",',
-    '    "nationalite": "française, etc.",',
-    '    "situationFamiliale": "célibataire / marié(e) / pacsé(e) / divorcé(e) / veuf(ve) si mentionné",',
-    '    "profession": "profession si mentionnée",',
-    '    "adresse": "adresse complète du domicile",',
-    '    "telephone": "numéro si mentionné",',
-    '    "email": "email si mentionné"',
-    "  }",
-    "] }",
-    "UNE pièce d'identité = UNE personne : s'il y a deux cartes d'identité, renvoie DEUX vendeurs.",
-    "N'INVENTE RIEN : si une information ne figure pas clairement, laisse la chaîne vide.",
-    "La pièce d'identité prime pour l'état civil ; le mandat peut compléter adresse, profession, situation familiale, téléphone, email.",
+    "Voici TOUTES les pièces disponibles d'un dossier de vente immobilière (pièce d'identité, mandat, titre de propriété, taxe foncière, compromis, etc.).",
+    "Analyse-les TOUTES et recoupe les informations pour remplir une fiche KYC / Tracfin.",
+    "Il peut y avoir PLUSIEURS vendeurs (couple, indivision). Identifie CHAQUE personne physique vendeuse.",
+    "Renvoie EXCLUSIVEMENT ce JSON (chaîne vide si une info est réellement absente de tous les documents) :",
+    "{",
+    '  "numeroMandat": "le numéro du mandat de vente (cherche « mandat n° », « n° de mandat » dans le mandat)",',
+    '  "dureeDetention": "depuis quand les vendeurs possèdent le bien : à déduire de la date d\'acquisition du titre de propriété (ex. « depuis 2008 » ou « environ 16 ans »)",',
+    '  "vendeurs": [',
+    "    {",
+    '      "nomPrenoms": "NOM en majuscules puis Prénom(s)",',
+    '      "dateNaissance": "JJ/MM/AAAA",',
+    '      "lieuNaissance": "ville (pays si étranger)",',
+    '      "nationalite": "française, etc.",',
+    '      "situationFamiliale": "célibataire / marié(e) / pacsé(e) / divorcé(e) / veuf(ve)",',
+    '      "profession": "profession",',
+    '      "adresse": "adresse complète du domicile",',
+    '      "telephone": "numéro",',
+    '      "email": "email"',
+    "    }",
+    "  ]",
+    "}",
+    "UNE pièce d'identité = UNE personne : deux cartes d'identité → DEUX vendeurs.",
+    "Recoupe les sources : la pièce d'identité prime pour l'état civil ; le mandat pour n° de mandat, adresse, profession, situation familiale, téléphone, email ; le titre de propriété pour la durée de détention.",
+    "N'INVENTE RIEN : laisse une chaîne vide si l'information ne figure vraiment nulle part.",
   ].join("\n");
 
   const content: Anthropic.MessageParam["content"] = [
@@ -75,7 +91,7 @@ async function extraireKyc(docs: { b64: string }[]): Promise<Partial<DonneesTrac
       msg = await client.messages.create({
         model: process.env.EXTRACT_MODEL ?? "claude-sonnet-5",
         max_tokens: 2048,
-        system: "Tu es un assistant d'agence immobilière. Tu extrais des données d'identité et réponds uniquement par du JSON conforme, sans commentaire.",
+        system: "Tu es un assistant d'agence immobilière. Tu extrais des données et réponds uniquement par du JSON conforme, sans commentaire.",
         messages: [{ role: "user", content }],
       });
       break;
@@ -91,10 +107,10 @@ async function extraireKyc(docs: { b64: string }[]): Promise<Partial<DonneesTrac
   const s = txt.indexOf("{"), e = txt.lastIndexOf("}");
   if (s < 0 || e <= s) return null;
   try {
-    const o = JSON.parse(txt.slice(s, e + 1)) as { vendeurs?: unknown };
+    const o = JSON.parse(txt.slice(s, e + 1)) as { vendeurs?: unknown; numeroMandat?: unknown; dureeDetention?: unknown };
     const arr = Array.isArray(o.vendeurs) ? (o.vendeurs as Record<string, unknown>[]) : [];
-    const personnes = arr.map(personneDe).filter((p) => p.nomPrenoms || p.dateNaissance);
-    return personnes;
+    const vendeurs = arr.map(personneDe).filter((p) => p.nomPrenoms || p.dateNaissance);
+    return { vendeurs, numeroMandat: texte(o.numeroMandat), dureeDetention: texte(o.dureeDetention) };
   } catch {
     return null;
   }
@@ -158,6 +174,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
         adresse: texte(f.adresse),
         telephone: texte(f.telephone),
         email: texte(f.email),
+        dureeDetention: texte(f.dureeDetention),
       }));
       const res = await addClientPdfsServer(id, await fabriquerItems(dossier.nom, personnes));
       if (!res) return Response.json({ error: "Dossier introuvable" }, { status: 404 });
@@ -172,37 +189,45 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       });
     }
 
-    // ---- MODE AUTO : extraction IA depuis la pièce d'identité + le mandat ----
+    // ---- MODE AUTO : l'IA analyse TOUTES les pièces du dossier ----
     if (!process.env.ANTHROPIC_API_KEY) {
       return Response.json({ error: "Service d'analyse indisponible (clé IA absente)." }, { status: 503 });
     }
-    const sources = dossier.pieces
-      .filter((p) => CATS_SOURCES.includes(p.categorie))
-      .sort((a, b) => CATS_SOURCES.indexOf(a.categorie) - CATS_SOURCES.indexOf(b.categorie));
-    if (!sources.some((p) => p.categorie === "Pièce d'identité")) {
+    if (!dossier.pieces.some((p) => p.categorie === "Pièce d'identité")) {
       return Response.json(
         { error: "Ajoute d'abord la pièce d'identité du vendeur au dossier (c'est la source principale de la fiche Tracfin)." },
         { status: 400 },
       );
     }
 
+    // Toutes les pièces, les plus riches d'abord, puis le reste du dossier.
+    const rang = (c: string) => { const i = CATS_PRIORITAIRES.indexOf(c); return i < 0 ? CATS_PRIORITAIRES.length : i; };
+    const triees = [...dossier.pieces].sort((a, b) => rang(a.categorie) - rang(b.categorie));
+
     const docs: { b64: string }[] = [];
-    for (const p of sources.slice(0, 4)) {
+    let totalB64 = 0;
+    for (const p of triees) {
+      if (docs.length >= MAX_DOCS) break;
       const buf = await getClientFileServer(id, p.fileId, p.url);
       if (!buf || buf.byteLength > MAX_DOC_OCTETS) continue;
-      docs.push({ b64: Buffer.from(buf).toString("base64") });
+      const b64 = Buffer.from(buf).toString("base64");
+      if (totalB64 + b64.length > BUDGET_B64_TOTAL) continue;
+      totalB64 += b64.length;
+      docs.push({ b64 });
     }
 
     const extrait = await extraireKyc(docs).catch(() => null);
     const analyseIndisponible = extrait === null;
 
-    let brut: Partial<DonneesTracfin>[] = extrait ?? [];
+    let brut: Partial<DonneesTracfin>[] = extrait?.vendeurs ?? [];
     if (brut.length === 0) brut = [{ nomPrenoms: [dossier.prenom, dossier.nom].filter(Boolean).join(" ") }];
     const partageContact = brut.length === 1; // couple : tel/email du dossier non attribuable
+    const references = extrait?.numeroMandat || texte(dossier.nom);
+    const dureeDetention = extrait?.dureeDetention ?? "";
 
     const personnes: DonneesTracfin[] = brut.slice(0, 6).map((p) => ({
       dateFiche: dateDuJour(),
-      references: texte(dossier.nom),
+      references,
       nomPrenoms: texte(p.nomPrenoms),
       dateNaissance: texte(p.dateNaissance),
       lieuNaissance: texte(p.lieuNaissance),
@@ -212,6 +237,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       adresse: texte(p.adresse) || texte(dossier.adresseActuelle),
       telephone: texte(p.telephone) || (partageContact ? texte(dossier.tel) : ""),
       email: texte(p.email) || (partageContact ? texte(dossier.email) : ""),
+      dureeDetention,
     }));
 
     const res = await addClientPdfsServer(id, await fabriquerItems(dossier.nom, personnes));

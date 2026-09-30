@@ -777,7 +777,8 @@ export default function ClientsPage({ onRetour, onOuvrirEstimation }: { onRetour
                             ["adresse", "Adresse du domicile"],
                             ["telephone", "Téléphone"],
                             ["email", "E-mail"],
-                            ["references", "Références dossier"],
+                            ["dureeDetention", "Durée de détention"],
+                            ["references", "Références (n° mandat)"],
                             ["dateFiche", "Date de la fiche"],
                           ] as [keyof DonneesTracfin, string][]).map(([cle, label]) => (
                             <label key={cle} className="block">

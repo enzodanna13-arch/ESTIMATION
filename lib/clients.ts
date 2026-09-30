@@ -195,6 +195,7 @@ export interface DonneesTracfin {
   adresse?: string;
   telephone?: string;
   email?: string;
+  dureeDetention?: string;
 }
 
 export interface ResultatTracfin {
