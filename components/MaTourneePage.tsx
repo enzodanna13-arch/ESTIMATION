@@ -37,7 +37,12 @@ export default function MaTourneePage({ tourneeId, onRetour }: { tourneeId?: str
       if (tourneeId) {
         setTournee(await getTournee(tourneeId));
       } else {
-        const ts = (await listTournees()).filter((t) => estAujourdhui(t.date) && t.etapes.length > 0);
+        // On garde TOUTES les tournées encore à faire (au moins un bien non visité),
+        // quel que soit le jour : une tournée non terminée ne doit jamais disparaître.
+        // Les tournées 100 % traitées ne restent affichées que le jour même.
+        const ts = (await listTournees())
+          .filter((t) => t.etapes.length > 0 && (t.etapes.some((e) => !e.fait) || estAujourdhui(t.date)))
+          .sort((a, b) => b.date - a.date);
         if (ts.length === 1) setTournee(ts[0]);
         else setChoix(ts);
       }
@@ -75,11 +80,11 @@ export default function MaTourneePage({ tourneeId, onRetour }: { tourneeId?: str
         <h2 className="mb-3 text-xl font-bold text-navy">🧭 Ma tournée</h2>
 
         {choix.length === 0 ? (
-          <p className="rounded-2xl border border-dashed border-slate-300 bg-white p-6 text-center text-sm text-slate-400">Aucune tournée aujourd&apos;hui. Demandez la génération des tournées depuis « Prospection ciblée ».</p>
+          <p className="rounded-2xl border border-dashed border-slate-300 bg-white p-6 text-center text-sm text-slate-400">Aucune tournée en cours. Générez vos tournées depuis « Prospection ciblée ».</p>
         ) : !negoActif ? (
           /* Étape 1 : choisir le négociateur */
           <div>
-            <p className="mb-3 text-sm text-slate-500">Qui prospecte aujourd&apos;hui ?</p>
+            <p className="mb-3 text-sm text-slate-500">Qui reprend sa tournée ?</p>
             <div className="grid grid-cols-2 gap-3">
               {negos.map((n) => {
                 const g = parNego.get(n)!;
@@ -104,17 +109,25 @@ export default function MaTourneePage({ tourneeId, onRetour }: { tourneeId?: str
               <AvatarNego nom={negoActif} size={42} />
               <div>
                 <div className="font-bold">{negoActif}</div>
-                <div className="text-xs text-white/70">{parNego.get(negoActif)!.length} tournée(s) aujourd&apos;hui</div>
+                <div className="text-xs text-white/70">{parNego.get(negoActif)!.length} tournée(s) à faire</div>
               </div>
             </div>
             <div className="space-y-2">
-              {parNego.get(negoActif)!.slice().sort((a, b) => (a.index ?? 0) - (b.index ?? 0)).map((t) => {
+              {parNego.get(negoActif)!.slice().sort((a, b) => (b.date - a.date) || ((a.index ?? 0) - (b.index ?? 0))).map((t) => {
                 const faits = t.etapes.filter((e) => e.fait).length;
+                const reste = t.etapes.length - faits;
+                const terminee = reste === 0;
                 return (
                   <button key={t.id} onClick={() => setTournee(t)} className="flex w-full items-center justify-between gap-2 rounded-2xl border border-slate-200 bg-white p-4 text-left hover:border-copper">
                     <div className="min-w-0">
                       <div className="font-bold text-navy">Tournée {t.index ?? "•"} · 📍 {t.etapes[0]?.ville || "—"}</div>
-                      <div className="text-xs text-slate-500">{t.etapes.length} biens · {t.distanceKm} km · ≈ {formatDuree(t.dureeMin)}{faits > 0 ? ` · ${faits} faits` : ""}</div>
+                      <div className="text-xs capitalize text-slate-500">{dateLongue(t.date)}</div>
+                      <div className="text-xs text-slate-500">{t.etapes.length} biens · {t.distanceKm} km · ≈ {formatDuree(t.dureeMin)}</div>
+                      <div className="mt-0.5">
+                        {terminee
+                          ? <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-bold text-emerald-700">✓ Terminée</span>
+                          : <span className="rounded-full bg-copper/15 px-2 py-0.5 text-[11px] font-bold text-copper">{reste} à faire{faits > 0 ? ` · ${faits} faits` : ""}</span>}
+                      </div>
                     </div>
                     <span className="text-copper">→</span>
                   </button>
