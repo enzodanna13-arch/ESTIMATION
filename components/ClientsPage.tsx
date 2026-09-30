@@ -82,6 +82,43 @@ function BadgeCompletude({ d }: { d: ClientDossier }) {
   );
 }
 
+// Libellés courts des pièces attendues, pour les pastilles compactes de la
+// carte dossier.
+const COURT_PIECE: Record<string, string> = {
+  "Titre de propriété": "Titre",
+  "Pièce d'identité": "Identité",
+  Mandat: "Mandat",
+  Diagnostics: "Diagnostics",
+  Tracfin: "Tracfin",
+};
+
+// Aperçu en un coup d'œil des pièces manquantes (carte vendeur).
+function PastillesManquantes({ d }: { d: ClientDossier }) {
+  const manquantes = piecesManquantes(d);
+  if (manquantes.length === 0) {
+    return <div className="mt-2 text-[11px] font-semibold text-emerald-600">✓ Dossier complet</div>;
+  }
+  return (
+    <div className="mt-2 flex flex-wrap gap-1">
+      {manquantes.map((m) => (
+        <span
+          key={m.categorie}
+          className="rounded-full bg-amber-50 px-1.5 py-0.5 text-[10px] font-semibold text-amber-700 ring-1 ring-amber-200"
+        >
+          ✗ {COURT_PIECE[m.categorie] ?? m.categorie}
+        </span>
+      ))}
+    </div>
+  );
+}
+
+// Numéro de mandat extrait du nom du dossier (« 609 vella », « jalleb 613 »… →
+// 609, 613) pour trier la liste dans l'ordre. Sans numéro → placé après.
+function numeroDossier(d: ClientDossier): number {
+  const m = `${d.nom ?? ""}`.match(/\d+/);
+  return m ? parseInt(m[0], 10) : Number.POSITIVE_INFINITY;
+}
+
 function Badge({ categorie }: { categorie: string }) {
   return (
     <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${CATEGORIE_COULEURS[categorie] ?? CATEGORIE_COULEURS.Autre}`}>
@@ -365,7 +402,13 @@ export default function ClientsPage({ onRetour, onOuvrirEstimation }: { onRetour
     let base = filtrer(dossiers ?? [], q);
     if (filtreType) base = base.filter((d) => typeDe(d) === filtreType);
     if (filtreStatut) base = base.filter((d) => (d.statut ?? "") === filtreStatut);
-    return base;
+    // Tri par numéro de mandat croissant (609, 610, 611…) ; les dossiers sans
+    // numéro passent après, classés par nom.
+    return [...base].sort((a, b) => {
+      const na = numeroDossier(a), nb = numeroDossier(b);
+      if (na !== nb) return na - nb;
+      return `${a.nom ?? ""}`.localeCompare(`${b.nom ?? ""}`, "fr", { numeric: true });
+    });
   }, [dossiers, q, filtreType, filtreStatut]);
 
   const creer = async () => {
@@ -992,6 +1035,7 @@ export default function ClientsPage({ onRetour, onOuvrirEstimation }: { onRetour
                 <div className="mt-1 text-xs text-slate-400">
                   {[d.negociateur, acq ? `${d.pieces.length} doc.` : `${d.pieces.length} pièce${d.pieces.length > 1 ? "s" : ""}`, `maj ${dateFr(d.updatedAt)}`].filter(Boolean).join(" · ")}
                 </div>
+                {!acq && <PastillesManquantes d={d} />}
               </button>
             );
           })}
