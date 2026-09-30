@@ -1,5 +1,10 @@
 import { verifierAccesEquipe } from "@/lib/historyAuth";
-import { deleteClientFileServer, getClientFileServer, getClientServer } from "@/lib/serverHistory";
+import {
+  deleteClientFileServer,
+  getClientFileServer,
+  getClientServer,
+  renameClientFileServer,
+} from "@/lib/serverHistory";
 
 export const dynamic = "force-dynamic";
 
@@ -44,5 +49,32 @@ export async function DELETE(
     return Response.json({ dossier });
   } catch {
     return Response.json({ error: "Suppression impossible" }, { status: 500 });
+  }
+}
+
+// Renomme une pièce (et, si fourni, change sa catégorie).
+export async function PATCH(
+  request: Request,
+  { params }: { params: Promise<{ id: string; fileId: string }> },
+) {
+  if (!(await verifierAccesEquipe(request))) {
+    return Response.json({ error: "Accès réservé — mot de passe requis" }, { status: 401 });
+  }
+  const { id, fileId } = await params;
+  let body: { nom?: string; categorie?: string };
+  try {
+    body = (await request.json()) as typeof body;
+  } catch {
+    return Response.json({ error: "Corps de requête invalide" }, { status: 400 });
+  }
+  if (!body.nom?.trim()) {
+    return Response.json({ error: "Le nom ne peut pas être vide" }, { status: 400 });
+  }
+  try {
+    const dossier = await renameClientFileServer(id, fileId, body.nom, body.categorie);
+    if (!dossier) return Response.json({ error: "Pièce introuvable" }, { status: 404 });
+    return Response.json({ dossier });
+  } catch {
+    return Response.json({ error: "Renommage impossible" }, { status: 500 });
   }
 }

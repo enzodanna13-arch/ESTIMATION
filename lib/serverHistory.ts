@@ -1,4 +1,5 @@
 import { del, list, put } from "@vercel/blob";
+import { CATEGORIES_PIECES } from "./docTypes";
 import type { DocumentInput, DocumentResult } from "./docTypes";
 import type { EstimateResponse, PropertyInput } from "./types";
 
@@ -735,6 +736,30 @@ export async function deleteClientFileServer(id: string, fileId: string): Promis
   });
   if (blobs.length > 0) await del(blobs.map((b) => b.url));
   dossier.pieces = dossier.pieces.filter((p) => p.fileId !== fileId);
+  dossier.updatedAt = Date.now();
+  await putClientMeta(dossier);
+  return dossier;
+}
+
+// Renomme une pièce du dossier (le fichier stocké sur le Blob n'est pas
+// déplacé — seul le libellé affiché change). La catégorie peut aussi être
+// mise à jour en même temps (facultatif).
+export async function renameClientFileServer(
+  id: string,
+  fileId: string,
+  nom: string,
+  categorie?: string,
+): Promise<ClientDossier | null> {
+  const dossier = await getClientServer(id);
+  if (!dossier) return null;
+  const piece = dossier.pieces.find((p) => p.fileId === fileId);
+  if (!piece) return null;
+  const nomPropre = nom.trim().slice(0, 200);
+  if (!nomPropre) return null;
+  piece.nom = nomPropre;
+  if (categorie !== undefined) {
+    piece.categorie = (CATEGORIES_PIECES as readonly string[]).includes(categorie) ? categorie : piece.categorie;
+  }
   dossier.updatedAt = Date.now();
   await putClientMeta(dossier);
   return dossier;

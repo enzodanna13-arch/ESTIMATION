@@ -178,6 +178,23 @@ export async function deleteClientFile(id: string, fileId: string): Promise<Clie
   return body.dossier ?? null;
 }
 
+/** Renomme une pièce (et, si fournie, change sa catégorie). */
+export async function renommerClientFile(
+  id: string,
+  fileId: string,
+  nom: string,
+  categorie?: string,
+): Promise<ClientDossier | null> {
+  const res = await fetch(`/api/clients/${encodeURIComponent(id)}/files/${encodeURIComponent(fileId)}`, {
+    method: "PATCH",
+    headers: jsonHeaders(),
+    body: JSON.stringify({ nom, ...(categorie !== undefined ? { categorie } : {}) }),
+  });
+  if (!res.ok) return null;
+  const body = (await res.json()) as { dossier?: ClientDossier };
+  return body.dossier ?? null;
+}
+
 /** Télécharge une pièce dans le navigateur (via l'API protégée). */
 export async function telechargerClientFile(id: string, fileId: string, nom: string): Promise<void> {
   const res = await fetch(`/api/clients/${encodeURIComponent(id)}/files/${encodeURIComponent(fileId)}`, {

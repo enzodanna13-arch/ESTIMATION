@@ -10,6 +10,7 @@ import {
   fractionnerDossierPdf,
   getClientFileB64,
   listClients,
+  renommerClientFile,
   telechargerClientFile,
   televerserBlobDirecte,
   updateClient,
@@ -346,6 +347,8 @@ export default function ClientsPage({ onRetour, onOuvrirEstimation }: { onRetour
   const [fractionnement, setFractionnement] = useState<string | null>(null);
   const [resultatFraction, setResultatFraction] = useState<{ categorie: string; titre: string }[] | null>(null);
   const [edit, setEdit] = useState<{ nom: string; prenom: string; tel: string; email: string; bien: string; nego: string } | null>(null);
+  // Pièce en cours de renommage : fileId + nouveau nom + nouvelle catégorie.
+  const [pieceEdit, setPieceEdit] = useState<{ fileId: string; nom: string; categorie: string } | null>(null);
 
   const recharger = () => listClients().then(setDossiers).catch(() => setDossiers([]));
   useEffect(() => {
@@ -510,6 +513,15 @@ export default function ClientsPage({ onRetour, onOuvrirEstimation }: { onRetour
     const d = await deleteClientFile(ouvert.id, p.fileId);
     if (d) setOuvert(d);
     void recharger();
+  };
+
+  const enregistrerRenommage = async () => {
+    if (!ouvert || !pieceEdit) return;
+    const nom = pieceEdit.nom.trim();
+    if (!nom) { setErreur("Le nom de la pièce ne peut pas être vide."); return; }
+    const d = await renommerClientFile(ouvert.id, pieceEdit.fileId, nom, pieceEdit.categorie);
+    if (d) { setOuvert(d); setPieceEdit(null); void recharger(); }
+    else setErreur("Renommage impossible.");
   };
 
   const supprimerDossier = async (sansConfirmation = false) => {
@@ -747,20 +759,62 @@ export default function ClientsPage({ onRetour, onOuvrirEstimation }: { onRetour
               {[...ouvert.pieces].sort((a, b) => b.createdAt - a.createdAt).map((p) => (
                 <li key={p.fileId} className="flex flex-wrap items-center gap-3 px-4 py-3">
                   <span className="text-lg">📄</span>
-                  <div className="min-w-0 flex-1">
-                    <div className="truncate text-sm font-semibold text-slate-800">{p.nom}</div>
-                    <div className="text-xs text-slate-400">{Math.round(p.taille / 1024)} Ko · ajouté le {dateFr(p.createdAt)}</div>
-                  </div>
-                  <Badge categorie={p.categorie} />
-                  <button
-                    onClick={() => void telechargerClientFile(ouvert.id, p.fileId, p.nom).catch(() => setErreur("Téléchargement impossible"))}
-                    className="rounded-lg border border-slate-300 px-3 py-1 text-xs font-semibold text-slate-600 transition hover:bg-slate-100"
-                  >
-                    ⬇ Télécharger
-                  </button>
-                  <button onClick={() => void supprimerPiece(p)} className="rounded-lg border border-red-200 px-2.5 py-1 text-xs text-red-600 transition hover:bg-red-50">
-                    ✕
-                  </button>
+                  {pieceEdit?.fileId === p.fileId ? (
+                    <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2">
+                      <input
+                        autoFocus
+                        value={pieceEdit.nom}
+                        onChange={(e) => setPieceEdit({ ...pieceEdit, nom: e.target.value })}
+                        onKeyDown={(e) => { if (e.key === "Enter") void enregistrerRenommage(); if (e.key === "Escape") setPieceEdit(null); }}
+                        className="min-w-0 flex-1 rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-slate-500 focus:outline-none"
+                        placeholder="Nom de la pièce"
+                      />
+                      <select
+                        value={pieceEdit.categorie}
+                        onChange={(e) => setPieceEdit({ ...pieceEdit, categorie: e.target.value })}
+                        className="rounded-lg border border-slate-300 px-2 py-1.5 text-sm focus:border-slate-500 focus:outline-none"
+                      >
+                        {CATEGORIES_PIECES.map((c) => (
+                          <option key={c} value={c}>{c}</option>
+                        ))}
+                      </select>
+                      <button
+                        onClick={() => void enregistrerRenommage()}
+                        className="rounded-lg bg-slate-800 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-slate-700"
+                      >
+                        Enregistrer
+                      </button>
+                      <button
+                        onClick={() => setPieceEdit(null)}
+                        className="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-600 transition hover:bg-slate-100"
+                      >
+                        Annuler
+                      </button>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="min-w-0 flex-1">
+                        <div className="truncate text-sm font-semibold text-slate-800">{p.nom}</div>
+                        <div className="text-xs text-slate-400">{Math.round(p.taille / 1024)} Ko · ajouté le {dateFr(p.createdAt)}</div>
+                      </div>
+                      <Badge categorie={p.categorie} />
+                      <button
+                        onClick={() => setPieceEdit({ fileId: p.fileId, nom: p.nom, categorie: p.categorie })}
+                        className="rounded-lg border border-slate-300 px-3 py-1 text-xs font-semibold text-slate-600 transition hover:bg-slate-100"
+                      >
+                        ✎ Renommer
+                      </button>
+                      <button
+                        onClick={() => void telechargerClientFile(ouvert.id, p.fileId, p.nom).catch(() => setErreur("Téléchargement impossible"))}
+                        className="rounded-lg border border-slate-300 px-3 py-1 text-xs font-semibold text-slate-600 transition hover:bg-slate-100"
+                      >
+                        ⬇ Télécharger
+                      </button>
+                      <button onClick={() => void supprimerPiece(p)} className="rounded-lg border border-red-200 px-2.5 py-1 text-xs text-red-600 transition hover:bg-red-50">
+                        ✕
+                      </button>
+                    </>
+                  )}
                 </li>
               ))}
             </ul>
