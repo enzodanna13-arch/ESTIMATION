@@ -3,6 +3,7 @@ import {
   deleteClientFileServer,
   getClientFileServer,
   getClientServer,
+  listerCheminsFichiersClient,
   renameClientFileServer,
 } from "@/lib/serverHistory";
 
@@ -24,7 +25,13 @@ export async function GET(
     const dossier = await getClientServer(id);
     const piece = dossier?.pieces.find((p) => p.fileId === fileId);
     const octets = await getClientFileServer(id, fileId, piece?.url);
-    if (!octets) return Response.json({ error: "Pièce introuvable" }, { status: 404 });
+    if (!octets) {
+      // Diagnostic détaillé pour comprendre l'échec (remonté à l'écran).
+      const chemins = await listerCheminsFichiersClient(id);
+      const noms = chemins.map((c) => c.split("/").pop()).join(", ");
+      const diag = `fileId=${fileId} · url mémorisée=${piece?.url ? "oui" : "non"} · ${chemins.length} blob(s) dans le dossier${noms ? ` : ${noms}` : ""}`;
+      return Response.json({ error: `Pièce introuvable dans le stockage (${diag})` }, { status: 404 });
+    }
     const nom = (piece?.nom ?? "piece.pdf").replace(/["\\\r\n]/g, "");
     return new Response(octets, {
       headers: {

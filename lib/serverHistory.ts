@@ -508,6 +508,17 @@ export async function addClientPdfsServer(
   return { dossier, ajoutees, fileIds };
 }
 
+// Diagnostic : chemins des blobs réellement présents dans le dossier d'un
+// client (pour comprendre un téléchargement en échec).
+export async function listerCheminsFichiersClient(id: string): Promise<string[]> {
+  try {
+    const { blobs } = await list({ prefix: `${CLIENT_FILE_PREFIX}${safeId(id)}/`, limit: 1000 });
+    return blobs.map((b) => b.pathname);
+  } catch {
+    return [];
+  }
+}
+
 export async function getClientFileServer(id: string, fileId: string, url?: string): Promise<ArrayBuffer | null> {
   // URL connue (mémorisée à l'écriture) → lecture directe, cohérence forte
   // (indispensable juste après création, `list` étant éventuellement cohérent).
