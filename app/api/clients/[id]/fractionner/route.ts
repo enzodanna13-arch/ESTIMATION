@@ -56,6 +56,43 @@ function nettoyerNom(titre: string, categorie: string, debut: number, fin: numbe
   return `${t} (${pages}).pdf`;
 }
 
+// Parse la réponse de l'IA. Tente d'abord le JSON complet ; si celui-ci est
+// tronqué (réponse coupée par la limite de tokens), récupère au mieux les
+// objets segment individuels et le tableau pagesBlanches — mieux vaut un
+// découpage partiel qu'une tranche entièrement perdue.
+function parserReponse(txt: string): { segments: unknown[]; pagesBlanches: unknown[] } | null {
+  const s = txt.indexOf("{"), e = txt.lastIndexOf("}");
+  if (s >= 0 && e > s) {
+    try {
+      const obj = JSON.parse(txt.slice(s, e + 1)) as { segments?: unknown; pagesBlanches?: unknown };
+      if (Array.isArray(obj.segments)) {
+        return { segments: obj.segments, pagesBlanches: Array.isArray(obj.pagesBlanches) ? obj.pagesBlanches : [] };
+      }
+    } catch {
+      /* JSON tronqué : on passe à la récupération objet par objet ci-dessous. */
+    }
+  }
+  // Récupération tolérante : chaque objet segment complet { ... } est isolé et
+  // parsé indépendamment ; les objets incomplets (fin de réponse coupée) sont
+  // ignorés sans faire échouer toute la tranche.
+  const segments: unknown[] = [];
+  const zoneSeg = txt.slice(txt.indexOf("[") + 1);
+  for (const m of zoneSeg.matchAll(/\{[^{}]*\}/g)) {
+    try {
+      const o = JSON.parse(m[0]);
+      if (o && typeof o === "object" && "debut" in o && "fin" in o) segments.push(o);
+    } catch {
+      /* objet incomplet, ignoré */
+    }
+  }
+  if (segments.length === 0) return null;
+  const blanchesMatch = txt.match(/"pagesBlanches"\s*:\s*\[([^\]]*)\]/);
+  const pagesBlanches = blanchesMatch
+    ? blanchesMatch[1].split(",").map((x) => Number(x.trim())).filter((n) => Number.isFinite(n))
+    : [];
+  return { segments, pagesBlanches };
+}
+
 async function classifierPages(pdfB64: string, nbPages: number): Promise<{ segments: Segment[]; blanches: number[] } | null> {
   if (!process.env.ANTHROPIC_API_KEY) return null;
   const client = new Anthropic();
@@ -77,7 +114,10 @@ async function classifierPages(pdfB64: string, nbPages: number): Promise<{ segme
 
   const msg = await client.messages.create({
     model: process.env.SPLIT_MODEL ?? process.env.EXTRACT_MODEL ?? "claude-opus-4-8",
-    max_tokens: 4096,
+    // Une tranche de 100 pages peut contenir des dizaines de documents : il faut
+    // assez de tokens pour que le JSON de segments ne soit PAS tronqué (un JSON
+    // tronqué = parse impossible = tranche perdue).
+    max_tokens: 8192,
     system: "Tu es un assistant d'agence immobilière qui trie les pièces d'un dossier de vente. Tu réponds uniquement par du JSON conforme, sans commentaire.",
     messages: [
       {
@@ -90,15 +130,8 @@ async function classifierPages(pdfB64: string, nbPages: number): Promise<{ segme
     ],
   });
   const txt = msg.content.filter((b): b is Anthropic.TextBlock => b.type === "text").map((b) => b.text).join("");
-  const s = txt.indexOf("{"), e = txt.lastIndexOf("}");
-  if (s < 0 || e <= s) return null;
-  let brut: { segments?: unknown; pagesBlanches?: unknown };
-  try {
-    brut = JSON.parse(txt.slice(s, e + 1));
-  } catch {
-    return null;
-  }
-  if (!Array.isArray(brut.segments)) return null;
+  const brut = parserReponse(txt);
+  if (!brut || !Array.isArray(brut.segments)) return null;
   const segs: Segment[] = [];
   for (const it of brut.segments as Record<string, unknown>[]) {
     const debut = Math.round(Number(it.debut));
@@ -126,8 +159,11 @@ function reparer(segs: Segment[], nbPages: number): Segment[] {
   const out: Segment[] = [];
   let curseur = 1;
   for (const s of valides) {
-    const debut = Math.max(curseur, s.debut);
-    if (debut > nbPages) break;
+    if (curseur > nbPages) break;
+    // On accroche chaque segment à la fin du précédent (debut = curseur) : la
+    // couverture reste contiguë depuis la page 1, sans trou ni page perdue,
+    // même si l'IA a sauté une page en début de document.
+    const debut = curseur;
     const fin = Math.min(Math.max(debut, s.fin), nbPages);
     if (fin < debut) continue;
     out.push({ ...s, debut, fin });
@@ -201,32 +237,46 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     const tranches: { start: number; len: number }[] = [];
     for (let s = 1; s <= nbPages; s += CHUNK) tranches.push({ start: s, len: Math.min(CHUNK, nbPages - s + 1) });
 
-    const allSegs: Segment[] = [];
-    const blanches = new Set<number>(); // pages 1-indexées globales à retirer
-    for (const tr of tranches) {
-      let b64: string;
-      if (tranches.length === 1) {
-        b64 = Buffer.from(buf).toString("base64");
-      } else {
+    // Base64 de chaque tranche (le PDF entier si une seule tranche).
+    const b64Tranches = await Promise.all(
+      tranches.map(async (tr) => {
+        if (tranches.length === 1) return Buffer.from(buf).toString("base64");
         const sub = await PDFDocument.create();
         const idx: number[] = [];
         for (let p = 0; p < tr.len; p++) idx.push(tr.start - 1 + p);
         const pages = await sub.copyPages(source, idx);
         for (const pg of pages) sub.addPage(pg);
-        b64 = Buffer.from(await sub.save()).toString("base64");
-      }
-      const analyse = await classifierPages(b64, tr.len).catch(() => null);
+        return Buffer.from(await sub.save()).toString("base64");
+      }),
+    );
+
+    // Analyse des tranches EN PARALLÈLE (chacune ≤ 100 pages) : bien plus rapide
+    // qu'en séquentiel, et on reste dans la durée d'exécution.
+    const analyses = await Promise.all(
+      tranches.map((tr, i) => classifierPages(b64Tranches[i], tr.len).catch(() => null)),
+    );
+
+    const allSegs: Segment[] = [];
+    const blanches = new Set<number>(); // pages 1-indexées globales à retirer
+    tranches.forEach((tr, i) => {
+      const analyse = analyses[i];
       const decal = tr.start - 1; // page locale → globale
-      for (const sgm of analyse?.segments ?? []) {
+      const trFin = tr.start + tr.len - 1;
+      if (!analyse || analyse.segments.length === 0) {
+        // Tranche non analysée : repli LOCAL (une pièce « Autre » sur ses pages)
+        // — on ne perd aucune page et on n'écrase pas les autres tranches.
+        allSegs.push({ debut: tr.start, fin: trFin, categorie: "Autre", titre: `Dossier (p.${tr.start}-${trFin})` });
+        return;
+      }
+      for (const sgm of analyse.segments) {
         allSegs.push({ ...sgm, debut: sgm.debut + decal, fin: sgm.fin + decal });
       }
-      for (const b of analyse?.blanches ?? []) blanches.add(b + decal);
-    }
+      for (const b of analyse.blanches) blanches.add(b + decal);
+    });
 
     let segs = allSegs;
     if (segs.length === 0) {
-      // L'IA n'a rien renvoyé d'exploitable : on enregistre le dossier entier
-      // comme une seule pièce « Autre » plutôt que d'échouer.
+      // Aucune tranche exploitable : dossier entier en une seule pièce « Autre ».
       segs = [{ debut: 1, fin: nbPages, categorie: "Autre", titre: "Dossier complet" }];
     }
     const seamEnds = new Set(tranches.slice(0, -1).map((tr) => tr.start + tr.len - 1));
