@@ -52,9 +52,9 @@ function ajuster(texte: string, taille: number, largeurMax: number | undefined, 
 // l'agent).
 export async function remplirFicheTracfin(donnees: DonneesTracfin): Promise<Uint8Array> {
   const modele = Buffer.from(MODELE_TRACFIN_B64, "base64");
-  // Le modèle fourni est un PDF chiffré (protégé à l'impression) : on autorise
-  // son chargement ; l'enregistrement produit un PDF non chiffré.
-  const pdf = await PDFDocument.load(modele, { ignoreEncryption: true });
+  // Le modèle embarqué est déjà déchiffré : pdf-lib le remplit et produit un
+  // PDF standard, lisible par tous les lecteurs.
+  const pdf = await PDFDocument.load(modele);
   const font = await pdf.embedFont(StandardFonts.Helvetica);
   const page = pdf.getPages()[0];
   const couleur = rgb(0.06, 0.09, 0.16);
