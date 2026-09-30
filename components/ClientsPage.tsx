@@ -523,6 +523,7 @@ export default function ClientsPage({ onRetour, onOuvrirEstimation }: { onRetour
       const parts = [`${res.fiches} fiche${res.fiches > 1 ? "s" : ""} Tracfin générée${res.fiches > 1 ? "s" : ""}${res.vendeurs > 1 ? ` (1 par vendeur, ${res.vendeurs} vendeurs)` : ""} et ajoutée${res.fiches > 1 ? "s" : ""} au dossier`];
       if (res.analyseIndisponible) parts.push("⚠️ infos non extraites (crédit IA ?) — à compléter à la main ci-dessous");
       else if (res.champsVides > 0) parts.push(`à vérifier : ${res.champsVides} champ(s) non trouvé(s)`);
+      if (res.diag) parts.push(`[diagnostic : ${res.diag}]`);
       setInfo(parts.join(" · "));
       void recharger();
     } catch (err) {

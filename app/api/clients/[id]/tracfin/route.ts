@@ -267,6 +267,8 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     const res = await addClientPdfsServer(id, await fabriquerItems(dossier.nom, personnes));
     if (!res) return Response.json({ error: "Dossier introuvable" }, { status: 404 });
 
+    const diag = `IA=${extrait ? "ok" : "null"} · docs envoyés=${docs.length} · vendeurs détectés=${extrait?.vendeurs.length ?? 0} · mandat=${extrait?.numeroMandat ? "oui" : "non"} · acquisition=${extrait?.dateAcquisition ? "oui" : "non"}`;
+
     return Response.json({
       dossier: res.dossier,
       fiches: res.ajoutees,
@@ -275,6 +277,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       analyseIndisponible,
       donnees: personnes,
       fileIds: res.fileIds,
+      diag,
     });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Génération de la fiche Tracfin impossible";

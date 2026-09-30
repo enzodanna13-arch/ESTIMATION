@@ -206,6 +206,7 @@ export interface ResultatTracfin {
   analyseIndisponible: boolean;
   donnees: DonneesTracfin[];
   fileIds: string[];
+  diag?: string;
 }
 
 /** Génère la fiche Tracfin (KYC).
