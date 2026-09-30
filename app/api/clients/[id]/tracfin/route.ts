@@ -44,7 +44,31 @@ function personneDe(o: Record<string, unknown>): Partial<DonneesTracfin> {
 interface ExtraitKyc {
   vendeurs: Partial<DonneesTracfin>[];
   numeroMandat: string;
-  dureeDetention: string;
+  dateAcquisition: string; // date figurant sur le titre de propriété
+}
+
+// Calcule la durée de détention entre la date d'acquisition (titre de
+// propriété) et aujourd'hui. Accepte « JJ/MM/AAAA », « MM/AAAA » ou « AAAA ».
+function dureeDetentionDepuis(dateAcq: string): string {
+  const s = dateAcq.trim();
+  if (!s) return "";
+  const m = s.match(/(?:(\d{1,2})\/)?(?:(\d{1,2})\/)?(\d{4})/);
+  if (!m) return s; // format non reconnu : on garde le texte brut
+  const jour = m[1] ? Number(m[1]) : m[2] ? 1 : 1;
+  const mois = m[2] ? Number(m[2]) : m[1] ? Number(m[1]) : 1;
+  const annee = Number(m[3]);
+  const debut = new Date(annee, Math.max(0, mois - 1), jour);
+  if (Number.isNaN(debut.getTime()) || debut > new Date()) return s;
+  const now = new Date();
+  let ans = now.getFullYear() - debut.getFullYear();
+  let moisDiff = now.getMonth() - debut.getMonth();
+  if (now.getDate() < debut.getDate()) moisDiff -= 1;
+  if (moisDiff < 0) { ans -= 1; moisDiff += 12; }
+  const parts: string[] = [];
+  if (ans > 0) parts.push(`${ans} an${ans > 1 ? "s" : ""}`);
+  if (moisDiff > 0) parts.push(`${moisDiff} mois`);
+  const duree = parts.length > 0 ? parts.join(" et ") : "moins d'un mois";
+  return `${duree} (depuis le ${debut.toLocaleDateString("fr-FR")})`;
 }
 
 // Analyse TOUS les documents fournis du dossier vendeur et en extrait : les
@@ -60,7 +84,7 @@ async function extraireKyc(docs: { b64: string }[]): Promise<ExtraitKyc | null> 
     "Renvoie EXCLUSIVEMENT ce JSON (chaîne vide si une info est réellement absente de tous les documents) :",
     "{",
     '  "numeroMandat": "le numéro du mandat de vente (cherche « mandat n° », « n° de mandat » dans le mandat)",',
-    '  "dureeDetention": "depuis quand les vendeurs possèdent le bien : à déduire de la date d\'acquisition du titre de propriété (ex. « depuis 2008 » ou « environ 16 ans »)",',
+    '  "dateAcquisition": "la date d\'acquisition figurant sur le TITRE DE PROPRIÉTÉ (date de l\'acte / de signature chez le notaire), au format JJ/MM/AAAA",',
     '  "vendeurs": [',
     "    {",
     '      "nomPrenoms": "NOM en majuscules puis Prénom(s)",',
@@ -107,10 +131,10 @@ async function extraireKyc(docs: { b64: string }[]): Promise<ExtraitKyc | null> 
   const s = txt.indexOf("{"), e = txt.lastIndexOf("}");
   if (s < 0 || e <= s) return null;
   try {
-    const o = JSON.parse(txt.slice(s, e + 1)) as { vendeurs?: unknown; numeroMandat?: unknown; dureeDetention?: unknown };
+    const o = JSON.parse(txt.slice(s, e + 1)) as { vendeurs?: unknown; numeroMandat?: unknown; dateAcquisition?: unknown };
     const arr = Array.isArray(o.vendeurs) ? (o.vendeurs as Record<string, unknown>[]) : [];
     const vendeurs = arr.map(personneDe).filter((p) => p.nomPrenoms || p.dateNaissance);
-    return { vendeurs, numeroMandat: texte(o.numeroMandat), dureeDetention: texte(o.dureeDetention) };
+    return { vendeurs, numeroMandat: texte(o.numeroMandat), dateAcquisition: texte(o.dateAcquisition) };
   } catch {
     return null;
   }
@@ -223,7 +247,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     if (brut.length === 0) brut = [{ nomPrenoms: [dossier.prenom, dossier.nom].filter(Boolean).join(" ") }];
     const partageContact = brut.length === 1; // couple : tel/email du dossier non attribuable
     const references = extrait?.numeroMandat || texte(dossier.nom);
-    const dureeDetention = extrait?.dureeDetention ?? "";
+    const dureeDetention = extrait ? dureeDetentionDepuis(extrait.dateAcquisition) : "";
 
     const personnes: DonneesTracfin[] = brut.slice(0, 6).map((p) => ({
       dateFiche: dateDuJour(),
