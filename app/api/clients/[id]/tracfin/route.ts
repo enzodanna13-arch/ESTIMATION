@@ -17,6 +17,7 @@ export const maxDuration = 120;
 const CATS_PRIORITAIRES = ["Pièce d'identité", "Mandat", "Titre de propriété", "Offre d'achat", "Taxe foncière"];
 const MAX_DOC_OCTETS = 8 * 1024 * 1024; // on ignore une source trop lourde
 const MAX_DOCS = 8; // nombre de pièces envoyées à l'IA
+const MAX_PAGES_IA = 90; // total de pages par requête (limite API = 100)
 const BUDGET_B64_TOTAL = 24 * 1024 * 1024; // enveloppe totale envoyée (base64)
 
 function dateDuJour(): string {
@@ -224,23 +225,41 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       );
     }
 
-    // Toutes les pièces, les plus riches d'abord, puis le reste du dossier.
-    const rang = (c: string) => { const i = CATS_PRIORITAIRES.indexOf(c); return i < 0 ? CATS_PRIORITAIRES.length : i; };
-    const triees = [...dossier.pieces].sort((a, b) => rang(a.categorie) - rang(b.categorie));
+    // On n'envoie QUE les pièces utiles au KYC (identité, mandat, titre, offre,
+    // taxe), triées par pertinence. Les pièces volumineuses et inutiles pour
+    // l'identité (diagnostics, compromis…) sont exclues : l'API d'analyse est
+    // limitée à 100 pages PAR REQUÊTE, les inclure faisait échouer l'analyse.
+    const rang = (c: string) => CATS_PRIORITAIRES.indexOf(c);
+    const pertinentes = dossier.pieces
+      .filter((p) => CATS_PRIORITAIRES.includes(p.categorie))
+      .sort((a, b) => rang(a.categorie) - rang(b.categorie));
 
+    const { PDFDocument } = await import("pdf-lib");
     const docs: { b64: string }[] = [];
     let totalB64 = 0;
-    for (const p of triees) {
-      if (docs.length >= MAX_DOCS) break;
+    let totalPages = 0;
+    for (const p of pertinentes) {
+      if (docs.length >= MAX_DOCS || totalPages >= MAX_PAGES_IA) break;
       const buf = await getClientFileServer(id, p.fileId, p.url);
       if (!buf || buf.byteLength > MAX_DOC_OCTETS) continue;
+      let pages = 0;
+      try { pages = (await PDFDocument.load(buf, { ignoreEncryption: true })).getPageCount(); } catch { continue; }
+      if (pages === 0 || totalPages + pages > MAX_PAGES_IA) continue; // respecte la limite API
       const b64 = Buffer.from(buf).toString("base64");
       if (totalB64 + b64.length > BUDGET_B64_TOTAL) continue;
       totalB64 += b64.length;
+      totalPages += pages;
       docs.push({ b64 });
     }
 
-    const extrait = await extraireKyc(docs).catch(() => null);
+    let extrait: ExtraitKyc | null = null;
+    let erreurIA = "";
+    try {
+      extrait = await extraireKyc(docs);
+    } catch (e) {
+      const status = (e as { status?: number })?.status;
+      erreurIA = `${status ? status + " " : ""}${e instanceof Error ? e.message : "erreur"}`.slice(0, 120);
+    }
     const analyseIndisponible = extrait === null;
 
     let brut: Partial<DonneesTracfin>[] = extrait?.vendeurs ?? [];
@@ -267,7 +286,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     const res = await addClientPdfsServer(id, await fabriquerItems(dossier.nom, personnes));
     if (!res) return Response.json({ error: "Dossier introuvable" }, { status: 404 });
 
-    const diag = `IA=${extrait ? "ok" : "null"} · docs envoyés=${docs.length} · vendeurs détectés=${extrait?.vendeurs.length ?? 0} · mandat=${extrait?.numeroMandat ? "oui" : "non"} · acquisition=${extrait?.dateAcquisition ? "oui" : "non"}`;
+    const diag = `IA=${extrait ? "ok" : "null"} · docs=${docs.length} (${totalPages} p.) · vendeurs=${extrait?.vendeurs.length ?? 0} · mandat=${extrait?.numeroMandat ? "oui" : "non"} · acq=${extrait?.dateAcquisition ? "oui" : "non"}${erreurIA ? ` · erreurIA=${erreurIA}` : ""}`;
 
     return Response.json({
       dossier: res.dossier,
