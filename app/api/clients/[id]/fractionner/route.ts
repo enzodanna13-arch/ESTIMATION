@@ -77,20 +77,38 @@ async function classifierPages(pdfB64: string, nbPages: number): Promise<Segment
     'Réponds EXCLUSIVEMENT par un JSON : {"segments":[{"debut":1,"fin":3,"categorie":"Mandat","titre":"…"}]}',
   ].join("\n");
 
-  const msg = await client.messages.create({
-    model: process.env.SPLIT_MODEL ?? process.env.EXTRACT_MODEL ?? "claude-opus-4-8",
-    max_tokens: 8192,
-    system: "Tu es un assistant d'agence immobilière qui trie les pièces d'un dossier de vente. Tu réponds uniquement par du JSON conforme, sans commentaire.",
-    messages: [
-      {
-        role: "user",
-        content: [
-          { type: "document", source: { type: "base64", media_type: "application/pdf", data: pdfB64 } },
-          { type: "text", text: consigne },
+  // Réessais sur les erreurs transitoires (surcharge 529, limite de débit 429,
+  // erreurs serveur 5xx, coupures réseau) — cause n°1 des « certains dossiers
+  // passent, d'autres non ». Une erreur non transitoire est relancée telle
+  // quelle pour être remontée à l'utilisateur.
+  let msg: Anthropic.Message | null = null;
+  let derniereErreur: unknown = null;
+  for (let essai = 0; essai < 3; essai++) {
+    try {
+      msg = await client.messages.create({
+        model: process.env.SPLIT_MODEL ?? process.env.EXTRACT_MODEL ?? "claude-opus-4-8",
+        max_tokens: 8192,
+        system: "Tu es un assistant d'agence immobilière qui trie les pièces d'un dossier de vente. Tu réponds uniquement par du JSON conforme, sans commentaire.",
+        messages: [
+          {
+            role: "user",
+            content: [
+              { type: "document", source: { type: "base64", media_type: "application/pdf", data: pdfB64 } },
+              { type: "text", text: consigne },
+            ],
+          },
         ],
-      },
-    ],
-  });
+      });
+      break;
+    } catch (e) {
+      derniereErreur = e;
+      const status = (e as { status?: number })?.status;
+      const transitoire = status === undefined || status === 429 || status === 529 || (status >= 500 && status < 600);
+      if (!transitoire || essai === 2) throw e;
+      await new Promise((r) => setTimeout(r, 1500 * (essai + 1))); // 1,5 s puis 3 s
+    }
+  }
+  if (!msg) throw derniereErreur ?? new Error("Analyse IA indisponible");
   const txt = msg.content.filter((b): b is Anthropic.TextBlock => b.type === "text").map((b) => b.text).join("");
   const s = txt.indexOf("{"), e = txt.lastIndexOf("}");
   if (s < 0 || e <= s) return null;
@@ -219,26 +237,41 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       }),
     );
 
-    // Analyse des tranches EN PARALLÈLE. Une tranche trop lourde (garde-fou) ou
-    // non analysée devient une pièce « Autre » sur ses propres pages : on ne
-    // perd aucune page et on n'écrase pas les tranches voisines bien découpées.
+    // Analyse des tranches EN PARALLÈLE, en CAPTURANT la raison exacte d'un
+    // échec (au lieu de l'avaler). Une tranche trop lourde (garde-fou) ou non
+    // analysée devient une pièce « Autre » sur ses propres pages : on ne perd
+    // aucune page et on n'écrase pas les tranches voisines bien découpées.
     const analyses = await Promise.all(
-      tranches.map((tr, i) => {
-        if (b64Tranches[i].length > MAX_B64_OCTETS) return Promise.resolve(null);
-        return classifierPages(b64Tranches[i], tr.len).catch(() => null);
+      tranches.map(async (tr, i): Promise<{ ok: true; segs: Segment[] } | { ok: false; raison: string }> => {
+        const tailleMo = (b64Tranches[i].length / 1_048_576).toFixed(0);
+        if (b64Tranches[i].length > MAX_B64_OCTETS) {
+          return { ok: false, raison: `tranche trop lourde (~${tailleMo} Mo une fois encodée, limite 32 Mo)` };
+        }
+        try {
+          const segs = await classifierPages(b64Tranches[i], tr.len);
+          if (!segs || segs.length === 0) return { ok: false, raison: "l'IA n'a renvoyé aucun document" };
+          return { ok: true, segs };
+        } catch (e) {
+          const status = (e as { status?: number })?.status;
+          const base = e instanceof Error ? e.message : "erreur inconnue";
+          return { ok: false, raison: status ? `erreur IA ${status} — ${base}` : base };
+        }
       }),
     );
 
     const allSegs: Segment[] = [];
+    const avertissements: string[] = [];
     tranches.forEach((tr, i) => {
       const decal = tr.start - 1; // page locale → globale
       const trFin = tr.start + tr.len - 1;
-      const segTranche = analyses[i];
-      if (!segTranche || segTranche.length === 0) {
-        allSegs.push({ debut: tr.start, fin: trFin, categorie: "Autre", titre: `Dossier (p.${tr.start}-${trFin})` });
+      const a = analyses[i];
+      if (!a.ok) {
+        const etiquette = tranches.length > 1 ? `Pages ${tr.start}–${trFin} : ` : "";
+        avertissements.push(`${etiquette}${a.raison}.`);
+        allSegs.push({ debut: tr.start, fin: trFin, categorie: "Autre", titre: "Dossier" });
         return;
       }
-      for (const sgm of segTranche) {
+      for (const sgm of a.segs) {
         allSegs.push({ ...sgm, debut: sgm.debut + decal, fin: sgm.fin + decal });
       }
     });
@@ -269,6 +302,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     return Response.json({
       dossier: res.dossier,
       ajoutees: res.ajoutees,
+      avertissements,
       segments: segments.map((s) => ({ categorie: s.categorie, titre: s.titre, debut: s.debut, fin: s.fin })),
     });
   } catch (err) {
