@@ -59,7 +59,7 @@ function nettoyerNom(titre: string, categorie: string, debut: number, fin: numbe
   return `${t} (${pages}).pdf`;
 }
 
-async function classifierPages(pdfB64: string, nbPages: number): Promise<Segment[] | null> {
+async function classifierPages(pdfB64: string, nbPages: number): Promise<{ segments: Segment[]; blanches: number[] } | null> {
   if (!process.env.ANTHROPIC_API_KEY) return null;
   const client = new Anthropic();
   const consigne = [
@@ -74,7 +74,8 @@ async function classifierPages(pdfB64: string, nbPages: number): Promise<Segment
     "- Toutes les pages consécutives d'un même document restent ensemble (un rapport de diagnostics de 30 pages = UN seul segment Diagnostics).",
     "- Un lot de diagnostics (DPE, amiante, plomb, électricité, gaz, ERP, Carrez…) → une seule pièce « Diagnostics ».",
     "- Si un type ne correspond à aucune catégorie de la liste, mets « Autre ».",
-    'Réponds EXCLUSIVEMENT par un JSON : {"segments":[{"debut":1,"fin":3,"categorie":"Mandat","titre":"…"}]}',
+    "PAGES BLANCHES : liste dans « pagesBlanches » les numéros des pages RÉELLEMENT vides (aucun texte, aucune signature, aucun tampon, aucune image utile ; pages de séparation, versos vides). En cas de doute, NE mets PAS la page en blanche. Ces pages restent dans les segments (pour la numérotation) mais seront retirées du document final.",
+    'Réponds EXCLUSIVEMENT par un JSON : {"segments":[{"debut":1,"fin":3,"categorie":"Mandat","titre":"…"}],"pagesBlanches":[4]}',
   ].join("\n");
 
   // Réessais sur les erreurs transitoires (surcharge 529, limite de débit 429,
@@ -118,9 +119,10 @@ async function classifierPages(pdfB64: string, nbPages: number): Promise<Segment
   } catch {
     return null;
   }
-  if (!Array.isArray(brut.segments)) return null;
+  const brutObj = brut as { segments?: unknown; pagesBlanches?: unknown };
+  if (!Array.isArray(brutObj.segments)) return null;
   const segs: Segment[] = [];
-  for (const it of brut.segments as Record<string, unknown>[]) {
+  for (const it of brutObj.segments as Record<string, unknown>[]) {
     const debut = Math.round(Number(it.debut));
     const fin = Math.round(Number(it.fin));
     if (!Number.isFinite(debut) || !Number.isFinite(fin)) continue;
@@ -131,7 +133,12 @@ async function classifierPages(pdfB64: string, nbPages: number): Promise<Segment
       titre: typeof it.titre === "string" ? it.titre : "",
     });
   }
-  return segs;
+  const blanches = Array.isArray(brutObj.pagesBlanches)
+    ? (brutObj.pagesBlanches as unknown[])
+        .map((n) => Math.round(Number(n)))
+        .filter((n) => Number.isFinite(n) && n >= 1 && n <= nbPages)
+    : [];
+  return { segments: segs, blanches };
 }
 
 // Répare la couverture : segments ordonnés, contigus, sans trou ni
@@ -242,15 +249,15 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     // analysée devient une pièce « Autre » sur ses propres pages : on ne perd
     // aucune page et on n'écrase pas les tranches voisines bien découpées.
     const analyses = await Promise.all(
-      tranches.map(async (tr, i): Promise<{ ok: true; segs: Segment[] } | { ok: false; raison: string }> => {
+      tranches.map(async (tr, i): Promise<{ ok: true; segs: Segment[]; blanches: number[] } | { ok: false; raison: string }> => {
         const tailleMo = (b64Tranches[i].length / 1_048_576).toFixed(0);
         if (b64Tranches[i].length > MAX_B64_OCTETS) {
           return { ok: false, raison: `tranche trop lourde (~${tailleMo} Mo une fois encodée, limite 32 Mo)` };
         }
         try {
-          const segs = await classifierPages(b64Tranches[i], tr.len);
-          if (!segs || segs.length === 0) return { ok: false, raison: "l'IA n'a renvoyé aucun document" };
-          return { ok: true, segs };
+          const r = await classifierPages(b64Tranches[i], tr.len);
+          if (!r || r.segments.length === 0) return { ok: false, raison: "l'IA n'a renvoyé aucun document" };
+          return { ok: true, segs: r.segments, blanches: r.blanches };
         } catch (e) {
           const status = (e as { status?: number })?.status;
           const base = e instanceof Error ? e.message : "erreur inconnue";
@@ -260,6 +267,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     );
 
     const allSegs: Segment[] = [];
+    const blanches = new Set<number>(); // pages 1-indexées GLOBALES à retirer
     const avertissements: string[] = [];
     tranches.forEach((tr, i) => {
       const decal = tr.start - 1; // page locale → globale
@@ -274,6 +282,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       for (const sgm of a.segs) {
         allSegs.push({ ...sgm, debut: sgm.debut + decal, fin: sgm.fin + decal });
       }
+      for (const b of a.blanches) blanches.add(b + decal);
     });
 
     let segs = allSegs;
@@ -283,12 +292,18 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     const seamEnds = new Set(tranches.slice(0, -1).map((tr) => tr.start + tr.len - 1));
     const segments = fusionnerAuxJointures(reparer(segs, nbPages), seamEnds);
 
-    // Découpe : un sous-PDF par segment.
+    // Découpe : un sous-PDF par segment, en RETIRANT les pages blanches. Un
+    // segment intégralement blanc est ignoré (aucune pièce créée).
     const items: { nom: string; categorie: string; bytes: Uint8Array }[] = [];
+    let blanchesRetirees = 0;
     for (const seg of segments) {
+      const indices: number[] = [];
+      for (let p = seg.debut; p <= seg.fin; p++) {
+        if (blanches.has(p)) { blanchesRetirees++; continue; }
+        indices.push(p - 1);
+      }
+      if (indices.length === 0) continue; // tout le segment était blanc
       const sousPdf = await PDFDocument.create();
-      const indices = [];
-      for (let p = seg.debut; p <= seg.fin; p++) indices.push(p - 1);
       const pages = await sousPdf.copyPages(source, indices);
       for (const pg of pages) sousPdf.addPage(pg);
       const bytes = await sousPdf.save();
@@ -303,6 +318,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       dossier: res.dossier,
       ajoutees: res.ajoutees,
       avertissements,
+      blanchesRetirees,
       segments: segments.map((s) => ({ categorie: s.categorie, titre: s.titre, debut: s.debut, fin: s.fin })),
     });
   } catch (err) {

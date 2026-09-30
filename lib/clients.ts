@@ -155,7 +155,7 @@ export async function enregistrerPiecesPreuploadees(
 export async function fractionnerDossierPdf(
   dossierId: string,
   fichier: Blob,
-): Promise<{ dossier: ClientDossier; ajoutees: number; avertissements?: string[]; segments: { categorie: string; titre: string; debut: number; fin: number }[] }> {
+): Promise<{ dossier: ClientDossier; ajoutees: number; avertissements?: string[]; blanchesRetirees?: number; segments: { categorie: string; titre: string; debut: number; fin: number }[] }> {
   const importId = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
   const pathname = `clients/import/${dossierId.replace(/[^a-z0-9-]/gi, "")}/${importId}.pdf`;
   await televerserBlob(pathname, fichier);
@@ -168,7 +168,7 @@ export async function fractionnerDossierPdf(
     const body = (await res.json().catch(() => null)) as { error?: string } | null;
     throw new Error(body?.error ?? "Fractionnement impossible");
   }
-  return (await res.json()) as { dossier: ClientDossier; ajoutees: number; avertissements?: string[]; segments: { categorie: string; titre: string; debut: number; fin: number }[] };
+  return (await res.json()) as { dossier: ClientDossier; ajoutees: number; avertissements?: string[]; blanchesRetirees?: number; segments: { categorie: string; titre: string; debut: number; fin: number }[] };
 }
 
 export async function deleteClientFile(id: string, fileId: string): Promise<ClientDossier | null> {
