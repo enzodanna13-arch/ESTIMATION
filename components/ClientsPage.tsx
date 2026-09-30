@@ -2,16 +2,16 @@
 
 import { useEffect, useMemo, useState } from "react";
 import {
-  addClientFile,
   CATEGORIES_PIECES,
   createClient,
   deleteClient,
   deleteClientFile,
+  enregistrerPiecesPreuploadees,
   getClientFileB64,
   listClients,
   telechargerClientFile,
+  televerserBlobDirecte,
   updateClient,
-  uploadPieceDirecte,
   type ClientDossier,
   type PieceClient,
 } from "@/lib/clients";
@@ -368,26 +368,32 @@ export default function ClientsPage({ onRetour, onOuvrirEstimation }: { onRetour
 
   const televerser = async (files: FileList | null) => {
     if (!files || !ouvert) return;
+    // On ne garde que les formats acceptés (PDF + photos).
+    const liste = Array.from(files).filter((f) => {
+      const n = f.name.toLowerCase();
+      return n.endsWith(".pdf") || /\.(jpe?g|png|webp|heic|heif)$/.test(n) || f.type.startsWith("image/");
+    });
+    if (liste.length === 0) {
+      setErreur("Formats acceptés : PDF, JPEG, PNG, WEBP, HEIC.");
+      return;
+    }
     setBusy(true);
     setErreur(null);
     try {
-      let dossier: ClientDossier | null = ouvert;
+      // ÉTAPE 1 : on prépare (compression puissante) et on téléverse CHAQUE
+      // fichier directement navigateur → Blob (aucune limite de taille), en
+      // collectant les fileId. On n'écrit pas encore le dossier.
+      const aEnregistrer: { fileId: string; nom: string; categorie: string }[] = [];
       let gainTotal = 0;
-      for (const f of Array.from(files)) {
-        const nomBas = f.name.toLowerCase();
-        const accepte = nomBas.endsWith(".pdf") || /\.(jpe?g|png|webp|heic|heif)$/.test(nomBas) || f.type.startsWith("image/");
-        if (!accepte) continue;
-        // Compression PUISSANTE côté navigateur : PDF scannés et photos sont
-        // ré-encodés en PDF léger avant l'envoi.
-        setEtatCompression(`Compression de « ${f.name} »…`);
-        if (f.size < 100) {
-          throw new Error(`« ${f.name} » est vide (0 octet). Vérifie le fichier puis réessaie.`);
-        }
+      let i = 0;
+      for (const f of liste) {
+        i++;
+        const suffixe = liste.length > 1 ? ` (${i}/${liste.length})` : "";
+        if (f.size < 100) throw new Error(`« ${f.name} » est vide (0 octet). Vérifie le fichier puis réessaie.`);
         const estPdf = f.name.toLowerCase().endsWith(".pdf") || f.type === "application/pdf";
+        setEtatCompression(`Compression de « ${f.name} »…${suffixe}`);
         // Compression ; si elle échoue OU renvoie un résultat vide, on retombe
-        // sur le fichier D'ORIGINE (valable pour un PDF) — l'upload ne dépend
-        // plus de la réussite de la compression.
-        setEtatCompression(`Compression de « ${f.name} »…`);
+        // sur le fichier D'ORIGINE (valable pour un PDF).
         let c = await compresserDocument(f).catch(() => null);
         if ((!c || !c.data || c.tailleApres < 200) && estPdf) {
           const data = await fichierEnB64(f);
@@ -396,25 +402,24 @@ export default function ClientsPage({ onRetour, onOuvrirEstimation }: { onRetour
         if (!c || !c.data || c.tailleApres < 200) {
           throw new Error(`« ${f.name} » n'a pas pu être préparé (format non pris en charge). Réessaie avec un PDF, ou une photo JPEG/PNG.`);
         }
-        // Fichier volumineux (> ~3,3 Mo) : l'envoi base64 dépasserait la limite
-        // serverless (~4,5 Mo). On bascule sur l'UPLOAD DIRECT navigateur → Blob
-        // (aucune limite, aucune perte) au lieu de bloquer. On envoie toujours un
-        // PDF : le plus léger disponible entre la version compressée et l'original.
-        if (c.tailleApres > 3_300_000) {
-          setEtatCompression(`Envoi de « ${f.name} » (fichier volumineux)…`);
-          const pdfBlob = estPdf && c.tailleApres >= f.size
-            ? f // PDF dont la compression n'apporte aucun gain → original
-            : base64EnBlob(c.data, "application/pdf");
-          dossier = await uploadPieceDirecte(ouvert.id, pdfBlob, c.nom, categorie);
-          gainTotal += Math.max(0, c.tailleAvant - c.tailleApres);
-          continue;
-        }
+        // On envoie toujours un PDF : le plus léger entre la version compressée
+        // et l'original (si c'est déjà un PDF sans gain).
+        const pdfBlob = estPdf && c.tailleApres >= f.size ? f : base64EnBlob(c.data, "application/pdf");
+        setEtatCompression(`Envoi de « ${f.name} »…${suffixe}`);
+        const fileId = await televerserBlobDirecte(ouvert.id, pdfBlob);
+        aEnregistrer.push({ fileId, nom: c.nom, categorie });
         gainTotal += Math.max(0, c.tailleAvant - c.tailleApres);
-        dossier = await addClientFile(ouvert.id, { nom: c.nom, categorie, data: c.data });
       }
+      // ÉTAPE 2 : on enregistre TOUTES les pièces en un seul appel (une seule
+      // écriture du dossier) → aucun risque de perte lors d'un ajout multiple.
+      setEtatCompression(`Enregistrement de ${aEnregistrer.length} document${aEnregistrer.length > 1 ? "s" : ""}…`);
+      const res = await enregistrerPiecesPreuploadees(ouvert.id, aEnregistrer);
       setEtatCompression(null);
-      if (dossier) setOuvert(dossier);
-      if (gainTotal > 50_000) setInfo(`Compression : ${(gainTotal / 1_048_576).toFixed(1)} Mo économisés.`);
+      if (res?.dossier) setOuvert(res.dossier);
+      const n = res?.ajoutees ?? aEnregistrer.length;
+      const parts = [`${n} document${n > 1 ? "s" : ""} ajouté${n > 1 ? "s" : ""} au dossier`];
+      if (gainTotal > 50_000) parts.push(`compression : ${(gainTotal / 1_048_576).toFixed(1)} Mo économisés`);
+      setInfo(parts.join(" · "));
       void recharger();
     } catch (err) {
       setEtatCompression(null);
@@ -586,13 +591,13 @@ export default function ClientsPage({ onRetour, onOuvrirEstimation }: { onRetour
               </select>
             </label>
             <label className={`cursor-pointer rounded-xl border-2 border-dashed border-slate-300 px-5 py-2.5 text-sm font-semibold text-slate-500 transition hover:border-copper hover:text-copper ${busy ? "pointer-events-none opacity-50" : ""}`}>
-              {etatCompression ?? (busy ? "Envoi en cours…" : "+ Ajouter des documents (PDF ou photos)")}
+              {etatCompression ?? (busy ? "Envoi en cours…" : "+ Ajouter des documents (plusieurs à la fois)")}
               <input type="file" accept="application/pdf,image/*" multiple className="hidden" onChange={(e) => { setInfo(null); void televerser(e.target.files); e.target.value = ""; }} />
             </label>
             <p className="text-xs text-slate-400">
               {dragActif
                 ? <span className="font-bold text-copper">Relâchez pour déposer les fichiers dans « {categorie} »</span>
-                : <>Cliquez ou <strong>glissez-déposez</strong> vos fichiers ici · PDF et photos acceptés · <strong>compression automatique puissante</strong> avant enregistrement · stockage partagé de l&apos;équipe, accès protégé par le mot de passe.</>}
+                : <>Cliquez ou <strong>glissez-déposez plusieurs fichiers d&apos;un coup</strong> · PDF et photos acceptés · <strong>compression automatique puissante</strong> avant enregistrement · stockage partagé de l&apos;équipe, accès protégé par le mot de passe.</>}
             </p>
           </div>
           {info && <p className="mt-3 rounded-lg border border-emerald-200 bg-emerald-50 p-2 text-sm text-emerald-700">✓ {info}</p>}

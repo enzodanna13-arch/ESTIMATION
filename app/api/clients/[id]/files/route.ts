@@ -2,8 +2,15 @@ import { verifierAccesEquipe } from "@/lib/historyAuth";
 import {
   addClientFileServer,
   addClientFilePreuploadedServer,
+  addClientFilesPreuploadedServer,
   CATEGORIES_PIECES,
 } from "@/lib/serverHistory";
+
+function categorieValide(c: unknown): string {
+  return (CATEGORIES_PIECES as readonly string[]).includes(typeof c === "string" ? c : "")
+    ? (c as string)
+    : "Autre";
+}
 
 export const dynamic = "force-dynamic";
 
@@ -17,12 +24,34 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     return Response.json({ error: "Accès réservé — mot de passe requis" }, { status: 401 });
   }
   const { id } = await params;
-  let body: { nom?: string; categorie?: string; data?: string; fileId?: string };
+  let body: {
+    nom?: string; categorie?: string; data?: string; fileId?: string;
+    pieces?: { fileId?: string; nom?: string; categorie?: string }[];
+  };
   try {
     body = (await request.json()) as typeof body;
   } catch {
     return Response.json({ error: "Corps de requête invalide" }, { status: 400 });
   }
+
+  // Mode LOT : plusieurs pièces déjà téléversées sur le Blob, enregistrées en
+  // une seule écriture du dossier (ajout multiple robuste).
+  if (Array.isArray(body.pieces)) {
+    const pieces = body.pieces
+      .filter((p) => p.fileId && p.nom?.trim())
+      .map((p) => ({ fileId: p.fileId as string, nom: (p.nom as string).trim().slice(0, 200), categorie: categorieValide(p.categorie) }));
+    if (pieces.length === 0) {
+      return Response.json({ error: "Aucune pièce valide à enregistrer" }, { status: 400 });
+    }
+    try {
+      const res = await addClientFilesPreuploadedServer(id, pieces);
+      if (!res) return Response.json({ error: "Dossier introuvable" }, { status: 404 });
+      return Response.json({ dossier: res.dossier, ajoutees: res.ajoutees });
+    } catch {
+      return Response.json({ error: "Enregistrement des pièces impossible" }, { status: 500 });
+    }
+  }
+
   if (!body.nom?.trim() || (!body.data && !body.fileId)) {
     return Response.json({ error: "Pièce incomplète (nom et contenu requis)" }, { status: 400 });
   }

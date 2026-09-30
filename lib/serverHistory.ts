@@ -403,6 +403,43 @@ export async function addClientFilePreuploadedServer(
   return dossier;
 }
 
+// Enregistre PLUSIEURS pièces déjà téléversées sur le Blob en UNE SEULE
+// écriture du méta (une seule lecture-modification-écriture). Indispensable
+// pour l'ajout multiple : enchaîner des addClientFilePreuploadedServer
+// exposerait à la cohérence différée du `list` (une version fraîchement
+// écrite pas encore visible → la pièce précédente serait perdue). Ici toutes
+// les pièces sont ajoutées à la même version du dossier.
+export async function addClientFilesPreuploadedServer(
+  id: string,
+  pieces: { fileId: string; nom: string; categorie: string }[],
+): Promise<{ dossier: ClientDossier; ajoutees: number } | null> {
+  const dossier = await getClientServer(id);
+  if (!dossier) return null;
+  let ajoutees = 0;
+  for (const p of pieces) {
+    const fileId = safeId(p.fileId);
+    if (!fileId) continue;
+    if (dossier.pieces.some((x) => x.fileId === fileId)) continue; // déjà présent
+    const { blobs } = await list({
+      prefix: `${CLIENT_FILE_PREFIX}${dossier.id}/${fileId}.pdf`,
+      limit: 1,
+    });
+    if (blobs.length === 0) continue; // aucun fichier téléversé à ce chemin
+    dossier.pieces.push({
+      fileId,
+      nom: (p.nom || "document").slice(0, 200),
+      taille: blobs[0].size ?? 0,
+      categorie: p.categorie,
+      createdAt: Date.now(),
+    });
+    ajoutees++;
+  }
+  if (ajoutees === 0) return { dossier, ajoutees: 0 };
+  dossier.updatedAt = Date.now();
+  await putClientMeta(dossier);
+  return { dossier, ajoutees };
+}
+
 export async function getClientFileServer(id: string, fileId: string): Promise<ArrayBuffer | null> {
   const { blobs } = await list({
     prefix: `${CLIENT_FILE_PREFIX}${safeId(id)}/${safeId(fileId)}.pdf`,

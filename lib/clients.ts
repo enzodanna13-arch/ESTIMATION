@@ -104,6 +104,41 @@ export async function uploadPieceDirecte(
   return body.dossier ?? null;
 }
 
+// Téléverse UN PDF directement navigateur → Vercel Blob et renvoie son
+// `fileId` SANS enregistrer la fiche. Sert à l'ajout multiple : on téléverse
+// tous les fichiers puis on enregistre toutes les fiches en un seul appel.
+export async function televerserBlobDirecte(dossierId: string, fichier: Blob): Promise<string> {
+  const { upload } = await import("@vercel/blob/client");
+  const fileId = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+  const pathname = `clients/files/${dossierId.replace(/[^a-z0-9-]/gi, "")}/${fileId}.pdf`;
+  await upload(pathname, fichier, {
+    access: "public",
+    contentType: "application/pdf",
+    handleUploadUrl: "/api/clients/blob-upload",
+    clientPayload: getHistoryKey(),
+  });
+  return fileId;
+}
+
+// Enregistre PLUSIEURS pièces (déjà téléversées via televerserBlobDirecte) en
+// une seule écriture du dossier — évite toute perte lors d'ajouts multiples.
+export async function enregistrerPiecesPreuploadees(
+  dossierId: string,
+  pieces: { fileId: string; nom: string; categorie: string }[],
+): Promise<{ dossier: ClientDossier; ajoutees: number } | null> {
+  const res = await fetch(`/api/clients/${encodeURIComponent(dossierId)}/files`, {
+    method: "POST",
+    headers: jsonHeaders(),
+    body: JSON.stringify({ pieces }),
+  });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => null)) as { error?: string } | null;
+    throw new Error(body?.error ?? "Enregistrement des pièces impossible");
+  }
+  const body = (await res.json()) as { dossier?: ClientDossier; ajoutees?: number };
+  return body.dossier ? { dossier: body.dossier, ajoutees: body.ajoutees ?? pieces.length } : null;
+}
+
 export async function deleteClientFile(id: string, fileId: string): Promise<ClientDossier | null> {
   const res = await fetch(`/api/clients/${encodeURIComponent(id)}/files/${encodeURIComponent(fileId)}`, {
     method: "DELETE",
