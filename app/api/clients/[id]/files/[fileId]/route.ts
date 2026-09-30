@@ -33,24 +33,26 @@ export async function GET(
   }
 
   const nom = (piece?.nom ?? "piece.pdf").replace(/["\\\r\n]/g, "");
-  // 1) On tente de servir le fichier via le serveur (URL de stockage masquée).
+  // On sert le fichier via le serveur (l'URL de stockage n'est jamais exposée
+  // au navigateur → pas de problème CORS). En cas d'échec, on remonte la cause
+  // exacte pour diagnostic.
   try {
     const res = await fetch(cible, { cache: "no-store" });
-    if (res.ok) {
-      return new Response(await res.arrayBuffer(), {
-        headers: {
-          "content-type": "application/pdf",
-          "content-disposition": `attachment; filename="${nom}"`,
-          "cache-control": "no-store",
-        },
-      });
+    if (!res.ok) {
+      return Response.json({ error: `Le stockage a refusé le fichier (HTTP ${res.status})` }, { status: 502 });
     }
-  } catch {
-    /* on bascule sur la redirection directe ci-dessous */
+    const buf = await res.arrayBuffer();
+    return new Response(buf, {
+      headers: {
+        "content-type": "application/pdf",
+        "content-disposition": `attachment; filename="${nom}"`,
+        "cache-control": "no-store",
+      },
+    });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "erreur inconnue";
+    return Response.json({ error: `Récupération du fichier impossible (${message})` }, { status: 502 });
   }
-  // 2) Repli infaillible : on redirige le navigateur directement vers le blob
-  //    public (le fichier se télécharge même si la récupération serveur échoue).
-  return Response.redirect(cible, 307);
 }
 
 export async function DELETE(
