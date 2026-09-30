@@ -69,11 +69,14 @@ async function classifierPages(pdfB64: string, nbPages: number): Promise<{ segme
     "- debut / fin : numéros de page 1-indexés INCLUS (première et dernière page du document).",
     "- categorie : STRICTEMENT l'une de cette liste : " + CATS.join(", ") + ".",
     "- titre : intitulé court et lisible du document (ex. « Mandat de vente exclusif », « DPE + diagnostics », « Titre de propriété »).",
+    "MÉTHODE — repère le DÉBUT de chaque nouveau document grâce à : un nouveau titre/en-tête, un changement de mise en page ou de logo, une page de garde, une nouvelle numérotation « page 1/x », un changement d'émetteur (notaire, diagnostiqueur, agence, mairie). La dernière page d'un document est celle juste avant le début du suivant.",
     "RÈGLES :",
     "- Les segments doivent couvrir TOUTES les pages de 1 à " + nbPages + ", être CONTIGUS, sans chevauchement ni trou, dans l'ordre.",
-    "- Toutes les pages consécutives d'un même document restent ensemble (un rapport de diagnostics de 30 pages = UN seul segment Diagnostics).",
-    "- Un lot de diagnostics (DPE, amiante, plomb, électricité, gaz, ERP, Carrez…) → une seule pièce « Diagnostics ».",
-    "- Si un type ne correspond à aucune catégorie de la liste, mets « Autre ».",
+    "- Toutes les pages consécutives d'un même document restent ENSEMBLE : un contrat, un rapport ou une attestation de plusieurs pages = UN SEUL segment (ne le découpe jamais page par page).",
+    "- Ne FUSIONNE pas deux documents différents qui se suivent : un mandat suivi d'un titre de propriété = DEUX segments distincts, même sans page blanche entre eux.",
+    "- Un lot de diagnostics (DPE, amiante, plomb, électricité, gaz, ERP, Carrez, mesurage…) qui se suivent → une seule pièce « Diagnostics », même si c'est plusieurs rapports d'affilée.",
+    "- En cas d'hésitation sur la catégorie, choisis la plus probable d'après le contenu ; ne mets « Autre » QUE si aucune catégorie de la liste ne convient vraiment.",
+    "- Vérifie avant de répondre : le nombre de segments doit correspondre au nombre de documents RÉELLEMENT distincts que tu as identifiés (ni trop découpé, ni trop regroupé).",
     "PAGES BLANCHES : liste dans « pagesBlanches » les numéros des pages RÉELLEMENT vides (aucun texte, aucune signature, aucun tampon, aucune image utile ; pages de séparation, versos vides). En cas de doute, NE mets PAS la page en blanche. Ces pages restent dans les segments (pour la numérotation) mais seront retirées du document final.",
     'Réponds EXCLUSIVEMENT par un JSON : {"segments":[{"debut":1,"fin":3,"categorie":"Mandat","titre":"…"}],"pagesBlanches":[4]}',
   ].join("\n");
@@ -87,7 +90,7 @@ async function classifierPages(pdfB64: string, nbPages: number): Promise<{ segme
   for (let essai = 0; essai < 3; essai++) {
     try {
       msg = await client.messages.create({
-        model: process.env.SPLIT_MODEL ?? process.env.EXTRACT_MODEL ?? "claude-sonnet-5",
+        model: process.env.SPLIT_MODEL ?? "claude-opus-4-8",
         max_tokens: 8192,
         system: "Tu es un assistant d'agence immobilière qui trie les pièces d'un dossier de vente. Tu réponds uniquement par du JSON conforme, sans commentaire.",
         messages: [
