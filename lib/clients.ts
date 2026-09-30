@@ -12,6 +12,27 @@ import { getHistoryKey } from "./history";
 const headers = () => ({ "x-history-key": getHistoryKey() });
 const jsonHeaders = () => ({ "content-type": "application/json", "x-history-key": getHistoryKey() });
 
+// Téléversement direct navigateur → Vercel Blob (multipart = fiable pour les
+// gros dossiers). Traduit l'erreur brute « File is too large » en message clair.
+async function televerserBlob(pathname: string, fichier: Blob): Promise<void> {
+  const { upload } = await import("@vercel/blob/client");
+  try {
+    await upload(pathname, fichier, {
+      access: "public",
+      contentType: "application/pdf",
+      handleUploadUrl: "/api/clients/blob-upload",
+      clientPayload: getHistoryKey(),
+      multipart: true,
+    });
+  } catch (e) {
+    const m = e instanceof Error ? e.message : "";
+    if (/too large|file length|maximum|size/i.test(m)) {
+      throw new Error("Ce PDF est trop lourd pour être envoyé. Réduis-le (ou scinde-le) puis réessaie.");
+    }
+    throw e;
+  }
+}
+
 export async function listClients(): Promise<ClientDossier[]> {
   const res = await fetch("/api/clients", { cache: "no-store", headers: headers() });
   if (!res.ok) return [];
@@ -82,15 +103,9 @@ export async function uploadPieceDirecte(
   nom: string,
   categorie: string,
 ): Promise<ClientDossier | null> {
-  const { upload } = await import("@vercel/blob/client");
   const fileId = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
   const pathname = `clients/files/${dossierId.replace(/[^a-z0-9-]/gi, "")}/${fileId}.pdf`;
-  await upload(pathname, fichier, {
-    access: "public",
-    contentType: "application/pdf",
-    handleUploadUrl: "/api/clients/blob-upload",
-    clientPayload: getHistoryKey(),
-  });
+  await televerserBlob(pathname, fichier);
   const res = await fetch(`/api/clients/${encodeURIComponent(dossierId)}/files`, {
     method: "POST",
     headers: jsonHeaders(),
@@ -108,15 +123,9 @@ export async function uploadPieceDirecte(
 // `fileId` SANS enregistrer la fiche. Sert à l'ajout multiple : on téléverse
 // tous les fichiers puis on enregistre toutes les fiches en un seul appel.
 export async function televerserBlobDirecte(dossierId: string, fichier: Blob): Promise<string> {
-  const { upload } = await import("@vercel/blob/client");
   const fileId = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
   const pathname = `clients/files/${dossierId.replace(/[^a-z0-9-]/gi, "")}/${fileId}.pdf`;
-  await upload(pathname, fichier, {
-    access: "public",
-    contentType: "application/pdf",
-    handleUploadUrl: "/api/clients/blob-upload",
-    clientPayload: getHistoryKey(),
-  });
+  await televerserBlob(pathname, fichier);
   return fileId;
 }
 
@@ -147,15 +156,9 @@ export async function fractionnerDossierPdf(
   dossierId: string,
   fichier: Blob,
 ): Promise<{ dossier: ClientDossier; ajoutees: number; avertissements?: string[]; segments: { categorie: string; titre: string; debut: number; fin: number }[] }> {
-  const { upload } = await import("@vercel/blob/client");
   const importId = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
   const pathname = `clients/import/${dossierId.replace(/[^a-z0-9-]/gi, "")}/${importId}.pdf`;
-  await upload(pathname, fichier, {
-    access: "public",
-    contentType: "application/pdf",
-    handleUploadUrl: "/api/clients/blob-upload",
-    clientPayload: getHistoryKey(),
-  });
+  await televerserBlob(pathname, fichier);
   const res = await fetch(`/api/clients/${encodeURIComponent(dossierId)}/fractionner`, {
     method: "POST",
     headers: jsonHeaders(),

@@ -25,7 +25,8 @@ export async function POST(request: Request): Promise<Response> {
         }
         // `clients/files/…` : pièce définitive du dossier.
         // `clients/import/…` : PDF combiné temporaire à fractionner par l'IA
-        // (limite 32 Mo, borne d'analyse PDF de l'API).
+        // (l'analyse le redécoupe ensuite en tranches ≤ 12 Mo, donc un gros
+        // import est accepté ; borne fixée pour la mémoire de la fonction).
         const estImport = pathname.startsWith("clients/import/");
         if ((!pathname.startsWith("clients/files/") && !estImport) || !pathname.endsWith(".pdf")) {
           throw new Error("Chemin non autorisé");
@@ -33,7 +34,7 @@ export async function POST(request: Request): Promise<Response> {
         return {
           allowedContentTypes: ["application/pdf"],
           addRandomSuffix: false,
-          maximumSizeInBytes: estImport ? 32_000_000 : 25_000_000,
+          maximumSizeInBytes: estImport ? 60_000_000 : 40_000_000,
         };
       },
       // Pas de onUploadCompleted : la fiche est enregistrée par un appel
