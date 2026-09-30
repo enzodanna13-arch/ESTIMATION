@@ -519,23 +519,23 @@ export async function listerCheminsFichiersClient(id: string): Promise<string[]>
   }
 }
 
-export async function getClientFileServer(id: string, fileId: string, url?: string): Promise<ArrayBuffer | null> {
-  // URL connue (mémorisée à l'écriture) → lecture directe, cohérence forte
-  // (indispensable juste après création, `list` étant éventuellement cohérent).
-  let cible = url;
-  if (!cible) {
-    // 1) chemin exact attendu
+// Résout l'URL publique du blob d'une pièce : URL mémorisée si connue, sinon
+// chemin exact, sinon recherche dans tout le dossier. Ne jette jamais.
+export async function resoudreUrlFichierClient(id: string, fileId: string, url?: string): Promise<string | null> {
+  if (url) return url;
+  try {
     const exact = await list({ prefix: `${CLIENT_FILE_PREFIX}${safeId(id)}/${safeId(fileId)}.pdf`, limit: 1 });
-    if (exact.blobs.length > 0) {
-      cible = exact.blobs[0].url;
-    } else {
-      // 2) repli robuste : on liste le dossier entier et on retrouve le blob
-      //    dont le chemin contient le fileId (couvre toute variation de chemin).
-      const folder = await list({ prefix: `${CLIENT_FILE_PREFIX}${safeId(id)}/`, limit: 1000 });
-      const trouve = folder.blobs.find((b) => b.pathname.includes(fileId) || b.pathname.includes(safeId(fileId)));
-      if (trouve) cible = trouve.url;
-    }
+    if (exact.blobs.length > 0) return exact.blobs[0].url;
+    const folder = await list({ prefix: `${CLIENT_FILE_PREFIX}${safeId(id)}/`, limit: 1000 });
+    const trouve = folder.blobs.find((b) => b.pathname.includes(fileId) || b.pathname.includes(safeId(fileId)));
+    return trouve?.url ?? null;
+  } catch {
+    return null;
   }
+}
+
+export async function getClientFileServer(id: string, fileId: string, url?: string): Promise<ArrayBuffer | null> {
+  const cible = await resoudreUrlFichierClient(id, fileId, url);
   if (!cible) return null;
   try {
     const res = await fetch(cible, { cache: "no-store" });

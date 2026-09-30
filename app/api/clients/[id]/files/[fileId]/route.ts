@@ -1,10 +1,10 @@
 import { verifierAccesEquipe } from "@/lib/historyAuth";
 import {
   deleteClientFileServer,
-  getClientFileServer,
   getClientServer,
   listerCheminsFichiersClient,
   renameClientFileServer,
+  resoudreUrlFichierClient,
 } from "@/lib/serverHistory";
 
 export const dynamic = "force-dynamic";
@@ -19,30 +19,38 @@ export async function GET(
     return Response.json({ error: "Accès réservé — mot de passe requis" }, { status: 401 });
   }
   const { id, fileId } = await params;
-  try {
-    // On récupère d'abord la fiche pour connaître l'URL mémorisée du blob
-    // (lecture en cohérence forte, fiable juste après création).
-    const dossier = await getClientServer(id);
-    const piece = dossier?.pieces.find((p) => p.fileId === fileId);
-    const octets = await getClientFileServer(id, fileId, piece?.url);
-    if (!octets) {
-      // Diagnostic détaillé pour comprendre l'échec (remonté à l'écran).
-      const chemins = await listerCheminsFichiersClient(id);
-      const noms = chemins.map((c) => c.split("/").pop()).join(", ");
-      const diag = `fileId=${fileId} · url mémorisée=${piece?.url ? "oui" : "non"} · ${chemins.length} blob(s) dans le dossier${noms ? ` : ${noms}` : ""}`;
-      return Response.json({ error: `Pièce introuvable dans le stockage (${diag})` }, { status: 404 });
-    }
-    const nom = (piece?.nom ?? "piece.pdf").replace(/["\\\r\n]/g, "");
-    return new Response(octets, {
-      headers: {
-        "content-type": "application/pdf",
-        "content-disposition": `attachment; filename="${nom}"`,
-        "cache-control": "no-store",
-      },
-    });
-  } catch {
-    return Response.json({ error: "Téléchargement impossible" }, { status: 500 });
+
+  const dossier = await getClientServer(id).catch(() => null);
+  const piece = dossier?.pieces.find((p) => p.fileId === fileId);
+  const cible = await resoudreUrlFichierClient(id, fileId, piece?.url);
+
+  if (!cible) {
+    // Blob réellement introuvable : diagnostic détaillé (remonté à l'écran).
+    const chemins = await listerCheminsFichiersClient(id);
+    const noms = chemins.map((c) => c.split("/").pop()).join(", ");
+    const diag = `fileId=${fileId} · url mémorisée=${piece?.url ? "oui" : "non"} · ${chemins.length} blob(s) dans le dossier${noms ? ` : ${noms}` : ""}`;
+    return Response.json({ error: `Pièce introuvable dans le stockage (${diag})` }, { status: 404 });
   }
+
+  const nom = (piece?.nom ?? "piece.pdf").replace(/["\\\r\n]/g, "");
+  // 1) On tente de servir le fichier via le serveur (URL de stockage masquée).
+  try {
+    const res = await fetch(cible, { cache: "no-store" });
+    if (res.ok) {
+      return new Response(await res.arrayBuffer(), {
+        headers: {
+          "content-type": "application/pdf",
+          "content-disposition": `attachment; filename="${nom}"`,
+          "cache-control": "no-store",
+        },
+      });
+    }
+  } catch {
+    /* on bascule sur la redirection directe ci-dessous */
+  }
+  // 2) Repli infaillible : on redirige le navigateur directement vers le blob
+  //    public (le fichier se télécharge même si la récupération serveur échoue).
+  return Response.redirect(cible, 307);
 }
 
 export async function DELETE(
