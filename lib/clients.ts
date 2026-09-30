@@ -248,7 +248,10 @@ export async function telechargerClientFile(id: string, fileId: string, nom: str
   const res = await fetch(`/api/clients/${encodeURIComponent(id)}/files/${encodeURIComponent(fileId)}`, {
     headers: headers(),
   });
-  if (!res.ok) throw new Error("Téléchargement impossible");
+  if (!res.ok) {
+    const body = (await res.json().catch(() => null)) as { error?: string } | null;
+    throw new Error(body?.error ? `Téléchargement impossible — ${body.error}` : "Téléchargement impossible");
+  }
   const blob = await res.blob();
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");

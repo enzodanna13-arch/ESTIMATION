@@ -513,13 +513,19 @@ export async function getClientFileServer(id: string, fileId: string, url?: stri
   // (indispensable juste après création, `list` étant éventuellement cohérent).
   let cible = url;
   if (!cible) {
-    const { blobs } = await list({
-      prefix: `${CLIENT_FILE_PREFIX}${safeId(id)}/${safeId(fileId)}.pdf`,
-      limit: 1,
-    });
-    if (blobs.length === 0) return null;
-    cible = blobs[0].url;
+    // 1) chemin exact attendu
+    const exact = await list({ prefix: `${CLIENT_FILE_PREFIX}${safeId(id)}/${safeId(fileId)}.pdf`, limit: 1 });
+    if (exact.blobs.length > 0) {
+      cible = exact.blobs[0].url;
+    } else {
+      // 2) repli robuste : on liste le dossier entier et on retrouve le blob
+      //    dont le chemin contient le fileId (couvre toute variation de chemin).
+      const folder = await list({ prefix: `${CLIENT_FILE_PREFIX}${safeId(id)}/`, limit: 1000 });
+      const trouve = folder.blobs.find((b) => b.pathname.includes(fileId) || b.pathname.includes(safeId(fileId)));
+      if (trouve) cible = trouve.url;
+    }
   }
+  if (!cible) return null;
   try {
     const res = await fetch(cible, { cache: "no-store" });
     return res.ok ? await res.arrayBuffer() : null;

@@ -989,7 +989,7 @@ export default function ClientsPage({ onRetour, onOuvrirEstimation }: { onRetour
                         ✎ Renommer
                       </button>
                       <button
-                        onClick={() => void telechargerClientFile(ouvert.id, p.fileId, p.nom).catch(() => setErreur("Téléchargement impossible"))}
+                        onClick={() => void telechargerClientFile(ouvert.id, p.fileId, p.nom).catch((e) => setErreur(e instanceof Error ? e.message : "Téléchargement impossible"))}
                         className="rounded-lg border border-slate-300 px-3 py-1 text-xs font-semibold text-slate-600 transition hover:bg-slate-100"
                       >
                         ⬇ Télécharger
