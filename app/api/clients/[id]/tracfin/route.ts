@@ -12,9 +12,11 @@ export const maxDuration = 120;
 // fiche. La partie « notation des risques » reste vierge — à l'appréciation et
 // sous la responsabilité de l'agent.
 
-// Ordre de priorité des pièces envoyées à l'IA (les plus riches d'abord) ;
-// au-delà on prend tout le reste du dossier.
-const CATS_PRIORITAIRES = ["Pièce d'identité", "Mandat", "Titre de propriété", "Offre d'achat", "Taxe foncière"];
+// Pièces effectivement utiles au remplissage de la fiche Tracfin : la pièce
+// d'identité et le titre de propriété (état civil complet + date d'acquisition),
+// plus le mandat pour le numéro. On n'envoie QUE celles-ci (les autres pièces
+// sont inutiles à l'identité et alourdiraient inutilement l'analyse).
+const CATS_PRIORITAIRES = ["Pièce d'identité", "Titre de propriété", "Mandat"];
 const MAX_DOC_OCTETS = 8 * 1024 * 1024; // on ignore une source trop lourde
 const MAX_DOCS = 8; // nombre de pièces envoyées à l'IA
 const MAX_PAGES_IA = 90; // total de pages par requête (limite API = 100)
@@ -79,8 +81,9 @@ async function extraireKyc(docs: { b64: string }[]): Promise<ExtraitKyc | null> 
   if (!process.env.ANTHROPIC_API_KEY || docs.length === 0) return null;
   const client = new Anthropic();
   const consigne = [
-    "Voici TOUTES les pièces disponibles d'un dossier de vente immobilière (pièce d'identité, mandat, titre de propriété, taxe foncière, compromis, etc.).",
-    "Analyse-les TOUTES et recoupe les informations pour remplir une fiche KYC / Tracfin.",
+    "Voici les pièces d'un dossier de vente immobilière : la/les PIÈCE(S) D'IDENTITÉ et le TITRE DE PROPRIÉTÉ des vendeurs (et éventuellement le mandat).",
+    "Ce sont les deux sources à exploiter en priorité. Le TITRE DE PROPRIÉTÉ (acte notarié) contient en général l'ÉTAT CIVIL COMPLET des vendeurs : nom, prénoms, date et lieu de naissance, nationalité, situation familiale / régime matrimonial, profession et adresse — sers-t'en abondamment, en plus de la pièce d'identité.",
+    "Analyse-les et recoupe les informations pour remplir une fiche KYC / Tracfin.",
     "Il peut y avoir PLUSIEURS vendeurs (couple, indivision). Identifie CHAQUE personne physique vendeuse.",
     "Renvoie EXCLUSIVEMENT ce JSON (chaîne vide si une info est réellement absente de tous les documents) :",
     "{",
@@ -101,7 +104,7 @@ async function extraireKyc(docs: { b64: string }[]): Promise<ExtraitKyc | null> 
     "  ]",
     "}",
     "UNE pièce d'identité = UNE personne : deux cartes d'identité → DEUX vendeurs.",
-    "Recoupe les sources : la pièce d'identité prime pour l'état civil ; le mandat pour n° de mandat, adresse, profession, situation familiale, téléphone, email ; le titre de propriété pour la durée de détention.",
+    "Recoupe les sources : la pièce d'identité et le TITRE DE PROPRIÉTÉ priment pour l'état civil (nom, prénoms, naissance, nationalité, situation familiale, profession, adresse) ; le titre de propriété donne la date d'acquisition ; le mandat donne le numéro de mandat et éventuellement téléphone/email.",
     "N'INVENTE RIEN : laisse une chaîne vide si l'information ne figure vraiment nulle part.",
   ].join("\n");
 
