@@ -339,12 +339,17 @@ export default function ClientsPage({ onRetour, onOuvrirEstimation }: { onRetour
   const [etatCompression, setEtatCompression] = useState<string | null>(null);
   const [rapportOuvert, setRapportOuvert] = useState(false);
   const [dragActif, setDragActif] = useState(false);
+  // File d'attente : une ligne par document, chacune avec sa propre catégorie.
+  const [enAttente, setEnAttente] = useState<{ id: string; file: File; categorie: string }[]>([]);
   const [edit, setEdit] = useState<{ nom: string; prenom: string; tel: string; email: string; bien: string; nego: string } | null>(null);
 
   const recharger = () => listClients().then(setDossiers).catch(() => setDossiers([]));
   useEffect(() => {
     void recharger();
   }, []);
+  // Retour à la liste : on ferme le dossier et on vide la file d'attente
+  // (les fichiers en attente appartiennent au dossier qu'on quitte).
+  const fermerDossier = () => { setEnAttente([]); setOuvert(null); };
 
   const resultats = useMemo(() => {
     let base = filtrer(dossiers ?? [], q);
@@ -366,34 +371,49 @@ export default function ClientsPage({ onRetour, onOuvrirEstimation }: { onRetour
     void recharger();
   };
 
-  const televerser = async (files: FileList | null) => {
-    if (!files || !ouvert) return;
-    // On ne garde que les formats acceptés (PDF + photos).
-    const liste = Array.from(files).filter((f) => {
+  // Ajoute les fichiers choisis/déposés à la file d'attente (une ligne par
+  // document). Chaque ligne prend par défaut la catégorie sélectionnée, puis
+  // reste modifiable individuellement avant l'enregistrement.
+  const ajouterEnAttente = (files: FileList | null) => {
+    if (!files) return;
+    const acceptes = Array.from(files).filter((f) => {
       const n = f.name.toLowerCase();
       return n.endsWith(".pdf") || /\.(jpe?g|png|webp|heic|heif)$/.test(n) || f.type.startsWith("image/");
     });
-    if (liste.length === 0) {
+    if (acceptes.length === 0) {
       setErreur("Formats acceptés : PDF, JPEG, PNG, WEBP, HEIC.");
       return;
     }
+    setErreur(null);
+    setInfo(null);
+    setEnAttente((prev) => [
+      ...prev,
+      ...acceptes.map((f) => ({ id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}-${f.name}`, file: f, categorie })),
+    ]);
+  };
+
+  const majCategorieLigne = (id: string, cat: string) =>
+    setEnAttente((prev) => prev.map((x) => (x.id === id ? { ...x, categorie: cat } : x)));
+  const retirerLigne = (id: string) => setEnAttente((prev) => prev.filter((x) => x.id !== id));
+
+  // Enregistre TOUTE la file d'attente : chaque document est compressé puis
+  // téléversé direct (navigateur → Blob), avec SA catégorie ; toutes les
+  // fiches sont écrites en un seul appel (aucune perte possible).
+  const integrer = async () => {
+    if (!ouvert || enAttente.length === 0) return;
     setBusy(true);
     setErreur(null);
     try {
-      // ÉTAPE 1 : on prépare (compression puissante) et on téléverse CHAQUE
-      // fichier directement navigateur → Blob (aucune limite de taille), en
-      // collectant les fileId. On n'écrit pas encore le dossier.
       const aEnregistrer: { fileId: string; nom: string; categorie: string }[] = [];
       let gainTotal = 0;
       let i = 0;
-      for (const f of liste) {
+      for (const item of enAttente) {
         i++;
-        const suffixe = liste.length > 1 ? ` (${i}/${liste.length})` : "";
+        const f = item.file;
+        const suffixe = enAttente.length > 1 ? ` (${i}/${enAttente.length})` : "";
         if (f.size < 100) throw new Error(`« ${f.name} » est vide (0 octet). Vérifie le fichier puis réessaie.`);
         const estPdf = f.name.toLowerCase().endsWith(".pdf") || f.type === "application/pdf";
         setEtatCompression(`Compression de « ${f.name} »…${suffixe}`);
-        // Compression ; si elle échoue OU renvoie un résultat vide, on retombe
-        // sur le fichier D'ORIGINE (valable pour un PDF).
         let c = await compresserDocument(f).catch(() => null);
         if ((!c || !c.data || c.tailleApres < 200) && estPdf) {
           const data = await fichierEnB64(f);
@@ -402,20 +422,17 @@ export default function ClientsPage({ onRetour, onOuvrirEstimation }: { onRetour
         if (!c || !c.data || c.tailleApres < 200) {
           throw new Error(`« ${f.name} » n'a pas pu être préparé (format non pris en charge). Réessaie avec un PDF, ou une photo JPEG/PNG.`);
         }
-        // On envoie toujours un PDF : le plus léger entre la version compressée
-        // et l'original (si c'est déjà un PDF sans gain).
         const pdfBlob = estPdf && c.tailleApres >= f.size ? f : base64EnBlob(c.data, "application/pdf");
         setEtatCompression(`Envoi de « ${f.name} »…${suffixe}`);
         const fileId = await televerserBlobDirecte(ouvert.id, pdfBlob);
-        aEnregistrer.push({ fileId, nom: c.nom, categorie });
+        aEnregistrer.push({ fileId, nom: c.nom, categorie: item.categorie });
         gainTotal += Math.max(0, c.tailleAvant - c.tailleApres);
       }
-      // ÉTAPE 2 : on enregistre TOUTES les pièces en un seul appel (une seule
-      // écriture du dossier) → aucun risque de perte lors d'un ajout multiple.
       setEtatCompression(`Enregistrement de ${aEnregistrer.length} document${aEnregistrer.length > 1 ? "s" : ""}…`);
       const res = await enregistrerPiecesPreuploadees(ouvert.id, aEnregistrer);
       setEtatCompression(null);
       if (res?.dossier) setOuvert(res.dossier);
+      setEnAttente([]);
       const n = res?.ajoutees ?? aEnregistrer.length;
       const parts = [`${n} document${n > 1 ? "s" : ""} ajouté${n > 1 ? "s" : ""} au dossier`];
       if (gainTotal > 50_000) parts.push(`compression : ${(gainTotal / 1_048_576).toFixed(1)} Mo économisés`);
@@ -449,10 +466,7 @@ export default function ClientsPage({ onRetour, onOuvrirEstimation }: { onRetour
     setDragActif(false);
     if (busy) return;
     const files = e.dataTransfer.files;
-    if (files && files.length > 0) {
-      setInfo(null);
-      void televerser(files);
-    }
+    if (files && files.length > 0) ajouterEnAttente(files);
   };
 
   const supprimerPiece = async (p: PieceClient) => {
@@ -467,6 +481,7 @@ export default function ClientsPage({ onRetour, onOuvrirEstimation }: { onRetour
     if (!ouvert) return;
     if (!sansConfirmation && !confirm(`Supprimer le dossier « ${ouvert.nom} » et TOUTES ses pièces ? Cette action est définitive.`)) return;
     await deleteClient(ouvert.id);
+    setEnAttente([]);
     setOuvert(null);
     void recharger();
   };
@@ -511,7 +526,7 @@ export default function ClientsPage({ onRetour, onOuvrirEstimation }: { onRetour
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <button onClick={() => setOuvert(null)} className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-600 transition hover:bg-slate-100">
+            <button onClick={fermerDossier} className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-600 transition hover:bg-slate-100">
               ← Tous les dossiers
             </button>
             <button onClick={() => setEdit({ nom: ouvert.nom, prenom: ouvert.prenom ?? "", tel: ouvert.tel ?? "", email: ouvert.email ?? "", bien: ouvert.bien, nego: ouvert.negociateur })} className="rounded-lg border border-copper bg-white px-3 py-1.5 text-sm font-bold text-copper transition hover:bg-copper-soft/40">
@@ -583,7 +598,7 @@ export default function ClientsPage({ onRetour, onOuvrirEstimation }: { onRetour
         >
           <div className="flex flex-wrap items-end gap-3">
             <label className="block">
-              <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">Catégorie des pièces ajoutées</span>
+              <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">Catégorie par défaut</span>
               <select className={inputCls} value={categorie} onChange={(e) => setCategorie(e.target.value)}>
                 {CATEGORIES_PIECES.map((c) => (
                   <option key={c}>{c}</option>
@@ -591,15 +606,63 @@ export default function ClientsPage({ onRetour, onOuvrirEstimation }: { onRetour
               </select>
             </label>
             <label className={`cursor-pointer rounded-xl border-2 border-dashed border-slate-300 px-5 py-2.5 text-sm font-semibold text-slate-500 transition hover:border-copper hover:text-copper ${busy ? "pointer-events-none opacity-50" : ""}`}>
-              {etatCompression ?? (busy ? "Envoi en cours…" : "+ Ajouter des documents (plusieurs à la fois)")}
-              <input type="file" accept="application/pdf,image/*" multiple className="hidden" onChange={(e) => { setInfo(null); void televerser(e.target.files); e.target.value = ""; }} />
+              {etatCompression ?? (busy ? "Envoi en cours…" : "+ Choisir des documents (plusieurs à la fois)")}
+              <input type="file" accept="application/pdf,image/*" multiple className="hidden" onChange={(e) => { ajouterEnAttente(e.target.files); e.target.value = ""; }} />
             </label>
             <p className="text-xs text-slate-400">
               {dragActif
-                ? <span className="font-bold text-copper">Relâchez pour déposer les fichiers dans « {categorie} »</span>
-                : <>Cliquez ou <strong>glissez-déposez plusieurs fichiers d&apos;un coup</strong> · PDF et photos acceptés · <strong>compression automatique puissante</strong> avant enregistrement · stockage partagé de l&apos;équipe, accès protégé par le mot de passe.</>}
+                ? <span className="font-bold text-copper">Relâchez pour ajouter à la liste</span>
+                : <>Cliquez ou <strong>glissez-déposez plusieurs fichiers d&apos;un coup</strong> — vous choisissez ensuite une catégorie par document, puis vous validez tout ensemble. PDF et photos acceptés · <strong>compression automatique puissante</strong>.</>}
             </p>
           </div>
+
+          {/* File d'attente : une ligne par document, catégorie modifiable */}
+          {enAttente.length > 0 && (
+            <div className="mt-3 rounded-xl border border-copper/40 bg-copper-soft/20 p-3">
+              <div className="mb-2 flex items-center justify-between">
+                <span className="text-xs font-bold uppercase tracking-wide text-navy">
+                  {enAttente.length} document{enAttente.length > 1 ? "s" : ""} à ajouter — choisissez une catégorie par ligne
+                </span>
+                {!busy && (
+                  <button onClick={() => setEnAttente([])} className="text-xs font-semibold text-slate-500 hover:text-red-600">Tout retirer</button>
+                )}
+              </div>
+              <ul className="space-y-1.5">
+                {enAttente.map((item) => (
+                  <li key={item.id} className="flex flex-wrap items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2">
+                    <span className="text-base">📄</span>
+                    <div className="min-w-0 flex-1">
+                      <div className="truncate text-sm font-semibold text-slate-800">{item.file.name}</div>
+                      <div className="text-xs text-slate-400">{Math.max(1, Math.round(item.file.size / 1024))} Ko</div>
+                    </div>
+                    <select
+                      className="rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-sm text-slate-900 focus:border-copper focus:outline-none focus:ring-2 focus:ring-copper/20 disabled:opacity-50"
+                      value={item.categorie}
+                      disabled={busy}
+                      onChange={(e) => majCategorieLigne(item.id, e.target.value)}
+                    >
+                      {CATEGORIES_PIECES.map((c) => (
+                        <option key={c}>{c}</option>
+                      ))}
+                    </select>
+                    {!busy && (
+                      <button onClick={() => retirerLigne(item.id)} className="rounded-lg border border-red-200 px-2 py-1 text-xs text-red-600 transition hover:bg-red-50" title="Retirer ce document">✕</button>
+                    )}
+                  </li>
+                ))}
+              </ul>
+              <div className="mt-3 flex items-center justify-end gap-2">
+                <button
+                  onClick={() => void integrer()}
+                  disabled={busy}
+                  className="rounded-lg bg-copper px-5 py-2 text-sm font-bold text-white transition hover:brightness-110 disabled:opacity-50"
+                >
+                  {busy ? (etatCompression ?? "Envoi en cours…") : `Ajouter ${enAttente.length} document${enAttente.length > 1 ? "s" : ""} au dossier`}
+                </button>
+              </div>
+            </div>
+          )}
+
           {info && <p className="mt-3 rounded-lg border border-emerald-200 bg-emerald-50 p-2 text-sm text-emerald-700">✓ {info}</p>}
           {erreur && <p className="mt-3 rounded-lg border border-red-200 bg-red-50 p-2 text-sm text-red-700">{erreur}</p>}
         </div>
