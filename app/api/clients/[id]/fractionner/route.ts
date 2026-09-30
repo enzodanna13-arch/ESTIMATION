@@ -49,7 +49,7 @@ function nettoyerNom(titre: string, categorie: string, debut: number, fin: numbe
   return `${t} (${pages}).pdf`;
 }
 
-async function classifierPages(pdfB64: string, nbPages: number): Promise<Segment[] | null> {
+async function classifierPages(pdfB64: string, nbPages: number): Promise<{ segments: Segment[]; blanches: number[] } | null> {
   if (!process.env.ANTHROPIC_API_KEY) return null;
   const client = new Anthropic();
   const consigne = [
@@ -64,7 +64,8 @@ async function classifierPages(pdfB64: string, nbPages: number): Promise<Segment
     "- Toutes les pages consécutives d'un même document restent ensemble (un rapport de diagnostics de 30 pages = UN seul segment Diagnostics).",
     "- Un lot de diagnostics (DPE, amiante, plomb, électricité, gaz, ERP, Carrez…) → une seule pièce « Diagnostics ».",
     "- Si un type ne correspond à aucune catégorie de la liste, mets « Autre ».",
-    'Réponds EXCLUSIVEMENT par un JSON : {"segments":[{"debut":1,"fin":3,"categorie":"Mandat","titre":"…"}]}',
+    "PAGES BLANCHES : liste dans « pagesBlanches » les numéros des pages RÉELLEMENT vides (aucun texte, aucune signature, aucun tampon, aucune image utile ; pages de séparation ou versos vides). En cas de doute, NE mets PAS la page en blanche. Ces pages restent DANS les segments (pour la numérotation) mais seront retirées du document final.",
+    'Réponds EXCLUSIVEMENT par un JSON : {"segments":[{"debut":1,"fin":3,"categorie":"Mandat","titre":"…"}],"pagesBlanches":[4]}',
   ].join("\n");
 
   const msg = await client.messages.create({
@@ -84,7 +85,7 @@ async function classifierPages(pdfB64: string, nbPages: number): Promise<Segment
   const txt = msg.content.filter((b): b is Anthropic.TextBlock => b.type === "text").map((b) => b.text).join("");
   const s = txt.indexOf("{"), e = txt.lastIndexOf("}");
   if (s < 0 || e <= s) return null;
-  let brut: { segments?: unknown };
+  let brut: { segments?: unknown; pagesBlanches?: unknown };
   try {
     brut = JSON.parse(txt.slice(s, e + 1));
   } catch {
@@ -103,7 +104,12 @@ async function classifierPages(pdfB64: string, nbPages: number): Promise<Segment
       titre: typeof it.titre === "string" ? it.titre : "",
     });
   }
-  return segs;
+  const blanches = Array.isArray(brut.pagesBlanches)
+    ? (brut.pagesBlanches as unknown[])
+        .map((n) => Math.round(Number(n)))
+        .filter((n) => Number.isFinite(n) && n >= 1 && n <= nbPages)
+    : [];
+  return { segments: segs, blanches };
 }
 
 // Répare la couverture : segments ordonnés, contigus, sans trou ni
@@ -165,20 +171,28 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     }
 
     const pdfB64 = Buffer.from(buf).toString("base64");
-    let segs = await classifierPages(pdfB64, nbPages).catch(() => null);
-    if (!segs || segs.length === 0) {
+    const analyse = await classifierPages(pdfB64, nbPages).catch(() => null);
+    let segs = analyse?.segments ?? [];
+    if (segs.length === 0) {
       // L'IA n'a rien renvoyé d'exploitable : on enregistre le dossier entier
       // comme une seule pièce « Autre » plutôt que d'échouer.
       segs = [{ debut: 1, fin: nbPages, categorie: "Autre", titre: "Dossier complet" }];
     }
     const segments = reparer(segs, nbPages);
+    const blanches = new Set(analyse?.blanches ?? []); // pages 1-indexées à retirer
 
-    // Découpe : un sous-PDF par segment.
+    // Découpe : un sous-PDF par segment, en RETIRANT les pages blanches. Un
+    // segment intégralement blanc est ignoré.
     const items: { nom: string; categorie: string; bytes: Uint8Array }[] = [];
+    let blanchesRetirees = 0;
     for (const seg of segments) {
+      const indices: number[] = [];
+      for (let p = seg.debut; p <= seg.fin; p++) {
+        if (blanches.has(p)) { blanchesRetirees++; continue; }
+        indices.push(p - 1);
+      }
+      if (indices.length === 0) continue; // tout le segment était blanc
       const sousPdf = await PDFDocument.create();
-      const indices = [];
-      for (let p = seg.debut; p <= seg.fin; p++) indices.push(p - 1);
       const pages = await sousPdf.copyPages(source, indices);
       for (const pg of pages) sousPdf.addPage(pg);
       const bytes = await sousPdf.save();
@@ -192,6 +206,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     return Response.json({
       dossier: res.dossier,
       ajoutees: res.ajoutees,
+      blanchesRetirees,
       segments: segments.map((s) => ({ categorie: s.categorie, titre: s.titre, debut: s.debut, fin: s.fin })),
     });
   } catch (err) {

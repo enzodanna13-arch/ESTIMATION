@@ -492,7 +492,9 @@ export default function ClientsPage({ onRetour, onOuvrirEstimation }: { onRetour
       setFractionnement(null);
       if (res.dossier) setOuvert(res.dossier);
       setResultatFraction(res.segments.map((s) => ({ categorie: s.categorie, titre: s.titre })));
-      setInfo(`${res.ajoutees} document${res.ajoutees > 1 ? "s" : ""} détecté${res.ajoutees > 1 ? "s" : ""} et classé${res.ajoutees > 1 ? "s" : ""} automatiquement`);
+      const parts = [`${res.ajoutees} document${res.ajoutees > 1 ? "s" : ""} détecté${res.ajoutees > 1 ? "s" : ""} et classé${res.ajoutees > 1 ? "s" : ""} automatiquement`];
+      if (res.blanchesRetirees > 0) parts.push(`${res.blanchesRetirees} page${res.blanchesRetirees > 1 ? "s" : ""} blanche${res.blanchesRetirees > 1 ? "s" : ""} supprimée${res.blanchesRetirees > 1 ? "s" : ""}`);
+      setInfo(parts.join(" · "));
       void recharger();
     } catch (err) {
       setFractionnement(null);
@@ -707,7 +709,7 @@ export default function ClientsPage({ onRetour, onOuvrirEstimation }: { onRetour
               <h3 className="text-sm font-bold text-navy">🪄 Fractionner automatiquement un dossier PDF</h3>
               <p className="mt-0.5 text-xs text-slate-500">
                 Un seul PDF qui contient tout le dossier de vente ? L&apos;IA lit chaque page, sépare les documents
-                (mandat, diagnostics, titre de propriété…) et les classe tout seuls. <strong>Max 100 pages.</strong>
+                (mandat, diagnostics, titre de propriété…), les classe tout seuls et <strong>retire les pages blanches</strong>. <strong>Max 100 pages.</strong>
               </p>
             </div>
             <label className={`cursor-pointer whitespace-nowrap rounded-xl bg-violet-600 px-4 py-2.5 text-sm font-bold text-white transition hover:brightness-110 ${busy ? "pointer-events-none opacity-50" : ""}`}>
