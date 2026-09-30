@@ -32,7 +32,14 @@ export async function GET(
     return Response.json({ error: `Pièce introuvable dans le stockage (${diag})` }, { status: 404 });
   }
 
-  const nom = (piece?.nom ?? "piece.pdf").replace(/["\\\r\n]/g, "");
+  const nom = piece?.nom ?? "piece.pdf";
+  // En-tête content-disposition : ne peut contenir que des caractères latin1.
+  // On fournit donc un nom ASCII sûr (les caractères hors latin1 — « — », etc. —
+  // remplacés) PLUS la variante UTF-8 encodée (RFC 5987) pour les navigateurs
+  // modernes, qui conservent alors le nom complet avec accents et tirets.
+  const nomAscii = nom.replace(/["\\\r\n]/g, "").replace(/[^\x20-\x7E]/g, "-");
+  const nomUtf8 = encodeURIComponent(nom.replace(/["\\\r\n]/g, ""));
+  const disposition = `attachment; filename="${nomAscii}"; filename*=UTF-8''${nomUtf8}`;
   // On sert le fichier via le serveur (l'URL de stockage n'est jamais exposée
   // au navigateur → pas de problème CORS). En cas d'échec, on remonte la cause
   // exacte pour diagnostic.
@@ -45,7 +52,7 @@ export async function GET(
     return new Response(buf, {
       headers: {
         "content-type": "application/pdf",
-        "content-disposition": `attachment; filename="${nom}"`,
+        "content-disposition": disposition,
         "cache-control": "no-store",
       },
     });
