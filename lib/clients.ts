@@ -182,6 +182,22 @@ export async function deleteClientFile(id: string, fileId: string): Promise<Clie
 }
 
 /** Renomme une pièce (et, si fournie, change sa catégorie). */
+/** Génère la fiche Tracfin (KYC) : l'IA lit la pièce d'identité et le mandat du
+ *  dossier, remplit le modèle et l'enregistre comme pièce « Tracfin ». */
+export async function genererTracfin(
+  id: string,
+): Promise<{ dossier: ClientDossier; champsVides: string[]; analyseIndisponible: boolean }> {
+  const res = await fetch(`/api/clients/${encodeURIComponent(id)}/tracfin`, {
+    method: "POST",
+    headers: jsonHeaders(),
+  });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => null)) as { error?: string } | null;
+    throw new Error(body?.error ?? "Génération de la fiche Tracfin impossible");
+  }
+  return (await res.json()) as { dossier: ClientDossier; champsVides: string[]; analyseIndisponible: boolean };
+}
+
 export async function renommerClientFile(
   id: string,
   fileId: string,

@@ -8,6 +8,7 @@ import {
   deleteClientFile,
   enregistrerPiecesPreuploadees,
   fractionnerDossierPdf,
+  genererTracfin,
   getClientFileB64,
   listClients,
   renommerClientFile,
@@ -386,6 +387,7 @@ export default function ClientsPage({ onRetour, onOuvrirEstimation }: { onRetour
   // Raisons d'échec renvoyées par le fractionnement (tranche non analysée) —
   // affichées pour comprendre pourquoi un découpage n'a pas abouti.
   const [avertFraction, setAvertFraction] = useState<string[] | null>(null);
+  const [tracfinEnCours, setTracfinEnCours] = useState(false);
   const [edit, setEdit] = useState<{ nom: string; prenom: string; tel: string; email: string; bien: string; nego: string } | null>(null);
   // Pièce en cours de renommage : fileId + nouveau nom + nouvelle catégorie.
   const [pieceEdit, setPieceEdit] = useState<{ fileId: string; nom: string; categorie: string } | null>(null);
@@ -495,6 +497,31 @@ export default function ClientsPage({ onRetour, onOuvrirEstimation }: { onRetour
       setEtatCompression(null);
       setErreur(err instanceof Error ? err.message : "Téléversement impossible");
     } finally {
+      setBusy(false);
+    }
+  };
+
+  // Génère la fiche Tracfin (KYC) à partir de la pièce d'identité + du mandat
+  // déjà au dossier. La partie « notation des risques » reste à remplir par
+  // l'agent.
+  const genererFicheTracfin = async () => {
+    if (!ouvert) return;
+    setBusy(true);
+    setErreur(null);
+    setInfo(null);
+    setTracfinEnCours(true);
+    try {
+      const res = await genererTracfin(ouvert.id);
+      if (res.dossier) setOuvert(res.dossier);
+      const parts = ["Fiche Tracfin générée et ajoutée au dossier"];
+      if (res.analyseIndisponible) parts.push("⚠️ infos non extraites (crédit IA ?) — fiche à compléter à la main");
+      else if (res.champsVides.length > 0) parts.push(`à vérifier : ${res.champsVides.length} champ(s) non trouvé(s) dans les documents`);
+      setInfo(parts.join(" · "));
+      void recharger();
+    } catch (err) {
+      setErreur(err instanceof Error ? err.message : "Génération de la fiche Tracfin impossible");
+    } finally {
+      setTracfinEnCours(false);
       setBusy(false);
     }
   };
@@ -681,6 +708,18 @@ export default function ClientsPage({ onRetour, onOuvrirEstimation }: { onRetour
               <p className="mt-2 text-xs text-slate-500">
                 Documents obligatoires : titre de propriété, pièce d&apos;identité, mandat, diagnostics, Tracfin.
               </p>
+              <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-slate-100 pt-3">
+                <button
+                  onClick={() => void genererFicheTracfin()}
+                  disabled={busy}
+                  className={`rounded-xl bg-navy px-4 py-2 text-sm font-bold text-white transition hover:brightness-110 ${busy ? "pointer-events-none opacity-50" : ""}`}
+                >
+                  {tracfinEnCours ? "Génération en cours…" : "🪪 Générer la fiche Tracfin"}
+                </button>
+                <p className="text-xs text-slate-400">
+                  L&apos;IA lit la <strong>pièce d&apos;identité</strong> et le <strong>mandat</strong> du dossier, remplit la fiche et l&apos;ajoute en pièce « Tracfin ». La partie <strong>notation des risques reste à compléter et signer par vous</strong>.
+                </p>
+              </div>
             </div>
           );
         })()}
