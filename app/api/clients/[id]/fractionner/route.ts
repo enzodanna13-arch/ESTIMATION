@@ -24,13 +24,6 @@ interface Segment {
 
 const CATS = CATEGORIES_PIECES as readonly string[];
 
-// L'API d'analyse PDF est limitée à 100 pages par requête : au-delà, on
-// découpe le dossier en tranches de 100 pages, on analyse chacune, puis on
-// recolle (un document coupé par une jointure est réassemblé). MAX_PAGES borne
-// le nombre total de tranches pour rester dans la durée d'exécution.
-const CHUNK = 100;
-const MAX_PAGES = 300;
-
 function normaliserCategorie(c: unknown): string {
   const v = typeof c === "string" ? c.trim() : "";
   if (CATS.includes(v)) return v;
@@ -56,44 +49,7 @@ function nettoyerNom(titre: string, categorie: string, debut: number, fin: numbe
   return `${t} (${pages}).pdf`;
 }
 
-// Parse la réponse de l'IA. Tente d'abord le JSON complet ; si celui-ci est
-// tronqué (réponse coupée par la limite de tokens), récupère au mieux les
-// objets segment individuels et le tableau pagesBlanches — mieux vaut un
-// découpage partiel qu'une tranche entièrement perdue.
-function parserReponse(txt: string): { segments: unknown[]; pagesBlanches: unknown[] } | null {
-  const s = txt.indexOf("{"), e = txt.lastIndexOf("}");
-  if (s >= 0 && e > s) {
-    try {
-      const obj = JSON.parse(txt.slice(s, e + 1)) as { segments?: unknown; pagesBlanches?: unknown };
-      if (Array.isArray(obj.segments)) {
-        return { segments: obj.segments, pagesBlanches: Array.isArray(obj.pagesBlanches) ? obj.pagesBlanches : [] };
-      }
-    } catch {
-      /* JSON tronqué : on passe à la récupération objet par objet ci-dessous. */
-    }
-  }
-  // Récupération tolérante : chaque objet segment complet { ... } est isolé et
-  // parsé indépendamment ; les objets incomplets (fin de réponse coupée) sont
-  // ignorés sans faire échouer toute la tranche.
-  const segments: unknown[] = [];
-  const zoneSeg = txt.slice(txt.indexOf("[") + 1);
-  for (const m of zoneSeg.matchAll(/\{[^{}]*\}/g)) {
-    try {
-      const o = JSON.parse(m[0]);
-      if (o && typeof o === "object" && "debut" in o && "fin" in o) segments.push(o);
-    } catch {
-      /* objet incomplet, ignoré */
-    }
-  }
-  if (segments.length === 0) return null;
-  const blanchesMatch = txt.match(/"pagesBlanches"\s*:\s*\[([^\]]*)\]/);
-  const pagesBlanches = blanchesMatch
-    ? blanchesMatch[1].split(",").map((x) => Number(x.trim())).filter((n) => Number.isFinite(n))
-    : [];
-  return { segments, pagesBlanches };
-}
-
-async function classifierPages(pdfB64: string, nbPages: number): Promise<{ segments: Segment[]; blanches: number[] } | null> {
+async function classifierPages(pdfB64: string, nbPages: number): Promise<Segment[] | null> {
   if (!process.env.ANTHROPIC_API_KEY) return null;
   const client = new Anthropic();
   const consigne = [
@@ -108,16 +64,12 @@ async function classifierPages(pdfB64: string, nbPages: number): Promise<{ segme
     "- Toutes les pages consécutives d'un même document restent ensemble (un rapport de diagnostics de 30 pages = UN seul segment Diagnostics).",
     "- Un lot de diagnostics (DPE, amiante, plomb, électricité, gaz, ERP, Carrez…) → une seule pièce « Diagnostics ».",
     "- Si un type ne correspond à aucune catégorie de la liste, mets « Autre ».",
-    "PAGES BLANCHES : liste dans « pagesBlanches » les numéros des pages RÉELLEMENT vides (aucun texte, aucune signature, aucun tampon, aucune image utile ; pages de séparation ou versos vides). En cas de doute, NE mets PAS la page en blanche. Ces pages restent DANS les segments (pour la numérotation) mais seront retirées du document final.",
-    'Réponds EXCLUSIVEMENT par un JSON : {"segments":[{"debut":1,"fin":3,"categorie":"Mandat","titre":"…"}],"pagesBlanches":[4]}',
+    'Réponds EXCLUSIVEMENT par un JSON : {"segments":[{"debut":1,"fin":3,"categorie":"Mandat","titre":"…"}]}',
   ].join("\n");
 
   const msg = await client.messages.create({
     model: process.env.SPLIT_MODEL ?? process.env.EXTRACT_MODEL ?? "claude-opus-4-8",
-    // Une tranche de 100 pages peut contenir des dizaines de documents : il faut
-    // assez de tokens pour que le JSON de segments ne soit PAS tronqué (un JSON
-    // tronqué = parse impossible = tranche perdue).
-    max_tokens: 8192,
+    max_tokens: 4096,
     system: "Tu es un assistant d'agence immobilière qui trie les pièces d'un dossier de vente. Tu réponds uniquement par du JSON conforme, sans commentaire.",
     messages: [
       {
@@ -130,8 +82,15 @@ async function classifierPages(pdfB64: string, nbPages: number): Promise<{ segme
     ],
   });
   const txt = msg.content.filter((b): b is Anthropic.TextBlock => b.type === "text").map((b) => b.text).join("");
-  const brut = parserReponse(txt);
-  if (!brut || !Array.isArray(brut.segments)) return null;
+  const s = txt.indexOf("{"), e = txt.lastIndexOf("}");
+  if (s < 0 || e <= s) return null;
+  let brut: { segments?: unknown };
+  try {
+    brut = JSON.parse(txt.slice(s, e + 1));
+  } catch {
+    return null;
+  }
+  if (!Array.isArray(brut.segments)) return null;
   const segs: Segment[] = [];
   for (const it of brut.segments as Record<string, unknown>[]) {
     const debut = Math.round(Number(it.debut));
@@ -144,12 +103,7 @@ async function classifierPages(pdfB64: string, nbPages: number): Promise<{ segme
       titre: typeof it.titre === "string" ? it.titre : "",
     });
   }
-  const blanches = Array.isArray(brut.pagesBlanches)
-    ? (brut.pagesBlanches as unknown[])
-        .map((n) => Math.round(Number(n)))
-        .filter((n) => Number.isFinite(n) && n >= 1 && n <= nbPages)
-    : [];
-  return { segments: segs, blanches };
+  return segs;
 }
 
 // Répare la couverture : segments ordonnés, contigus, sans trou ni
@@ -159,11 +113,8 @@ function reparer(segs: Segment[], nbPages: number): Segment[] {
   const out: Segment[] = [];
   let curseur = 1;
   for (const s of valides) {
-    if (curseur > nbPages) break;
-    // On accroche chaque segment à la fin du précédent (debut = curseur) : la
-    // couverture reste contiguë depuis la page 1, sans trou ni page perdue,
-    // même si l'IA a sauté une page en début de document.
-    const debut = curseur;
+    const debut = Math.max(curseur, s.debut);
+    if (debut > nbPages) break;
     const fin = Math.min(Math.max(debut, s.fin), nbPages);
     if (fin < debut) continue;
     out.push({ ...s, debut, fin });
@@ -174,25 +125,6 @@ function reparer(segs: Segment[], nbPages: number): Segment[] {
   if (curseur <= nbPages) {
     if (out.length > 0) out[out.length - 1].fin = nbPages;
     else out.push({ debut: 1, fin: nbPages, categorie: "Autre", titre: "Dossier" });
-  }
-  return out;
-}
-
-// Recolle les segments coupés par une jointure de tranche : deux segments
-// adjacents de MÊME catégorie dont la césure tombe pile sur une frontière de
-// tranche (fin === multiple de CHUNK) sont fusionnés — un même document à
-// cheval sur deux tranches n'est pas scindé en deux pièces.
-function fusionnerAuxJointures(segs: Segment[], seamEnds: Set<number>): Segment[] {
-  if (segs.length <= 1) return segs;
-  const out: Segment[] = [{ ...segs[0] }];
-  for (let i = 1; i < segs.length; i++) {
-    const prev = out[out.length - 1];
-    const cur = segs[i];
-    if (seamEnds.has(prev.fin) && cur.debut === prev.fin + 1 && cur.categorie === prev.categorie) {
-      prev.fin = cur.fin; // on prolonge, on garde le titre du premier
-    } else {
-      out.push({ ...cur });
-    }
   }
   return out;
 }
@@ -224,89 +156,29 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       await deleteClientImport(id, body.fileId);
       return Response.json({ error: "PDF vide." }, { status: 400 });
     }
-    if (nbPages > MAX_PAGES) {
+    if (nbPages > 100) {
       await deleteClientImport(id, body.fileId);
       return Response.json(
-        { error: `Le PDF fait ${nbPages} pages : l'analyse est limitée à ${MAX_PAGES} pages. Scinde-le avant l'import.` },
+        { error: `Le PDF fait ${nbPages} pages : l'analyse est limitée à 100 pages. Scinde-le en deux avant l'import.` },
         { status: 413 },
       );
     }
 
-    // Tranches de CHUNK pages (une seule si ≤ 100). On analyse chaque tranche
-    // séparément puis on recolle en numérotation globale.
-    const tranches: { start: number; len: number }[] = [];
-    for (let s = 1; s <= nbPages; s += CHUNK) tranches.push({ start: s, len: Math.min(CHUNK, nbPages - s + 1) });
-
-    // Base64 de chaque tranche (le PDF entier si une seule tranche).
-    const b64Tranches = await Promise.all(
-      tranches.map(async (tr) => {
-        if (tranches.length === 1) return Buffer.from(buf).toString("base64");
-        const sub = await PDFDocument.create();
-        const idx: number[] = [];
-        for (let p = 0; p < tr.len; p++) idx.push(tr.start - 1 + p);
-        const pages = await sub.copyPages(source, idx);
-        for (const pg of pages) sub.addPage(pg);
-        return Buffer.from(await sub.save()).toString("base64");
-      }),
-    );
-
-    // Analyse des tranches EN PARALLÈLE (chacune ≤ 100 pages) : bien plus rapide
-    // qu'en séquentiel, et on reste dans la durée d'exécution. On CAPTURE la
-    // raison exacte d'un échec (au lieu de l'avaler) pour pouvoir l'afficher.
-    const analyses = await Promise.all(
-      tranches.map(async (tr, i): Promise<{ ok: true; data: { segments: Segment[]; blanches: number[] } } | { ok: false; raison: string }> => {
-        try {
-          const data = await classifierPages(b64Tranches[i], tr.len);
-          if (!data) return { ok: false, raison: "réponse IA vide ou illisible" };
-          if (data.segments.length === 0) return { ok: false, raison: "aucun document détecté" };
-          return { ok: true, data };
-        } catch (e) {
-          return { ok: false, raison: e instanceof Error ? e.message : "erreur inconnue" };
-        }
-      }),
-    );
-
-    const allSegs: Segment[] = [];
-    const blanches = new Set<number>(); // pages 1-indexées globales à retirer
-    const avertissements: string[] = [];
-    tranches.forEach((tr, i) => {
-      const analyse = analyses[i];
-      const decal = tr.start - 1; // page locale → globale
-      const trFin = tr.start + tr.len - 1;
-      if (!analyse.ok) {
-        // Tranche non analysée : repli LOCAL (une pièce « Autre » sur ses pages)
-        // — on ne perd aucune page et on n'écrase pas les autres tranches.
-        const etiquette = tranches.length > 1 ? `Pages ${tr.start}–${trFin} : ` : "";
-        avertissements.push(`${etiquette}analyse IA impossible (${analyse.raison}).`);
-        allSegs.push({ debut: tr.start, fin: trFin, categorie: "Autre", titre: `Dossier (p.${tr.start}-${trFin})` });
-        return;
-      }
-      for (const sgm of analyse.data.segments) {
-        allSegs.push({ ...sgm, debut: sgm.debut + decal, fin: sgm.fin + decal });
-      }
-      for (const b of analyse.data.blanches) blanches.add(b + decal);
-    });
-
-    let segs = allSegs;
-    if (segs.length === 0) {
-      // Aucune tranche exploitable : dossier entier en une seule pièce « Autre ».
+    const pdfB64 = Buffer.from(buf).toString("base64");
+    let segs = await classifierPages(pdfB64, nbPages).catch(() => null);
+    if (!segs || segs.length === 0) {
+      // L'IA n'a rien renvoyé d'exploitable : on enregistre le dossier entier
+      // comme une seule pièce « Autre » plutôt que d'échouer.
       segs = [{ debut: 1, fin: nbPages, categorie: "Autre", titre: "Dossier complet" }];
     }
-    const seamEnds = new Set(tranches.slice(0, -1).map((tr) => tr.start + tr.len - 1));
-    const segments = fusionnerAuxJointures(reparer(segs, nbPages), seamEnds);
+    const segments = reparer(segs, nbPages);
 
-    // Découpe : un sous-PDF par segment, en RETIRANT les pages blanches. Un
-    // segment intégralement blanc est ignoré.
+    // Découpe : un sous-PDF par segment.
     const items: { nom: string; categorie: string; bytes: Uint8Array }[] = [];
-    let blanchesRetirees = 0;
     for (const seg of segments) {
-      const indices: number[] = [];
-      for (let p = seg.debut; p <= seg.fin; p++) {
-        if (blanches.has(p)) { blanchesRetirees++; continue; }
-        indices.push(p - 1);
-      }
-      if (indices.length === 0) continue; // tout le segment était blanc
       const sousPdf = await PDFDocument.create();
+      const indices = [];
+      for (let p = seg.debut; p <= seg.fin; p++) indices.push(p - 1);
       const pages = await sousPdf.copyPages(source, indices);
       for (const pg of pages) sousPdf.addPage(pg);
       const bytes = await sousPdf.save();
@@ -320,8 +192,6 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     return Response.json({
       dossier: res.dossier,
       ajoutees: res.ajoutees,
-      blanchesRetirees,
-      avertissements,
       segments: segments.map((s) => ({ categorie: s.categorie, titre: s.titre, debut: s.debut, fin: s.fin })),
     });
   } catch (err) {
