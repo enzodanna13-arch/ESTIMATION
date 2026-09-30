@@ -139,6 +139,35 @@ export async function enregistrerPiecesPreuploadees(
   return body.dossier ? { dossier: body.dossier, ajoutees: body.ajoutees ?? pieces.length } : null;
 }
 
+// Fractionnement IA d'un dossier PDF combiné : on téléverse le gros PDF sur un
+// chemin temporaire (navigateur → Blob, sans limite serverless), puis le
+// serveur l'analyse page par page, le découpe en une pièce par document et
+// classe chacune. Renvoie le dossier mis à jour et le détail des documents.
+export async function fractionnerDossierPdf(
+  dossierId: string,
+  fichier: Blob,
+): Promise<{ dossier: ClientDossier; ajoutees: number; segments: { categorie: string; titre: string; debut: number; fin: number }[] }> {
+  const { upload } = await import("@vercel/blob/client");
+  const importId = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+  const pathname = `clients/import/${dossierId.replace(/[^a-z0-9-]/gi, "")}/${importId}.pdf`;
+  await upload(pathname, fichier, {
+    access: "public",
+    contentType: "application/pdf",
+    handleUploadUrl: "/api/clients/blob-upload",
+    clientPayload: getHistoryKey(),
+  });
+  const res = await fetch(`/api/clients/${encodeURIComponent(dossierId)}/fractionner`, {
+    method: "POST",
+    headers: jsonHeaders(),
+    body: JSON.stringify({ fileId: importId }),
+  });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => null)) as { error?: string } | null;
+    throw new Error(body?.error ?? "Fractionnement impossible");
+  }
+  return (await res.json()) as { dossier: ClientDossier; ajoutees: number; segments: { categorie: string; titre: string; debut: number; fin: number }[] };
+}
+
 export async function deleteClientFile(id: string, fileId: string): Promise<ClientDossier | null> {
   const res = await fetch(`/api/clients/${encodeURIComponent(id)}/files/${encodeURIComponent(fileId)}`, {
     method: "DELETE",

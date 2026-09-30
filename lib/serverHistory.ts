@@ -271,6 +271,7 @@ export interface ClientDossier {
 
 const CLIENT_META_PREFIX = "clients/meta/";
 const CLIENT_FILE_PREFIX = "clients/files/";
+const CLIENT_IMPORT_PREFIX = "clients/import/";
 
 const safeId = (s: string) => s.replace(/[^a-z0-9-]/gi, "");
 
@@ -430,6 +431,68 @@ export async function addClientFilesPreuploadedServer(
       nom: (p.nom || "document").slice(0, 200),
       taille: blobs[0].size ?? 0,
       categorie: p.categorie,
+      createdAt: Date.now(),
+    });
+    ajoutees++;
+  }
+  if (ajoutees === 0) return { dossier, ajoutees: 0 };
+  dossier.updatedAt = Date.now();
+  await putClientMeta(dossier);
+  return { dossier, ajoutees };
+}
+
+// --- Fractionnement d'un dossier PDF combiné -------------------------------
+
+/** Lit les octets du PDF temporaire à fractionner (clients/import/…). */
+export async function getClientImportBytes(id: string, importId: string): Promise<ArrayBuffer | null> {
+  const { blobs } = await list({
+    prefix: `${CLIENT_IMPORT_PREFIX}${safeId(id)}/${safeId(importId)}.pdf`,
+    limit: 1,
+  });
+  if (blobs.length === 0) return null;
+  try {
+    const res = await fetch(blobs[0].url, { cache: "no-store" });
+    return res.ok ? await res.arrayBuffer() : null;
+  } catch {
+    return null;
+  }
+}
+
+/** Supprime le PDF temporaire d'import (après fractionnement). */
+export async function deleteClientImport(id: string, importId: string): Promise<void> {
+  try {
+    const { blobs } = await list({
+      prefix: `${CLIENT_IMPORT_PREFIX}${safeId(id)}/${safeId(importId)}.pdf`,
+      limit: 1,
+    });
+    if (blobs.length > 0) await del(blobs.map((b) => b.url));
+  } catch {
+    /* nettoyage best-effort */
+  }
+}
+
+/** Enregistre plusieurs PDF (déjà découpés en mémoire) comme pièces du
+ *  dossier, en écrivant les fichiers puis LE MÉTA une seule fois. */
+export async function addClientPdfsServer(
+  id: string,
+  items: { nom: string; categorie: string; bytes: Uint8Array }[],
+): Promise<{ dossier: ClientDossier; ajoutees: number } | null> {
+  const dossier = await getClientServer(id);
+  if (!dossier) return null;
+  let ajoutees = 0;
+  for (const it of items) {
+    if (!it.bytes || it.bytes.length < 100) continue;
+    const fileId = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    await put(`${CLIENT_FILE_PREFIX}${dossier.id}/${fileId}.pdf`, Buffer.from(it.bytes), {
+      access: "public",
+      addRandomSuffix: false,
+      contentType: "application/pdf",
+    });
+    dossier.pieces.push({
+      fileId,
+      nom: (it.nom || "document").slice(0, 200),
+      taille: it.bytes.length,
+      categorie: it.categorie,
       createdAt: Date.now(),
     });
     ajoutees++;

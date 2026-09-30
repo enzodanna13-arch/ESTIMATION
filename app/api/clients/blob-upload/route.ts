@@ -23,13 +23,17 @@ export async function POST(request: Request): Promise<Response> {
         if (!(await verifierCleEquipe(clientPayload ?? ""))) {
           throw new Error("Accès réservé");
         }
-        if (!pathname.startsWith("clients/files/") || !pathname.endsWith(".pdf")) {
+        // `clients/files/…` : pièce définitive du dossier.
+        // `clients/import/…` : PDF combiné temporaire à fractionner par l'IA
+        // (limite 32 Mo, borne d'analyse PDF de l'API).
+        const estImport = pathname.startsWith("clients/import/");
+        if ((!pathname.startsWith("clients/files/") && !estImport) || !pathname.endsWith(".pdf")) {
           throw new Error("Chemin non autorisé");
         }
         return {
           allowedContentTypes: ["application/pdf"],
           addRandomSuffix: false,
-          maximumSizeInBytes: 25_000_000,
+          maximumSizeInBytes: estImport ? 32_000_000 : 25_000_000,
         };
       },
       // Pas de onUploadCompleted : la fiche est enregistrée par un appel

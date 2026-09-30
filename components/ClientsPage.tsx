@@ -7,6 +7,7 @@ import {
   deleteClient,
   deleteClientFile,
   enregistrerPiecesPreuploadees,
+  fractionnerDossierPdf,
   getClientFileB64,
   listClients,
   telechargerClientFile,
@@ -341,6 +342,9 @@ export default function ClientsPage({ onRetour, onOuvrirEstimation }: { onRetour
   const [dragActif, setDragActif] = useState(false);
   // File d'attente : une ligne par document, chacune avec sa propre catégorie.
   const [enAttente, setEnAttente] = useState<{ id: string; file: File; categorie: string }[]>([]);
+  // Fractionnement IA d'un PDF combiné.
+  const [fractionnement, setFractionnement] = useState<string | null>(null);
+  const [resultatFraction, setResultatFraction] = useState<{ categorie: string; titre: string }[] | null>(null);
   const [edit, setEdit] = useState<{ nom: string; prenom: string; tel: string; email: string; bien: string; nego: string } | null>(null);
 
   const recharger = () => listClients().then(setDossiers).catch(() => setDossiers([]));
@@ -349,7 +353,7 @@ export default function ClientsPage({ onRetour, onOuvrirEstimation }: { onRetour
   }, []);
   // Retour à la liste : on ferme le dossier et on vide la file d'attente
   // (les fichiers en attente appartiennent au dossier qu'on quitte).
-  const fermerDossier = () => { setEnAttente([]); setOuvert(null); };
+  const fermerDossier = () => { setEnAttente([]); setResultatFraction(null); setFractionnement(null); setOuvert(null); };
 
   const resultats = useMemo(() => {
     let base = filtrer(dossiers ?? [], q);
@@ -467,6 +471,35 @@ export default function ClientsPage({ onRetour, onOuvrirEstimation }: { onRetour
     if (busy) return;
     const files = e.dataTransfer.files;
     if (files && files.length > 0) ajouterEnAttente(files);
+  };
+
+  // Fractionnement IA : un seul PDF contenant tout le dossier → l'IA détecte
+  // et sépare chaque document, chacun classé automatiquement.
+  const fractionner = async (files: FileList | null) => {
+    if (!ouvert || !files || files.length === 0) return;
+    const f = files[0];
+    if (!(f.name.toLowerCase().endsWith(".pdf") || f.type === "application/pdf")) {
+      setErreur("Choisis un PDF (le dossier complet à fractionner).");
+      return;
+    }
+    setBusy(true);
+    setErreur(null);
+    setInfo(null);
+    setResultatFraction(null);
+    try {
+      setFractionnement("Envoi du PDF puis analyse page par page par l'IA (30 s à 1 min)…");
+      const res = await fractionnerDossierPdf(ouvert.id, f);
+      setFractionnement(null);
+      if (res.dossier) setOuvert(res.dossier);
+      setResultatFraction(res.segments.map((s) => ({ categorie: s.categorie, titre: s.titre })));
+      setInfo(`${res.ajoutees} document${res.ajoutees > 1 ? "s" : ""} détecté${res.ajoutees > 1 ? "s" : ""} et classé${res.ajoutees > 1 ? "s" : ""} automatiquement`);
+      void recharger();
+    } catch (err) {
+      setFractionnement(null);
+      setErreur(err instanceof Error ? err.message : "Fractionnement impossible");
+    } finally {
+      setBusy(false);
+    }
   };
 
   const supprimerPiece = async (p: PieceClient) => {
@@ -665,6 +698,43 @@ export default function ClientsPage({ onRetour, onOuvrirEstimation }: { onRetour
 
           {info && <p className="mt-3 rounded-lg border border-emerald-200 bg-emerald-50 p-2 text-sm text-emerald-700">✓ {info}</p>}
           {erreur && <p className="mt-3 rounded-lg border border-red-200 bg-red-50 p-2 text-sm text-red-700">{erreur}</p>}
+        </div>
+
+        {/* Fractionnement IA : un seul PDF combiné → l'IA sépare chaque document */}
+        <div className="mb-4 rounded-2xl border border-violet-200 bg-violet-50/40 p-4">
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="min-w-0 flex-1">
+              <h3 className="text-sm font-bold text-navy">🪄 Fractionner automatiquement un dossier PDF</h3>
+              <p className="mt-0.5 text-xs text-slate-500">
+                Un seul PDF qui contient tout le dossier de vente ? L&apos;IA lit chaque page, sépare les documents
+                (mandat, diagnostics, titre de propriété…) et les classe tout seuls. <strong>Max 100 pages.</strong>
+              </p>
+            </div>
+            <label className={`cursor-pointer whitespace-nowrap rounded-xl bg-violet-600 px-4 py-2.5 text-sm font-bold text-white transition hover:brightness-110 ${busy ? "pointer-events-none opacity-50" : ""}`}>
+              {fractionnement ? "Analyse en cours…" : "📄 Importer le PDF à fractionner"}
+              <input type="file" accept="application/pdf" className="hidden" onChange={(e) => { void fractionner(e.target.files); e.target.value = ""; }} />
+            </label>
+          </div>
+          {fractionnement && (
+            <p className="mt-3 flex items-center gap-2 rounded-lg border border-violet-200 bg-white p-2.5 text-sm text-violet-700">
+              <span className="inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-violet-300 border-t-violet-600" />
+              {fractionnement}
+            </p>
+          )}
+          {resultatFraction && resultatFraction.length > 0 && (
+            <div className="mt-3 rounded-lg border border-violet-200 bg-white p-3">
+              <div className="mb-1.5 text-xs font-bold uppercase tracking-wide text-navy">Documents détectés et classés :</div>
+              <ul className="space-y-1">
+                {resultatFraction.map((s, i) => (
+                  <li key={i} className="flex items-center gap-2 text-sm">
+                    <Badge categorie={s.categorie} />
+                    <span className="truncate text-slate-600">{s.titre}</span>
+                  </li>
+                ))}
+              </ul>
+              <p className="mt-2 text-xs text-slate-400">Vérifie les catégories ci-dessous et ajuste si besoin (télécharge puis re-catégorise en cas d&apos;erreur).</p>
+            </div>
+          )}
         </div>
 
         <div className="rounded-2xl border border-slate-200 bg-white shadow-sm">
