@@ -490,7 +490,7 @@ export default function ClientsPage({ onRetour, onOuvrirEstimation }: { onRetour
     setInfo(null);
     setResultatFraction(null);
     try {
-      setFractionnement("Envoi du PDF puis analyse page par page par l'IA (30 s à 1 min)…");
+      setFractionnement("Envoi du PDF puis analyse page par page par l'IA (jusqu'à ~2 min pour un gros dossier)…");
       const res = await fractionnerDossierPdf(ouvert.id, f);
       setFractionnement(null);
       if (res.dossier) setOuvert(res.dossier);
@@ -719,7 +719,7 @@ export default function ClientsPage({ onRetour, onOuvrirEstimation }: { onRetour
               <h3 className="text-sm font-bold text-navy">🪄 Fractionner automatiquement un dossier PDF</h3>
               <p className="mt-0.5 text-xs text-slate-500">
                 Un seul PDF qui contient tout le dossier de vente ? L&apos;IA lit chaque page, sépare les documents
-                (mandat, diagnostics, titre de propriété…) et les classe tout seuls. <strong>Max 100 pages.</strong>
+                (mandat, diagnostics, titre de propriété…) et les classe tout seuls. <strong>Gros dossiers acceptés</strong> (fichiers lourds découpés automatiquement).
               </p>
             </div>
             <label className={`cursor-pointer whitespace-nowrap rounded-xl bg-violet-600 px-4 py-2.5 text-sm font-bold text-white transition hover:brightness-110 ${busy ? "pointer-events-none opacity-50" : ""}`}>

@@ -24,6 +24,16 @@ interface Segment {
 
 const CATS = CATEGORIES_PIECES as readonly string[];
 
+// L'API d'analyse accepte au plus 32 Mo par requête ET 100 pages. Un PDF est
+// encodé en base64 pour l'envoi (+33 % de taille), donc on vise ~12 Mo de PDF
+// brut par tranche (≈ 16 Mo en base64 : large marge sous 32 Mo). On découpe le
+// dossier en tranches respectant CE budget de poids ET le plafond de 100 pages,
+// on analyse chaque tranche, puis on recolle en numérotation globale.
+const BUDGET_OCTETS = 12 * 1024 * 1024;
+const MAX_PAGES_TRANCHE = 100;
+const MAX_PAGES_TOTAL = 400;
+const MAX_B64_OCTETS = 30 * 1024 * 1024; // garde-fou dur (une tranche au-delà est refusée)
+
 function normaliserCategorie(c: unknown): string {
   const v = typeof c === "string" ? c.trim() : "";
   if (CATS.includes(v)) return v;
@@ -69,7 +79,7 @@ async function classifierPages(pdfB64: string, nbPages: number): Promise<Segment
 
   const msg = await client.messages.create({
     model: process.env.SPLIT_MODEL ?? process.env.EXTRACT_MODEL ?? "claude-opus-4-8",
-    max_tokens: 4096,
+    max_tokens: 8192,
     system: "Tu es un assistant d'agence immobilière qui trie les pièces d'un dossier de vente. Tu réponds uniquement par du JSON conforme, sans commentaire.",
     messages: [
       {
@@ -129,6 +139,25 @@ function reparer(segs: Segment[], nbPages: number): Segment[] {
   return out;
 }
 
+// Recolle un document coupé par une jointure de tranche : deux segments
+// adjacents de MÊME catégorie dont la césure tombe pile sur une frontière de
+// tranche (fin ∈ seamEnds) sont fusionnés — un même document à cheval sur deux
+// tranches n'est pas scindé en deux pièces.
+function fusionnerAuxJointures(segs: Segment[], seamEnds: Set<number>): Segment[] {
+  if (segs.length <= 1) return segs;
+  const out: Segment[] = [{ ...segs[0] }];
+  for (let i = 1; i < segs.length; i++) {
+    const prev = out[out.length - 1];
+    const cur = segs[i];
+    if (seamEnds.has(prev.fin) && cur.debut === prev.fin + 1 && cur.categorie === prev.categorie) {
+      prev.fin = cur.fin; // on prolonge, on garde le titre du premier
+    } else {
+      out.push({ ...cur });
+    }
+  }
+  return out;
+}
+
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
   if (!(await verifierAccesEquipe(request))) {
     return Response.json({ error: "Accès réservé — mot de passe requis" }, { status: 401 });
@@ -156,22 +185,70 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       await deleteClientImport(id, body.fileId);
       return Response.json({ error: "PDF vide." }, { status: 400 });
     }
-    if (nbPages > 100) {
+    if (nbPages > MAX_PAGES_TOTAL) {
       await deleteClientImport(id, body.fileId);
       return Response.json(
-        { error: `Le PDF fait ${nbPages} pages : l'analyse est limitée à 100 pages. Scinde-le en deux avant l'import.` },
+        { error: `Le PDF fait ${nbPages} pages : l'analyse est limitée à ${MAX_PAGES_TOTAL} pages. Scinde-le avant l'import.` },
         { status: 413 },
       );
     }
 
-    const pdfB64 = Buffer.from(buf).toString("base64");
-    let segs = await classifierPages(pdfB64, nbPages).catch(() => null);
-    if (!segs || segs.length === 0) {
-      // L'IA n'a rien renvoyé d'exploitable : on enregistre le dossier entier
-      // comme une seule pièce « Autre » plutôt que d'échouer.
+    // Nombre de pages par tranche pour rester sous le budget de POIDS (un PDF de
+    // 25 Mo en 100 pages ≈ 250 Ko/page → ~48 pages/tranche), borné à 100 pages
+    // (limite de l'API). C'est le poids, pas le nombre de pages, qui faisait
+    // échouer l'analyse d'un gros dossier scanné.
+    const octetsParPage = Math.max(1, Math.ceil(buf.byteLength / nbPages));
+    const parBudget = Math.max(1, Math.floor(BUDGET_OCTETS / octetsParPage));
+    const pagesParTranche = Math.min(MAX_PAGES_TRANCHE, parBudget);
+
+    const tranches: { start: number; len: number }[] = [];
+    for (let s = 1; s <= nbPages; s += pagesParTranche) {
+      tranches.push({ start: s, len: Math.min(pagesParTranche, nbPages - s + 1) });
+    }
+
+    // Base64 de chaque tranche (le PDF entier si une seule tranche).
+    const b64Tranches = await Promise.all(
+      tranches.map(async (tr) => {
+        if (tranches.length === 1) return Buffer.from(buf).toString("base64");
+        const sub = await PDFDocument.create();
+        const idx: number[] = [];
+        for (let p = 0; p < tr.len; p++) idx.push(tr.start - 1 + p);
+        const pages = await sub.copyPages(source, idx);
+        for (const pg of pages) sub.addPage(pg);
+        return Buffer.from(await sub.save()).toString("base64");
+      }),
+    );
+
+    // Analyse des tranches EN PARALLÈLE. Une tranche trop lourde (garde-fou) ou
+    // non analysée devient une pièce « Autre » sur ses propres pages : on ne
+    // perd aucune page et on n'écrase pas les tranches voisines bien découpées.
+    const analyses = await Promise.all(
+      tranches.map((tr, i) => {
+        if (b64Tranches[i].length > MAX_B64_OCTETS) return Promise.resolve(null);
+        return classifierPages(b64Tranches[i], tr.len).catch(() => null);
+      }),
+    );
+
+    const allSegs: Segment[] = [];
+    tranches.forEach((tr, i) => {
+      const decal = tr.start - 1; // page locale → globale
+      const trFin = tr.start + tr.len - 1;
+      const segTranche = analyses[i];
+      if (!segTranche || segTranche.length === 0) {
+        allSegs.push({ debut: tr.start, fin: trFin, categorie: "Autre", titre: `Dossier (p.${tr.start}-${trFin})` });
+        return;
+      }
+      for (const sgm of segTranche) {
+        allSegs.push({ ...sgm, debut: sgm.debut + decal, fin: sgm.fin + decal });
+      }
+    });
+
+    let segs = allSegs;
+    if (segs.length === 0) {
       segs = [{ debut: 1, fin: nbPages, categorie: "Autre", titre: "Dossier complet" }];
     }
-    const segments = reparer(segs, nbPages);
+    const seamEnds = new Set(tranches.slice(0, -1).map((tr) => tr.start + tr.len - 1));
+    const segments = fusionnerAuxJointures(reparer(segs, nbPages), seamEnds);
 
     // Découpe : un sous-PDF par segment.
     const items: { nom: string; categorie: string; bytes: Uint8Array }[] = [];
