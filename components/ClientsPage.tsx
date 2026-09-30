@@ -338,6 +338,7 @@ export default function ClientsPage({ onRetour, onOuvrirEstimation }: { onRetour
   const [info, setInfo] = useState<string | null>(null);
   const [etatCompression, setEtatCompression] = useState<string | null>(null);
   const [rapportOuvert, setRapportOuvert] = useState(false);
+  const [dragActif, setDragActif] = useState(false);
   const [edit, setEdit] = useState<{ nom: string; prenom: string; tel: string; email: string; bien: string; nego: string } | null>(null);
 
   const recharger = () => listClients().then(setDossiers).catch(() => setDossiers([]));
@@ -420,6 +421,32 @@ export default function ClientsPage({ onRetour, onOuvrirEstimation }: { onRetour
       setErreur(err instanceof Error ? err.message : "Téléversement impossible");
     } finally {
       setBusy(false);
+    }
+  };
+
+  // Glisser-déposer : on réutilise exactement la même logique que le bouton
+  // « Ajouter des documents » (compression + upload direct pour les gros PDF).
+  const onDragOver = (e: React.DragEvent) => {
+    if (busy) return;
+    // Il faut appeler preventDefault sur dragover pour autoriser le drop.
+    if (Array.from(e.dataTransfer.types).includes("Files")) {
+      e.preventDefault();
+      if (!dragActif) setDragActif(true);
+    }
+  };
+  const onDragLeave = (e: React.DragEvent) => {
+    // On ne réinitialise que si le curseur quitte réellement la zone
+    // (et non un enfant), sinon l'état clignote.
+    if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setDragActif(false);
+  };
+  const onDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setDragActif(false);
+    if (busy) return;
+    const files = e.dataTransfer.files;
+    if (files && files.length > 0) {
+      setInfo(null);
+      void televerser(files);
     }
   };
 
@@ -542,7 +569,13 @@ export default function ClientsPage({ onRetour, onOuvrirEstimation }: { onRetour
           );
         })()}
 
-        <div className="mb-4 rounded-2xl border border-slate-200 bg-white p-4">
+        <div
+          className={`mb-4 rounded-2xl border p-4 transition ${dragActif ? "border-2 border-dashed border-copper bg-copper-soft/40 ring-2 ring-copper/20" : "border-slate-200 bg-white"}`}
+          onDragOver={onDragOver}
+          onDragEnter={onDragOver}
+          onDragLeave={onDragLeave}
+          onDrop={onDrop}
+        >
           <div className="flex flex-wrap items-end gap-3">
             <label className="block">
               <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">Catégorie des pièces ajoutées</span>
@@ -556,7 +589,11 @@ export default function ClientsPage({ onRetour, onOuvrirEstimation }: { onRetour
               {etatCompression ?? (busy ? "Envoi en cours…" : "+ Ajouter des documents (PDF ou photos)")}
               <input type="file" accept="application/pdf,image/*" multiple className="hidden" onChange={(e) => { setInfo(null); void televerser(e.target.files); e.target.value = ""; }} />
             </label>
-            <p className="text-xs text-slate-400">PDF et photos acceptés · <strong>compression automatique puissante</strong> avant enregistrement (scans et photos ré-encodés en PDF léger) · stockage partagé de l&apos;équipe, accès protégé par le mot de passe.</p>
+            <p className="text-xs text-slate-400">
+              {dragActif
+                ? <span className="font-bold text-copper">Relâchez pour déposer les fichiers dans « {categorie} »</span>
+                : <>Cliquez ou <strong>glissez-déposez</strong> vos fichiers ici · PDF et photos acceptés · <strong>compression automatique puissante</strong> avant enregistrement · stockage partagé de l&apos;équipe, accès protégé par le mot de passe.</>}
+            </p>
           </div>
           {info && <p className="mt-3 rounded-lg border border-emerald-200 bg-emerald-50 p-2 text-sm text-emerald-700">✓ {info}</p>}
           {erreur && <p className="mt-3 rounded-lg border border-red-200 bg-red-50 p-2 text-sm text-red-700">{erreur}</p>}
