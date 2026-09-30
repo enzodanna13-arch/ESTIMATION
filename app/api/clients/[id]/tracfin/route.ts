@@ -23,26 +23,45 @@ function texte(v: unknown): string {
   return typeof v === "string" ? v.trim() : "";
 }
 
-async function extraireKyc(docs: { b64: string }[]): Promise<Partial<DonneesTracfin> | null> {
+function personneDe(o: Record<string, unknown>): Partial<DonneesTracfin> {
+  return {
+    nomPrenoms: texte(o.nomPrenoms),
+    dateNaissance: texte(o.dateNaissance),
+    lieuNaissance: texte(o.lieuNaissance),
+    nationalite: texte(o.nationalite),
+    situationFamiliale: texte(o.situationFamiliale),
+    profession: texte(o.profession),
+    adresse: texte(o.adresse),
+    telephone: texte(o.telephone),
+    email: texte(o.email),
+  };
+}
+
+// Extrait la liste des VENDEURS (un couple ou une indivision = plusieurs
+// personnes). Renvoie un tableau, un objet par personne physique identifiée.
+async function extraireKyc(docs: { b64: string }[]): Promise<Partial<DonneesTracfin>[] | null> {
   if (!process.env.ANTHROPIC_API_KEY || docs.length === 0) return null;
   const client = new Anthropic();
   const consigne = [
-    "Ces documents sont la pièce d'identité et/ou le mandat d'un CLIENT VENDEUR (personne physique).",
-    "Extrais les informations d'identité du vendeur pour une fiche KYC / Tracfin.",
-    "Renvoie EXCLUSIVEMENT un JSON avec ces clés (chaîne vide si l'info est absente) :",
-    "{",
-    '  "nomPrenoms": "NOM en majuscules puis Prénom(s)",',
-    '  "dateNaissance": "JJ/MM/AAAA",',
-    '  "lieuNaissance": "ville (pays si étranger)",',
-    '  "nationalite": "française, etc.",',
-    '  "situationFamiliale": "célibataire / marié(e) / pacsé(e) / divorcé(e) / veuf(ve) si mentionné",',
-    '  "profession": "profession si mentionnée",',
-    '  "adresse": "adresse complète du domicile",',
-    '  "telephone": "numéro si mentionné",',
-    '  "email": "email si mentionné"',
-    "}",
-    "N'INVENTE RIEN : si une information ne figure pas clairement dans les documents, laisse la chaîne vide.",
-    "La pièce d'identité prime pour l'état civil (nom, naissance, nationalité) ; le mandat peut compléter adresse, profession, situation familiale, téléphone, email.",
+    "Ces documents sont la/les pièce(s) d'identité et/ou le mandat d'un dossier de vente immobilière.",
+    "Il peut y avoir PLUSIEURS vendeurs (couple, indivision, co-propriétaires). Identifie CHAQUE personne physique vendeuse.",
+    "Renvoie EXCLUSIVEMENT un JSON : un tableau « vendeurs » avec UN objet par personne (chaîne vide si l'info est absente) :",
+    '{ "vendeurs": [',
+    "  {",
+    '    "nomPrenoms": "NOM en majuscules puis Prénom(s)",',
+    '    "dateNaissance": "JJ/MM/AAAA",',
+    '    "lieuNaissance": "ville (pays si étranger)",',
+    '    "nationalite": "française, etc.",',
+    '    "situationFamiliale": "célibataire / marié(e) / pacsé(e) / divorcé(e) / veuf(ve) si mentionné",',
+    '    "profession": "profession si mentionnée",',
+    '    "adresse": "adresse complète du domicile",',
+    '    "telephone": "numéro si mentionné",',
+    '    "email": "email si mentionné"',
+    "  }",
+    "] }",
+    "UNE pièce d'identité = UNE personne : s'il y a deux cartes d'identité, renvoie DEUX vendeurs.",
+    "N'INVENTE RIEN : si une information ne figure pas clairement, laisse la chaîne vide.",
+    "La pièce d'identité prime pour l'état civil ; le mandat peut compléter adresse, profession, situation familiale, téléphone, email.",
   ].join("\n");
 
   const content: Anthropic.MessageParam["content"] = [
@@ -55,7 +74,7 @@ async function extraireKyc(docs: { b64: string }[]): Promise<Partial<DonneesTrac
     try {
       msg = await client.messages.create({
         model: process.env.EXTRACT_MODEL ?? "claude-sonnet-5",
-        max_tokens: 1024,
+        max_tokens: 2048,
         system: "Tu es un assistant d'agence immobilière. Tu extrais des données d'identité et réponds uniquement par du JSON conforme, sans commentaire.",
         messages: [{ role: "user", content }],
       });
@@ -72,18 +91,10 @@ async function extraireKyc(docs: { b64: string }[]): Promise<Partial<DonneesTrac
   const s = txt.indexOf("{"), e = txt.lastIndexOf("}");
   if (s < 0 || e <= s) return null;
   try {
-    const o = JSON.parse(txt.slice(s, e + 1)) as Record<string, unknown>;
-    return {
-      nomPrenoms: texte(o.nomPrenoms),
-      dateNaissance: texte(o.dateNaissance),
-      lieuNaissance: texte(o.lieuNaissance),
-      nationalite: texte(o.nationalite),
-      situationFamiliale: texte(o.situationFamiliale),
-      profession: texte(o.profession),
-      adresse: texte(o.adresse),
-      telephone: texte(o.telephone),
-      email: texte(o.email),
-    };
+    const o = JSON.parse(txt.slice(s, e + 1)) as { vendeurs?: unknown };
+    const arr = Array.isArray(o.vendeurs) ? (o.vendeurs as Record<string, unknown>[]) : [];
+    const personnes = arr.map(personneDe).filter((p) => p.nomPrenoms || p.dateNaissance);
+    return personnes;
   } catch {
     return null;
   }
@@ -121,37 +132,51 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     }
 
     const extrait = await extraireKyc(docs).catch(() => null);
+    const analyseIndisponible = extrait === null;
 
-    // Fusion : IA d'abord, puis repli sur la fiche du dossier pour tel/email et
-    // le nom. Références = nom du dossier (n° de mandat).
-    const donnees: DonneesTracfin = {
-      dateFiche: dateDuJour(),
-      references: texte(dossier.nom),
-      nomPrenoms: extrait?.nomPrenoms || [dossier.prenom, dossier.nom].filter(Boolean).join(" "),
-      dateNaissance: extrait?.dateNaissance,
-      lieuNaissance: extrait?.lieuNaissance,
-      nationalite: extrait?.nationalite,
-      situationFamiliale: extrait?.situationFamiliale,
-      profession: extrait?.profession,
-      adresse: extrait?.adresse || texte(dossier.adresseActuelle),
-      telephone: extrait?.telephone || texte(dossier.tel),
-      email: extrait?.email || texte(dossier.email),
-    };
+    // Un vendeur par pièce d'identité : si l'IA en renvoie plusieurs, on génère
+    // une fiche par personne. Repli : au moins une fiche depuis la fiche client.
+    let personnes: Partial<DonneesTracfin>[] = extrait ?? [];
+    if (personnes.length === 0) {
+      personnes = [{ nomPrenoms: [dossier.prenom, dossier.nom].filter(Boolean).join(" ") }];
+    }
+    const partageContact = personnes.length === 1; // couple : le tel/email du dossier n'appartient qu'à une personne
 
-    const bytes = await remplirFicheTracfin(donnees);
-    const res = await addClientPdfsServer(id, [
-      { nom: `Fiche Tracfin (KYC) — ${dossier.nom}.pdf`, categorie: "Tracfin", bytes },
-    ]);
+    const items: { nom: string; categorie: string; bytes: Uint8Array }[] = [];
+    let champsVidesTotal = 0;
+    let i = 0;
+    for (const p of personnes.slice(0, 6)) {
+      i++;
+      const donnees: DonneesTracfin = {
+        dateFiche: dateDuJour(),
+        references: texte(dossier.nom),
+        nomPrenoms: texte(p.nomPrenoms),
+        dateNaissance: texte(p.dateNaissance),
+        lieuNaissance: texte(p.lieuNaissance),
+        nationalite: texte(p.nationalite),
+        situationFamiliale: texte(p.situationFamiliale),
+        profession: texte(p.profession),
+        adresse: texte(p.adresse) || texte(dossier.adresseActuelle),
+        telephone: texte(p.telephone) || (partageContact ? texte(dossier.tel) : ""),
+        email: texte(p.email) || (partageContact ? texte(dossier.email) : ""),
+      };
+      champsVidesTotal += (["nomPrenoms", "dateNaissance", "lieuNaissance", "nationalite", "adresse"] as const)
+        .filter((k) => !texte(donnees[k])).length;
+      const bytes = await remplirFicheTracfin(donnees);
+      const nomLisible = (donnees.nomPrenoms || `vendeur ${i}`).replace(/[\\/:*?"<>|\r\n]+/g, " ").trim().slice(0, 80);
+      const suffixe = personnes.length > 1 ? ` — ${nomLisible}` : "";
+      items.push({ nom: `Fiche Tracfin (KYC)${suffixe} — ${dossier.nom}.pdf`, categorie: "Tracfin", bytes });
+    }
+
+    const res = await addClientPdfsServer(id, items);
     if (!res) return Response.json({ error: "Dossier introuvable" }, { status: 404 });
-
-    // Champs d'identité restés vides (à compléter à la main).
-    const champsVides = (["nomPrenoms", "dateNaissance", "lieuNaissance", "nationalite", "adresse"] as const)
-      .filter((k) => !texte(donnees[k]));
 
     return Response.json({
       dossier: res.dossier,
-      champsVides,
-      analyseIndisponible: !extrait,
+      fiches: res.ajoutees,
+      vendeurs: personnes.length,
+      champsVides: champsVidesTotal,
+      analyseIndisponible,
     });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Génération de la fiche Tracfin impossible";

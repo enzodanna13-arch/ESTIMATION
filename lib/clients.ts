@@ -186,7 +186,7 @@ export async function deleteClientFile(id: string, fileId: string): Promise<Clie
  *  dossier, remplit le modèle et l'enregistre comme pièce « Tracfin ». */
 export async function genererTracfin(
   id: string,
-): Promise<{ dossier: ClientDossier; champsVides: string[]; analyseIndisponible: boolean }> {
+): Promise<{ dossier: ClientDossier; fiches: number; vendeurs: number; champsVides: number; analyseIndisponible: boolean }> {
   const res = await fetch(`/api/clients/${encodeURIComponent(id)}/tracfin`, {
     method: "POST",
     headers: jsonHeaders(),
@@ -195,7 +195,7 @@ export async function genererTracfin(
     const body = (await res.json().catch(() => null)) as { error?: string } | null;
     throw new Error(body?.error ?? "Génération de la fiche Tracfin impossible");
   }
-  return (await res.json()) as { dossier: ClientDossier; champsVides: string[]; analyseIndisponible: boolean };
+  return (await res.json()) as { dossier: ClientDossier; fiches: number; vendeurs: number; champsVides: number; analyseIndisponible: boolean };
 }
 
 export async function renommerClientFile(

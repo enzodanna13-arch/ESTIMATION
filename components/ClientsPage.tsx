@@ -513,9 +513,9 @@ export default function ClientsPage({ onRetour, onOuvrirEstimation }: { onRetour
     try {
       const res = await genererTracfin(ouvert.id);
       if (res.dossier) setOuvert(res.dossier);
-      const parts = ["Fiche Tracfin générée et ajoutée au dossier"];
-      if (res.analyseIndisponible) parts.push("⚠️ infos non extraites (crédit IA ?) — fiche à compléter à la main");
-      else if (res.champsVides.length > 0) parts.push(`à vérifier : ${res.champsVides.length} champ(s) non trouvé(s) dans les documents`);
+      const parts = [`${res.fiches} fiche${res.fiches > 1 ? "s" : ""} Tracfin générée${res.fiches > 1 ? "s" : ""}${res.vendeurs > 1 ? ` (1 par vendeur, ${res.vendeurs} vendeurs)` : ""} et ajoutée${res.fiches > 1 ? "s" : ""} au dossier`];
+      if (res.analyseIndisponible) parts.push("⚠️ infos non extraites (crédit IA ?) — à compléter à la main");
+      else if (res.champsVides > 0) parts.push(`à vérifier : ${res.champsVides} champ(s) non trouvé(s) dans les documents`);
       setInfo(parts.join(" · "));
       void recharger();
     } catch (err) {
