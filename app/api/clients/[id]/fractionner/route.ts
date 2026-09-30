@@ -251,27 +251,40 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     );
 
     // Analyse des tranches EN PARALLÈLE (chacune ≤ 100 pages) : bien plus rapide
-    // qu'en séquentiel, et on reste dans la durée d'exécution.
+    // qu'en séquentiel, et on reste dans la durée d'exécution. On CAPTURE la
+    // raison exacte d'un échec (au lieu de l'avaler) pour pouvoir l'afficher.
     const analyses = await Promise.all(
-      tranches.map((tr, i) => classifierPages(b64Tranches[i], tr.len).catch(() => null)),
+      tranches.map(async (tr, i): Promise<{ ok: true; data: { segments: Segment[]; blanches: number[] } } | { ok: false; raison: string }> => {
+        try {
+          const data = await classifierPages(b64Tranches[i], tr.len);
+          if (!data) return { ok: false, raison: "réponse IA vide ou illisible" };
+          if (data.segments.length === 0) return { ok: false, raison: "aucun document détecté" };
+          return { ok: true, data };
+        } catch (e) {
+          return { ok: false, raison: e instanceof Error ? e.message : "erreur inconnue" };
+        }
+      }),
     );
 
     const allSegs: Segment[] = [];
     const blanches = new Set<number>(); // pages 1-indexées globales à retirer
+    const avertissements: string[] = [];
     tranches.forEach((tr, i) => {
       const analyse = analyses[i];
       const decal = tr.start - 1; // page locale → globale
       const trFin = tr.start + tr.len - 1;
-      if (!analyse || analyse.segments.length === 0) {
+      if (!analyse.ok) {
         // Tranche non analysée : repli LOCAL (une pièce « Autre » sur ses pages)
         // — on ne perd aucune page et on n'écrase pas les autres tranches.
+        const etiquette = tranches.length > 1 ? `Pages ${tr.start}–${trFin} : ` : "";
+        avertissements.push(`${etiquette}analyse IA impossible (${analyse.raison}).`);
         allSegs.push({ debut: tr.start, fin: trFin, categorie: "Autre", titre: `Dossier (p.${tr.start}-${trFin})` });
         return;
       }
-      for (const sgm of analyse.segments) {
+      for (const sgm of analyse.data.segments) {
         allSegs.push({ ...sgm, debut: sgm.debut + decal, fin: sgm.fin + decal });
       }
-      for (const b of analyse.blanches) blanches.add(b + decal);
+      for (const b of analyse.data.blanches) blanches.add(b + decal);
     });
 
     let segs = allSegs;
@@ -308,6 +321,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       dossier: res.dossier,
       ajoutees: res.ajoutees,
       blanchesRetirees,
+      avertissements,
       segments: segments.map((s) => ({ categorie: s.categorie, titre: s.titre, debut: s.debut, fin: s.fin })),
     });
   } catch (err) {

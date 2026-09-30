@@ -346,6 +346,9 @@ export default function ClientsPage({ onRetour, onOuvrirEstimation }: { onRetour
   // Fractionnement IA d'un PDF combiné.
   const [fractionnement, setFractionnement] = useState<string | null>(null);
   const [resultatFraction, setResultatFraction] = useState<{ categorie: string; titre: string }[] | null>(null);
+  // Avertissements renvoyés par le fractionnement (ex. tranche non analysée) —
+  // affichés pour comprendre pourquoi un découpage a échoué.
+  const [avertFraction, setAvertFraction] = useState<string[] | null>(null);
   const [edit, setEdit] = useState<{ nom: string; prenom: string; tel: string; email: string; bien: string; nego: string } | null>(null);
   // Pièce en cours de renommage : fileId + nouveau nom + nouvelle catégorie.
   const [pieceEdit, setPieceEdit] = useState<{ fileId: string; nom: string; categorie: string } | null>(null);
@@ -356,7 +359,7 @@ export default function ClientsPage({ onRetour, onOuvrirEstimation }: { onRetour
   }, []);
   // Retour à la liste : on ferme le dossier et on vide la file d'attente
   // (les fichiers en attente appartiennent au dossier qu'on quitte).
-  const fermerDossier = () => { setEnAttente([]); setResultatFraction(null); setFractionnement(null); setOuvert(null); };
+  const fermerDossier = () => { setEnAttente([]); setResultatFraction(null); setAvertFraction(null); setFractionnement(null); setOuvert(null); };
 
   const resultats = useMemo(() => {
     let base = filtrer(dossiers ?? [], q);
@@ -489,12 +492,14 @@ export default function ClientsPage({ onRetour, onOuvrirEstimation }: { onRetour
     setErreur(null);
     setInfo(null);
     setResultatFraction(null);
+    setAvertFraction(null);
     try {
       setFractionnement("Envoi du PDF puis analyse page par page par l'IA (jusqu'à ~2 min pour un gros dossier)…");
       const res = await fractionnerDossierPdf(ouvert.id, f);
       setFractionnement(null);
       if (res.dossier) setOuvert(res.dossier);
       setResultatFraction(res.segments.map((s) => ({ categorie: s.categorie, titre: s.titre })));
+      setAvertFraction(res.avertissements && res.avertissements.length > 0 ? res.avertissements : null);
       const parts = [`${res.ajoutees} document${res.ajoutees > 1 ? "s" : ""} détecté${res.ajoutees > 1 ? "s" : ""} et classé${res.ajoutees > 1 ? "s" : ""} automatiquement`];
       if (res.blanchesRetirees > 0) parts.push(`${res.blanchesRetirees} page${res.blanchesRetirees > 1 ? "s" : ""} blanche${res.blanchesRetirees > 1 ? "s" : ""} supprimée${res.blanchesRetirees > 1 ? "s" : ""}`);
       setInfo(parts.join(" · "));
@@ -734,6 +739,17 @@ export default function ClientsPage({ onRetour, onOuvrirEstimation }: { onRetour
               <span className="inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-violet-300 border-t-violet-600" />
               {fractionnement}
             </p>
+          )}
+          {avertFraction && avertFraction.length > 0 && (
+            <div className="mt-3 rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-800">
+              <div className="mb-1 font-bold">⚠ L&apos;IA n&apos;a pas pu découper une partie du dossier</div>
+              <ul className="list-disc space-y-0.5 pl-5">
+                {avertFraction.map((a, i) => (
+                  <li key={i}>{a}</li>
+                ))}
+              </ul>
+              <p className="mt-1.5 text-xs text-amber-700">Les pages concernées ont été regroupées en une pièce « Autre » (rien n&apos;est perdu). Indique-moi ce message pour que je corrige la cause.</p>
+            </div>
           )}
           {resultatFraction && resultatFraction.length > 0 && (
             <div className="mt-3 rounded-lg border border-violet-200 bg-white p-3">
