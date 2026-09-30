@@ -95,7 +95,7 @@ SCHÉMA : ${JSON.stringify(SCHEMA)}`,
     });
 
     const stream = client.messages.stream({
-      model: process.env.ESTIMATION_MODEL ?? "claude-opus-4-8",
+      model: process.env.EXTRACT_MODEL ?? "claude-sonnet-5",
       max_tokens: 2500,
       system:
         "Tu extrais des informations de pièces administratives françaises (pièce d'identité, titre de propriété, mandat) pour pré-remplir un mandat de vente immobilière. Tu réponds exclusivement par un objet JSON valide conforme au schéma fourni. Tu n'inventes jamais une information absente des pièces.",

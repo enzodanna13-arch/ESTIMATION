@@ -85,7 +85,7 @@ async function extraireAnnonce(input: { texte?: string; pdf?: string }): Promise
       ? [{ type: "document", source: { type: "base64", media_type: "application/pdf", data: input.pdf } }, { type: "text", text: consigne }]
       : [{ type: "text", text: `${consigne}\n\nANNONCE :\n${(input.texte ?? "").slice(0, 8000)}` }];
     const msg = await client.messages.create({
-      model: process.env.EXTRACT_MODEL ?? "claude-opus-4-8",
+      model: process.env.EXTRACT_MODEL ?? "claude-sonnet-5",
       max_tokens: 1024,
       system: [
         "Tu extrais les caractéristiques d'un bien depuis une annonce immobilière française (texte ou fiche PDF).",

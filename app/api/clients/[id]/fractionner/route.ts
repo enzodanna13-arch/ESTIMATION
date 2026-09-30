@@ -87,7 +87,7 @@ async function classifierPages(pdfB64: string, nbPages: number): Promise<{ segme
   for (let essai = 0; essai < 3; essai++) {
     try {
       msg = await client.messages.create({
-        model: process.env.SPLIT_MODEL ?? process.env.EXTRACT_MODEL ?? "claude-opus-4-8",
+        model: process.env.SPLIT_MODEL ?? process.env.EXTRACT_MODEL ?? "claude-sonnet-5",
         max_tokens: 8192,
         system: "Tu es un assistant d'agence immobilière qui trie les pièces d'un dossier de vente. Tu réponds uniquement par du JSON conforme, sans commentaire.",
         messages: [

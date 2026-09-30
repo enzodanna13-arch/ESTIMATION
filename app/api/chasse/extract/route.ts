@@ -98,7 +98,7 @@ async function structurerAvecIA(contenu: string, source: string): Promise<Record
   if (!process.env.ANTHROPIC_API_KEY) return null;
   const client = new Anthropic();
   const stream = client.messages.stream({
-    model: process.env.ESTIMATION_MODEL ?? "claude-opus-4-8",
+    model: process.env.EXTRACT_MODEL ?? "claude-sonnet-5",
     max_tokens: 1500,
     system:
       "Tu extrais les caractéristiques d'un bien à partir du contenu d'une annonce immobilière française. Tu réponds EXCLUSIVEMENT par un objet JSON valide conforme au schéma. Tu n'inventes jamais : un champ absent reste vide (\"\") ou 0.",
