@@ -24,6 +24,13 @@ interface Segment {
 
 const CATS = CATEGORIES_PIECES as readonly string[];
 
+// L'API d'analyse PDF est limitée à 100 pages par requête : au-delà, on
+// découpe le dossier en tranches de 100 pages, on analyse chacune, puis on
+// recolle (un document coupé par une jointure est réassemblé). MAX_PAGES borne
+// le nombre total de tranches pour rester dans la durée d'exécution.
+const CHUNK = 100;
+const MAX_PAGES = 300;
+
 function normaliserCategorie(c: unknown): string {
   const v = typeof c === "string" ? c.trim() : "";
   if (CATS.includes(v)) return v;
@@ -135,6 +142,25 @@ function reparer(segs: Segment[], nbPages: number): Segment[] {
   return out;
 }
 
+// Recolle les segments coupés par une jointure de tranche : deux segments
+// adjacents de MÊME catégorie dont la césure tombe pile sur une frontière de
+// tranche (fin === multiple de CHUNK) sont fusionnés — un même document à
+// cheval sur deux tranches n'est pas scindé en deux pièces.
+function fusionnerAuxJointures(segs: Segment[], seamEnds: Set<number>): Segment[] {
+  if (segs.length <= 1) return segs;
+  const out: Segment[] = [{ ...segs[0] }];
+  for (let i = 1; i < segs.length; i++) {
+    const prev = out[out.length - 1];
+    const cur = segs[i];
+    if (seamEnds.has(prev.fin) && cur.debut === prev.fin + 1 && cur.categorie === prev.categorie) {
+      prev.fin = cur.fin; // on prolonge, on garde le titre du premier
+    } else {
+      out.push({ ...cur });
+    }
+  }
+  return out;
+}
+
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
   if (!(await verifierAccesEquipe(request))) {
     return Response.json({ error: "Accès réservé — mot de passe requis" }, { status: 401 });
@@ -162,24 +188,49 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       await deleteClientImport(id, body.fileId);
       return Response.json({ error: "PDF vide." }, { status: 400 });
     }
-    if (nbPages > 100) {
+    if (nbPages > MAX_PAGES) {
       await deleteClientImport(id, body.fileId);
       return Response.json(
-        { error: `Le PDF fait ${nbPages} pages : l'analyse est limitée à 100 pages. Scinde-le en deux avant l'import.` },
+        { error: `Le PDF fait ${nbPages} pages : l'analyse est limitée à ${MAX_PAGES} pages. Scinde-le avant l'import.` },
         { status: 413 },
       );
     }
 
-    const pdfB64 = Buffer.from(buf).toString("base64");
-    const analyse = await classifierPages(pdfB64, nbPages).catch(() => null);
-    let segs = analyse?.segments ?? [];
+    // Tranches de CHUNK pages (une seule si ≤ 100). On analyse chaque tranche
+    // séparément puis on recolle en numérotation globale.
+    const tranches: { start: number; len: number }[] = [];
+    for (let s = 1; s <= nbPages; s += CHUNK) tranches.push({ start: s, len: Math.min(CHUNK, nbPages - s + 1) });
+
+    const allSegs: Segment[] = [];
+    const blanches = new Set<number>(); // pages 1-indexées globales à retirer
+    for (const tr of tranches) {
+      let b64: string;
+      if (tranches.length === 1) {
+        b64 = Buffer.from(buf).toString("base64");
+      } else {
+        const sub = await PDFDocument.create();
+        const idx: number[] = [];
+        for (let p = 0; p < tr.len; p++) idx.push(tr.start - 1 + p);
+        const pages = await sub.copyPages(source, idx);
+        for (const pg of pages) sub.addPage(pg);
+        b64 = Buffer.from(await sub.save()).toString("base64");
+      }
+      const analyse = await classifierPages(b64, tr.len).catch(() => null);
+      const decal = tr.start - 1; // page locale → globale
+      for (const sgm of analyse?.segments ?? []) {
+        allSegs.push({ ...sgm, debut: sgm.debut + decal, fin: sgm.fin + decal });
+      }
+      for (const b of analyse?.blanches ?? []) blanches.add(b + decal);
+    }
+
+    let segs = allSegs;
     if (segs.length === 0) {
       // L'IA n'a rien renvoyé d'exploitable : on enregistre le dossier entier
       // comme une seule pièce « Autre » plutôt que d'échouer.
       segs = [{ debut: 1, fin: nbPages, categorie: "Autre", titre: "Dossier complet" }];
     }
-    const segments = reparer(segs, nbPages);
-    const blanches = new Set(analyse?.blanches ?? []); // pages 1-indexées à retirer
+    const seamEnds = new Set(tranches.slice(0, -1).map((tr) => tr.start + tr.len - 1));
+    const segments = fusionnerAuxJointures(reparer(segs, nbPages), seamEnds);
 
     // Découpe : un sous-PDF par segment, en RETIRANT les pages blanches. Un
     // segment intégralement blanc est ignoré.
