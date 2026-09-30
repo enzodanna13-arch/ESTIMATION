@@ -16,6 +16,7 @@ import {
   televerserBlobDirecte,
   updateClient,
   type ClientDossier,
+  type DonneesTracfin,
   type PieceClient,
 } from "@/lib/clients";
 import { PIECES_ATTENDUES, estDossierVendeurComplet } from "@/lib/docTypes";
@@ -388,6 +389,10 @@ export default function ClientsPage({ onRetour, onOuvrirEstimation }: { onRetour
   // affichées pour comprendre pourquoi un découpage n'a pas abouti.
   const [avertFraction, setAvertFraction] = useState<string[] | null>(null);
   const [tracfinEnCours, setTracfinEnCours] = useState(false);
+  // Éditeur de fiche Tracfin : données par vendeur + fileIds des fiches déjà
+  // générées (pour les remplacer lors d'une mise à jour).
+  const [tracfinEdit, setTracfinEdit] = useState<DonneesTracfin[] | null>(null);
+  const [tracfinFileIds, setTracfinFileIds] = useState<string[]>([]);
   const [edit, setEdit] = useState<{ nom: string; prenom: string; tel: string; email: string; bien: string; nego: string } | null>(null);
   // Pièce en cours de renommage : fileId + nouveau nom + nouvelle catégorie.
   const [pieceEdit, setPieceEdit] = useState<{ fileId: string; nom: string; categorie: string } | null>(null);
@@ -398,7 +403,7 @@ export default function ClientsPage({ onRetour, onOuvrirEstimation }: { onRetour
   }, []);
   // Retour à la liste : on ferme le dossier et on vide la file d'attente
   // (les fichiers en attente appartiennent au dossier qu'on quitte).
-  const fermerDossier = () => { setEnAttente([]); setResultatFraction(null); setAvertFraction(null); setFractionnement(null); setOuvert(null); };
+  const fermerDossier = () => { setEnAttente([]); setResultatFraction(null); setAvertFraction(null); setFractionnement(null); setTracfinEdit(null); setTracfinFileIds([]); setOuvert(null); };
 
   const resultats = useMemo(() => {
     let base = filtrer(dossiers ?? [], q);
@@ -513,9 +518,11 @@ export default function ClientsPage({ onRetour, onOuvrirEstimation }: { onRetour
     try {
       const res = await genererTracfin(ouvert.id);
       if (res.dossier) setOuvert(res.dossier);
+      setTracfinEdit(res.donnees);
+      setTracfinFileIds(res.fileIds);
       const parts = [`${res.fiches} fiche${res.fiches > 1 ? "s" : ""} Tracfin générée${res.fiches > 1 ? "s" : ""}${res.vendeurs > 1 ? ` (1 par vendeur, ${res.vendeurs} vendeurs)` : ""} et ajoutée${res.fiches > 1 ? "s" : ""} au dossier`];
-      if (res.analyseIndisponible) parts.push("⚠️ infos non extraites (crédit IA ?) — à compléter à la main");
-      else if (res.champsVides > 0) parts.push(`à vérifier : ${res.champsVides} champ(s) non trouvé(s) dans les documents`);
+      if (res.analyseIndisponible) parts.push("⚠️ infos non extraites (crédit IA ?) — à compléter à la main ci-dessous");
+      else if (res.champsVides > 0) parts.push(`à vérifier : ${res.champsVides} champ(s) non trouvé(s)`);
       setInfo(parts.join(" · "));
       void recharger();
     } catch (err) {
@@ -524,6 +531,33 @@ export default function ClientsPage({ onRetour, onOuvrirEstimation }: { onRetour
       setTracfinEnCours(false);
       setBusy(false);
     }
+  };
+
+  // Enregistre la/les fiche(s) Tracfin corrigée(s) à la main : remplace les
+  // fiches précédemment générées par des versions à jour.
+  const enregistrerTracfinManuel = async () => {
+    if (!ouvert || !tracfinEdit) return;
+    setBusy(true);
+    setErreur(null);
+    setInfo(null);
+    setTracfinEnCours(true);
+    try {
+      const res = await genererTracfin(ouvert.id, { fiches: tracfinEdit, remplacer: tracfinFileIds });
+      if (res.dossier) setOuvert(res.dossier);
+      setTracfinEdit(res.donnees);
+      setTracfinFileIds(res.fileIds);
+      setInfo(`${res.fiches} fiche${res.fiches > 1 ? "s" : ""} Tracfin mise${res.fiches > 1 ? "s" : ""} à jour`);
+      void recharger();
+    } catch (err) {
+      setErreur(err instanceof Error ? err.message : "Mise à jour de la fiche Tracfin impossible");
+    } finally {
+      setTracfinEnCours(false);
+      setBusy(false);
+    }
+  };
+
+  const majChampTracfin = (index: number, cle: keyof DonneesTracfin, valeur: string) => {
+    setTracfinEdit((prev) => (prev ? prev.map((d, i) => (i === index ? { ...d, [cle]: valeur } : d)) : prev));
   };
 
   // Glisser-déposer : on réutilise exactement la même logique que le bouton
@@ -720,6 +754,57 @@ export default function ClientsPage({ onRetour, onOuvrirEstimation }: { onRetour
                   L&apos;IA lit la <strong>pièce d&apos;identité</strong> et le <strong>mandat</strong> du dossier, remplit la fiche et l&apos;ajoute en pièce « Tracfin ». La partie <strong>notation des risques reste à compléter et signer par vous</strong>.
                 </p>
               </div>
+
+              {tracfinEdit && tracfinEdit.length > 0 && (
+                <div className="mt-3 rounded-xl border border-navy/20 bg-slate-50 p-3">
+                  <div className="mb-2 flex items-center justify-between gap-2">
+                    <div className="text-sm font-bold text-navy">✏️ Corriger la fiche{tracfinEdit.length > 1 ? "s" : ""} (facultatif)</div>
+                    <button onClick={() => setTracfinEdit(null)} className="text-xs font-semibold text-slate-400 hover:text-slate-600">Fermer</button>
+                  </div>
+                  <p className="mb-2 text-xs text-slate-500">Vérifie/complète les champs puis « Mettre à jour » : la ou les fiche(s) seront régénérée(s) avec ces valeurs (les précédentes sont remplacées).</p>
+                  <div className="space-y-3">
+                    {tracfinEdit.map((d, idx) => (
+                      <div key={idx} className="rounded-lg border border-slate-200 bg-white p-3">
+                        {tracfinEdit.length > 1 && <div className="mb-1.5 text-xs font-bold text-navy">Vendeur {idx + 1}</div>}
+                        <div className="grid gap-2 sm:grid-cols-2">
+                          {([
+                            ["nomPrenoms", "Nom et prénoms"],
+                            ["dateNaissance", "Date de naissance"],
+                            ["lieuNaissance", "Lieu de naissance"],
+                            ["nationalite", "Nationalité"],
+                            ["situationFamiliale", "Situation familiale"],
+                            ["profession", "Profession"],
+                            ["adresse", "Adresse du domicile"],
+                            ["telephone", "Téléphone"],
+                            ["email", "E-mail"],
+                            ["references", "Références dossier"],
+                            ["dateFiche", "Date de la fiche"],
+                          ] as [keyof DonneesTracfin, string][]).map(([cle, label]) => (
+                            <label key={cle} className="block">
+                              <span className="mb-0.5 block text-[11px] font-semibold uppercase tracking-wide text-slate-400">{label}</span>
+                              <input
+                                className={inputCls}
+                                value={d[cle] ?? ""}
+                                onChange={(e) => majChampTracfin(idx, cle, e.target.value)}
+                                placeholder={label}
+                              />
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="mt-3">
+                    <button
+                      onClick={() => void enregistrerTracfinManuel()}
+                      disabled={busy}
+                      className={`rounded-xl bg-navy px-4 py-2 text-sm font-bold text-white transition hover:brightness-110 ${busy ? "pointer-events-none opacity-50" : ""}`}
+                    >
+                      {tracfinEnCours ? "Mise à jour…" : "💾 Mettre à jour la fiche"}
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           );
         })()}

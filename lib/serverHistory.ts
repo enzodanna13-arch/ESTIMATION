@@ -179,6 +179,7 @@ export interface PieceClient {
   taille: number;
   categorie: string;
   createdAt: number;
+  url?: string; // URL du blob, mémorisée à l'écriture (lecture en cohérence forte)
 }
 
 export type TypeClient = "vendeur" | "acquereur" | "investisseur";
@@ -477,14 +478,15 @@ export async function deleteClientImport(id: string, importId: string): Promise<
 export async function addClientPdfsServer(
   id: string,
   items: { nom: string; categorie: string; bytes: Uint8Array }[],
-): Promise<{ dossier: ClientDossier; ajoutees: number } | null> {
+): Promise<{ dossier: ClientDossier; ajoutees: number; fileIds: string[] } | null> {
   const dossier = await getClientServer(id);
   if (!dossier) return null;
   let ajoutees = 0;
+  const fileIds: string[] = [];
   for (const it of items) {
     if (!it.bytes || it.bytes.length < 100) continue;
     const fileId = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-    await put(`${CLIENT_FILE_PREFIX}${dossier.id}/${fileId}.pdf`, Buffer.from(it.bytes), {
+    const res = await put(`${CLIENT_FILE_PREFIX}${dossier.id}/${fileId}.pdf`, Buffer.from(it.bytes), {
       access: "public",
       addRandomSuffix: false,
       contentType: "application/pdf",
@@ -495,23 +497,31 @@ export async function addClientPdfsServer(
       taille: it.bytes.length,
       categorie: it.categorie,
       createdAt: Date.now(),
+      url: res.url,
     });
+    fileIds.push(fileId);
     ajoutees++;
   }
-  if (ajoutees === 0) return { dossier, ajoutees: 0 };
+  if (ajoutees === 0) return { dossier, ajoutees: 0, fileIds };
   dossier.updatedAt = Date.now();
   await putClientMeta(dossier);
-  return { dossier, ajoutees };
+  return { dossier, ajoutees, fileIds };
 }
 
-export async function getClientFileServer(id: string, fileId: string): Promise<ArrayBuffer | null> {
-  const { blobs } = await list({
-    prefix: `${CLIENT_FILE_PREFIX}${safeId(id)}/${safeId(fileId)}.pdf`,
-    limit: 1,
-  });
-  if (blobs.length === 0) return null;
+export async function getClientFileServer(id: string, fileId: string, url?: string): Promise<ArrayBuffer | null> {
+  // URL connue (mémorisée à l'écriture) → lecture directe, cohérence forte
+  // (indispensable juste après création, `list` étant éventuellement cohérent).
+  let cible = url;
+  if (!cible) {
+    const { blobs } = await list({
+      prefix: `${CLIENT_FILE_PREFIX}${safeId(id)}/${safeId(fileId)}.pdf`,
+      limit: 1,
+    });
+    if (blobs.length === 0) return null;
+    cible = blobs[0].url;
+  }
   try {
-    const res = await fetch(blobs[0].url, { cache: "no-store" });
+    const res = await fetch(cible, { cache: "no-store" });
     return res.ok ? await res.arrayBuffer() : null;
   } catch {
     return null;

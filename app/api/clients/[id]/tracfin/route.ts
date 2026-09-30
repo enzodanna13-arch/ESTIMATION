@@ -1,6 +1,6 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { verifierAccesEquipe } from "@/lib/historyAuth";
-import { addClientPdfsServer, getClientFileServer, getClientServer } from "@/lib/serverHistory";
+import { addClientPdfsServer, deleteClientFileServer, getClientFileServer, getClientServer } from "@/lib/serverHistory";
 import { remplirFicheTracfin, type DonneesTracfin } from "@/lib/tracfin/remplir";
 
 export const dynamic = "force-dynamic";
@@ -100,33 +100,95 @@ async function extraireKyc(docs: { b64: string }[]): Promise<Partial<DonneesTrac
   }
 }
 
+// Construit les items PDF (une pièce par vendeur) à partir des données finales.
+async function fabriquerItems(nomDossier: string, personnes: DonneesTracfin[]) {
+  const items: { nom: string; categorie: string; bytes: Uint8Array }[] = [];
+  let i = 0;
+  for (const donnees of personnes.slice(0, 6)) {
+    i++;
+    const bytes = await remplirFicheTracfin(donnees);
+    const nomLisible = (donnees.nomPrenoms || `vendeur ${i}`).replace(/[\\/:*?"<>|\r\n]+/g, " ").trim().slice(0, 80);
+    const suffixe = personnes.length > 1 ? ` — ${nomLisible}` : "";
+    items.push({ nom: `Fiche Tracfin (KYC)${suffixe} — ${nomDossier}.pdf`, categorie: "Tracfin", bytes });
+  }
+  return items;
+}
+
+function compterChampsVides(personnes: DonneesTracfin[]): number {
+  return personnes.reduce(
+    (n, d) => n + (["nomPrenoms", "dateNaissance", "lieuNaissance", "nationalite", "adresse"] as const).filter((k) => !texte(d[k])).length,
+    0,
+  );
+}
+
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
   if (!(await verifierAccesEquipe(request))) {
     return Response.json({ error: "Accès réservé — mot de passe requis" }, { status: 401 });
-  }
-  if (!process.env.ANTHROPIC_API_KEY) {
-    return Response.json({ error: "Service d'analyse indisponible (clé IA absente)." }, { status: 503 });
   }
   const { id } = await params;
 
   const dossier = await getClientServer(id);
   if (!dossier) return Response.json({ error: "Dossier introuvable" }, { status: 404 });
 
-  // Sources : pièce d'identité en priorité, puis mandat / titre.
-  const sources = dossier.pieces
-    .filter((p) => CATS_SOURCES.includes(p.categorie))
-    .sort((a, b) => CATS_SOURCES.indexOf(a.categorie) - CATS_SOURCES.indexOf(b.categorie));
-  if (!sources.some((p) => p.categorie === "Pièce d'identité")) {
-    return Response.json(
-      { error: "Ajoute d'abord la pièce d'identité du vendeur au dossier (c'est la source principale de la fiche Tracfin)." },
-      { status: 400 },
-    );
+  // Corps facultatif : mode MANUEL si `fiches` fourni (données corrigées par
+  // l'agent). `remplacer` = fileIds des fiches précédentes à supprimer.
+  let body: { fiches?: DonneesTracfin[]; remplacer?: string[] } = {};
+  try {
+    body = (await request.json()) as typeof body;
+  } catch {
+    /* pas de corps = mode auto */
   }
+  const modeManuel = Array.isArray(body.fiches) && body.fiches.length > 0;
 
   try {
+    // ---- MODE MANUEL : on génère à partir des données saisies/corrigées ----
+    if (modeManuel) {
+      for (const fid of body.remplacer ?? []) {
+        await deleteClientFileServer(id, fid).catch(() => {});
+      }
+      const personnes: DonneesTracfin[] = body.fiches!.slice(0, 6).map((f) => ({
+        dateFiche: texte(f.dateFiche) || dateDuJour(),
+        references: texte(f.references) || texte(dossier.nom),
+        nomPrenoms: texte(f.nomPrenoms),
+        dateNaissance: texte(f.dateNaissance),
+        lieuNaissance: texte(f.lieuNaissance),
+        nationalite: texte(f.nationalite),
+        situationFamiliale: texte(f.situationFamiliale),
+        profession: texte(f.profession),
+        adresse: texte(f.adresse),
+        telephone: texte(f.telephone),
+        email: texte(f.email),
+      }));
+      const res = await addClientPdfsServer(id, await fabriquerItems(dossier.nom, personnes));
+      if (!res) return Response.json({ error: "Dossier introuvable" }, { status: 404 });
+      return Response.json({
+        dossier: res.dossier,
+        fiches: res.ajoutees,
+        vendeurs: personnes.length,
+        champsVides: compterChampsVides(personnes),
+        analyseIndisponible: false,
+        donnees: personnes,
+        fileIds: res.fileIds,
+      });
+    }
+
+    // ---- MODE AUTO : extraction IA depuis la pièce d'identité + le mandat ----
+    if (!process.env.ANTHROPIC_API_KEY) {
+      return Response.json({ error: "Service d'analyse indisponible (clé IA absente)." }, { status: 503 });
+    }
+    const sources = dossier.pieces
+      .filter((p) => CATS_SOURCES.includes(p.categorie))
+      .sort((a, b) => CATS_SOURCES.indexOf(a.categorie) - CATS_SOURCES.indexOf(b.categorie));
+    if (!sources.some((p) => p.categorie === "Pièce d'identité")) {
+      return Response.json(
+        { error: "Ajoute d'abord la pièce d'identité du vendeur au dossier (c'est la source principale de la fiche Tracfin)." },
+        { status: 400 },
+      );
+    }
+
     const docs: { b64: string }[] = [];
     for (const p of sources.slice(0, 4)) {
-      const buf = await getClientFileServer(id, p.fileId);
+      const buf = await getClientFileServer(id, p.fileId, p.url);
       if (!buf || buf.byteLength > MAX_DOC_OCTETS) continue;
       docs.push({ b64: Buffer.from(buf).toString("base64") });
     }
@@ -134,49 +196,35 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     const extrait = await extraireKyc(docs).catch(() => null);
     const analyseIndisponible = extrait === null;
 
-    // Un vendeur par pièce d'identité : si l'IA en renvoie plusieurs, on génère
-    // une fiche par personne. Repli : au moins une fiche depuis la fiche client.
-    let personnes: Partial<DonneesTracfin>[] = extrait ?? [];
-    if (personnes.length === 0) {
-      personnes = [{ nomPrenoms: [dossier.prenom, dossier.nom].filter(Boolean).join(" ") }];
-    }
-    const partageContact = personnes.length === 1; // couple : le tel/email du dossier n'appartient qu'à une personne
+    let brut: Partial<DonneesTracfin>[] = extrait ?? [];
+    if (brut.length === 0) brut = [{ nomPrenoms: [dossier.prenom, dossier.nom].filter(Boolean).join(" ") }];
+    const partageContact = brut.length === 1; // couple : tel/email du dossier non attribuable
 
-    const items: { nom: string; categorie: string; bytes: Uint8Array }[] = [];
-    let champsVidesTotal = 0;
-    let i = 0;
-    for (const p of personnes.slice(0, 6)) {
-      i++;
-      const donnees: DonneesTracfin = {
-        dateFiche: dateDuJour(),
-        references: texte(dossier.nom),
-        nomPrenoms: texte(p.nomPrenoms),
-        dateNaissance: texte(p.dateNaissance),
-        lieuNaissance: texte(p.lieuNaissance),
-        nationalite: texte(p.nationalite),
-        situationFamiliale: texte(p.situationFamiliale),
-        profession: texte(p.profession),
-        adresse: texte(p.adresse) || texte(dossier.adresseActuelle),
-        telephone: texte(p.telephone) || (partageContact ? texte(dossier.tel) : ""),
-        email: texte(p.email) || (partageContact ? texte(dossier.email) : ""),
-      };
-      champsVidesTotal += (["nomPrenoms", "dateNaissance", "lieuNaissance", "nationalite", "adresse"] as const)
-        .filter((k) => !texte(donnees[k])).length;
-      const bytes = await remplirFicheTracfin(donnees);
-      const nomLisible = (donnees.nomPrenoms || `vendeur ${i}`).replace(/[\\/:*?"<>|\r\n]+/g, " ").trim().slice(0, 80);
-      const suffixe = personnes.length > 1 ? ` — ${nomLisible}` : "";
-      items.push({ nom: `Fiche Tracfin (KYC)${suffixe} — ${dossier.nom}.pdf`, categorie: "Tracfin", bytes });
-    }
+    const personnes: DonneesTracfin[] = brut.slice(0, 6).map((p) => ({
+      dateFiche: dateDuJour(),
+      references: texte(dossier.nom),
+      nomPrenoms: texte(p.nomPrenoms),
+      dateNaissance: texte(p.dateNaissance),
+      lieuNaissance: texte(p.lieuNaissance),
+      nationalite: texte(p.nationalite),
+      situationFamiliale: texte(p.situationFamiliale),
+      profession: texte(p.profession),
+      adresse: texte(p.adresse) || texte(dossier.adresseActuelle),
+      telephone: texte(p.telephone) || (partageContact ? texte(dossier.tel) : ""),
+      email: texte(p.email) || (partageContact ? texte(dossier.email) : ""),
+    }));
 
-    const res = await addClientPdfsServer(id, items);
+    const res = await addClientPdfsServer(id, await fabriquerItems(dossier.nom, personnes));
     if (!res) return Response.json({ error: "Dossier introuvable" }, { status: 404 });
 
     return Response.json({
       dossier: res.dossier,
       fiches: res.ajoutees,
       vendeurs: personnes.length,
-      champsVides: champsVidesTotal,
+      champsVides: compterChampsVides(personnes),
       analyseIndisponible,
+      donnees: personnes,
+      fileIds: res.fileIds,
     });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Génération de la fiche Tracfin impossible";

@@ -19,9 +19,12 @@ export async function GET(
   }
   const { id, fileId } = await params;
   try {
-    const [octets, dossier] = await Promise.all([getClientFileServer(id, fileId), getClientServer(id)]);
-    if (!octets) return Response.json({ error: "Pièce introuvable" }, { status: 404 });
+    // On récupère d'abord la fiche pour connaître l'URL mémorisée du blob
+    // (lecture en cohérence forte, fiable juste après création).
+    const dossier = await getClientServer(id);
     const piece = dossier?.pieces.find((p) => p.fileId === fileId);
+    const octets = await getClientFileServer(id, fileId, piece?.url);
+    if (!octets) return Response.json({ error: "Pièce introuvable" }, { status: 404 });
     const nom = (piece?.nom ?? "piece.pdf").replace(/["\\\r\n]/g, "");
     return new Response(octets, {
       headers: {

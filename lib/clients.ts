@@ -182,20 +182,49 @@ export async function deleteClientFile(id: string, fileId: string): Promise<Clie
 }
 
 /** Renomme une pièce (et, si fournie, change sa catégorie). */
-/** Génère la fiche Tracfin (KYC) : l'IA lit la pièce d'identité et le mandat du
- *  dossier, remplit le modèle et l'enregistre comme pièce « Tracfin ». */
+/** Champs d'une fiche Tracfin (un objet par vendeur). */
+export interface DonneesTracfin {
+  dateFiche?: string;
+  references?: string;
+  nomPrenoms?: string;
+  dateNaissance?: string;
+  lieuNaissance?: string;
+  nationalite?: string;
+  situationFamiliale?: string;
+  profession?: string;
+  adresse?: string;
+  telephone?: string;
+  email?: string;
+}
+
+export interface ResultatTracfin {
+  dossier: ClientDossier;
+  fiches: number;
+  vendeurs: number;
+  champsVides: number;
+  analyseIndisponible: boolean;
+  donnees: DonneesTracfin[];
+  fileIds: string[];
+}
+
+/** Génère la fiche Tracfin (KYC).
+ *  - Sans argument : mode AUTO — l'IA lit la pièce d'identité et le mandat.
+ *  - Avec `manuel` : mode MANUEL — génère à partir des champs corrigés par
+ *    l'agent (une entrée = un vendeur) et remplace les fiches `remplacer`. */
 export async function genererTracfin(
   id: string,
-): Promise<{ dossier: ClientDossier; fiches: number; vendeurs: number; champsVides: number; analyseIndisponible: boolean }> {
+  manuel?: { fiches: DonneesTracfin[]; remplacer?: string[] },
+): Promise<ResultatTracfin> {
   const res = await fetch(`/api/clients/${encodeURIComponent(id)}/tracfin`, {
     method: "POST",
     headers: jsonHeaders(),
+    body: manuel ? JSON.stringify(manuel) : undefined,
   });
   if (!res.ok) {
     const body = (await res.json().catch(() => null)) as { error?: string } | null;
     throw new Error(body?.error ?? "Génération de la fiche Tracfin impossible");
   }
-  return (await res.json()) as { dossier: ClientDossier; fiches: number; vendeurs: number; champsVides: number; analyseIndisponible: boolean };
+  return (await res.json()) as ResultatTracfin;
 }
 
 export async function renommerClientFile(
