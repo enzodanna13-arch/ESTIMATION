@@ -428,6 +428,13 @@ function FicheDetail({ fiche, onRetour, onEnregistre, onSupprime }: {
     } catch { setAcq([]); } finally { setAcqBusy(false); }
   };
 
+  // Rapprochement AUTOMATIQUE à l'ouverture de la fiche : le négociateur voit
+  // directement les acquéreurs à relancer, sans avoir à cliquer.
+  useEffect(() => {
+    void chercherAcquereurs();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const maj = <K extends keyof FicheChasse>(k: K, v: FicheChasse[K]) => { setF((p) => ({ ...p, [k]: v })); setOk(false); };
   const majNum = (k: keyof FicheChasse, v: string) => maj(k, (Number(v.replace(/[^0-9.]/g, "")) || 0) as never);
 
@@ -521,6 +528,43 @@ function FicheDetail({ fiche, onRetour, onEnregistre, onSupprime }: {
             <label className="mb-1 block text-xs font-semibold text-slate-600">Description</label>
             <textarea className={`${inputCls} min-h-[120px]`} value={f.description} onChange={(e) => maj("description", e.target.value)} />
           </div>
+
+          {/* Acquéreurs à relancer — rapprochés automatiquement (secteur + budget) */}
+          <div className="mt-3 rounded-2xl border border-emerald-200 bg-emerald-50/40 p-4">
+            <div className="mb-2 flex items-center justify-between">
+              <h3 className="text-sm font-bold text-navy">🎯 Acquéreurs à relancer</h3>
+              <button onClick={chercherAcquereurs} disabled={acqBusy} className="text-xs font-semibold text-copper hover:underline disabled:opacity-50">{acqBusy ? "…" : "Actualiser"}</button>
+            </div>
+            {acq === null || acqBusy ? (
+              <p className="text-sm text-slate-500">Recherche des acquéreurs correspondants (secteur + budget)…</p>
+            ) : acq.length === 0 ? (
+              <p className="text-sm text-slate-400">Aucun acquéreur en cours ne correspond (secteur + budget). Ajoutez des leads acquéreurs pour enrichir le rapprochement.</p>
+            ) : (
+              <div className="space-y-2">
+                <p className="text-xs font-semibold text-emerald-700">{acq.length} acquéreur{acq.length > 1 ? "s" : ""} à contacter — il ne reste plus qu&apos;à relancer :</p>
+                {acq.map((a) => (
+                  <div key={a.id} className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-slate-200 bg-white p-2.5">
+                    <div className="min-w-0 text-xs">
+                      <div className="text-sm font-bold text-navy">
+                        {[a.prenom, a.nom].filter(Boolean).join(" ") || "Acquéreur"}{" "}
+                        <span className="font-semibold text-copper">{a.budget ? euro(a.budget) : "budget NC"}</span>
+                      </div>
+                      <div className="mt-0.5 flex flex-wrap gap-x-2 text-slate-500">
+                        {a.ville && <span>📍 {a.ville}</span>}
+                        {a.negociateur && <span>· {a.negociateur}</span>}
+                        <span className="rounded bg-slate-100 px-1.5">{a.statut}</span>
+                      </div>
+                    </div>
+                    {a.tel ? (
+                      <a href={`tel:${a.tel}`} className="whitespace-nowrap rounded-lg bg-navy px-3 py-1.5 text-xs font-semibold text-white hover:bg-navy-deep">📞 {a.tel}</a>
+                    ) : (
+                      <span className="whitespace-nowrap rounded-lg bg-slate-100 px-3 py-1.5 text-xs text-slate-400">tél. NC</span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Infos & saisie */}
@@ -602,38 +646,6 @@ function FicheDetail({ fiche, onRetour, onEnregistre, onSupprime }: {
             {marcheErr && <p className="mt-2 text-xs text-red-600">{marcheErr}</p>}
           </div>
 
-          {/* Rapprochement acquéreurs */}
-          <div className="rounded-2xl border border-slate-200 bg-white p-4">
-            <div className="mb-2 flex items-center justify-between">
-              <h3 className="text-sm font-bold text-navy">🤝 Acquéreurs correspondants</h3>
-              {acq !== null && <button onClick={chercherAcquereurs} disabled={acqBusy} className="text-xs font-semibold text-copper hover:underline disabled:opacity-50">{acqBusy ? "…" : "Actualiser"}</button>}
-            </div>
-            {acq === null ? (
-              <button onClick={chercherAcquereurs} disabled={acqBusy} className="w-full rounded-xl bg-navy px-4 py-2 text-sm font-semibold text-white hover:bg-navy-deep disabled:opacity-50">
-                {acqBusy ? "Recherche…" : "Trouver les acquéreurs pour ce bien"}
-              </button>
-            ) : acq.length === 0 ? (
-              <p className="text-sm text-slate-400">Aucun acquéreur en cours ne correspond (secteur + budget). Ajoutez des leads acquéreurs pour enrichir le rapprochement.</p>
-            ) : (
-              <div className="space-y-2">
-                <p className="text-xs font-semibold text-emerald-700">{acq.length} acquéreur{acq.length > 1 ? "s" : ""} correspondant{acq.length > 1 ? "s" : ""} !</p>
-                {acq.map((a) => (
-                  <div key={a.id} className="rounded-lg border border-slate-200 p-2 text-xs">
-                    <div className="flex items-center justify-between">
-                      <span className="font-bold text-navy">{[a.prenom, a.nom].filter(Boolean).join(" ") || "Acquéreur"}</span>
-                      <span className="text-copper font-semibold">{a.budget ? euro(a.budget) : "budget NC"}</span>
-                    </div>
-                    <div className="mt-0.5 flex flex-wrap gap-x-3 text-slate-500">
-                      {a.tel && <a href={`tel:${a.tel}`} className="hover:underline">📞 {a.tel}</a>}
-                      {a.ville && <span>📍 {a.ville}</span>}
-                      {a.negociateur && <span>· {a.negociateur}</span>}
-                      <span className="rounded bg-slate-100 px-1.5">{a.statut}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
         </div>
       </div>
     </div>
