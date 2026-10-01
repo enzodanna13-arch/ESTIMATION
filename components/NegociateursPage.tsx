@@ -5,6 +5,8 @@ import { listLeads, type Lead } from "@/lib/leads";
 import { listClients, type ClientDossier } from "@/lib/clients";
 import { listEstimations, listDocuments, type HistoryMeta, type DocHistoryMeta } from "@/lib/history";
 import { listRegistre, type AppelEntry } from "@/lib/registre";
+import { listChasse, type FicheChasse } from "@/lib/chasse";
+import { listTournees, type Tournee } from "@/lib/prospection";
 import { EQUIPE, ASSISTANTE, membreDepuisNom, estNonPersonne } from "@/lib/equipe";
 import { estDossierVendeurComplet } from "@/lib/docTypes";
 
@@ -16,12 +18,13 @@ interface Row {
   estimations: number; documents: number; mandats: number;
   leadsRecus: number; leadsTraites: number; leadsConvertis: number;
   appels: number; rdv: number; dossiers: number;
+  chasses: number; tournees: number;
 }
 function rowVide(label: string, role = ""): Row {
-  return { key: norm(label), label: label.trim(), role, estimations: 0, documents: 0, mandats: 0, leadsRecus: 0, leadsTraites: 0, leadsConvertis: 0, appels: 0, rdv: 0, dossiers: 0 };
+  return { key: norm(label), label: label.trim(), role, estimations: 0, documents: 0, mandats: 0, leadsRecus: 0, leadsTraites: 0, leadsConvertis: 0, appels: 0, rdv: 0, dossiers: 0, chasses: 0, tournees: 0 };
 }
 
-type ColKey = "estimations" | "leadsRecus" | "leadsTraites" | "leadsConvertis" | "appels" | "rdv" | "mandats" | "dossiers";
+type ColKey = "estimations" | "leadsRecus" | "leadsTraites" | "leadsConvertis" | "appels" | "rdv" | "mandats" | "dossiers" | "chasses" | "tournees";
 const COLONNES: { cle: ColKey; label: string; court: string }[] = [
   { cle: "estimations", label: "Estimations", court: "Estim." },
   { cle: "leadsRecus", label: "Leads reçus", court: "Leads" },
@@ -31,6 +34,8 @@ const COLONNES: { cle: ColKey; label: string; court: string }[] = [
   { cle: "rdv", label: "RDV", court: "RDV" },
   { cle: "mandats", label: "Mandats", court: "Mandats" },
   { cle: "dossiers", label: "Dossiers", court: "Dossiers" },
+  { cle: "chasses", label: "Biens en chasse", court: "Chasses" },
+  { cle: "tournees", label: "Tournées de prospection", court: "Tournées" },
 ];
 const PERIODES = [
   { id: 7, label: "7 jours" },
@@ -44,17 +49,21 @@ export default function NegociateursPage({ onRetour }: { onRetour: () => void })
   const [estims, setEstims] = useState<HistoryMeta[]>([]);
   const [docs, setDocs] = useState<DocHistoryMeta[]>([]);
   const [appels, setAppels] = useState<AppelEntry[]>([]);
+  const [chasses, setChasses] = useState<FicheChasse[]>([]);
+  const [tournees, setTournees] = useState<Tournee[]>([]);
   const [chargement, setChargement] = useState(true);
   const [periode, setPeriode] = useState<number>(30);
   const [tri, setTri] = useState<ColKey>("estimations");
 
   const recharger = async () => {
-    const [l, c, e, d, r] = await Promise.all([
+    const [l, c, e, d, r, ch, tn] = await Promise.all([
       listLeads(), listClients(),
       listEstimations().catch(() => []), listDocuments().catch(() => []),
       listRegistre().catch(() => ({ entrees: [] as AppelEntry[], mois: [] })),
+      listChasse().catch(() => []), listTournees().catch(() => []),
     ]);
     setLeads(l); setClients(c); setEstims(e); setDocs(d); setAppels(r.entrees);
+    setChasses(ch); setTournees(tn);
     setChargement(false);
   };
   useEffect(() => {
@@ -131,8 +140,19 @@ export default function NegociateursPage({ onRetour }: { onRetour: () => void })
       if (r) r.appels += appels.filter((a) => dansPeriode(a.createdAt)).length;
     }
 
+    // Biens en chasse (hors archivés) rattachés à leur négociateur.
+    for (const ch of chasses) {
+      if (ch.archived) continue;
+      if (dansPeriode(ch.createdAt)) { const r = obtenir(ch.negociateur); if (r) r.chasses++; }
+    }
+
+    // Tournées de prospection rattachées à leur négociateur (par date de tournée).
+    for (const t of tournees) {
+      if (dansPeriode(t.date) || dansPeriode(t.createdAt)) { const r = obtenir(t.negociateur); if (r) r.tournees++; }
+    }
+
     return [...map.values()].sort((x, y) => y[tri] - x[tri] || x.label.localeCompare(y.label));
-  }, [estims, docs, leads, clients, appels, periode, tri]);
+  }, [estims, docs, leads, clients, appels, chasses, tournees, periode, tri]);
 
   const total = useMemo(() => {
     const t = rowVide("TOTAL AGENCE");
@@ -203,7 +223,7 @@ export default function NegociateursPage({ onRetour }: { onRetour: () => void })
           <p className="mt-3 text-xs text-slate-400">
             Interconnecté automatiquement à toutes les sections : les <strong>estimations</strong>, <strong>documents/mandats</strong>,
             <strong> leads</strong> (reçus, traités, convertis + appels/RDV notés dans le suivi), <strong>dossiers clients</strong> (+ appels/RDV
-            de la timeline) et les <strong>appels du registre</strong> (par destinataire). Cliquez sur une colonne pour trier. Astuce : saisissez
+            de la timeline), les <strong>biens en chasse</strong>, les <strong>tournées de prospection</strong> et les <strong>appels du registre</strong> (par destinataire). Cliquez sur une colonne pour trier. Astuce : saisissez
             toujours le <strong>même nom de négociateur</strong> pour un regroupement parfait.
           </p>
         </>
