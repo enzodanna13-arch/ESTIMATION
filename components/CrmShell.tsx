@@ -49,6 +49,9 @@ const GROUPES: Groupe[] = [
     { v: "flyers", t: "Flyers de prospection", i: "🖨️" },
     { v: "visites", t: "Montage vidéo & 360°", i: "🎬" },
   ] },
+  { label: "Formation", items: [
+    { v: "formation", t: "Centre de formation", i: "🎓" },
+  ] },
   { label: "Archives", items: [
     { v: "historique", h: "", t: "Historiques", i: "🗂️" },
     { v: "sauvegarde", t: "Sauvegarde", i: "💾" },
