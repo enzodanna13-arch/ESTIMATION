@@ -174,12 +174,12 @@ export default function TransactionsPage({ onRetour }: { onRetour: () => void })
             const aFacture = t.pieces.some((p) => p.categorie === "Facture agence");
             return (
               <button key={t.id} onClick={() => setOuvert(t)} className="rounded-2xl border border-slate-200 bg-white p-4 text-left shadow-sm transition hover:-translate-y-0.5 hover:border-copper hover:shadow-md">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-bold text-navy">{t.bien || "Transaction"}</span>
-                  <span className="text-xs font-semibold text-copper">{euro(t.prixVente)}</span>
+                <div className="flex items-center justify-between gap-2">
+                  <span className="truncate text-sm font-bold text-navy">{t.vendeur || t.bien || "Transaction"}</span>
+                  <span className="shrink-0 text-xs font-semibold text-copper">{euro(t.prixVente)}</span>
                 </div>
-                <div className="mt-0.5 truncate text-xs text-slate-500">{[t.ville, dateFr(t.dateVente)].filter((x) => x && x !== "—").join(" · ") || "—"}</div>
-                <div className="mt-1 truncate text-xs text-slate-400">{[t.vendeur && `V: ${t.vendeur}`, t.acquereur && `A: ${t.acquereur}`].filter(Boolean).join(" · ")}</div>
+                <div className="mt-0.5 truncate text-xs text-slate-500">{[t.bien, t.ville, dateFr(t.dateVente)].filter((x) => x && x !== "—").join(" · ") || "—"}</div>
+                {t.acquereur && <div className="mt-1 truncate text-xs text-slate-400">Acquéreur : {t.acquereur}</div>}
                 <div className="mt-2 flex flex-wrap gap-1">
                   <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${aAttestation ? "bg-emerald-100 text-emerald-700" : "bg-slate-100 text-slate-400"}`}>{aAttestation ? "✓" : "✗"} Attestation notaire</span>
                   <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${aFacture ? "bg-amber-100 text-amber-700" : "bg-slate-100 text-slate-400"}`}>{aFacture ? "✓" : "✗"} Facture agence</span>
@@ -282,7 +282,7 @@ function FicheTransaction({ t, onFermer, onMaj }: { t: Transaction; onFermer: ()
     <div>
       <div className="mb-4 flex flex-wrap items-center gap-2">
         <button onClick={onFermer} className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-100">← Toutes les transactions</button>
-        <h2 className="text-xl font-bold text-navy">💼 {f.bien || "Transaction"}</h2>
+        <h2 className="text-xl font-bold text-navy">💼 {f.vendeur || f.bien || "Transaction"}</h2>
         <button onClick={() => void supprimer()} className="ml-auto rounded-lg border border-red-200 bg-white px-3 py-1.5 text-sm font-medium text-red-600 transition hover:bg-red-50">Supprimer</button>
       </div>
 
