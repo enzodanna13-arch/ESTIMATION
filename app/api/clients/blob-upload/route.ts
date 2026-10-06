@@ -28,7 +28,11 @@ export async function POST(request: Request): Promise<Response> {
         // (l'analyse le redécoupe ensuite en tranches ≤ 12 Mo, donc un gros
         // import est accepté ; borne fixée pour la mémoire de la fonction).
         const estImport = pathname.startsWith("clients/import/");
-        if ((!pathname.startsWith("clients/files/") && !estImport) || !pathname.endsWith(".pdf")) {
+        // `transactions/files/…` : pièces de clôture d'une vente (attestation
+        // notaire, facture d'agence…).
+        const estTransaction = pathname.startsWith("transactions/files/");
+        const autorise = pathname.startsWith("clients/files/") || estImport || estTransaction;
+        if (!autorise || !pathname.endsWith(".pdf")) {
           throw new Error("Chemin non autorisé");
         }
         return {
