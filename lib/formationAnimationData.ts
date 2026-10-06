@@ -246,6 +246,100 @@ export const ANIMATIONS_DATA: Record<string, AnimationModule> = {
       "Rendre actionnable : clore chaque séquence par un « concrètement, demain, je… » et consigner les engagements CHIFFRÉS au paperboard pour le suivi de la semaine.",
       "Donner l'exemple et le droit à l'erreur : jouer soi-même un appel de pige devant le groupe (y compris un raté), dédramatiser le « non » et faire des jeux de rôle un terrain d'entraînement bienveillant, jamais un examen.",
       "Préparer le matériel en amont : pancartes A/B/C/D, paperboard et feutres, chrono/minuteur, fiches-annonces fictives du secteur, fiche mémo « conformité 2026 », et un petit lot pour le quiz-battle."
+    ],
+    "materiel": [
+      "Paperboard + feutres : tracer en direct le « tunnel » prospection (contacts > RDV estimation > mandats) et faire calculer à la salle leur propre ratio.",
+      "Chronomètre ou minuteur de telephone : pour les jeux de role d'appel de pige limites a 2-3 minutes et pour imposer le rythme (on decroche un RDV, on ne vend pas au telephone).",
+      "Jeu de cartes VRAI/FAUX (format A5) sur le cadre legal : Bloctel, horaires de demarchage, RGPD, demarchage physique.",
+      "Fiches « script d'appel de pige » plastifiees, une par binome, avec la trame AIDA et 5 objections pre-imprimees au dos.",
+      "Videoprojecteur pour afficher une annonce de pige reelle (Leboncoin / PAP secteur Martigues) et la decortiquer ensemble en live.",
+      "Un tableau d'objectifs hebdo vierge (contacts/jour, plages de phoning, secteurs de boitage) a remplir et emporter en fin de seance."
+    ],
+    "messagesCles": [
+      "La prospection n'est pas une corvee entre deux visites : c'est LE metier. Pas de prospection, pas de mandats, pas de salaire.",
+      "Au telephone on ne vend pas le bien ni l'estimation : on vend UNE SEULE chose, le rendez-vous.",
+      "La regularite bat l'intensite : 1h de phoning tous les matins ecrase 7h une fois par mois.",
+      "Un « non » n'est pas un echec, c'est une statistique : il vous rapproche du prochain « oui ».",
+      "Le fichier, c'est votre fonds de commerce : un contact non rappele est un mandat offert au confrere."
+    ],
+    "scriptOuverture": "Aujourd'hui, on va parler de la seule activite qui fait vraiment vivre un negociateur : la prospection. Je vais vous poser une question simple et un peu brutale : si demain vous arretiez de prospecter, combien de temps avant que votre pipe soit vide ? Deux mois ? Trois ? La verite, c'est que tout le reste - les visites, les offres, les signatures - n'existe que parce qu'un jour vous avez decroche un telephone ou frappe a une porte. Ce matin, on va demystifier la pige, muscler votre script d'appel, securiser le cadre legal, et surtout vous faire repartir avec un plan d'action que vous appliquez des lundi sur votre secteur. Prevenez-moi tout de suite : qui ici a passe au moins un appel de pige cette semaine ?",
+    "questionsPublic": [
+      "Pour vous, c'est quoi la mission numero 1 d'un negociateur ? On fait le tour de la salle.",
+      "Combien de contacts estimez-vous devoir prendre pour decrocher un mandat ? D'ou sort ce chiffre ?",
+      "Qu'est-ce qui vous bloque concretement avant de lancer une session de phoning : le script, la peur du non, le manque de temps ?",
+      "Quand vous appelez une annonce de particulier, quel est l'objectif exact de l'appel ? En une phrase.",
+      "Quelles sont les trois premieres secondes d'un appel de pige ? Qu'est-ce qu'on dit, qu'est-ce qu'on ne dit pas ?",
+      "Un proprietaire vous dit 'je suis deja avec plusieurs agences' : vous raccrochez ou vous rebondissez, et comment ?",
+      "Sur votre secteur, ou se trouvent vos meilleurs gisements de pige : quels quartiers, quels types de biens ?",
+      "Qui a deja utilise le levier 'j'ai un acquereur pour votre quartier' ? Ca a donne quoi ?",
+      "Combien de fois relancez-vous un vendeur avant de le classer 'perdu' ?",
+      "Qu'est-ce que vous faites de vos anciens clients et de votre entourage : vous les sollicitez, ou ils dorment dans votre telephone ?"
+    ],
+    "exemplesTerrain": [
+      {
+        "titre": "La pige du matin a Jonquieres",
+        "texte": "Un negociateur de l'agence bloque sa plage de pige chaque matin de 9h30 a 10h30. Sur 20 annonces de particuliers passees en revue sur Martigues (Jonquieres, L'Ile, Ferrieres), il joint en moyenne 6 proprietaires, obtient 1 a 2 rendez-vous d'estimation, et transforme environ 1 mandat toutes les 3 semaines. Multiplie par 11 mois actifs, c'est a lui seul une quinzaine de mandats piges par an."
+      },
+      {
+        "titre": "Le T3 de Croix-Sainte parti en 15 jours",
+        "texte": "Un proprietaire pige sur Leboncoin affichait son T3 a 198 000 euros en direct depuis 2 mois sans visite serieuse. Rappele en pige, il accepte un RDV d'estimation. Le bien est repositionne a 182 000 euros avec photos pro et home-staging leger : compromis signe en 15 jours. L'argument qui a fait mouche : 'votre annonce tourne depuis 60 jours, chaque semaine de plus vous coute en credibilite aupres des acheteurs du secteur'."
+      },
+      {
+        "titre": "Le boitage cible autour de la Couronne",
+        "texte": "Sur le littoral (La Couronne, Carro, Sausset a proximite), ou les maisons vue mer se vendent vite, un negociateur distribue 300 flyers 'recherche maison pour acquereur reel' sur un micro-secteur. Resultat typique : 3 a 4 appels entrants, 1 estimation, parfois un mandat exclusif sur un bien jamais mis en vente. Le boitage ne paie pas tout de suite, mais le secteur travaille pour vous pendant des mois."
+      },
+      {
+        "titre": "L'ancien client qui rapporte deux fois",
+        "texte": "Une cliente a qui l'agence a vendu un appartement a Ferrieres il y a 3 ans est rappelee dans le cadre d'un phoning 'prise de nouvelles'. Elle n'a pas de projet, mais sa soeur cherche a vendre une maison a Saint-Julien : recommandation, RDV, mandat. Le cout d'acquisition de ce mandat : un appel de 4 minutes a un contact deja dans le fichier."
+      }
+    ],
+    "objectionsStagiaires": [
+      {
+        "question": "La pige, c'est deja fait par les autres agences, a quoi bon rappeler un vendeur deja sollicite ?",
+        "reponse": "Justement : la plupart des negociateurs abandonnent apres le premier 'non'. Le vendeur qui a dit non il y a 15 jours n'a souvent toujours pas vendu. Votre valeur n'est pas d'etre le premier, mais le plus regulier et le plus pertinent. Relancez avec un angle neuf (un acquereur, une vente comparable dans sa rue) et vous passez devant ceux qui ont lache."
+      },
+      {
+        "question": "J'ai peur de deranger, de me faire raccrocher au nez, c'est violent le phoning.",
+        "reponse": "Le rejet n'est pas dirige contre vous, il est dirige contre une interruption. On le dedramatise avec le chiffre : si 1 appel sur 10 donne un RDV, chaque 'non' vous rapproche mecaniquement du 'oui' et a donc une valeur. Un script solide et un objectif clair (le RDV, pas la vente) divisent la pression par deux. Et on s'entraine ici, en salle, avant le terrain."
+      },
+      {
+        "question": "Le demarchage telephonique, ce n'est pas interdit maintenant ?",
+        "reponse": "Non, mais c'est strictement encadre. On ne peut pas appeler un particulier inscrit sur Bloctel sans relation contractuelle preexistante, uniquement dans les plages autorisees (lundi-vendredi 10h-13h et 14h-20h, jamais le week-end ni les jours feries), et au maximum 4 sollicitations par mois. Attention : la loi du 22 avril 2024 bascule vers le consentement prealable (opt-in) a compter du 11 aout 2026 - a partir de la, il faudra l'accord du prospect avant d'appeler. La pige d'une annonce ou le proprietaire sollicite publiquement le marche reste, elle, une demarche differente a securiser au cas par cas."
+      },
+      {
+        "question": "Je n'ai pas le temps de prospecter, je suis deja debor de par les visites et l'administratif.",
+        "reponse": "C'est l'inverse qu'il faut voir : vous etes deborde aujourd'hui grace a la prospection d'hier. Si vous arretez, dans 2 mois vous aurez tout le temps du monde... et plus de mandats. La solution n'est pas d'avoir plus de temps, c'est de sanctuariser une plage non negociable chaque matin, telephone en mode avion coupe pour le reste."
+      },
+      {
+        "question": "Le porte-a-porte, ca ne se fait plus, les gens n'ouvrent pas.",
+        "reponse": "Le porte-a-porte 'a froid' marche moins, c'est vrai. Mais la pige physique (aller voir une maison affichee en vente par un particulier) et le boitage cible fonctionnent toujours tres bien sur un secteur comme Martigues ou le bouche-a-oreille compte. L'objectif du terrain n'est pas de vendre sur le pas de la porte, c'est de vous faire connaitre et de recolter du renseignement de quartier que personne d'autre n'a."
+      },
+      {
+        "question": "Les leads internet, c'est plus moderne, pourquoi s'embeter avec le telephone ?",
+        "reponse": "Le digital et le personal branding alimentent le haut du tunnel, c'est excellent, mais un lead qui n'est pas rappele dans l'heure est souvent perdu. Le digital et le phoning ne s'opposent pas : le digital genere le contact, le telephone le transforme en RDV. Celui qui ne sait faire que l'un des deux laisse la moitie de ses mandats au concurrent."
+      },
+      {
+        "question": "Mes anciens clients ne vont pas revendre avant des annees, les rappeler ne sert a rien.",
+        "reponse": "Vous ne les rappelez pas pour qu'ils revendent, vous les rappelez pour la recommandation. Un client satisfait connait en moyenne plusieurs personnes avec un projet immobilier dans les 24 mois. Votre sphere d'influence est votre gisement le moins cher et le plus chaud : encore faut-il l'entretenir au lieu de la laisser dormir."
+      }
+    ],
+    "erreursFrequentes": [
+      "Erreur : vouloir 'vendre l'estimation' des le premier appel -> Correction : ne viser qu'une seule chose au telephone, decrocher le rendez-vous ; on garde les arguments de fond pour le face-a-face.",
+      "Erreur : prospecter par a-coups, une grosse session puis trois semaines de rien -> Correction : installer une plage quotidienne fixe et courte, la regularite prime sur l'intensite.",
+      "Erreur : ne jamais relancer un vendeur qui a dit non -> Correction : planifier systematiquement 3 a 5 relances espacees avec un angle nouveau a chaque fois.",
+      "Erreur : improviser son appel sans trame -> Correction : utiliser un script structure (accroche, raison de l'appel, question d'engagement, prise de RDV) et le personnaliser.",
+      "Erreur : parler 80 % du temps et 'reciter' -> Correction : poser une question ouverte tot et ecouter, l'appel de pige est un dialogue, pas un monologue.",
+      "Erreur : negliger ou mal tenir son fichier de contacts -> Correction : noter chaque echange, dater la prochaine relance, traiter le CRM comme son fonds de commerce.",
+      "Erreur : ignorer le cadre legal (Bloctel, horaires, RGPD) -> Correction : verifier les regles de demarchage et la base de consentement avant d'appeler, surtout avec l'opt-in de 2026.",
+      "Erreur : abandonner apres une journee sans resultat -> Correction : raisonner en ratios sur la semaine et le mois, pas sur l'emotion d'une mauvaise matinee."
+    ],
+    "chiffresCles": [
+      "Demarchage telephonique : plages autorisees lundi-vendredi 10h-13h et 14h-20h, interdit le week-end et les jours feries ; maximum 4 sollicitations par mois par professionnel (decret du 13 octobre 2022).",
+      "Bloctel : interdiction d'appeler un particulier inscrit sans relation contractuelle preexistante.",
+      "Loi du 22 avril 2024 : passage au consentement prealable (opt-in) du prospect a compter du 11 aout 2026.",
+      "RGPD : prospection par email et SMS vers les particuliers soumise a l'opt-in ; droit d'opposition a tout moment.",
+      "Ratio de pilotage a faire calculer : nombre de contacts -> RDV estimation -> mandats, propre a chaque negociateur, a suivre chaque semaine.",
+      "Regle de reactivite : un lead entrant rappele dans l'heure se transforme bien mieux qu'un lead rappele le lendemain."
     ]
   },
   "decouverte": {
@@ -503,6 +597,100 @@ export const ANIMATIONS_DATA: Record<string, AnimationModule> = {
       "Ancrer les acquis : après chaque jeu, faites reformuler la règle par un participant plutôt que par vous — ce qu'ils disent eux-mêmes reste.",
       "Soigner le débrief des jeux de rôle : commentez les comportements observés (qui a parlé le plus ? a-t-on donné un prix ?), jamais la personne, et valorisez d'abord ce qui a marché.",
       "Clôturer sur l'action : revenez au mur de post-it du brise-glace et faites écrire à chacun ses 2 ou 3 engagements du lendemain — le plan d'action est le vrai livrable de la séance."
+    ],
+    "materiel": [
+      "Fiche de qualification vierge (type BANT immobilier) imprimee en nombre : support du RDV R1 et fil rouge de la seance.",
+      "Paperboard pour afficher la regle 70/30 et la grille des questions ouvertes/fermees/ricochet.",
+      "Cartons SONCAS(E) (7 cartes : Securite, Orgueil, Nouveaute, Confort, Argent, Sympathie, Ecologie) a distribuer pour les jeux de role.",
+      "Chronometre pour imposer les jeux de role en binome (un joue le vendeur, un la decouverte) sur 7-8 minutes.",
+      "Grille d'auto-evaluation 'temps de parole' : l'observateur coche chaque fois que le negociateur coupe ou parle plus de 20 secondes d'affilee.",
+      "Videoprojecteur pour diffuser un extrait d'entretien de decouverte (bon et mauvais) a commenter en groupe."
+    ],
+    "messagesCles": [
+      "Celui qui pose les questions mene l'entretien ; celui qui parle croit mener, mais il subit.",
+      "On vise 70 % d'ecoute, 30 % de parole : vos deux oreilles valent mieux que votre bouche.",
+      "On ne qualifie pas pour cocher des cases, on qualifie pour comprendre la VRAIE motivation derriere le projet.",
+      "Un acquereur sans financement valide n'est pas un acquereur, c'est un visiteur.",
+      "La synthese finale ('si je resume, vous voulez...') est le moment qui transforme la decouverte en mandat ou en offre."
+    ],
+    "scriptOuverture": "Aujourd'hui, on ne va pas parler de technique de vente - on va parler de quelque chose de plus puissant : savoir se taire et ecouter. Je vais vous dire une chose qui va peut-etre vous surprendre : les meilleurs negociateurs que je connais ne sont pas les plus beaux parleurs, ce sont les meilleurs questionneurs. Un rendez-vous de decouverte rate, c'est un mandat signe trop cher ou une offre qui capote trois semaines plus tard parce qu'on n'a pas compris le vrai besoin. Ce matin, on va travailler votre questionnement, votre ecoute active, et des methodes concretes - MDPP, SONCAS, la fiche de qualification - pour ressortir de chaque RDV avec LA bonne information. Premiere question pour vous : dans un RDV de decouverte, qui doit parler le plus, vous ou le client ?",
+    "questionsPublic": [
+      "Dans un entretien de decouverte, quelle repartition de parole visez-vous entre vous et le client ?",
+      "Quelle est la difference concrete entre une question ouverte, une question fermee et une question ricochet ? Donnez-moi un exemple de chaque.",
+      "Comment faites-vous quand un vendeur reste evasif sur sa vraie motivation de vente ?",
+      "Chez un acquereur, quel est le tout premier critere a qualifier, avant meme le type de bien ?",
+      "Qu'est-ce que le 'A' de SONCAS, et comment le detectez-vous dans le discours du client ?",
+      "Comment reperez-vous qui, dans un couple, est le vrai decideur ?",
+      "Quels sont les signes qu'un vendeur n'est pas 'chaud', qu'il teste juste le marche ?",
+      "Comment verifiez-vous la capacite de financement d'un acquereur sans le braquer ?",
+      "Quel piege vous fait le plus perdre en decouverte : parler trop, projeter vos propres gouts, ou ne pas oser les questions qui derangent ?",
+      "Comment cloturez-vous un RDV de decouverte pour verrouiller la suite ?"
+    ],
+    "exemplesTerrain": [
+      {
+        "titre": "La vraie motivation cachee a Saint-Pierre",
+        "texte": "Un couple vend sa maison a Saint-Pierre 'parce qu'elle est trop grande'. En creusant avec des questions ricochet, le negociateur comprend qu'il y a en realite une mutation professionnelle vers Lyon dans 4 mois : delai court, motivation forte. Resultat : prix fixe de maniere realiste pour vendre vite, mandat exclusif accepte, bien vendu en 5 semaines. Sans la vraie motivation, il aurait signe 20 000 euros trop cher et perdu le mandat au bout de 3 mois."
+      },
+      {
+        "titre": "L'acquereur sans financement a Lavera",
+        "texte": "Un negociateur fait visiter 4 biens a Martigues et Lavera a un 'acheteur' tres enthousiaste. Au bout du 4e, il qualifie enfin le financement : apport insuffisant, taux d'endettement a 42 %, aucun accord de principe bancaire. Trois demi-journees perdues. La lecon martelee : le financement se qualifie AVANT la premiere visite, pas apres la quatrieme."
+      },
+      {
+        "titre": "SONCAS applique a un T2 vue Etang de Berre",
+        "texte": "Deux acquereurs sur le meme T2 a Ferrieres. L'un est 'Securite' : il faut parler copropriete saine, travaux provisionnes, quartier calme. L'autre est 'Orgueil/Nouveaute' : il faut parler vue sur l'Etang, standing, bien rare. Meme bien, deux argumentaires radicalement differents. Celui qui recite le meme discours aux deux en perd un sur deux."
+      },
+      {
+        "titre": "Le decideur qu'on avait oublie",
+        "texte": "Lors d'un RDV estimation a Croix-Sainte, le negociateur deroule tout son argumentaire a l'epouse presente, puis apprend que c'est le mari, absent et tres attache a un prix haut, qui tranchera. Il doit tout recommencer. Depuis, la question 'qui participe a la decision ?' est posee des la prise de RDV, pas en fin d'entretien."
+      }
+    ],
+    "objectionsStagiaires": [
+      {
+        "question": "Si j'ecoute 70 % du temps, le client va avoir l'impression que je ne maitrise rien, non ?",
+        "reponse": "C'est l'inverse. Un client qui parle beaucoup est un client qui se sent compris, donc en confiance. Votre maitrise se voit a la qualite de vos questions et a votre synthese finale, pas au volume de votre discours. Celui qui monopolise la parole rassure son propre stress, pas le client."
+      },
+      {
+        "question": "Comment je demande le budget ou la situation financiere sans passer pour un controleur des impots ?",
+        "reponse": "On ne demande pas 'combien gagnez-vous', on contextualise : 'pour ne vous faire visiter que des biens que vous pourrez reellement acheter, on fait le point rapidement sur votre financement, d'accord ?'. Le client comprend que c'est dans son interet. On peut aussi passer par le reflexe du rendez-vous avec le courtier : ca qualifie sans interroger frontalement."
+      },
+      {
+        "question": "Les methodes genre SONCAS ou MDPP, c'est scolaire, sur le terrain on n'a pas le temps d'y penser.",
+        "reponse": "Au debut c'est un effort conscient, oui. Mais c'est comme le code de la route : au bout de quelques dizaines de RDV, vous ne 'pensez' plus a SONCAS, vous l'entendez automatiquement dans les mots du client. La methode n'est pas une recitation, c'est une grille de lecture qui finit par devenir un reflexe."
+      },
+      {
+        "question": "Le vendeur ne veut pas me dire pourquoi il vend, il dit juste 'pour changer'. Je force ?",
+        "reponse": "On ne force pas, on creuse en douceur avec des ricochets et de l'empathie : 'changer, c'est-a-dire ? qu'est-ce qui vous manque aujourd'hui ?'. Souvent le vrai motif (divorce, succession, mutation, difficulte financiere) sort apres la 3e question, quand la confiance est la. Si ca ne sort vraiment pas, c'est un signal : ce vendeur n'est peut-etre pas encore decide a vendre."
+      },
+      {
+        "question": "A quoi bon qualifier a fond si de toute facon le client peut changer d'avis ?",
+        "reponse": "Qualifier ne verrouille pas l'avenir, ca vous evite de perdre des journees entieres sur de faux projets. Un client peut evoluer, mais un projet sans motivation reelle, sans delai et sans financement ne se concretisera pas - autant le savoir au RDV 1 plutot qu'apres 6 visites."
+      },
+      {
+        "question": "En decouverte vendeur, je dois annoncer mon estimation tout de suite s'il me la demande ?",
+        "reponse": "Non. Si vous lachez un prix avant d'avoir fini de qualifier le bien et la motivation, vous vous enfermez. On reporte avec cadre : 'je prefere voir le bien et verifier les references du secteur avant de vous donner un chiffre serieux, sinon je vous raconte des histoires'. Ca vous repositionne en professionnel, pas en distributeur de prix."
+      },
+      {
+        "question": "Comment je fais si le client ne repond pas a mes questions et prend le controle de l'entretien ?",
+        "reponse": "On reprend la main poliment par une question : 'tres bonne remarque, j'y reviens dans deux minutes, mais d'abord dites-moi...'. Celui qui pose la question suivante reprend le volant. Prevoyez votre trame de questions a l'avance pour ne jamais vous retrouver sans la question d'apres."
+      }
+    ],
+    "erreursFrequentes": [
+      "Erreur : parler plus que le client -> Correction : viser 70 % d'ecoute / 30 % de parole, et poser une question ouverte des les premieres minutes.",
+      "Erreur : enchainer des questions fermees qui donnent du oui/non -> Correction : privilegier les questions ouvertes et les ricochets pour faire parler et creuser.",
+      "Erreur : projeter ses propres gouts ('moi je n'aimerais pas cette cuisine') -> Correction : rester neutre, c'est le besoin du client qui compte, pas le votre.",
+      "Erreur : faire visiter avant d'avoir qualifie le financement de l'acquereur -> Correction : valider budget, apport et endettement AVANT la premiere visite.",
+      "Erreur : oublier d'identifier le vrai decideur -> Correction : demander des la prise de RDV qui participe a la decision et s'assurer de sa presence.",
+      "Erreur : annoncer un prix ou un argumentaire standard sans avoir lu la motivation (SONCAS) -> Correction : adapter le discours au ressort dominant de chaque interlocuteur.",
+      "Erreur : terminer sans synthese ni etape suivante -> Correction : reformuler le besoin ('si je resume...') et verrouiller la prochaine action.",
+      "Erreur : ne rien noter et se fier a sa memoire -> Correction : remplir la fiche de qualification pendant ou juste apres le RDV."
+    ],
+    "chiffresCles": [
+      "Regle d'or du temps de parole : viser 70 % d'ecoute pour 30 % de parole.",
+      "SONCAS(E) : Securite, Orgueil, Nouveaute, Confort, Argent, Sympathie, Ecologie - le ressort d'achat dominant.",
+      "BANT immobilier : Budget, Autorite (decideur), Besoin, Timing (delai).",
+      "Priorite acquereur : le financement (capacite d'emprunt, apport, taux d'endettement) se qualifie en premier.",
+      "Taux d'endettement de reference generalement retenu par les banques : autour de 35 % des revenus, assurance comprise.",
+      "Trois questions a ne jamais oublier cote vendeur : la vraie motivation, le delai, et qui decide."
     ]
   },
   "estimation": {
@@ -737,6 +925,101 @@ export const ANIMATIONS_DATA: Record<string, AnimationModule> = {
       "Faites participer les plus silencieux via les binômes et les formats « debout/assis » où chacun doit se positionner : personne ne se cache. Valorisez autant la bonne formulation vendeur que le bon chiffre.",
       "Au débriefing des jeux de rôle, faites d'abord parler l'acteur (« qu'est-ce que tu as bien fait, que ferais-tu autrement ? »), puis le groupe, et finissez TOUJOURS par du positif et une phrase modèle réutilisable.",
       "Clôturez en faisant écrire à chacun ses propres engagements du plan d'action sur sa fiche, et prévoyez un point de suivi à la prochaine réunion commerciale : un acquis non réactivé sous 15 jours s'oublie."
+    ],
+    "materiel": [
+      "Videoprojecteur + acces a DVF (app.dvf.etalab.gouv.fr) pour montrer en direct des ventes reelles sur Martigues et comparer avec les prix affiches.",
+      "Fiches 'avis de valeur' type de l'agence a remplir sur un cas concret pendant la seance.",
+      "Cartons VRAI/FAUX sur le vocabulaire et le droit : avis de valeur vs expertise, loi Carrez vs loi Boutin, seuils DPE.",
+      "Un metre laser ou un metre ruban pour une demonstration rapide de prise de cotes et du calcul de surface.",
+      "Paperboard pour construire a la main la fourchette de valeur (reference -> ajustements +/- -> prix net).",
+      "Impression d'un DPE reel et d'une annonce avec etiquette energie pour travailler la valeur verte et l'audit obligatoire."
+    ],
+    "messagesCles": [
+      "Un avis de valeur n'est pas une expertise : l'agent donne un avis motive, pas une valeur certifiee opposable.",
+      "On n'estime pas avec son instinct ni pour faire plaisir : on estime avec des references de ventes reelles (DVF), pas des prix affiches.",
+      "Le prix se construit : on part d'une reference comparable, puis on ajuste point par point jusqu'au bien du client.",
+      "La surevaluation est un poison lent : le bien se grille, se vend plus bas et plus tard que s'il etait au bon prix des le depart.",
+      "Le DPE n'est plus un detail : une passoire energetique se decote et peut etre invendable sans travaux ou audit."
+    ],
+    "scriptOuverture": "Aujourd'hui, on va parler de l'acte le plus strategique de notre metier : l'estimation. Parce qu'un bien bien estime se vend ; un bien surestime pour 'faire plaisir' au vendeur et decrocher le mandat, lui, ne se vend pas - il pourrit en vitrine, on finit par le brader, et on perd le client et sa confiance. Je vais vous montrer comment passer de l'estimation 'au feeling' a l'avis de valeur argumente, sourcé, defendable face a un vendeur qui veut 20 000 euros de plus. On va voir les methodes, les vraies sources de donnees comme DVF, les pieges de la surface et du DPE. Premiere question : selon vous, quelle est la difference entre un avis de valeur et une expertise ?",
+    "questionsPublic": [
+      "Quelle est la difference entre un avis de valeur, une estimation et une expertise ? Qui a le droit de faire quoi ?",
+      "Sur quelles sources vous appuyez-vous aujourd'hui pour estimer, et lesquelles sont vraiment fiables ?",
+      "Pourquoi ne faut-il pas estimer a partir des prix affiches sur les portails ?",
+      "C'est quoi concretement la base DVF, et quelles sont ses limites ?",
+      "En loi Carrez, que se passe-t-il si la surface reelle est inferieure de plus de 5 % a celle annoncee ?",
+      "Quelle difference entre surface Carrez et surface habitable loi Boutin ?",
+      "De combien peut varier le prix d'un meme bien entre une etiquette DPE C et une etiquette F ? Qu'en pensez-vous ?",
+      "Quels sont les criteres qui justifient un ajustement a la hausse ou a la baisse par rapport a une reference ?",
+      "Pourquoi la surevaluation est-elle plus dangereuse qu'une legere sous-evaluation ?",
+      "Comment annoncez-vous un prix inferieur a ce que le vendeur esperait sans le braquer ni perdre le mandat ?"
+    ],
+    "exemplesTerrain": [
+      {
+        "titre": "DVF contre le prix 'du voisin' a Jonquieres",
+        "texte": "Un vendeur a Jonquieres est convaincu que son T4 vaut 290 000 euros 'parce que le voisin l'a affiche a ce prix'. En sortant DVF devant lui, le negociateur montre 4 ventes reelles de T4 comparables dans le quartier entre 238 000 et 255 000 euros sur 12 mois. Le voisin, lui, est toujours en vente depuis 8 mois. L'avis de valeur argumente a 249 000 euros est accepte, mandat signe."
+      },
+      {
+        "titre": "La passoire de Port-de-Bouc et l'audit obligatoire",
+        "texte": "Une maison classee F en limite de Port-de-Bouc est estimee initialement 'au prix du quartier'. Mais l'audit energetique obligatoire (en vigueur pour les F et G depuis avril 2023, etendu aux E depuis janvier 2025) chiffre 45 000 euros de travaux. La decote valeur verte et la peur de l'acquereur imposent un prix revu a la baisse de l'ordre de 10 a 15 %. Mieux vaut l'annoncer des l'estimation que le decouvrir au compromis."
+      },
+      {
+        "titre": "Les 6 m2 manquants loi Carrez",
+        "texte": "Un appartement a Ferrieres annonce 72 m2 Carrez est remesure : 66 m2 reels, soit plus de 5 % d'ecart. Sans correction, l'acquereur aurait pu, dans l'annee suivant l'acte authentique, exiger une reduction de prix proportionnelle. Le negociateur reprend les cotes au metre laser, corrige la surface et securise le dossier avant meme la mise en vente."
+      },
+      {
+        "titre": "La vue Etang qui justifie l'ajustement a la hausse",
+        "texte": "Deux T3 quasi identiques a Ferrieres : l'un sans vue, l'autre avec vue degagee sur l'Etang de Berre et une terrasse. A partir d'une meme reference DVF, le negociateur construit l'ajustement devant le vendeur : +X pour la vue, +X pour la terrasse, -X pour l'etage sans ascenseur. Le prix final n'est plus une opinion, c'est un calcul que le vendeur peut suivre ligne par ligne."
+      }
+    ],
+    "objectionsStagiaires": [
+      {
+        "question": "Si j'annonce un prix bas, je perds le mandat au profit de l'agence qui promet plus cher. Alors autant surestimer un peu, non ?",
+        "reponse": "C'est le piege numero 1. Le confrere qui surestime signe le mandat... et le bien ne se vend pas : au bout de 3 mois le vendeur est decu, baisse le prix, et le bien 'grille'. Vous, vous signez au bon prix, vous vendez, vous avez un client satisfait qui vous recommande. On ne gagne pas le mandat, on gagne la VENTE. Et un avis de valeur argumente avec DVF se defend bien mieux qu'un chiffre gonfle."
+      },
+      {
+        "question": "Les estimateurs en ligne donnent deja un prix en 30 secondes, a quoi je sers ?",
+        "reponse": "Les estimateurs en ligne travaillent sur des moyennes de quartier sans jamais voir le bien : ils ignorent l'etat, l'etage, la vue, les travaux, le DPE, l'exposition. Ils donnent un ordre de grandeur, pas un prix de vente. Votre valeur ajoutee, c'est precisement l'ajustement terrain que la machine ne peut pas faire, plus la connaissance fine du secteur."
+      },
+      {
+        "question": "Pourquoi s'embeter avec DVF, c'est long a consulter et les donnees ont 6 mois de retard ?",
+        "reponse": "DVF, ce sont les VRAIES ventes signees chez le notaire, pas des prix de reve affiches sur les portails. Oui il y a un decalage temporel et il faut interpreter (on ne connait pas l'etat du bien vendu), mais c'est la source la plus solide pour construire un avis defendable. On la croise avec sa connaissance du marche et les references de l'agence pour corriger le decalage."
+      },
+      {
+        "question": "Le DPE, ca concerne surtout la location, pour une vente le vendeur s'en fiche un peu non ?",
+        "reponse": "Plus du tout. Le DPE est opposable depuis 2021, l'etiquette figure dans l'annonce, et un bien F ou G necessite un audit energetique obligatoire a la vente. Les acquereurs integrent desormais le cout des travaux dans leur offre : une passoire se decote nettement. Ignorer le DPE a l'estimation, c'est se prendre une renegociation ou un refus de pret en pleine figure au compromis."
+      },
+      {
+        "question": "Surface Carrez, surface habitable, surface Boutin... c'est la meme chose pour le client, pourquoi se compliquer ?",
+        "reponse": "Non, et l'erreur coute cher. La loi Carrez s'applique a la vente des lots de copropriete (surface privative, hors elements sous 1,80 m de hauteur) ; la loi Boutin s'applique a la location (surface habitable). Une erreur Carrez de plus de 5 % ouvre a l'acquereur un droit a reduction de prix dans l'annee suivant l'acte. On mesure serieusement, on ne recopie pas l'ancien acte les yeux fermes."
+      },
+      {
+        "question": "Le vendeur me sort un prix affectif ('on y a mis toutes nos economies'), comment je lui dis non sans le vexer ?",
+        "reponse": "On ne dit jamais 'votre bien ne vaut pas ca', on dit 'le marche aujourd'hui valorise un bien comme le votre a tel niveau, voici les ventes qui le prouvent'. On separe la personne de l'objet et on parle references, pas opinions. L'empathie d'abord ('je comprends, c'est votre maison'), les chiffres ensuite. Le vendeur ne se bat pas contre vous, il se bat contre le marche - et le marche, c'est DVF."
+      },
+      {
+        "question": "Pour un bien atypique ou un viager, je n'ai pas de comparable, je fais comment ?",
+        "reponse": "Les cas particuliers (atypique, loue, viager, indivision) demandent une methode adaptee : on combine la comparaison avec d'autres approches (capitalisation du loyer pour un bien loue, calcul du bouquet et de la rente pour un viager, decote pour occupation). Quand c'est vraiment complexe ou a enjeu, on sait aussi passer la main a un expert immobilier : donner un avis faux sur un viager peut couter tres cher."
+      }
+    ],
+    "erreursFrequentes": [
+      "Erreur : surestimer pour decrocher le mandat -> Correction : estimer au juste prix avec DVF, car on ne gagne pas sur le mandat signe mais sur le bien vendu.",
+      "Erreur : estimer a partir des prix affiches sur les portails -> Correction : s'appuyer sur les ventes reellement signees (DVF/Patrim) et les references de l'agence.",
+      "Erreur : confondre avis de valeur et expertise, et promettre une 'valeur certifiee' -> Correction : annoncer clairement un avis de valeur motive, non opposable.",
+      "Erreur : recopier la surface de l'ancien acte sans verifier -> Correction : remesurer et distinguer Carrez (vente copro) et Boutin (location), un ecart Carrez >5 % ouvre droit a reduction de prix.",
+      "Erreur : negliger le DPE et l'audit energetique -> Correction : integrer l'etiquette, la valeur verte et le cout des travaux des l'estimation.",
+      "Erreur : donner un prix 'rond au feeling' sans construire la fourchette -> Correction : partir d'une reference puis ajuster critere par critere devant le vendeur.",
+      "Erreur : annoncer le prix brutalement et braquer le vendeur -> Correction : empathie d'abord, references ensuite, parler marche et non opinion.",
+      "Erreur : traiter un bien atypique/viager/loue comme un bien classique -> Correction : utiliser la methode adaptee et passer la main a un expert si l'enjeu l'exige."
+    ],
+    "chiffresCles": [
+      "Loi Carrez : s'applique a la vente de lots de copropriete ; surfaces sous 1,80 m de hauteur exclues ; un ecart reel de plus de 5 % en moins ouvre a l'acquereur un droit a reduction de prix dans l'annee suivant l'acte authentique.",
+      "Loi Boutin : surface habitable mentionnee dans le bail de location (notion distincte du Carrez).",
+      "DPE : opposable depuis le 1er juillet 2021 ; etiquette de A a G obligatoire dans l'annonce.",
+      "Audit energetique obligatoire a la vente : F et G depuis avril 2023, E depuis le 1er janvier 2025, D a partir du 1er janvier 2034.",
+      "Interdiction de location des passoires : G depuis le 1er janvier 2025, F a partir de 2028, E a partir de 2034 (calendrier loi Climat et resilience).",
+      "Sources de reference : DVF (app.dvf.etalab.gouv.fr, ventes signees, delai de publication ~6 mois) et Patrim via impots.gouv.fr.",
+      "Methodes d'evaluation principales : comparaison (la plus utilisee en residentiel), capitalisation du revenu (bien loue), et cout de remplacement pour certains cas."
     ]
   },
   "negociation": {
@@ -1001,6 +1284,108 @@ export const ANIMATIONS_DATA: Record<string, AnimationModule> = {
       "Sur les jeux de rôle, cadrez le débrief par du factuel et du bienveillant : on commente le COMPORTEMENT (« tu as ré-ancré avant de parler chiffre »), jamais la personne. Demandez d'abord à l'acteur ce qu'il a ressenti, puis au groupe deux réussites et un axe d'amélioration.",
       "Ancrez les acquis par la répétition active : faites reformuler les points clés PAR les participants en fin de séance (pas par vous), et exigez un engagement écrit concret et daté de chacun — un acquis non appliqué sous 48 h est un acquis perdu.",
       "Soignez l'énergie : utilisez les jeux debout (Vrai/Faux, défi chrono) après les temps assis, variez les binômes et les équipes, et récompensez la prise de risque autant que la bonne réponse pour que personne n'ait peur de se tromper devant les collègues."
+    ],
+    "materiel": [
+      "Un tableau blanc pour tracer la 'zone d'accord possible' (ZOPA) : prix plancher vendeur, prix plafond acquéreur, point de rencontre.",
+      "Des fiches de cas chiffrés (bien affiché 300 000, offre à 270 000, etc.) pour les exercices d'ancrage et de concession.",
+      "Un modèle d'offre d'achat écrit à jour, pour montrer le cadre juridique et ce qu'engage une offre au prix.",
+      "Un chronomètre ou minuteur pour les role-plays (simuler la pression du temps dans une négociation).",
+      "Un jeu de cartes 'objection vendeur' et 'objection acquéreur' pour l'entraînement au tac au tac.",
+      "Des exemples réels de diagnostics (DPE classe E/F, devis travaux) servant de leviers factuels de négociation."
+    ],
+    "messagesCles": [
+      "La négociation se gagne AVANT de commencer : celui qui est le mieux préparé (prix du marché, motivation des parties, délais) tient la position haute.",
+      "On ne lâche jamais une concession gratuitement : toute concession se troque contre une contrepartie.",
+      "L'ancrage fixe le terrain de jeu : le premier chiffre crédible oriente toute la suite de la discussion.",
+      "On négocie sur des FAITS (DPE, travaux, comparables), pas sur des impressions ou de l'affect.",
+      "Un accord n'existe que verrouillé : offre écrite, conditions claires, et on sécurise jusqu'à l'acte."
+    ],
+    "scriptOuverture": "Bonjour à tous. Je vais commencer par une affirmation qui va peut-être vous surprendre : la négociation ne se joue pas au moment où le client vous annonce son prix. Elle se joue bien avant, dans votre préparation. Celui qui connaît le marché, la motivation réelle du vendeur et le délai de l'acquéreur a déjà gagné la moitié de la partie. Aujourd'hui on va voir comment ancrer un prix, comment échanger des concessions contre des contreparties, et comment défendre un accord des deux côtés sans jamais le casser. À la fin, vous ne subirez plus une négociation : vous la conduirez.",
+    "questionsPublic": [
+      "Avant un rendez-vous de négociation, qu'est-ce que vous préparez concrètement ?",
+      "Comment savez-vous jusqu'où un vendeur est vraiment prêt à descendre ?",
+      "Quand un acquéreur fait une offre très basse, quelle est votre première réaction ?",
+      "Qu'est-ce qu'une concession que vous avez déjà lâchée sans rien obtenir en retour ?",
+      "Comment utilisez-vous le DPE ou les travaux comme argument de négociation ?",
+      "Que faites-vous quand vous recevez trois offres sur le même bien le même jour ?",
+      "Comment réagissez-vous quand un vendeur refuse une offre au prix pour attendre 'mieux' ?",
+      "Comment défendez-vous vos honoraires quand ils deviennent la variable d'ajustement de la négociation ?",
+      "À quel moment considérez-vous qu'un accord est vraiment verrouillé ?",
+      "Quelle est la négociation la plus difficile que vous ayez menée et pourquoi ?"
+    ],
+    "exemplesTerrain": [
+      {
+        "titre": "L'ancrage qui sauve 12 000 euros à Ferrières",
+        "texte": "Appartement vue mer secteur Ferrières affiché 285 000 euros. L'acquéreur ouvre à 255 000. Au lieu de couper la poire en deux, le négociateur réancre sur les comparables récents (deux ventes à 280 000 dans la même résidence) et sur l'état refait à neuf. Accord final à 277 000 : l'ancrage par les faits a préservé 12 000 euros par rapport à un simple 'milieu' à 270 000."
+      },
+      {
+        "titre": "La concession contre contrepartie à Saint-Pierre",
+        "texte": "Sur une maison à Saint-Pierre affichée 410 000, le vendeur accepte de baisser de 10 000 euros, mais le négociateur obtient en contrepartie que l'acquéreur renonce à la condition suspensive de vente de son propre bien et signe sous 15 jours. La baisse n'est pas gratuite : elle achète de la sécurité et de la vitesse pour le vendeur."
+      },
+      {
+        "titre": "Le levier DPE sur une passoire à La Couronne",
+        "texte": "Maison classée F à La Couronne, affichée 350 000. L'acquéreur brandit l'audit énergétique et un devis isolation + pompe à chaleur de 28 000 euros. Le négociateur reconnaît le fait mais objective : une partie seulement est 'immédiatement nécessaire', aides MaPrimeRénov' mobilisables. Accord à 332 000 au lieu des 322 000 demandés : on a négocié sur des chiffres, pas sur la peur."
+      },
+      {
+        "titre": "Les offres multiples bien gérées à Carro",
+        "texte": "Un cabanon rénové à Carro déclenche quatre offres en 48 heures. Plutôt que la surenchère sauvage, le négociateur fixe un cadre écrit identique pour tous (meilleure offre, financement prouvé, date butoir). Vendu 8 % au-dessus du prix affiché, à un acquéreur au financement solide : la transparence a évité le litige et sécurisé la vente."
+      }
+    ],
+    "objectionsStagiaires": [
+      {
+        "question": "Comment je fais quand l'acquéreur ouvre vraiment très bas, genre -20 % ?",
+        "reponse": "On ne s'offusque pas et on ne contre pas immédiatement par un petit geste. On garde le silence, on demande ce qui justifie ce chiffre, puis on réancre sur les faits (comparables, état, délai). Une offre très basse est souvent un test : votre calme et vos arguments factuels déplacent le curseur bien plus que l'émotion."
+      },
+      {
+        "question": "Le vendeur refuse toute baisse, 'c'est mon prix point final'. Je fais quoi ?",
+        "reponse": "On ne se bat pas contre lui, on l'arme de données : courbe des visites, retours acquéreurs, comparables vendus. On distingue le prix 'affiché' du prix 'de marché'. S'il refuse toujours, on cadre par écrit le risque (temps de vente, décote future) : le marché négocie à sa place, autant qu'il le voie venir."
+      },
+      {
+        "question": "Est-ce qu'une offre au prix oblige le vendeur à vendre ?",
+        "reponse": "Une offre d'achat au prix et sans condition, acceptée par le vendeur, engage les parties. Mais le vendeur reste libre de refuser une offre tant qu'il ne l'a pas acceptée, et le bien peut comporter des conditions. On recueille toujours l'offre par écrit et on explique précisément ce qu'elle engage avant de la transmettre."
+      },
+      {
+        "question": "Comment je négocie des deux côtés sans trahir personne ?",
+        "reponse": "On est transparent sur son rôle : l'agent défend la vente, pas un camp contre l'autre. On cherche la zone d'accord (ZOPA) où chacun y gagne : le vendeur son prix acceptable, l'acquéreur sa sécurité et son délai. La loyauté d'information des deux côtés est ce qui tient l'accord jusqu'à l'acte."
+      },
+      {
+        "question": "Quand le client veut rogner sur mes honoraires pour boucler, je cède ?",
+        "reponse": "Les honoraires ne sont pas la variable d'ajustement. On rappelle la valeur apportée (sécurisation, acquéreur financé, délai). Si on doit faire un geste, il se négocie comme une concession : contre une contrepartie (signature rapide, suppression d'une condition), jamais lâché en panique."
+      },
+      {
+        "question": "Je donne mon dernier prix tout de suite pour gagner du temps ?",
+        "reponse": "Non. Donner son plancher trop tôt supprime toute marge de manoeuvre et prive l'autre du sentiment d'avoir négocié. On avance par petites concessions décroissantes, chacune avec contrepartie : la perception d'un effort consenti compte autant que le chiffre final."
+      },
+      {
+        "question": "Comment je gère un acquéreur qui menace de partir si je ne cède pas ?",
+        "reponse": "On teste le bluff sans le braquer : on reformule son intérêt réel pour le bien, on rappelle qu'il y a d'autres visites. Souvent la menace de départ est un levier de pression, pas une décision. On garde la porte ouverte mais on ne négocie pas sous la contrainte émotionnelle."
+      },
+      {
+        "question": "Un accord oral entre vendeur et acquéreur, c'est bon, je peux souffler ?",
+        "reponse": "Non, tant que ce n'est pas écrit et signé rien n'est verrouillé. On formalise immédiatement l'offre et l'acceptation par écrit, on fixe les conditions suspensives et le délai jusqu'au compromis. L'accord 'de principe' est le moment le plus fragile : c'est là qu'on sécurise, pas qu'on relâche."
+      }
+    ],
+    "erreursFrequentes": [
+      "Erreur : arriver en négociation sans connaître le marché ni la motivation des parties. → Correction : préparer comparables, délais et vrais mobiles avant tout rendez-vous.",
+      "Erreur : couper la poire en deux par réflexe. → Correction : réancrer sur les faits et avancer par concessions calculées, pas par moyenne automatique.",
+      "Erreur : lâcher une concession sans contrepartie. → Correction : toute concession se troque (délai, condition supprimée, signature rapide).",
+      "Erreur : annoncer son prix plancher trop tôt. → Correction : garder de la marge, concessions décroissantes, laisser l'autre 'gagner' un effort.",
+      "Erreur : négocier sur l'affect et les impressions. → Correction : s'appuyer sur DPE, devis, diagnostics et comparables chiffrés.",
+      "Erreur : gérer les offres multiples dans l'opacité. → Correction : cadre écrit identique pour tous, date butoir, financement prouvé.",
+      "Erreur : transmettre une offre à l'oral sans formaliser. → Correction : recueillir toute offre par écrit et expliquer ce qu'elle engage.",
+      "Erreur : relâcher dès l'accord de principe. → Correction : verrouiller immédiatement par écrit, conditions et délai jusqu'au compromis."
+    ],
+    "chiffresCles": [
+      "Offre d'achat : de préférence écrite",
+      "une offre au prix et sans condition acceptée engage les parties",
+      "l'acquéreur particulier peut se rétracter dans le délai SRU de 10 jours après notification du compromis (Code de la construction et de l'habitation).",
+      "Compromis de vente : condition suspensive de prêt usuelle de 45 à 60 jours.",
+      "Honoraires de transaction : libres, barème affiché obligatoire (arrêté du 10 janvier 2017), fréquemment dégressifs (ordre de grandeur 3 à 6 % selon le prix).",
+      "Marge de négociation sur le marché : très variable, souvent de l'ordre de 3 à 8 % selon tension du secteur et qualité du bien.",
+      "DPE opposable depuis juillet 2021",
+      "audit énergétique obligatoire à la vente pour les logements F et G",
+      "gel des loyers puis interdiction progressive de location des passoires (G en 2025, F en 2028, E en 2034) — leviers factuels majeurs de négociation.",
+      "ZOPA = zone d'accord possible entre plancher vendeur et plafond acquéreur."
     ]
   },
   "mandat": {
@@ -1254,6 +1639,110 @@ export const ANIMATIONS_DATA: Record<string, AnimationModule> = {
       "Rendre tout concret et local : ramener chaque notion à un cas de Martigues / étang de Berre, à l'application de l'agence (dossier client, fiche Tracfin, bilan de commercialisation) et à des chiffres réels (barème, prix FAI, délais légaux).",
       "Soigner l'ouverture et la clôture : le brise-glace détend et fait émerger les freins réels ; la synthèse et le plan d'action du lendemain transforment la séance en comportements de terrain. Faire écrire à chacun ses 2-3 engagements avant de quitter la salle.",
       "Préparer le matériel la veille : support PowerPoint avec le chrono et les questions, ardoises/feuilles pour le quiz, cartes « Qui peut signer ? » imprimées, post-it et paperboard, fiches d'étude de cas et scripts de jeux de rôle en double exemplaire."
+    ],
+    "materiel": [
+      "Un exemplaire vierge du mandat exclusif CENTURY 21 (version en vigueur) ET du mandat simple, pour montrer physiquement la différence de clauses aux stagiaires.",
+      "Le registre des mandats (papier ou numérique) : montrer la numérotation continue et sans blanc exigée par le décret de 1972.",
+      "Un paperboard ou tableau blanc pour construire en direct la comparaison simple / exclusif / semi-exclusif.",
+      "Des cartes de role-play 'vendeur' (profils : vendeur pressé, vendeur qui a deja une agence, vendeur qui veut vendre seul) pour les mises en situation.",
+      "Le barème d'honoraires affiché de l'agence et un simulateur de calcul (tableur) pour l'exercice sur la rémunération.",
+      "Une fiche de vérification LCB-FT / pièces du mandant (CNI, titre de propriété, DPE, taxe foncière) à distribuer."
+    ],
+    "messagesCles": [
+      "Pas de mandat = pas de mission = pas d'honoraires : le mandat est l'acte fondateur, jamais une formalité.",
+      "L'exclusivité n'est pas une faveur qu'on demande, c'est le meilleur service qu'on rend au vendeur : plus de moyens engagés, un seul prix, une vente plus rapide.",
+      "Un mandat mal rédigé est un mandat nul : la loi Hoguet et le décret de 1972 ne pardonnent pas (mention manuscrite, durée, numéro, pas de blanc).",
+      "On vérifie TOUJOURS qui peut signer avant de signer : indivision, mariage, SCI, succession, mandat de protection.",
+      "Le droit de rétractation de 14 jours court hors établissement : on ne commercialise pas le bien avant son terme sans l'accord écrit du vendeur."
+    ],
+    "scriptOuverture": "Bonjour à tous. Aujourd'hui on parle de l'acte qui conditionne tout votre chiffre d'affaires : le mandat. Je vais vous poser une question simple : combien d'entre vous ont déjà perdu une vente parce qu'un confrère avait le même bien ? Gardez ça en tête. Pendant les deux prochaines heures, on va voir pourquoi un bon négociateur ne repart jamais d'un rendez-vous vendeur avec un mandat simple s'il peut faire mieux. Et surtout, on va voir comment rédiger un mandat qui tient devant un juge, parce qu'un mandat nul, c'est zéro euro d'honoraires.",
+    "questionsPublic": [
+      "Pour vous, concrètement, qu'est-ce qui change dans votre travail quotidien entre un mandat simple et un mandat exclusif ?",
+      "Quand un vendeur vous dit 'je préfère mettre plusieurs agences pour vendre plus vite', que lui répondez-vous ?",
+      "Qu'est-ce qui vous empêche aujourd'hui de signer plus d'exclusivités ?",
+      "Quelles mentions obligatoires d'un mandat connaissez-vous par coeur ?",
+      "Que faites-vous quand le bien appartient à un couple et qu'un seul conjoint est présent au rendez-vous ?",
+      "Comment présentez-vous vos honoraires quand le vendeur tique sur le pourcentage ?",
+      "Avez-vous déjà eu un vendeur qui s'est rétracté ? Que s'est-il passé ?",
+      "Quels documents demandez-vous systématiquement avant de rédiger le mandat ?",
+      "Comment pilotez-vous un mandat pendant sa durée pour éviter qu'il s'éteigne sans vente ?",
+      "Qu'est-ce qu'un mandat semi-exclusif pour vous, et l'avez-vous déjà utilisé ?"
+    ],
+    "exemplesTerrain": [
+      {
+        "titre": "La guerre des prix sur le Canal Saint-Sébastien",
+        "texte": "Un T3 avec vue canal à Martigues a été confié en mandat simple à trois agences. Résultat : affiché 249 000 euros chez l'une, 239 000 chez l'autre, 245 000 sur Le Bon Coin par le vendeur lui-même. Les acquéreurs ont flairé le flottement et négocié sur la base du prix le plus bas. Vendu 228 000 euros après 7 mois : le vendeur a perdu plus que la différence d'honoraires d'une exclusivité."
+      },
+      {
+        "titre": "L'exclusivité qui a payé à Jonquières",
+        "texte": "Une maison de ville quartier Jonquières, mandat exclusif de 3 mois à 320 000 euros. Reportage photo pro, home-staging léger (1 200 euros investis par l'agence) et visite virtuelle. Trois offres en trois semaines, vendue au prix. L'agent a pu investir parce qu'il était certain d'être rémunéré : c'est tout l'argument de l'exclusivité."
+      },
+      {
+        "titre": "La signature nulle en indivision à Lavéra",
+        "texte": "Un bien issu d'une succession, trois héritiers indivis. Le négociateur a signé le mandat avec un seul des trois, pressé de 'ne pas perdre le vendeur'. Un acquéreur se présente, offre au prix : les deux autres indivisaires refusent de vendre. Mandat inopposable, offre caduque, zéro honoraire et un client furieux. Leçon : en indivision, on signe avec tous les indivisaires ou un mandataire dûment habilité."
+      },
+      {
+        "titre": "La rétractation mal anticipée à Croix-Sainte",
+        "texte": "Mandat signé au domicile du vendeur un samedi. Dès le lundi l'agent lance la diffusion et organise deux visites. Le vendeur, qui avait un délai de 14 jours de rétractation (démarchage hors établissement), se rétracte au jour 10. Les visites étaient déjà faites, un acquéreur intéressé : litige et perte de temps. Il fallait soit attendre, soit obtenir un accord écrit de commercialisation anticipée."
+      }
+    ],
+    "objectionsStagiaires": [
+      {
+        "question": "Comment je convaincs un vendeur qui a déjà signé un mandat simple avec deux autres agences ?",
+        "reponse": "On ne casse pas le mandat simple du jour au lendemain : on vend la SUPÉRIORITÉ de l'exclusif. On propose un mandat exclusif qui démarre à l'échéance (ou à la résiliation) des autres, avec un plan d'action chiffré : photos pro, home-staging, diffusion premium, un seul prix cohérent. Le vendeur voit la différence d'engagement, c'est ça qui fait basculer."
+      },
+      {
+        "question": "Le vendeur dit que l'exclusivité le 'bloque'. Que répondre ?",
+        "reponse": "Reformuler : ce n'est pas lui qu'on bloque, c'est le bien qu'on protège. Avec l'exclusivité il garde un prix unique, un interlocuteur unique, et il peut toujours insérer une clause de visite directe. Rappeler que statistiquement l'exclusif se vend plus vite et plus cher parce qu'il n'y a pas de guerre des prix."
+      },
+      {
+        "question": "Est-ce que je peux faire signer un seul des deux époux si l'autre est d'accord par téléphone ?",
+        "reponse": "Non. Pour un bien commun ou pour la résidence principale de la famille, il faut l'accord des deux époux pour vendre (article 215 du Code civil pour le logement de famille). Un accord verbal ne vaut rien devant le notaire. On fait signer les deux, ou on obtient une procuration écrite."
+      },
+      {
+        "question": "Quelle durée je mets pour la clause d'exclusivité ?",
+        "reponse": "Une durée déterminée, en pratique souvent 3 mois d'exclusivité stricte puis bascule possible. Le mandat doit avoir une durée limitée et une clause de reconduction éventuelle plafonnée. On évite les durées trop courtes qui ne laissent pas le temps de travailler, et les durées trop longues qui démotivent le vendeur."
+      },
+      {
+        "question": "Si le vendeur trouve l'acquéreur lui-même pendant l'exclusivité, j'ai droit à mes honoraires ?",
+        "reponse": "Cela dépend de la clause. Dans un mandat exclusif avec clause pénale/clause d'exclusivité totale, oui, l'agence est fondée à percevoir ses honoraires ou une indemnité, car le vendeur s'est engagé à ne pas vendre seul. C'est précisément pour ça qu'on lit et explique cette clause au vendeur avant signature."
+      },
+      {
+        "question": "Faut-il vraiment une mention manuscrite sur le mandat ?",
+        "reponse": "Le mandat doit comporter les mentions obligatoires (identité des parties, désignation du bien, prix, honoraires et qui les paie, durée, conditions de dénonciation, numéro d'inscription au registre). La non-conformité peut entraîner la nullité et la perte des honoraires : on ne bâcle jamais la rédaction."
+      },
+      {
+        "question": "Le vendeur ne veut pas me donner le DPE tout de suite, je peux quand même commercialiser ?",
+        "reponse": "Non : le DPE doit être réalisé avant la mise en vente et sa classe énergie doit figurer dès l'annonce. Diffuser sans DPE expose à des sanctions et fausse la relation de confiance. On conditionne le lancement de la commercialisation à la remise du DPE."
+      },
+      {
+        "question": "C'est quoi concrètement mes obligations Tracfin sur un mandat ?",
+        "reponse": "L'agent est assujetti à la LCB-FT : vigilance sur l'identité du client, cohérence de l'opération, et déclaration de soupçon à Tracfin en cas d'anomalie (origine des fonds douteuse, prix incohérent, client réticent à s'identifier). On conserve les justificatifs d'identité dans le dossier."
+      }
+    ],
+    "erreursFrequentes": [
+      "Erreur : accepter un mandat simple par confort. → Correction : proposer systématiquement l'exclusivité avec un plan d'action chiffré ; le simple reste le dernier recours, pas le réflexe.",
+      "Erreur : rédiger le mandat à la va-vite avec des cases vides. → Correction : zéro blanc, toutes les mentions obligatoires renseignées, numéro de registre reporté avant de quitter le vendeur.",
+      "Erreur : faire signer une seule personne sans vérifier la propriété. → Correction : exiger le titre de propriété et faire signer tous les titulaires (couple, indivision, SCI, héritiers).",
+      "Erreur : lancer la commercialisation pendant le délai de rétractation hors établissement. → Correction : attendre les 14 jours ou obtenir l'accord écrit de commercialisation anticipée.",
+      "Erreur : annoncer un prix sans afficher la classe DPE. → Correction : DPE réalisé et classe mentionnée dès la première diffusion.",
+      "Erreur : présenter les honoraires en s'excusant. → Correction : annoncer le barème avec assurance comme la contrepartie d'un service de valeur, et qui les paie clairement indiqué.",
+      "Erreur : signer puis 'oublier' le mandat jusqu'à son échéance. → Correction : piloter le mandat (points réguliers avec le vendeur, comptes rendus de visites, ajustement de prix argumenté).",
+      "Erreur : négliger la vérification d'identité LCB-FT. → Correction : contrôler et conserver la pièce d'identité du mandant dès l'ouverture du dossier."
+    ],
+    "chiffresCles": [
+      "Loi Hoguet (loi n°70-9 du 2 janvier 1970) et décret du 20 juillet 1972 : cadre de l'activité et du mandat.",
+      "Mandat écrit obligatoire, en autant d'exemplaires que de parties, inscrit à un registre des mandats avec numéro continu et sans blanc.",
+      "Durée du mandat déterminée et limitée (en pratique exclusivité souvent 3 mois).",
+      "Droit de rétractation : 14 jours calendaires pour le vendeur en cas de démarchage hors établissement (Code de la consommation).",
+      "Honoraires libres mais barème affiché obligatoire (arrêté du 10 janvier 2017)",
+      "mention de qui paie les honoraires obligatoire dans le mandat et l'annonce.",
+      "DPE obligatoire avant mise en vente, classe affichée dès l'annonce (depuis 2011, opposable depuis juillet 2021)",
+      "audit énergétique obligatoire pour les passoires F et G à la vente.",
+      "Loi ALUR (2014) : encadrement, obligation de formation continue 14h/an (42h sur 3 ans) et carte T renouvelable tous les 3 ans.",
+      "LCB-FT / Tracfin : obligation de vigilance et déclaration de soupçon.",
+      "Logement de famille : accord des deux époux (art.",
+      "215 Code civil)."
     ]
   },
   "vente-elite": {
@@ -1487,6 +1976,106 @@ export const ANIMATIONS_DATA: Record<string, AnimationModule> = {
       "Incarner l'exemple : vous êtes le modèle de congruence. Parlez posément, tenez vos silences, regardez vos négociateurs. Faites une vraie démo « émotion » en ouverture pour poser le niveau.",
       "Rendre concret : remplacez systématiquement les exemples génériques par de VRAIS biens du portefeuille et de VRAIS chiffres DVF/Martigues (Jonquières, Croix-Sainte, centre). Préparez cartes et questions avant la séance.",
       "Cadrer l'éthique sans relâche : rappelez que ces techniques servent l'intérêt du client. Insistez sur le risque réel (avis négatifs, recours, nullité de la vente) — un manager qui tolère la manipulation fabrique des litiges."
+    ],
+    "materiel": [
+      "Un support projetant la grille SONCASE (Sécurité, Orgueil, Nouveauté, Confort, Argent, Sympathie, Écologie) et la structure CAP (Caractéristique, Avantage, Preuve).",
+      "La liste des 6 principes de Cialdini affichée (réciprocité, engagement/cohérence, preuve sociale, autorité, sympathie, rareté).",
+      "Des témoignages clients réels et avis Google de l'agence, pour l'exercice sur la preuve sociale.",
+      "Un bien 'fil rouge' (fiche + photos d'un bien réel du secteur) servant à construire un argumentaire complet pendant la session.",
+      "Une caméra ou smartphone sur trépied pour filmer les pitchs et travailler le non-verbal et la congruence.",
+      "Des cartes profils acheteur (le sécuritaire, l'orgueilleux, l'économe, l'écolo) pour adapter l'argumentaire en role-play."
+    ],
+    "messagesCles": [
+      "On vend de l'émotion et un bénéfice, pas une liste de caractéristiques : le client achète ce que le bien va changer dans sa vie.",
+      "Un argument sans preuve n'est qu'une affirmation : toujours CAP (Caractéristique → Avantage → Preuve).",
+      "La persuasion commence par l'écoute : on adapte au SONCASE du client, on ne récite pas un pitch standard.",
+      "La congruence fait vendre : le fond, la voix et le non-verbal doivent dire la même chose, sinon le client ne croit pas.",
+      "Persuader n'est jamais tromper : l'élite vend par la vérité mise en valeur, pas par le mensonge — la loi et la déontologie l'imposent."
+    ],
+    "scriptOuverture": "Bonjour à tous. Posez-vous une question : la dernière fois que vous avez acheté quelque chose qui vous tient à coeur, est-ce que c'est la fiche technique qui vous a décidé ? Non. C'est une émotion, une projection, une histoire. Les clients font pareil avec un bien immobilier. Aujourd'hui on ne va pas apprendre à réciter des mètres carrés, on va apprendre à faire ressentir. CAP, SONCASE, les leviers de Cialdini, le storytelling : les outils des vendeurs d'élite. Et une règle non négociable : on persuade toujours par la vérité, jamais par le mensonge.",
+    "questionsPublic": [
+      "Quand vous présentez un bien, parlez-vous plutôt de ce qu'il EST ou de ce qu'il va CHANGER pour le client ?",
+      "Donnez-moi une caractéristique d'un bien, et transformez-la en avantage puis en preuve, là, maintenant.",
+      "Comment repérez-vous ce qui compte vraiment pour un acheteur : la sécurité ? le prix ? le prestige ?",
+      "Quelle preuve sociale utilisez-vous aujourd'hui pour rassurer un client hésitant ?",
+      "Racontez-moi la dernière fois qu'une histoire a déclenché un coup de coeur chez un acquéreur.",
+      "Est-ce que votre voix et votre posture disent la même chose que vos mots quand vous vendez ?",
+      "Quel principe de Cialdini utilisez-vous sans même le savoir ?",
+      "Comment créez-vous un sentiment de rareté sans mentir sur le bien ?",
+      "Où est pour vous la frontière entre persuader et manipuler ?",
+      "Quel a été votre meilleur argument de vente et pourquoi a-t-il marché ?"
+    ],
+    "exemplesTerrain": [
+      {
+        "titre": "L'émotion plutôt que les mètres carrés à Saint-Julien",
+        "texte": "Une villa à Saint-Julien ne partait pas malgré une annonce 'T5, 140 m², terrain 600 m²'. Le négociateur réécrit : 'Vos enfants qui rentrent de l'école en vélo, l'apéro sur la terrasse plein sud face aux collines'. Deux visites émotion plus tard, coup de coeur et vente au prix. Même bien, même prix : seule l'histoire a changé."
+      },
+      {
+        "titre": "Le CAP qui débloque à Port-de-Bouc",
+        "texte": "Appartement à Port-de-Bouc, double vitrage récent. Caractéristique : double vitrage. Avantage : factures de chauffage réduites et calme malgré la proximité de l'avenue. Preuve : classe DPE passée de E à D et facture énergie du vendeur à l'appui. L'acheteur sécuritaire et économe a signé : la preuve a transformé l'argument en certitude."
+      },
+      {
+        "titre": "La preuve sociale sur un bien de prestige aux Laurons",
+        "texte": "Sur une propriété vue mer aux Laurons, un acquéreur hésitait sur le prix. Le négociateur montre trois ventes récentes du même standing dans le secteur et deux avis Google 5 étoiles de vendeurs accompagnés par l'agence. 'Les autres acheteurs de ce standing valident ce niveau de prix' : l'hésitation tombe, offre à 96 % du prix affiché."
+      },
+      {
+        "titre": "La rareté honnête à Martigues centre",
+        "texte": "Un T2 avec balcon et place de parking en centre-ville, denrée rare. Le négociateur ne bluffe pas : il annonce factuellement 'trois visites programmées cette semaine, parking inclus ce qui est exceptionnel dans ce secteur'. La rareté réelle, énoncée sans mentir, a déclenché une offre dès le premier soir."
+      }
+    ],
+    "objectionsStagiaires": [
+      {
+        "question": "C'est quoi la différence concrète entre persuader et manipuler ?",
+        "reponse": "Persuader, c'est mettre en valeur une vérité pour aider le client à décider dans son intérêt ; manipuler, c'est le pousser contre son intérêt en déformant les faits. La ligne est simple : si le client découvrait tout ce que vous savez, serait-il content d'avoir acheté ? Si oui, c'est de la persuasion. Si non, c'est de la manipulation — et c'est interdit."
+      },
+      {
+        "question": "Le SONCASE, je dois le deviner comment en 5 minutes ?",
+        "reponse": "On ne devine pas, on écoute et on questionne. Les mots du client trahissent son moteur : 'je veux être tranquille' = Sécurité, 'c'est la plus belle du quartier' = Orgueil, 'combien ça consomme' = Argent/Écologie. On reformule, on valide, puis on choisit les arguments CAP qui touchent SON moteur, pas tous."
+      },
+      {
+        "question": "Le storytelling, ça ne fait pas 'vendeur de rêve' qui enjolive ?",
+        "reponse": "Pas si l'histoire est vraie. On ne raconte pas un conte, on fait PROJETER le client dans un usage réel du bien : la terrasse pour les repas d'été, le bureau pour le télétravail. On part de faits réels du bien et on les met en scène. L'émotion est le véhicule, la vérité reste le contenu."
+      },
+      {
+        "question": "La preuve sociale, je n'ai pas toujours de témoignages sous la main.",
+        "reponse": "Alors on les construit en amont : on demande systématiquement un avis Google après chaque vente, on garde des références de ventes comparables, des chiffres de l'agence. La preuve sociale se prépare avant le rendez-vous ; un vendeur d'élite ne part jamais sans ses preuves."
+      },
+      {
+        "question": "Comment je crée de la rareté sans mentir sur l'affluence ?",
+        "reponse": "On s'appuie sur du réel : nombre de visites réellement programmées, caractéristiques objectivement rares (parking en centre, vue dégagée, DPE favorable). Inventer des acheteurs fantômes est à la fois contre-productif (ça se retourne) et déontologiquement interdit. La rareté vraie suffit presque toujours."
+      },
+      {
+        "question": "Mon pitch est bon mais ça ne prend pas. Pourquoi ?",
+        "reponse": "Souvent un problème de congruence : vos mots sont bons mais votre voix est plate ou votre posture fermée, et le client ressent le décalage. On travaille le non-verbal : rythme, regard, ouverture du corps. Un argument juste dit sans conviction vaut moins qu'un argument simple dit avec congruence."
+      },
+      {
+        "question": "Le principe d'autorité, ça marche vraiment en immobilier ?",
+        "reponse": "Oui, à condition de l'incarner sans arrogance : connaissance fine du secteur, chiffres du marché, maîtrise juridique. Le client suit l'expert qui le rassure. L'autorité se montre par la compétence démontrée (données, précision), pas par le ton péremptoire."
+      },
+      {
+        "question": "Jusqu'où j'ai le droit d'aller dans la mise en valeur d'un bien ?",
+        "reponse": "Jusqu'à la vérité, pas au-delà. Mettre en avant les atouts : oui. Taire un vice caché, un défaut connu ou gonfler une surface : non — c'est du dol et ça engage votre responsabilité. Le devoir d'information et de conseil prime toujours sur l'argument de vente."
+      }
+    ],
+    "erreursFrequentes": [
+      "Erreur : réciter les caractéristiques (surface, étage, année). → Correction : traduire chaque caractéristique en avantage concret pour CE client (méthode CAP).",
+      "Erreur : servir le même pitch à tout le monde. → Correction : écouter et détecter le SONCASE, puis sélectionner les arguments qui touchent son moteur.",
+      "Erreur : affirmer sans prouver. → Correction : toujours une preuve (facture, DPE, comparable, témoignage) derrière chaque avantage.",
+      "Erreur : parler plus qu'écouter. → Correction : questionner, reformuler, laisser le client exprimer ses motivations avant d'argumenter.",
+      "Erreur : négliger le non-verbal et la voix. → Correction : travailler la congruence (rythme, regard, posture) ; le fond et la forme doivent concorder.",
+      "Erreur : inventer une rareté ou des acheteurs fantômes. → Correction : s'appuyer sur une rareté réelle et des faits vérifiables.",
+      "Erreur : enjoliver au point de taire un défaut. → Correction : devoir d'information et de conseil d'abord ; on persuade par la vérité, jamais par le dol.",
+      "Erreur : chercher le coup de coeur sans jamais demander l'engagement. → Correction : après l'émotion, conclure et verrouiller l'adhésion par une question d'engagement."
+    ],
+    "chiffresCles": [
+      "CAP = Caractéristique → Avantage → Preuve.",
+      "SONCASE = Sécurité, Orgueil, Nouveauté, Confort, Argent, Sympathie, Écologie (le E ajouté au SONCAS classique pour l'enjeu énergétique/environnemental).",
+      "Les 6 principes de Cialdini : réciprocité, engagement et cohérence, preuve sociale, autorité, sympathie, rareté.",
+      "Cadre légal de la persuasion : devoir d'information et de conseil de l'agent (loi Hoguet)",
+      "interdiction des pratiques commerciales trompeuses (art. L121-2 et suivants du Code de la consommation)",
+      "dol et vice caché engagent la responsabilité civile du vendeur et de l'agent (Code civil)",
+      "obligation d'afficher le DPE et données exactes (surface loi Carrez pour les lots de copropriété, tolérance 5 %).",
+      "Règle d'or : si le client connaissait tout ce que vous savez, il devrait rester content d'avoir acheté."
     ]
   },
   "objections": {
@@ -1733,6 +2322,108 @@ export const ANIMATIONS_DATA: Record<string, AnimationModule> = {
       "Filmez (ou enregistrez au téléphone), avec l'accord des participants, les jeux de rôle : le débrief sur images est deux fois plus efficace. Commencez toujours par ce qui a marché avant de corriger.",
       "En débrief, donnez le beau rôle au groupe : demandez d'abord à l'équipe ce qu'elle aurait fait, puis complétez — on ancre mieux en faisant trouver qu'en assénant la réponse.",
       "Terminez par un engagement écrit et daté de chacun (plan d'action) et fixez un point de suivi à 15 jours pour vérifier l'application terrain et célébrer les premières réussites."
+    ],
+    "materiel": [
+      "Paperboard ou tableau blanc + feutres de 3 couleurs (pour construire la méthode CRAC en direct : Creuser / Reformuler / Argumenter / Contrôler).",
+      "Jeu de 20 cartes 'objections' plastifiées (une objection vendeur ou acquéreur par carte : 'c'est trop cher', 'je vais réfléchir', 'je confie à plusieurs agences'...) pour les tirages en binôme.",
+      "Fiche cartonnée recto-verso 'Boîte à outils' (édredon, miroir, creusage, recadrage, division, différentiel, boomerang, preuve sociale) à distribuer à chaque stagiaire.",
+      "Un ordinateur avec accès DVF (app.dvf.etalab.gouv.fr) projeté, pour montrer en live comment répondre à 'c'est trop cher' avec des ventes réelles sur Martigues.",
+      "Chronomètre (ou minuteur du téléphone) pour les exercices de silence : faire tenir 7 à 10 secondes de silence après une objection.",
+      "Grille d'auto-évaluation des jeux de rôle (accueil / creusage / isolement / preuve / contrôle), une par stagiaire."
+    ],
+    "messagesCles": [
+      "Une objection n'est pas un 'non', c'est un signe d'intérêt : le client qui objecte dialogue encore, donc il peut être convaincu.",
+      "On comprend AVANT de répondre : le premier réflexe est de creuser ('c'est-à-dire ?', 'par rapport à quoi ?'), jamais de contre-argumenter dans la seconde.",
+      "On isole l'objection : 'à part ce point, tout le reste vous convient ?' Tant qu'on n'a pas isolé, on argumente dans le vide.",
+      "Le silence est une arme : après avoir répondu ou posé la question de contrôle, on se tait et on laisse le client parler.",
+      "On est l'allié du client face au problème, jamais son adversaire : on remplace le 'oui, mais...' par 'oui, et...'."
+    ],
+    "scriptOuverture": "Levez la main : qui, cette semaine, a entendu un 'c'est trop cher' ou un 'je vais réfléchir' ? ... Voilà, tout le monde. Bienvenue dans le vrai métier. Aujourd'hui, on ne va pas apprendre à éviter les objections : on va apprendre à les aimer. Parce qu'un vendeur ou un acquéreur qui objecte, c'est quelqu'un qui est encore dans la pièce avec vous, qui discute encore, donc que vous pouvez encore convaincre. Celui qui est vraiment perdu, lui, ne dit rien : il raccroche, il ne rappelle pas. On va voir une méthode simple en 4 lettres, CRAC, et une boîte à outils que vous ressortirez dès demain en rendez-vous. Objectif de la matinée : qu'à la fin, aucune objection de cette salle ne vous fasse plus peur.",
+    "questionsPublic": [
+      "Pour vous, quelle est la différence entre une objection et un refus ?",
+      "Quand un vendeur de Jonquières vous dit 'votre prix est trop bas', c'est une objection sincère, un prétexte ou une objection tactique ?",
+      "Quelle est la toute première chose à faire quand une objection tombe : répondre, ou creuser ?",
+      "Qui sait me dire ce que veut dire chaque lettre de CRAC ?",
+      "Face à 'je vais réfléchir', qu'est-ce qui se passe si vous répondez simplement 'd'accord, je vous laisse ma carte' ?",
+      "Comment vérifier, en une seule question, si une objection est sincère ou si c'est juste une fausse barbe ?",
+      "Quand un acquéreur dit 'c'est trop cher', quelle question vous permet de savoir trop cher par rapport à quoi ?",
+      "Qui est déjà resté volontairement silencieux 7 secondes après avoir posé une question ? Qu'est-ce qui s'est passé ?",
+      "Quel argument juridique pouvez-vous sortir pour rassurer un acquéreur qui a peur de s'engager ?",
+      "Un vendeur dit 'je préfère confier à trois agences en même temps' : quel est votre argument-clé en une phrase ?"
+    ],
+    "exemplesTerrain": [
+      {
+        "titre": "Le T3 de Ferrières à 'c'est trop cher'",
+        "texte": "Un acquéreur visite un T3 de 68 m² avec vue canal à Ferrières, affiché 215 000 €. Il lance 'c'est trop cher'. Le négociateur ne baisse pas : il creuse ('trop cher par rapport à quoi ?'), sort DVF et montre deux T3 équivalents vendus 208 000 € et 221 000 € dans le même secteur, puis applique la division : les 7 000 € d'écart demandés étalés sur un prêt 25 ans à taux courant, c'est environ 30 € par mois, 'le prix d'un plein d'essence pour la vue canal'. L'offre est faite à 210 000 €, acceptée."
+      },
+      {
+        "titre": "Le mandat exclusif sauvé par l'isolement",
+        "texte": "À l'estimation d'une maison de La Couronne, les propriétaires disent 'vos honoraires sont trop élevés, 12 000 €, c'est beaucoup'. Le négociateur isole : 'à part les honoraires, l'estimation et notre plan de commercialisation vous conviennent ?' Oui. Donc le seul point, ce sont les honoraires. Il argumente sur le mandat exclusif (diffusion renforcée, acquéreurs qualifiés, négociation déléguée) et rappelle que les honoraires ne sont dus qu'en cas de vente signée. Mandat exclusif signé le soir même."
+      },
+      {
+        "titre": "Le 'je vais réfléchir' du couple de Saint-Pierre",
+        "texte": "Après une visite coup de coeur d'une villa à Saint-Pierre, le couple dit 'on va réfléchir'. Le négociateur ne lâche pas : 'bien sûr, et pour réfléchir utilement, qu'est-ce qui vous retient aujourd'hui, le bien lui-même ou le financement ?' Le vrai frein sort : madame veut vérifier la distance école pour les enfants. Réponse immédiate (groupe scolaire à 6 min), et rappel du délai SRU de 10 jours de rétractation qui protège. Offre écrite signée le lendemain."
+      },
+      {
+        "titre": "Le DPE F transformé en argument",
+        "texte": "Un appartement ancien de L'Île affiche un DPE F. Un acquéreur objecte 'c'est une passoire, ça va me coûter une fortune'. Le négociateur reconnaît (édredon), chiffre les travaux de rénovation énergétique avec un devis (isolation + menuiseries), rappelle les aides (MaPrimeRénov') et recadre : le prix a déjà été ajusté de ce fait, et une fois les travaux faits, le bien repasse en D et prend de la valeur. L'acquéreur négocie l'enveloppe travaux dans son offre, mais achète."
+      },
+      {
+        "titre": "Le barrage téléphonique en prospection",
+        "texte": "En pige sur une annonce de particulier à Croix-Sainte, le négociateur appelle : 'je ne vends pas par agence'. Il ne discute pas au téléphone (objectif unique de l'appel = décrocher le rendez-vous) : 'je comprends, beaucoup de propriétaires me disent ça au début. Justement, laissez-moi 20 minutes pour vous montrer ce qu'un particulier ne voit pas : les acquéreurs réels que j'ai déjà sur ce secteur. Vous êtes plutôt mardi 18h ou jeudi midi ?' Rendez-vous décroché."
+      }
+    ],
+    "objectionsStagiaires": [
+      {
+        "question": "Et si je creuse et que le client s'énerve de mes questions ?",
+        "reponse": "C'est rare si on amortit d'abord ('je comprends', édredon) et si on formule la question comme un service rendu : 'pour vous répondre précisément, j'ai besoin de comprendre...'. Le client sent qu'on l'aide, pas qu'on l'interroge. Si vraiment il se ferme, on ralentit et on reformule, on ne pousse pas."
+      },
+      {
+        "question": "Quand le client dit 'c'est trop cher', je n'ai pas le réflexe DVF sous la main en visite, je fais comment ?",
+        "reponse": "On prépare AVANT la visite : on imprime ou on garde sur le téléphone les 3-4 ventes comparables DVF du secteur. L'objection prix est la plus prévisible du métier, donc on l'anticipe systématiquement. Sans comparables, on tient avec la division et le recadrage, mais la preuve chiffrée reste imparable."
+      },
+      {
+        "question": "Je trouve le silence de 7 secondes insupportable, j'ai toujours envie de combler.",
+        "reponse": "C'est normal, c'est le réflexe n°1 à corriger. On s'entraîne en binôme avec le chronomètre. Astuce : après votre question de conclusion ou votre réponse, respirez lentement par le ventre et comptez mentalement jusqu'à 7. Celui qui parle en premier après le silence, c'est presque toujours le client, et il vous livre son vrai frein."
+      },
+      {
+        "question": "Un vendeur me dit qu'un concurrent lui a annoncé 30 000 € de plus. Je m'aligne ?",
+        "reponse": "Jamais par réflexe. C'est souvent du 'rentre-mandat' : surestimer pour décrocher le mandat, puis faire baisser le prix dans trois mois. On ne critique pas le confrère, on recadre sur les faits : 'je vous donne le prix auquel ça se vend réellement, pas celui qui fait plaisir. Un prix trop haut, ce sont des visites sans offre et un bien qui fatigue.' On s'appuie sur DVF."
+      },
+      {
+        "question": "Quelle différence entre isoler et reformuler ? J'ai du mal.",
+        "reponse": "Reformuler = répéter l'objection avec vos mots pour montrer que vous avez compris ('si je comprends bien, le prix vous semble élevé'). Isoler = vérifier que c'est le SEUL frein ('à part le prix, tout le reste vous convient ?'). Reformuler rassure ; isoler évite de lever une objection pour en voir surgir trois autres."
+      },
+      {
+        "question": "Face à 'je dois en parler à mon conjoint absent', qu'est-ce que je peux faire ?",
+        "reponse": "On ne force pas une décision sur une personne seule, mais on prépare le oui : 'très bien, et vous, de votre côté, c'est oui ? Qu'est-ce qui pourrait bloquer votre conjoint ?' On arme la personne présente avec les réponses, on fixe un rendez-vous commun rapide (visio possible) et on rappelle le délai de rétractation qui sécurise la décision du couple."
+      },
+      {
+        "question": "L'objection muette, comment je la fais sortir sans braquer ?",
+        "reponse": "On verbalise doucement ce qu'on observe : 'je vous sens hésitant(e), il y a un point qui vous chiffonne ?' ou 'vous regardez votre conjoint, qu'est-ce qui vous retient ?' Nommer le non-dit avec bienveillance ouvre la parole. L'important est le ton : curieux et allié, jamais accusateur."
+      },
+      {
+        "question": "Certaines objections reviennent toujours. On est obligé d'attendre qu'elles tombent ?",
+        "reponse": "Non, on anticipe. Si vous savez que le DPE F ou les travaux vont sortir, désamorcez avant : 'vous allez voir, ce bien demande des travaux, c'est justement pour ça que le prix est déjà attractif et que vous pourrez le faire à votre goût.' On coupe l'objection avant qu'elle ne se forme dans la tête du client."
+      }
+    ],
+    "erreursFrequentes": [
+      "Erreur : répondre à l'objection dans la seconde, par réflexe. -> Correction : accueillir et creuser d'abord ('c'est-à-dire ?'), comprendre avant de répondre.",
+      "Erreur : baisser le prix dès le premier 'c'est trop cher'. -> Correction : ne jamais baisser par réflexe, creuser 'trop cher par rapport à quoi ?' et sortir les comparables DVF.",
+      "Erreur : argumenter sans avoir isolé l'objection. -> Correction : poser 'à part ça, tout le reste vous convient ?' avant de déployer la preuve.",
+      "Erreur : combler le silence juste après avoir répondu ou conclu. -> Correction : se taire 7 à 10 secondes et laisser le client livrer son vrai frein.",
+      "Erreur : enchaîner les 'oui, mais...' qui braquent le client. -> Correction : passer au 'oui, et...' qui additionne au lieu de contredire.",
+      "Erreur : accepter un 'je vais réfléchir' nu sans rien creuser. -> Correction : 'bien sûr, et qu'est-ce qui vous retient aujourd'hui, le bien ou le financement ?'",
+      "Erreur : critiquer le confrère qui a surestimé le bien. -> Correction : rester sur les faits et DVF, dénoncer le mécanisme (rentre-mandat) sans attaquer la personne.",
+      "Erreur : discuter et argumenter longuement au téléphone en prospection. -> Correction : objectif unique de l'appel = décrocher le rendez-vous, pas vendre."
+    ],
+    "chiffresCles": [
+      "CRAC = Creuser / Reformuler / Argumenter / Contrôler.",
+      "Silence utile après une objection ou une question : 7 à 10 secondes.",
+      "Délai de rétractation acquéreur (loi SRU) : 10 jours.",
+      "Condition suspensive de prêt (loi Scrivener) : en général 45 à 60 jours.",
+      "Délai de réflexion sur l'offre de prêt : 10 jours minimum.",
+      "Question-test du prétexte : 'si je règle ce point, on signe ?' Repère local : toujours préparer 3 à 4 ventes comparables DVF du secteur (Martigues et alentours) avant chaque visite pour traiter l'objection prix."
     ]
   },
   "mots-vente": {
@@ -1996,6 +2687,112 @@ export const ANIMATIONS_DATA: Record<string, AnimationModule> = {
       "Montrer l'exemple : soignez VOTRE propre vocabulaire pendant l'animation (vous, honoraires, point à regarder). Les négociateurs calquent les mots qu'ils entendent de leur manager.",
       "Partir du terrain : illustrez chaque principe avec un bien réel de l'agence en portefeuille à Martigues — c'est bien plus marquant qu'un exemple abstrait.",
       "Clore par l'engagement : faites remplir puis lire à voix haute le plan d'action individuel. Un engagement verbalisé devant le groupe pèse bien plus qu'une bonne intention gardée pour soi."
+    ],
+    "materiel": [
+      "Grand tableau à deux colonnes 'Mots noirs à bannir -> Mots qui vendent' (problème->point de vigilance, commission->honoraires, dépenser->investir, cher->positionné, signer->valider ensemble...), construit en direct avec la salle.",
+      "Fiche mémo 'Power words' + vocabulaire de la preuve sociale + lexique sensoriel (VAKOG) à distribuer.",
+      "Enregistreur vocal (ou smartphone) pour faire écouter aux stagiaires leur propre voix : ton, rythme, silence, tics de langage.",
+      "Exemples d'annonces réelles (une 'plate' et une 'storytellée') projetées pour comparaison, avec la structure AIDA surlignée.",
+      "Fiche des mentions obligatoires de l'annonce (honoraires et qui les paie, DPE/GES, barème, statut du bien) pour l'exercice d'écriture.",
+      "Chronomètre pour les exercices de silence et de débit de parole (viser un rythme posé, des pauses marquées)."
+    ],
+    "messagesCles": [
+      "Les mots créent des images : le cerveau ne traite pas la négation, donc 'ne vous inquiétez pas' installe l'inquiétude. On formule au positif.",
+      "On vend des bénéfices, pas des caractéristiques : pas 'double vitrage' mais 'vous dormez au calme, même côté boulevard'.",
+      "Le mot préféré du client, c'est 'vous' ; le mot qui persuade, c'est 'parce que' : toute affirmation gagne à être justifiée.",
+      "On remplace les mots noirs par des mots qui rassurent : 'commission' -> 'honoraires', 'cher' -> 'positionné', 'signer' -> 'valider ensemble'.",
+      "Les mots doivent tenir à la visite : la sincérité est la technique la plus rentable, et exagérer un atout est une pratique commerciale trompeuse."
+    ],
+    "scriptOuverture": "Je vais vous dire une phrase, écoutez bien : 'ne pensez surtout pas à la raffinerie au loin'. ... Voilà, vous y avez pensé. Le cerveau ne traite pas le 'ne pas'. C'est toute la puissance des mots : ils fabriquent des images dans la tête du client, qu'on le veuille ou non. Aujourd'hui, on va faire le ménage dans votre vocabulaire : virer les mots qui sabotent, installer ceux qui vendent. On ne parlera pas que de mots d'ailleurs : la voix, le rythme, le silence, et l'écrit, l'annonce, l'email, le SMS. Et une règle sacrée : les mots doivent tenir à la visite. On n'embellit jamais ce qui n'existe pas. À la fin, vous aurez un arsenal, et une conscience : vendre avec des mots justes, c'est vendre durablement.",
+    "questionsPublic": [
+      "Pourquoi 'ne vous inquiétez pas' est-il une phrase à bannir ?",
+      "Quel est, selon vous, le mot préféré de votre client dans toute la conversation ?",
+      "Par quoi remplaceriez-vous le mot 'commission' ? Et 'cher' ? Et 'signer' ?",
+      "Qu'est-ce que le mot 'parce que' ajoute à une phrase, même quand la raison est évidente ?",
+      "Quelle est la différence entre vendre une caractéristique et vendre un bénéfice ? Donnez-moi un exemple.",
+      "Vous annoncez un prix au téléphone : qu'est-ce que vous faites juste après ?",
+      "Un client vous dit 'je le sens, c'est du concret' : dans quel canal sensoriel est-il, et comment lui répondez-vous ?",
+      "Citez-moi les trois ingrédients d'une bonne histoire de bien.",
+      "Révéler qu'un vendeur divorce et doit vendre vite, bonne ou mauvaise idée ? Pourquoi ?",
+      "Que risque-t-on, légalement, à taire une servitude ou une nuisance connue de l'acquéreur ?"
+    ],
+    "exemplesTerrain": [
+      {
+        "titre": "L'annonce 'plate' contre l'annonce qui raconte",
+        "texte": "Deux annonces pour le même T3 de Ferrières. La plate : 'T3 68 m², 2 chambres, séjour, cuisine, balcon, proche commerces.' La storytellée : 'Imaginez votre café du matin sur le balcon, les reflets du canal Saint-Sébastien juste sous vos yeux. Un T3 lumineux de 68 m² au coeur de la Venise provençale, à deux pas des commerces.' La seconde a généré 3 fois plus de contacts qualifiés. Même bien, mêmes m², autres mots."
+      },
+      {
+        "titre": "Le fractionnement des honoraires à Martigues",
+        "texte": "Sur une vente à 230 000 €, les honoraires d'agence (environ 11 500 €, soit 5 %) font tiquer le vendeur. Le négociateur fractionne et recadre : 'rapporté aux 3 mois de commercialisation, à la diffusion, aux visites qualifiées et à la négociation que je gère à votre place, ce sont quelques centaines d'euros par semaine pour sécuriser la plus grosse transaction de votre vie, et vous ne les payez qu'une fois vendu.' L'objet devient un investissement, pas une dépense."
+      },
+      {
+        "titre": "L'ancrage avant l'annonce du prix",
+        "texte": "Avant d'annoncer le prix d'une maison de Saint-Pierre à 299 000 €, le négociateur ancre : 'des biens comme celui-ci, avec jardin et garage dans ce secteur, se négocient autour de 320 000 €.' Puis il annonce : 'ici, c'est 299 000 €.' Le prix réel paraît une opportunité grâce au contraste. L'ancrage par les mots a déplacé la perception avant même le chiffre."
+      },
+      {
+        "titre": "Le bénéfice plutôt que la caractéristique en visite",
+        "texte": "Dans une villa de La Couronne, plutôt que d'énoncer 'exposition plein sud, double vitrage, pompe à chaleur', le négociateur traduit en bénéfices : 'vous prendrez vos repas dehors de mars à novembre ; même côté rue vous dormez au calme ; et l'hiver, une facture de chauffage divisée.' L'acquéreur se projette, il ne coche pas une liste technique."
+      },
+      {
+        "titre": "Le mot juste qui sécurise au lieu de braquer",
+        "texte": "Au moment de conclure un mandat à Croix-Sainte, au lieu de 'il faut signer ici', le négociateur dit : 'je vous propose qu'on valide ensemble notre collaboration'. 'Signer' effraie, 'valider ensemble' rassure et crée l'alliance avec le 'nous'. Le vendeur, moins sur la défensive, paraphe sereinement."
+      }
+    ],
+    "objectionsStagiaires": [
+      {
+        "question": "Si j'arrête de dire 'commission' ou 'signer', ça ne fait pas langue de bois, malhonnête ?",
+        "reponse": "Non, à condition que la réalité suive. 'Honoraires' est le terme exact et réglementaire, 'commission' a une connotation vendeur de voitures. 'Valider ensemble' décrit vraiment ce que vous faites : c'est une collaboration. On choisit le mot juste et rassurant, on ne ment pas sur le fond."
+      },
+      {
+        "question": "Le storytelling, ce n'est pas enjoliver, voire mentir sur le bien ?",
+        "reponse": "C'est toute la limite. Le storytelling fait VIVRE ce qui existe réellement (la vue canal, la lumière du matin), il n'invente pas. Règle d'or : les mots doivent tenir à la visite. Si vous promettez le calme et qu'on entend la rocade, vous perdez la vente ET la confiance. On raconte le vrai, joliment."
+      },
+      {
+        "question": "Je dis souvent 'honnêtement' ou 'franchement' pour appuyer. C'est si grave ?",
+        "reponse": "Oui, c'est contre-productif : 'honnêtement, franchement, pour être sincère' sous-entend que le reste de votre discours ne l'était pas. Ça fissure la crédibilité. On supprime ces béquilles. Idem pour les 'euh', 'en fait', 'voilà' répétés : enregistrez-vous, vous serez surpris."
+      },
+      {
+        "question": "Comment je repère dans quel canal sensoriel est mon client ?",
+        "reponse": "Écoutez ses verbes. 'Je vois, c'est clair, lumineux' = visuel ; 'ça me parle, écoutez, ça sonne bien' = auditif ; 'je le sens, c'est du concret, ça me touche' = kinesthésique. Vous lui répondez dans SON canal : au kinesthésique, 'vous allez vous sentir bien ici' ; au visuel, 'regardez cette perspective'."
+      },
+      {
+        "question": "Quand j'annonce un prix au téléphone, j'ai tendance à enchaîner pour justifier. C'est bien ?",
+        "reponse": "Non, c'est l'erreur classique. Après avoir annoncé le prix, on se TAIT. Celui qui parle en premier après le silence est en position faible. Si vous justifiez immédiatement, vous donnez l'impression que le prix est négociable ou gênant. Annoncez, puis silence, et laissez venir."
+      },
+      {
+        "question": "Le vendeur est pressé parce qu'il divorce. Je peux m'en servir comme argument acquéreur ?",
+        "reponse": "Avec une grande prudence, plutôt non. Révéler le divorce ou l'urgence du vendeur se retourne contre votre mandant : l'acquéreur en déduit qu'il peut casser le prix. Vous avez un devoir de loyauté envers le vendeur. On vend les qualités du bien, pas la détresse du propriétaire."
+      },
+      {
+        "question": "Les présupposés positifs ('quand vous serez installés'), ce n'est pas manipulateur ?",
+        "reponse": "C'est de l'influence, pas de la manipulation, tant que le bien convient vraiment au client. 'Quand vous serez installés' plutôt que 'si vous achetez' aide le client à se projeter dans un choix qui est déjà bon pour lui. La frontière éthique : on accompagne une bonne décision, on ne force pas une mauvaise."
+      },
+      {
+        "question": "Qu'est-ce que je risque vraiment si je passe sous silence une nuisance que je connais ?",
+        "reponse": "Beaucoup : c'est un manquement au devoir de conseil et d'information, et selon le cas une pratique commerciale trompeuse. Ça peut entraîner l'annulation de la vente, des dommages et intérêts, et des sanctions professionnelles. Une servitude ou une nuisance connue se dit : la transparence du DPE opposable va dans le même sens."
+      }
+    ],
+    "erreursFrequentes": [
+      "Erreur : formuler au négatif ('ne vous inquiétez pas', 'aucun problème'). -> Correction : formuler au positif ('vous êtes entre de bonnes mains', 'tout est sécurisé').",
+      "Erreur : énumérer des caractéristiques techniques. -> Correction : traduire chaque caractéristique en bénéfice concret pour le client ('vous dormez au calme').",
+      "Erreur : dire 'commission', 'cher', 'dépense', 'signer'. -> Correction : 'honoraires', 'positionné', 'investissement', 'valider ensemble'.",
+      "Erreur : ponctuer de 'honnêtement, franchement, pour être sincère'. -> Correction : les supprimer, ils sous-entendent que le reste ne l'était pas.",
+      "Erreur : justifier aussitôt le prix après l'avoir annoncé. -> Correction : annoncer, puis se taire et laisser le client réagir.",
+      "Erreur : parler trop vite, débit uniforme, sans pause. -> Correction : ralentir, marquer des silences, varier le ton ; le sourire s'entend au téléphone.",
+      "Erreur : promettre dans l'annonce ce que la visite dément. -> Correction : les mots doivent tenir à la visite ; raconter le vrai, sans exagérer.",
+      "Erreur : oublier les mentions obligatoires de l'annonce (honoraires, qui les paie, DPE/GES). -> Correction : les intégrer systématiquement, elles engagent juridiquement."
+    ],
+    "chiffresCles": [
+      "Le cerveau ne traite pas la négation -> formuler au positif.",
+      "Mots à bannir -> mots qui vendent : commission->honoraires, cher->positionné, dépense->investissement, problème->point de vigilance, signer->valider ensemble.",
+      "Mot préféré du client : 'vous'.",
+      "Mot justificateur le plus puissant : 'parce que'.",
+      "Structure d'annonce et d'email : AIDA (Attention, Intérêt, Désir, Action).",
+      "Canaux VAKOG : Visuel, Auditif, Kinesthésique, Olfactif, Gustatif.",
+      "3 ingrédients d'une histoire de bien : un personnage/une projection, un lieu concret, une émotion.",
+      "Après l'annonce d'un prix : silence.",
+      "Mentions obligatoires annonce : honoraires et qui les paie, DPE et GES.",
+      "Règle éthique : les mots doivent tenir à la visite (sinon pratique commerciale trompeuse)."
     ]
   },
   "closing": {
@@ -2230,6 +3027,111 @@ export const ANIMATIONS_DATA: Record<string, AnimationModule> = {
       "Sur les jeux de rôle, filmer ou faire chronométrer le silence : c'est l'exercice le plus inconfortable et le plus formateur ; dédramatiser en montrant que 8 secondes paraissent interminables mais passent très bien côté client.",
       "Faire participer tout le monde : constituer les équipes en mélangeant anciens et juniors, donner la parole aux plus silencieux sur les débriefs, valoriser les justifications plutôt que les bonnes réponses.",
       "En synthèse, exiger un plan d'action écrit et individuel (pas collectif) : chaque négociateur repart avec 2 ou 3 engagements datés, que le manager ré-abordera en point individuel la semaine suivante pour transformer l'acquis en habitude."
+    ],
+    "materiel": [
+      "Un exemplaire vierge d'offre d'achat et un mandat de vente (modèles de l'agence) pour s'entraîner à faire écrire et faire signer en jeu de rôle.",
+      "Affiche A3 'Les signaux d'achat' (verbaux / non-verbaux / côté vendeur) à punaiser pendant toute la session.",
+      "Fiche mémo 'OSER à conclure' + les 9 grandes techniques de conclusion (alternative, bilan, dernière objection, présomption, urgence réelle, projection, récapitulatif, petit oui, qu'est-ce qui vous empêche).",
+      "Jeu de rôle minuté avec chronomètre pour l'exercice du silence après la question de conclusion.",
+      "Rappel juridique plastifié : loi Hoguet (mandat écrit obligatoire), interdiction d'exiger une somme de l'acquéreur au stade de l'offre, obligation de transmettre toute offre écrite.",
+      "Grille d'observation du binôme : a-t-il repéré le signal ? osé la question fermée ? tenu le silence ? fait écrire ?"
+    ],
+    "messagesCles": [
+      "Le closing n'est pas un coup de force à la fin : c'est l'aboutissement naturel d'un rendez-vous bien mené, étape après étape.",
+      "Dès qu'un signal d'achat clair apparaît, on arrête d'argumenter et on conclut : continuer à vendre après le signal, c'est dé-vendre.",
+      "On ose poser une question de conclusion fermée et claire, puis on se tait : le silence fait conclure.",
+      "Pas de mandat écrit, pas de closing (loi Hoguet) ; et au stade de l'offre, on n'exige aucune somme de l'acquéreur.",
+      "Après le oui, on verrouille immédiatement par écrit et on prévient le remords de l'acheteur : le oui n'est sécurisé qu'une fois écrit."
+    ],
+    "scriptOuverture": "Question simple pour commencer : combien de ventes avez-vous perdues, non pas parce que le client ne voulait pas, mais parce que vous n'avez jamais osé lui demander de décider ? Le closing, ce n'est pas arracher un oui à quelqu'un qui dit non. C'est oser cueillir le oui de quelqu'un qui est déjà prêt. Le pire closing, ce n'est pas un closing raté : c'est le closing qu'on n'a jamais tenté. Aujourd'hui on va apprendre à lire les signaux d'achat, à poser LA question, et surtout à se taire après. Et on va voir comment sécuriser ce oui jusqu'à l'acte, parce qu'un oui qui n'est pas écrit n'existe pas encore. À la fin, vous aurez une seule obsession utile : faire écrire, faire signer, au bon moment.",
+    "questionsPublic": [
+      "Pour vous, à quel moment commence vraiment le closing : à la dernière minute, ou dès le premier rendez-vous ?",
+      "Quels signaux d'achat verbaux avez-vous déjà entendus en visite ?",
+      "Et les signaux non-verbaux, qu'est-ce qui vous met la puce à l'oreille ?",
+      "Quand un acquéreur demande 'les enfants seraient dans quelle école ?', qu'est-ce qu'il vous dit vraiment ?",
+      "Que se passe-t-il concrètement si vous continuez à argumenter alors que le client a déjà dit oui dans sa tête ?",
+      "Donnez-moi une vraie question de conclusion fermée, là, maintenant.",
+      "Pourquoi faut-il absolument se taire juste après avoir posé la question de conclusion ?",
+      "Selon la loi Hoguet, de quoi devez-vous disposer avant même de négocier ?",
+      "À quel moment, et à qui, le dépôt de garantie est-il versé ?",
+      "Après le 'oui' du client, quelle est la toute première chose à faire ?"
+    ],
+    "exemplesTerrain": [
+      {
+        "titre": "L'alternative qui conclut à Sausset-les-Pins",
+        "texte": "Un couple hésite sur un T3 vue mer à Sausset-les-Pins. Les signaux sont là : ils se projettent, parlent déco, demandent les charges. Le négociateur ne repose pas la question 'alors, ça vous plaît ?' mais pose une alternative : 'pour l'offre, vous préférez qu'on parte sur le prix affiché pour sécuriser, ou qu'on tente 5 000 € en dessous ?' Le couple choisit l'option basse, donc il a déjà dit oui au principe d'acheter. Offre écrite dans la foulée."
+      },
+      {
+        "titre": "La présomption au stylo, à Jonquières",
+        "texte": "Après une visite de maison à Jonquières, l'acquéreur donne tous les signaux. Le négociateur passe en mode présomption : il sort l'offre et demande 'vous m'épelez votre nom, c'est avec deux L ? Et votre adresse exacte, pour le compromis ?' Il remplit en parlant. Le client se laisse porter, l'intention devient offre écrite signée sans jamais avoir eu à dire un 'oui' formel anxiogène."
+      },
+      {
+        "titre": "Le silence qui a fait signer le mandat",
+        "texte": "En fin d'avis de valeur sur une maison de La Couronne estimée 349 000 €, le négociateur pose la question fermée : 'je vous propose un mandat exclusif de 3 mois, on démarre la commercialisation dès cette semaine, c'est d'accord pour vous ?' Puis il se tait. 9 secondes. Le vendeur, qui attendait une relance, finit par dire 'oui, allons-y'. Le silence a transféré la décision au bon endroit."
+      },
+      {
+        "titre": "L'offre 'chaude' sécurisée tout de suite",
+        "texte": "Un acquéreur emballé par un appartement de Ferrières dit 'je vous rappelle demain pour faire l'offre'. Le négociateur ne le laisse pas repartir avec un oui oral : 'parfait, on sécurise votre décision maintenant, ça vous engage à rien avant les 10 jours de rétractation, et ça vous protège d'un autre acheteur ce soir.' Il fait écrire l'offre sur place. Le lendemain, un autre visiteur était effectivement intéressé : le bien était déjà sous offre."
+      },
+      {
+        "titre": "Prévenir le remords d'achat après le oui",
+        "texte": "Un primo-accédant signe une offre sur un T2 à L'Île puis, le soir, panique ('on a été trop vite'). Parce que le négociateur avait anticipé le buyer's remorse, il l'avait appelé dès le lendemain matin : récapitulatif des raisons du choix, rappel du délai de rétractation comme filet de sécurité, et planning clair jusqu'au compromis. Le client s'est senti accompagné, l'offre a tenu."
+      }
+    ],
+    "objectionsStagiaires": [
+      {
+        "question": "Comment je sais que c'est LE bon moment pour conclure, sans conclure trop tôt ?",
+        "reponse": "Le signal d'achat est votre feu vert : question sur les charges, sur l'école, projection ('on mettrait le canapé là'), toucher les murs, se taire longuement en réfléchissant. Dans le doute, utilisez une conclusion d'essai (trial close) : 'si on part là-dessus, vous vous verriez emménager quand ?' La réponse vous dit si c'est mûr."
+      },
+      {
+        "question": "J'ai peur de poser la question de conclusion et d'entendre non. Comment je gère ?",
+        "reponse": "La peur du non est l'ennemi n°1 du closeur. Un 'non' n'est pas la fin : c'est souvent une dernière objection déguisée. On enchaîne avec la conclusion conditionnelle : 'qu'est-ce qui vous empêche de décider aujourd'hui ?' Et rappelez-vous : le pire closing est celui qu'on n'ose jamais tenter. Ne pas demander, c'est perdre à coup sûr."
+      },
+      {
+        "question": "Combien de fois je peux retenter après un refus avant d'être lourd ?",
+        "reponse": "En général deux à trois relances espacées, en traitant une objection différente à chaque fois. Au-delà, on bascule dans la pression excessive qui braque. La règle : chaque relance doit apporter un élément NOUVEAU (une réponse, une preuve, un angle), jamais répéter la même question."
+      },
+      {
+        "question": "Un acquéreur me demande de verser des arrhes pour 'réserver' le bien avant le compromis. Je fais quoi ?",
+        "reponse": "On n'exige jamais aucune somme de l'acquéreur au stade de l'offre : c'est interdit. Le dépôt de garantie (souvent 5 à 10 % du prix) est versé à la signature du compromis, et séquestré chez le notaire ou en compte dédié de l'agence, pas dans votre poche. Faire écrire l'offre suffit à matérialiser l'engagement."
+      },
+      {
+        "question": "Le vendeur me dit qu'il va réfléchir à une offre au prix. Je peux la considérer comme acceptée ?",
+        "reponse": "Non tant qu'il n'a pas accepté. Mais une offre AU PRIX du mandat juridiquement engage fortement : le vendeur qui a mandaté à ce prix peut difficilement la refuser sans risque. Vous le rappelez avec tact et vous formalisez l'acceptation par écrit immédiatement. Et toute offre écrite, même basse, doit lui être transmise."
+      },
+      {
+        "question": "Je viens d'obtenir le oui oral, le client est pressé de partir. Je le laisse ?",
+        "reponse": "Non : un oui oral n'est pas sécurisé. On verrouille par écrit tout de suite, sur place. 'On fige votre décision maintenant, ça vous protège.' Si vous le laissez partir avec un oui oral, vous ouvrez la porte au remords de l'acheteur et à un concurrent dans la soirée."
+      },
+      {
+        "question": "Est-ce que je peux inventer une fausse visite ou un faux acquéreur pour accélérer ?",
+        "reponse": "Jamais. C'est une pratique commerciale trompeuse, c'est illégal et déontologiquement interdit. L'urgence et la rareté ne sont des leviers que si elles sont RÉELLES : un vrai deuxième acquéreur, une vraie visite programmée. Le mensonge détruit la confiance et vous expose juridiquement."
+      },
+      {
+        "question": "Faut-il un mandat signé avant même de faire visiter et négocier ?",
+        "reponse": "Oui : loi Hoguet, pas de mandat écrit, pas de closing et pas de rémunération possible. Avant toute négociation, vous devez disposer d'un mandat écrit en bonne et due forme. C'est le socle légal de toute votre action : sans mandat, vous travaillez pour rien et dans l'illégalité."
+      }
+    ],
+    "erreursFrequentes": [
+      "Erreur : continuer à argumenter après un signal d'achat clair. -> Correction : s'arrêter net et conclure, le client a déjà dit oui dans sa tête.",
+      "Erreur : ne jamais oser poser la question de décision. -> Correction : le pire closing est celui qu'on ne tente pas ; poser une question fermée et claire.",
+      "Erreur : combler le silence juste après la question de conclusion. -> Correction : se taire et laisser le client répondre, même si c'est inconfortable.",
+      "Erreur : se contenter d'un oui oral et laisser le client partir. -> Correction : verrouiller immédiatement par écrit (offre / mandat signé).",
+      "Erreur : exiger une somme de l'acquéreur au stade de l'offre. -> Correction : aucun versement avant le compromis, dépôt de garantie séquestré ensuite.",
+      "Erreur : négocier et closer sans mandat écrit. -> Correction : loi Hoguet, mandat signé AVANT toute négociation.",
+      "Erreur : la survente et la pression excessive qui braquent. -> Correction : doser, s'arrêter au bon moment, rester conseiller et non vendeur agressif.",
+      "Erreur : oublier de prévenir le remords de l'acheteur après le oui. -> Correction : rappel rapide, récapitulatif des raisons du choix, planning clair jusqu'au compromis."
+    ],
+    "chiffresCles": [
+      "Mnémonique : OSER à conclure.",
+      "Loi Hoguet : mandat écrit OBLIGATOIRE avant toute négociation.",
+      "Stade de l'offre : ZÉRO somme exigée de l'acquéreur.",
+      "Dépôt de garantie : souvent 5 à 10 % du prix, versé au compromis et séquestré (notaire ou compte dédié), jamais à l'agent.",
+      "Rétractation acquéreur (SRU) : 10 jours.",
+      "Silence après la question de conclusion : tenir 7 à 10 secondes.",
+      "Relances après un refus : 2 à 3 max, chacune avec un élément nouveau.",
+      "Une offre AU PRIX du mandat engage fortement le vendeur.",
+      "Toute offre écrite doit être transmise au vendeur."
     ]
   },
   "defendre-prix": {
@@ -2450,6 +3352,104 @@ export const ANIMATIONS_DATA: Record<string, AnimationModule> = {
       "Incarnez le vendeur difficile vous-même lors du premier jeu de rôle pour donner le niveau, puis laissez les binômes jouer : votre exemple vaut dix consignes.",
       "Reliez systématiquement au terrain local (Martigues, Port-de-Bouc, Istres) et à des montants réels : le concret chiffré marque bien plus que la théorie.",
       "Terminez sur l'engagement individuel : chaque négociateur énonce à voix haute son action du lendemain devant le groupe — l'engagement public multiplie le passage à l'acte."
+    ],
+    "materiel": [
+      "Le barème d'honoraires de l'agence imprimé en grand, affiché ou projeté (version TTC, par tranches de prix) : support de base de tout l'atelier.",
+      "Un paperboard ou tableau blanc pour poser les calculs en direct (5% de 350 000 €, l'effet d'un point de commission perdu).",
+      "Fiches cartonnées A5 des mnémoniques A.C.R.E. et Valeur-Prix-Valeur, une par stagiaire, à garder après la session.",
+      "3 avis de valeur réels anonymisés + comparables de ventes récentes Martigues/étang de Berre (sources portails et base DVF) pour chiffrer la valeur apportée.",
+      "Un jeu de cartes 'objections' (une objection honoraires par carte) pour les mises en situation à deux.",
+      "Une calculatrice ou tableur projeté pour simuler net vendeur / FAI / impact TVA en temps réel."
+    ],
+    "messagesCles": [
+      "Les honoraires sont LIBRES (ordonnance de 1986) et le barème affiché est un PLAFOND, jamais un prix imposé : on négocie à la baisse, jamais au-dessus.",
+      "Un honoraire ne se justifie pas, il se démontre : on déplace la discussion du 'combien vous prenez' vers le 'combien je vous fais gagner et sécurise'.",
+      "Chaque euro lâché est un euro de résultat net en moins, car les honoraires n'ont quasiment pas de coût variable : la concession pèse bien plus lourd qu'elle n'en a l'air.",
+      "Aucune concession ne se donne, elle s'échange : 'si... alors...', une seule fois, à regret, contre une contrepartie (exclusivité, durée, juste prix).",
+      "On ne dénigre jamais un confrère, un mandataire ou le PAP : on montre sa différence par la valeur et la sécurité, c'est une obligation déontologique."
+    ],
+    "scriptOuverture": "Bonjour à tous. Aujourd'hui on va parler de la phrase qui fait transpirer la moitié des négociateurs : 'vous prenez combien ?'. Je vous pose tout de suite la vraie question : est-ce que vous êtes, vous, intimement convaincus que vos honoraires valent leur prix ? Parce qu'un agent qui doute de son tarif ne le défendra jamais. Prenons un cas simple : une maison à 350 000 € net vendeur à Martigues, barème à 5% TTC, ça fait 17 500 €. Si vous 'arrondissez' à 4% par réflexe, vous venez de perdre 3 500 €, soit 20% de votre rémunération sur ce dossier, en une seule phrase. L'objectif de la matinée n'est pas de vous apprendre à dire non bêtement, mais à annoncer, démontrer et, si besoin, échanger une concession sans jamais vous dévaloriser. On va travailler avec des scripts, des mises en situation et vos propres dossiers. À la fin, vous aurez une grille de contreparties prête à l'emploi. Première règle, et on y revient toute la journée : on ne brade pas, on démontre.",
+    "questionsPublic": [
+      "Qui, ici, a déjà baissé ses honoraires dès le premier froncement de sourcil du vendeur ? Qu'est-ce qui s'est passé ensuite dans la négociation du prix du bien ?",
+      "Pour vous, les honoraires d'agence sont-ils fixés par l'État, par la loi, ou par l'agence ? (Réponse attendue : libres depuis 1986, le barème affiché est un plafond.)",
+      "Sur une vente à 300 000 €, un écart de prix de 3 à 5% obtenu grâce à une bonne commercialisation, ça représente combien en euros ? Comparez à vos honoraires.",
+      "Quelle est la différence concrète entre prix net vendeur, honoraires et prix FAI ? Qui sait me faire le calcul à voix haute ?",
+      "Un vendeur vous dit 'le mandataire d'à côté prend 3%'. Quel est le piège si vous répondez du tac au tac en critiquant le mandataire ?",
+      "Citez-moi trois contreparties que vous pouvez demander AVANT d'envisager le moindre geste sur vos honoraires.",
+      "Quels mots faut-il bannir au moment d'annoncer son chiffre ? (petite, seulement, désolé, normalement...)",
+      "Après avoir annoncé votre chiffre en euros et en TTC, que faites-vous ? (Réponse : on se tait, le silence travaille pour nous.)",
+      "Honoraires TTC ou HT ? Pourquoi est-ce dangereux d'annoncer un chiffre HT à un particulier ?",
+      "À quel moment du rendez-vous de mandat annoncez-vous vos honoraires : au tout début, à la fin dans le contrat, ou après avoir démontré votre valeur ?"
+    ],
+    "exemplesTerrain": [
+      {
+        "titre": "L'arrondi à 17 500 € qui coûte 3 500 €",
+        "texte": "Maison de ville à Martigues, 350 000 € net vendeur, barème agence à 5% TTC = 17 500 € d'honoraires. Le vendeur demande 'un petit geste' et l'agent passe à 4% pour 'conclure' : 14 000 €. Perte sèche : 3 500 €, soit 20% de la rémunération du dossier, sans aucune contrepartie obtenue. Et comme le négociateur ne touche qu'une fraction de la commission d'agence, sa propre perte est encore plus brutale en proportion."
+      },
+      {
+        "titre": "Le bien surcoté par un confrère qui finit chez nous",
+        "texte": "Appartement T3 quartier de Ferrières, estimé par un réseau à bas honoraires à 245 000 € pour décrocher le mandat. Six mois sans offre, trois baisses de prix successives. Repris en mandat exclusif CENTURY 21 à 219 000 €, vendu en 7 semaines à 213 000 € net acquéreur. Le vendeur a perdu plus en six mois de surcote et de temps que la différence d'honoraires entre les deux agences."
+      },
+      {
+        "titre": "Le 3 à 5% qui dépasse la commission",
+        "texte": "Villa à Saint-Mitre-les-Remparts, 420 000 €. Grâce à un home-staging léger, un reportage photo pro et une diffusion multi-portails, le bien part à 412 000 € au lieu des 390 000 € qu'un particulier aurait acceptés sous la pression. Les 22 000 € récupérés dépassent les honoraires (environ 20 000 € à 5%). Argument massue : 'mes honoraires ne vous coûtent pas, ils vous rapportent'."
+      },
+      {
+        "titre": "La concession qui s'échange contre l'exclusivité",
+        "texte": "Vendeur d'un T4 à Jonquières hésitant sur 5% TTC. Au lieu de céder, l'agent propose : 'Si nous partons en mandat exclusif de 4 mois et que nous calons le prix au juste niveau à 268 000 €, j'étudie un geste à 4,5%.' Résultat : exclusivité signée, prix maîtrisé, honoraires encore à 4,5% soit 12 060 € tracés par avenant écrit. La remise a servi à verrouiller un meilleur dossier, pas à ouvrir une négociation sans fin."
+      }
+    ],
+    "objectionsStagiaires": [
+      {
+        "question": "Si je refuse de baisser, je vais perdre le mandat au profit de l'agence d'à côté, non ?",
+        "reponse": "Le mandat se perd surtout quand on ne démontre pas sa valeur, pas quand on tient son prix. Un vendeur qui signe uniquement sur le tarif le moins cher partira de toute façon au premier discount suivant. Mieux vaut un vendeur convaincu par vos moyens et votre résultat qu'un vendeur acheté au rabais. Et si vraiment une remise se discute, elle s'échange contre une exclusivité ou un prix juste : vous gagnez un meilleur dossier."
+      },
+      {
+        "question": "Les mandataires et le PAP cassent les prix, comment lutter sur le pourcentage ?",
+        "reponse": "On ne lutte pas sur le pourcentage, c'est le terrain où l'on perd toujours. On déplace le débat sur la valeur : présence locale et vitrine à Martigues, portefeuille d'acquéreurs financés, sécurité juridique (LCB-FT, conformité, suivi notaire), accompagnement physique de bout en bout. Moins d'honoraires = souvent moins de moyens = bien qui traîne, et un bien qui traîne coûte au vendeur bien plus que l'écart de commission."
+      },
+      {
+        "question": "Je n'ose pas annoncer 17 500 €, c'est un gros chiffre, le client va tiquer.",
+        "reponse": "C'est justement parce que vous hésitez que le client tique. Annoncez le montant en euros et en TTC, clairement, relié à un résultat ('pour vous vendre au meilleur prix et en sécurité'), puis taisez-vous. Le silence est votre allié : c'est à l'autre de parler. Et encadrez toujours le chiffre de valeur : valeur, prix, valeur."
+      },
+      {
+        "question": "Le vendeur me dit 'autant d'argent pour quelques visites ?', qu'est-ce que je réponds ?",
+        "reponse": "Les visites sont la partie visible de l'iceberg. On facture l'estimation juste, la mise en valeur, la diffusion multi-supports, la sélection d'acquéreurs financés, la négociation, la sécurité juridique et le suivi jusqu'à l'acte, et seulement si ça aboutit. Reformulez : 'vous ne me payez pas des heures, vous payez un résultat net dans votre poche'."
+      },
+      {
+        "question": "Est-ce que je peux dire au client que l'agence concurrente fait du mauvais travail ?",
+        "reponse": "Jamais. Dénigrer un confrère est contraire au code de déontologie (décret de 2015) et ça vous rabaisse. On ne dit pas de mal, on montre sa différence : 'la vraie question n'est pas qui est le moins cher, mais qui vous vend le mieux et au meilleur prix net'."
+      },
+      {
+        "question": "Si j'accepte une remise, je la note où ? Un accord verbal suffit ?",
+        "reponse": "Jamais de verbal. Toute concession acceptée se formalise par écrit, dans le mandat ou par avenant, avec la contrepartie ET le nouveau montant. Cela vous protège et vous évite de vous faire 'grignoter' étape par étape. Un accord non tracé est un accord qui se renégocie."
+      },
+      {
+        "question": "Le barème affiché, je peux le dépasser si le bien est compliqué à vendre ?",
+        "reponse": "Non, jamais au-dessus : le barème affiché est un plafond opposable, c'est la loi (arrêtés de 2017 et 2022). Vous ne pouvez négocier qu'à la baisse. Si un bien est complexe, ce n'est pas le pourcentage qu'on augmente, c'est la démonstration de valeur et la discussion sur le juste prix de mise en vente."
+      }
+    ],
+    "erreursFrequentes": [
+      "Erreur : baisser ses honoraires dès le premier froncement de sourcil. Correction : voir l'objection comme une demande de réassurance, appliquer A.C.R.E. (Accueillir, Creuser, Recadrer, Engager) avant toute concession.",
+      "Erreur : annoncer le pourcentage seul ('on est à 5%'). Correction : annoncer le montant en euros ET en TTC ('17 500 €, soit 5% TTC'), puis se taire.",
+      "Erreur : employer 'ma petite commission', 'seulement', 'désolé', 'normalement'. Correction : dire 'mes honoraires' (assumé), relier au résultat, bannir les mots qui trahissent le doute.",
+      "Erreur : donner une remise gratuitement pour 'conclure'. Correction : jamais de baisse sans contrepartie, formule 'si... alors...', une seule fois, à regret.",
+      "Erreur : parler d'honoraires HT ou glisser le chiffre à la dernière minute dans le contrat. Correction : toujours TTC, annoncé tôt et avec aplomb après avoir démontré la valeur ; un honoraire caché puis découvert détruit la confiance.",
+      "Erreur : dénigrer le mandataire ou l'agence concurrente moins chère. Correction : ne jamais dénigrer (déontologie), montrer sa différence par la valeur et la sécurité.",
+      "Erreur : accepter une surcote du prix du bien pour décrocher le mandat. Correction : défendre le juste prix du bien, car tenir le prix du bien = tenir sa propre crédibilité et donc ses honoraires.",
+      "Erreur : chiffrer son effort ('je passe des heures'). Correction : chiffrer le résultat pour le client (3 à 5% de prix gagné, vente sécurisée), car on paie un résultat, pas des heures."
+    ],
+    "chiffresCles": [
+      "Honoraires LIBRES depuis l'ordonnance n°86-1243 du 1er décembre 1986.",
+      "Barème affiché = PLAFOND TTC (arrêtés du 10 janvier 2017 et du 26 janvier 2022), affichage obligatoire en vitrine, à l'accueil et sur le site internet.",
+      "TVA sur honoraires : 20% (un barème '5%' = 5% TTC, soit ~4,17% HT).",
+      "Exemple étalon Martigues : 350 000 € net x 5% TTC = 17 500 €",
+      "passer à 4% = 14 000 € = -3 500 € (-20% de la rémunération du dossier).",
+      "Prix FAI = net vendeur + honoraires.",
+      "Levier de valeur : 3 à 5% de prix gagné sur 300 000 € = 9 000 à 15 000 €.",
+      "Déontologie : décret n°2015-1090 du 28 août 2015 (interdiction de dénigrer).",
+      "Mnémoniques : A.C.R.E. (Accueillir, Creuser, Recadrer, Engager) et Valeur-Prix-Valeur.",
+      "5 contreparties : exclusivité, durée ferme, juste prix, recommandation/avis, souplesse visites et mise en valeur."
     ]
   },
   "transaction-notaire": {
@@ -2665,6 +3665,112 @@ export const ANIMATIONS_DATA: Record<string, AnimationModule> = {
       "Transformez chaque erreur de quiz en apprentissage : ne jugez jamais une mauvaise réponse, reformulez la bonne pratique en une phrase et reliez-la à un cas vécu par l'équipe.",
       "Faites verbaliser les engagements : à la fin, chacun écrit 3 actions concrètes sur sa fiche et en annonce une à voix haute au groupe — l'engagement public augmente le passage à l'acte sur le terrain.",
       "Prévoyez le matériel à l'avance : cartons plastifiés des 6 étapes pour le défi chrono, fiches des 3 études de cas, un petit lot pour l'équipe gagnante, et planifiez un point de suivi à J+30 pour vérifier l'application du plan d'action."
+    ],
+    "materiel": [
+      "Un schéma mural ou diaporama de la chaîne de transaction en 6 étapes (mandat, mise en vente, offre, avant-contrat, période suspensive, acte) avec les délais inscrits sur une frise.",
+      "Un exemplaire vierge de compromis et un de promesse unilatérale de vente pour montrer la différence d'engagement et repérer les clauses suspensives.",
+      "Un simulateur de frais d'acquisition (tableur projeté ou outil notaires de France) pré-réglé sur le taux des Bouches-du-Rhône à 5%.",
+      "Une check-list 'pièces à transmettre au notaire' plastifiée, une par stagiaire.",
+      "Un tableau des délais clés affiché (10 jours SRU, 2 mois préemption commune/locataire/SAFER, 3-4 mois de transaction) pour l'exercice de reconstitution du rétroplanning.",
+      "Des fiches de cas 'qui peut vendre ?' (indivision, couple marié, succession, SCI) pour les mises en situation."
+    ],
+    "messagesCles": [
+      "Le négociateur est le chef d'orchestre de la vente : elle ne se perd presque jamais à l'offre, mais entre le compromis et l'acte, faute de suivi des délais.",
+      "Le notaire est un officier public ministériel : authenticité, date certaine et force exécutoire de l'acte ; il vérifie, purge, séquestre, publie et collecte les impôts.",
+      "Les 'frais de notaire' sont des frais d'acquisition : environ 7 à 8% dans l'ancien, dont ~4/5 de droits de mutation versés à l'État et aux collectivités, et seulement 2 à 3% dans le neuf.",
+      "La première question avant tout mandat est 'qui doit signer pour vendre ?' : un seul signataire manquant (indivision, conjoint, héritier) rend l'acte impossible.",
+      "Le dépôt de garantie se séquestre chez le notaire par défaut : l'agence ne peut l'encaisser que si elle a une garantie financière et un compte séquestre dédié."
+    ],
+    "scriptOuverture": "Bonjour à tous. On va suivre aujourd'hui le voyage complet d'une vente, du jour où le vendeur signe le mandat au jour où l'acquéreur reçoit ses clés. Première vérité : une vente ne se perd quasiment jamais au moment de l'offre. Elle se perd entre le compromis et l'acte, pendant ces trois à quatre mois où personne ne regarde le calendrier. Votre rôle n'est pas celui d'un simple intermédiaire qui encaisse une commission : vous êtes le chef d'orchestre qui surveille chaque délai et chaque pièce. On va démystifier le notaire, les fameux 'frais de notaire', le séquestre, les droits de préemption et surtout la question qui tue : qui a vraiment le droit de vendre ce bien ? À la fin, vous saurez monter un rétroplanning de vente et repérer en amont les pièges qui font capoter un dossier. On commence par le déroulé complet, puis on zoome sur chaque maillon.",
+    "questionsPublic": [
+      "À votre avis, combien de temps s'écoule en moyenne entre l'accord sur le prix et la remise des clés ? (3 à 4 mois.)",
+      "Quelle est la différence entre un compromis de vente et une promesse unilatérale de vente ? Qui s'engage dans chaque cas ?",
+      "Le délai de rétractation de l'acquéreur est de combien de jours, et d'où vient-il ? (10 jours, loi SRU.)",
+      "Pourquoi dit-on que l'expression 'frais de notaire' est trompeuse ? Quelle part le notaire garde-t-il vraiment ?",
+      "Un bien ancien à 250 000 € dans les Bouches-du-Rhône : à la louche, combien de frais d'acquisition l'acquéreur doit-il prévoir ?",
+      "Dans le neuf ou la VEFA, pourquoi les frais sont-ils réduits à 2-3% ?",
+      "Qui peut vendre un bien détenu en indivision ? Et que se passe-t-il s'il y a un opposant ?",
+      "Un homme marié sous la communauté veut vendre seul le logement familial : a-t-il le droit ? (Non, consentement du conjoint obligatoire, art. 215.)",
+      "Qui peut détenir le dépôt de garantie, et à quelle condition l'agence peut-elle le séquestrer elle-même ?",
+      "Citez-moi trois droits de préemption que le notaire doit purger avant la vente et leur délai."
+    ],
+    "exemplesTerrain": [
+      {
+        "titre": "Frais d'acquisition d'un ancien à Martigues en 2025",
+        "texte": "Appartement ancien à 250 000 € à Martigues (Bouches-du-Rhône, DMTO porté à 5% depuis le 1er mai 2025). Droits de mutation : département 5,00% + commune 1,20% + frais d'assiette ~0,119% = ~6,32%, plus émoluments du notaire dégressifs, débours et contribution de sécurité immobilière (0,10%). Total frais d'acquisition : environ 19 000 à 20 000 €, soit ~7,7 à 8%. L'acquéreur doit budgéter cette somme EN PLUS du prix, à provisionner chez le notaire avant l'acte."
+      },
+      {
+        "titre": "Neuf/VEFA : des frais réduits",
+        "texte": "Logement neuf en VEFA à 250 000 € sur Martigues/Port-de-Bouc : les droits de mutation sont réduits (taxe de publicité foncière ~0,715% au lieu de ~5,80-6,32%). Frais d'acquisition totaux : environ 2 à 3%, soit ~6 000 à 7 500 €. Argument commercial à connaître : sur un même budget, le neuf 'coûte' plusieurs milliers d'euros de moins en frais, à intégrer dans le plan de financement."
+      },
+      {
+        "titre": "La vente qui capote faute d'avoir vérifié 'qui signe'",
+        "texte": "Maison héritée par trois frères et soeurs (indivision successorale), mandat signé par le seul frère présent sur Martigues. À deux semaines de l'acte, la soeur résidant à l'étranger refuse de signer : vente bloquée, l'unanimité est requise (art. 815-3). Leçon : faire signer le mandat par TOUS les indivisaires ou par un mandataire muni de leurs procurations, dès le départ."
+      },
+      {
+        "titre": "La préemption qui rallonge le calendrier de deux mois",
+        "texte": "Vente d'un terrain avec dépendance agricole vers Saint-Mitre : la SAFER dispose de 2 mois pour préempter après notification du notaire. En parallèle, pour un logement loué vendu vide avec congé pour vendre, le locataire a 2 mois (4 mois s'il emprunte) pour exercer son droit. Un agent averti annonce ces délais au vendeur dès le mandat pour ne pas se faire reprocher un 'retard'."
+      },
+      {
+        "titre": "Le dépôt de garantie bien sécurisé",
+        "texte": "Compromis sur un T3 à 200 000 € à Jonquières : dépôt de garantie usuel de 5 à 10%, soit 10 000 à 20 000 €, séquestré chez le notaire sur son compte à la Caisse des dépôts. Si l'acquéreur se rétracte dans les 10 jours SRU, il récupère l'intégralité sous 21 jours maximum. L'agence n'encaisse rien car elle préfère la sécurité du notaire : on ne mélange jamais ces fonds avec la trésorerie."
+      }
+    ],
+    "objectionsStagiaires": [
+      {
+        "question": "Pourquoi s'embêter à suivre le dossier après le compromis ? Le notaire s'en occupe, non ?",
+        "reponse": "Le notaire gère le juridique, mais personne ne relance le vendeur pour les PV d'AG manquants, ne vérifie que l'acquéreur a bien déposé sa demande de prêt dans les délais, ni ne purge le stress des parties. 80% des ventes qui capotent, c'est entre le compromis et l'acte, par pièces manquantes ou délais ratés. Le chef d'orchestre, c'est vous."
+      },
+      {
+        "question": "Les frais de notaire, c'est bien le notaire qui s'enrichit dessus ?",
+        "reponse": "Non, et c'est un argument à maîtriser pour rassurer l'acquéreur. Sur ~7-8% dans l'ancien, environ les 4/5 sont des droits de mutation versés au département, à la commune et à l'État. Les émoluments du notaire, réglementés et dégressifs, ne sont qu'une petite part. Dire 'frais d'acquisition' plutôt que 'frais de notaire' évite les blocages de budget."
+      },
+      {
+        "question": "L'agence peut garder le dépôt de garantie, ça fait de la trésorerie, c'est pratique ?",
+        "reponse": "Surtout pas sans garantie financière couvrant le maniement de fonds et un compte séquestre dédié. Sans cela, encaisser le dépôt est une faute grave. La règle d'or : dans le doute, séquestre chez le notaire, à la Caisse des dépôts. On ne mélange jamais ces fonds avec la trésorerie de l'agence."
+      },
+      {
+        "question": "Si le bien appartient à un couple marié, je fais signer le mari puisque c'est 'son' bien ?",
+        "reponse": "Attention : pour un bien commun, l'accord des DEUX époux est obligatoire (art. 1424). Et même pour un bien propre d'un seul époux, si c'est le logement de la famille, le conjoint doit consentir (art. 215). Toujours poser la question du régime matrimonial et du statut du logement AVANT de signer le mandat."
+      },
+      {
+        "question": "Les droits de préemption, c'est rare, je peux les ignorer ?",
+        "reponse": "La préemption communale est rare en pratique, mais le délai de 2 mois s'impose dans TOUS les cas où le DPU existe : vous devez l'intégrer au calendrier. Et la préemption du locataire (logement loué vendu vide avec congé) ou de la SAFER (terrains, biens agricoles) est fréquente localement. Les ignorer, c'est promettre au vendeur une date d'acte intenable."
+      },
+      {
+        "question": "Compromis ou promesse, au fond c'est pareil pour le vendeur ?",
+        "reponse": "Non. Le compromis (promesse synallagmatique) engage les deux parties : le vendeur à vendre, l'acquéreur à acheter. La promesse unilatérale n'engage d'abord que le vendeur, qui réserve le bien ; l'acquéreur verse une indemnité d'immobilisation et lève l'option s'il confirme. Le choix a des conséquences réelles, à expliquer au vendeur."
+      },
+      {
+        "question": "Un chèque de banque le jour de l'acte, ça suffit toujours ?",
+        "reponse": "De moins en moins. La plupart des études exigent désormais les fonds VIRÉS avant le rendez-vous : apport de l'acquéreur et déblocage du prêt disponibles sur le compte du notaire. Prévenez l'acquéreur très en amont pour éviter un report de signature de dernière minute."
+      }
+    ],
+    "erreursFrequentes": [
+      "Erreur : signer le mandat sans vérifier qui a qualité pour vendre. Correction : poser d'emblée la question 'qui doit signer ?' (indivision = unanimité, conjoint, héritiers, gérant de SCI) et réunir toutes les signatures ou procurations.",
+      "Erreur : dire 'frais de notaire' et laisser croire que le notaire empoche tout. Correction : dire 'frais d'acquisition', expliquer que ~4/5 sont des impôts, chiffrer dès le départ pour éviter le blocage de budget.",
+      "Erreur : encaisser le dépôt de garantie sur le compte de l'agence. Correction : séquestrer chez le notaire par défaut ; l'agence ne séquestre que si elle a garantie financière + compte dédié.",
+      "Erreur : oublier d'intégrer les délais de préemption au rétroplanning. Correction : anticiper 2 mois (commune, locataire, SAFER) et prévenir le vendeur dès le mandat.",
+      "Erreur : lâcher le suivi après la signature du compromis. Correction : piloter activement la période suspensive (dépôt de prêt, levée des conditions, pièces de copropriété) jusqu'à l'acte.",
+      "Erreur : promettre une date d'acte sans tenir compte du délai de rétractation (10 j) ni du délai de réflexion sur l'offre de prêt (10 j). Correction : bâtir le calendrier à partir des délais incompressibles.",
+      "Erreur : transmettre un dossier incomplet au notaire au fil de l'eau. Correction : remettre un dossier complet et classé (titre, DDT, pièces copropriété, urbanisme) ; chaque pièce manquante retarde l'acte.",
+      "Erreur : oublier de rappeler à l'acquéreur d'assurer le bien dès la signature. Correction : prévenir que propriété ET risques passent à l'acquéreur à l'acte, assurance obligatoire le jour J."
+    ],
+    "chiffresCles": [
+      "Durée moyenne d'une transaction : 3 à 4 mois.",
+      "Délai de rétractation acquéreur : 10 jours (loi SRU).",
+      "Délai de réflexion sur l'offre de prêt : 10 jours incompressibles.",
+      "Dépôt de garantie usuel : 5 à 10% du prix, restitué sous 21 jours max en cas de rétractation.",
+      "Origine de propriété vérifiée sur 30 ans.",
+      "Frais d'acquisition : ~7 à 8% dans l'ancien, ~2 à 3% dans le neuf/VEFA.",
+      "DMTO ancien de droit commun : département 4,50% (relevable à 5,00% du 1er avril 2025 au 31 mars 2028, appliqué dans les Bouches-du-Rhône depuis le 1er mai 2025) + commune 1,20% + frais d'assiette ~0,119% + contribution de sécurité immobilière 0,10%.",
+      "Total DMTO Bouches-du-Rhône ~6,32%.",
+      "Primo-accédant résidence principale : la hausse départementale ne s'applique pas, taux réduit voire exonération possible selon le département.",
+      "Préemption : 2 mois (commune/DPU, locataire congé pour vendre - 4 mois si prêt, SAFER).",
+      "Indivision : unanimité (art.",
+      "815-3), vente judiciaire possible dès 2/3 des droits depuis la loi du 12 mai 2009.",
+      "Attestation immobilière en succession : publiée dans les 6 mois du décès.",
+      "Plus-value immobilière : 19% (IR) + 17,2% (prélèvements sociaux) = 36,2%, exonération résidence principale."
     ]
   },
   "loi-alur": {
@@ -2916,6 +4022,110 @@ export const ANIMATIONS_DATA: Record<string, AnimationModule> = {
       "Ancrer les acquis : revenez au mur des idées reçues du brise-glace en clôture et faites déplacer les Post-it. Ce bouclage visuel matérialise la progression et marque les esprits.",
       "Rendre concret et local : chaque fois que possible, raccrochez à Martigues et au portefeuille réel de l'agence (annonces réelles anonymisées, cas vécus). Rappelez que Martigues n'est pas en zone d'encadrement du niveau des loyers mais à vérifier en zone tendue.",
       "Conclure par l'action, pas par la théorie : réservez vraiment les 10 dernières minutes au plan d'action individuel. Faites écrire à chaque négociateur ses 2 engagements prioritaires pour le lendemain et proposez un point de suivi à J+15 pour vérifier leur mise en œuvre."
+    ],
+    "materiel": [
+      "Le texte de référence affiché : loi n°2014-366 du 24 mars 2014 (ALUR), avec les 6 chantiers listés (honoraires, annonces/mandats, copropriété, location, profession, urbanisme).",
+      "Un mandat de vente de l'agence pour pointer en direct les mentions obligatoires ALUR (moyens mis en oeuvre, reddition de comptes, rémunération TTC et à qui elle incombe, numéro de registre).",
+      "Trois annonces imprimées (une conforme, deux non conformes) pour l'exercice 'repérez les manquements' (DPE, copropriété, honoraires).",
+      "Une check-list de conformité ALUR plastifiée (l'audit '5 minutes') par stagiaire.",
+      "Le barème d'honoraires de l'agence (vitrine + capture d'écran du site internet) pour vérifier l'affichage TTC.",
+      "Un modèle de dossier L721-2 (copropriété) et une grille des plafonds d'honoraires de location au m² (12/10/8 € + 3 €)."
+    ],
+    "messagesCles": [
+      "ALUR ne remplace pas la loi Hoguet de 1970 : elle la complète et la durcit, avec deux objectifs, protéger le consommateur et professionnaliser l'agent.",
+      "Transparence des honoraires : barème affiché TTC (vitrine, accueil, site internet), le barème est un PLAFOND opposable, les honoraires ne sont dus qu'à l'opération conclue.",
+      "Une annonce doit porter le prix et la charge des honoraires, les mentions copropriété et les 4 mentions DPE : une annonce non conforme engage l'agence.",
+      "Le mandat ALUR écrit ce que vous faites (moyens mis en oeuvre) et comment vous rendez compte (reddition de comptes) : ce n'est plus une formalité vague.",
+      "La profession est encadrée : carte professionnelle de 3 ans délivrée par la CCI, 14h de formation continue par an (42h sur le cycle), code de déontologie, sans quoi pas de renouvellement."
+    ],
+    "scriptOuverture": "Bonjour à tous. La loi ALUR, c'est le texte qui a le plus transformé notre métier depuis la loi Hoguet de 1970. Attention au contresens le plus courant : ALUR ne remplace pas Hoguet, elle la complète et la durcit. Les deux cohabitent. Derrière le sigle se cachent deux obsessions du législateur : protéger le consommateur par la transparence, et professionnaliser l'agent par la formation et la déontologie. Concrètement, pour vous, ça veut dire des obligations précises à chaque étape : votre vitrine, vos annonces, vos mandats, vos dossiers de copropriété, vos baux. On va passer tout ça au crible, et surtout je vais vous donner un audit en '5 minutes' pour vérifier que l'agence est en règle et qu'aucune annonce ne nous expose à une amende. L'enjeu est double : rester dans les clous, et transformer ces obligations en arguments de sérieux face au client.",
+    "questionsPublic": [
+      "ALUR remplace-t-elle la loi Hoguet, ou la complète-t-elle ? (Elle la complète et la durcit.)",
+      "Où doit figurer le barème d'honoraires de l'agence, et sous quelle forme, HT ou TTC ? (Vitrine, accueil, site internet ; en TTC.)",
+      "Le barème affiché est-il un tarif imposé ou un plafond ? Peut-on facturer au-dessus ?",
+      "Quelles sont les 4 mentions DPE obligatoires dans une annonce depuis la loi Climat ?",
+      "Que doit obligatoirement contenir un mandat depuis ALUR, en plus de l'identité et du prix ? (Moyens mis en oeuvre, reddition de comptes, numéro de registre...)",
+      "Pour la vente d'un lot de copropriété, que se passe-t-il si le dossier L721-2 n'est pas annexé au compromis ? (Le délai de rétractation de 10 jours ne court pas.)",
+      "Quels sont les plafonds d'honoraires de location à la charge du locataire, au m² ?",
+      "Combien de temps est valable la carte professionnelle depuis ALUR, et qui la délivre ?",
+      "Combien d'heures de formation continue par an, et quel contenu minimum sur le cycle ? (14h/an, 42h/3 ans, 2h déontologie + 2h non-discrimination.)",
+      "Que risque une agence dont l'annonce est incomplète ou le barème absent ? (Amende administrative jusqu'à 3 000 € / 15 000 €.)"
+    ],
+    "exemplesTerrain": [
+      {
+        "titre": "L'annonce non conforme qui coûte cher",
+        "texte": "Annonce d'un T3 à Martigues en copropriété, publiée sans la classe énergie ni le montant moyen des charges courantes. Contrôle DGCCRF : manquement aux mentions obligatoires ALUR + loi Climat. Amende administrative encourue jusqu'à 3 000 € pour une personne physique, 15 000 € pour l'agence (personne morale). Correction immédiate : 4 mentions DPE (classe énergie, classe climat, coûts annuels estimés, mention 'logement à consommation énergétique excessive' si F ou G) + statut copropriété, nombre de lots, charges moyennes."
+      },
+      {
+        "titre": "Le délai de rétractation qui ne démarre pas",
+        "texte": "Vente d'un lot de copropriété à Croix-Sainte, compromis signé sans annexer les PV d'AG des 3 dernières années ni la fiche synthétique (dossier L721-2 incomplet). Conséquence : le délai de rétractation de 10 jours de l'acquéreur NE COMMENCE PAS à courir, l'acquéreur peut se rétracter bien plus tard et toute la vente est fragilisée. Correction : dossier L721-2 complet avant signature."
+      },
+      {
+        "titre": "Honoraires de location plafonnés au m²",
+        "texte": "Location d'un T2 de 45 m² à Martigues (zone non tendue, plafond 8 €/m² + 3 €/m² état des lieux). Part maximale à la charge du locataire : 45 x 8 = 360 € pour les 4 prestations, plus 45 x 3 = 135 € d'état des lieux, soit 495 € maximum. Et la part du locataire ne peut jamais dépasser celle du bailleur. Facturer au-delà = pratique sanctionnée (jusqu'à 3 000 € / 15 000 €)."
+      },
+      {
+        "titre": "La carte pro et les 42 heures de formation",
+        "texte": "Un négociateur de l'agence doit justifier de 14h de formation par an, soit 42h sur le cycle de 3 ans de la carte, dont au moins 2h de déontologie et 2h de non-discrimination. Sans justificatif, la CCI ne renouvelle pas la carte : plus de droit d'exercer. À Martigues comme ailleurs, on planifie ces heures chaque année, elles concernent le titulaire ET les collaborateurs (salariés et agents commerciaux)."
+      }
+    ],
+    "objectionsStagiaires": [
+      {
+        "question": "Le barème affiché, on peut quand même facturer un peu plus pour un bien de prestige ?",
+        "reponse": "Non, jamais au-dessus : le barème est un plafond opposable (arrêtés du 10 janvier 2017 et du 26 janvier 2022). On ne peut négocier qu'à la baisse, et il s'applique à tous les clients dans les mêmes conditions, pas de tarif 'à la tête du client'. Pour un bien de prestige, on joue sur la valeur et les moyens, pas sur un dépassement du barème."
+      },
+      {
+        "question": "Toutes ces mentions dans l'annonce, c'est lourd, un oubli c'est vraiment grave ?",
+        "reponse": "Oui, une annonce non conforme engage la responsabilité de l'agence et peut valoir une amende administrative jusqu'à 3 000 € (personne physique) ou 15 000 € (personne morale). Les 4 mentions DPE et les mentions copropriété ne sont pas optionnelles. Un audit rapide avant publication évite tout risque."
+      },
+      {
+        "question": "La reddition de comptes et les 'moyens mis en oeuvre' dans le mandat, c'est juste de la paperasse ?",
+        "reponse": "C'est un apport majeur d'ALUR, et c'est surtout un atout commercial. Écrire noir sur blanc ce que vous faites (reportage photo, diffusion portails, vitrine, home-staging, visites) et comment vous rendez compte au vendeur vous distingue des concurrents vagues et rassure le mandant. La contrainte devient argument de sérieux."
+      },
+      {
+        "question": "Le DPE vierge, on peut encore le mettre si le diagnostic n'est pas prêt ?",
+        "reponse": "Non. Depuis le 1er juillet 2021, le DPE est opposable et le DPE vierge ('non communiqué') n'est plus admis. Une classe erronée affichée engage la responsabilité du vendeur et peut fonder une action de l'acquéreur. Pas de mise en vente sans DPE réalisé et valide."
+      },
+      {
+        "question": "La formation continue, 14h par an, ça ne concerne que le titulaire de la carte ?",
+        "reponse": "Non, elle concerne le titulaire ET ses collaborateurs : salariés et agents commerciaux. 14h par an, 42h sur le cycle de 3 ans, dont au moins 2h de déontologie et 2h de non-discrimination à l'accès au logement. Sans justificatif, pas de renouvellement de carte, donc plus de droit d'exercer."
+      },
+      {
+        "question": "Pré-état daté et état daté, c'est la même chose ?",
+        "reponse": "Non. Le pré-état daté est un document commercial, non obligatoire, préparé pour le compromis pour donner une première photo de la situation. L'état daté, lui, est établi par le syndic pour l'acte authentique et donne la situation financière exacte entre le vendeur et le syndicat. À ne pas confondre dans vos échanges avec le vendeur et le notaire."
+      },
+      {
+        "question": "L'encadrement des loyers, ça s'applique partout ?",
+        "reponse": "Non, il faut distinguer deux mécanismes. L'encadrement de l'évolution à la relocation s'applique en zone tendue (le nouveau loyer ne dépasse pas l'ancien réévalué de l'IRL, sauf travaux ou loyer sous-évalué). L'encadrement du niveau des loyers (loyer de référence majoré) ne s'applique que dans les communes qui l'ont mis en place. Martigues n'est pas une métropole à encadrement du niveau, mais vérifiez toujours le zonage à jour."
+      }
+    ],
+    "erreursFrequentes": [
+      "Erreur : afficher le barème en HT ou seulement à l'accueil. Correction : barème TTC, lisible en vitrine depuis l'extérieur, à l'accueil ET sur le site internet (arrêtés de 2017 et 2022).",
+      "Erreur : croire que le barème est un tarif imposé. Correction : c'est un plafond opposable, on négocie à la baisse, jamais au-dessus, et le même barème s'applique à tous.",
+      "Erreur : publier une annonce sans les 4 mentions DPE ou sans les mentions copropriété. Correction : classe énergie, classe climat, coûts annuels estimés, mention 'consommation excessive' si F/G, + statut copropriété, nombre de lots, charges moyennes.",
+      "Erreur : signer un compromis de lot de copropriété sans le dossier L721-2 complet. Correction : annexer fiche synthétique, règlement, PV des 3 dernières AG, carnet d'entretien, etc., sinon le délai de 10 jours ne court pas.",
+      "Erreur : facturer au locataire au-delà du plafond au m² ou lui réclamer des pièces hors liste limitative. Correction : respecter 12/10/8 €/m² (+3 €/m² état des lieux), part locataire jamais supérieure à celle du bailleur, pièces justificatives dans la liste du décret.",
+      "Erreur : mandat non numéroté ou non inscrit au registre des mandats. Correction : numéro reporté sur le registre tenu de façon continue et sans blanc (Hoguet), avec moyens mis en oeuvre et reddition de comptes (ALUR).",
+      "Erreur : accepter un DPE vierge ou périmé. Correction : DPE opposable depuis le 1er juillet 2021, jamais vierge, réalisé et valide avant toute mise en vente.",
+      "Erreur : laisser expirer la carte faute de formation. Correction : planifier 14h/an (42h/cycle), dont 2h déontologie + 2h non-discrimination, titulaire et collaborateurs, pour garantir le renouvellement."
+    ],
+    "chiffresCles": [
+      "Loi ALUR : loi n°2014-366 du 24 mars 2014 (complète la loi Hoguet n°70-9 du 2 janvier 1970).",
+      "Affichage honoraires : arrêté du 10 janvier 2017 (en vigueur 1er avril 2017) + arrêté du 26 janvier 2022 (en vigueur 1er avril 2022), barème TTC, vitrine/accueil/site internet, plafond opposable.",
+      "TVA honoraires : 20%.",
+      "Annonces - 4 mentions DPE : classe énergie (depuis 1er juillet 2021), classe climat/GES (depuis 1er juillet 2021), estimation coûts annuels d'énergie (depuis 1er janvier 2022), mention 'logement à consommation énergétique excessive' si F ou G (depuis 1er janvier 2022)",
+      "DPE opposable depuis le 1er juillet 2021, DPE vierge interdit.",
+      "Copropriété : dossier L721-2 CCH à annexer au compromis (sinon délai de rétractation de 10 jours ne court pas), erreur Carrez > 5% = action en réduction du prix.",
+      "Honoraires de location (décret du 1er août 2014), plafond part locataire au m² : zone très tendue 12 €/m², tendue 10 €/m², reste du territoire 8 €/m², + 3 €/m² état des lieux par partie",
+      "part locataire jamais supérieure à celle du bailleur",
+      "4 prestations seulement.",
+      "Carte professionnelle : 3 ans (ramenée de 10 à 3 ans par ALUR), délivrée par la CCI depuis le 1er juillet 2015, mentions T (transaction) / G (gestion) / S (syndic).",
+      "Formation continue (décret du 18 février 2016) : 14h/an, 42h sur le cycle de 3 ans, dont au moins 2h de déontologie et 2h de non-discrimination (apport ELAN).",
+      "Déontologie : décret n°2015-1090 du 28 août 2015.",
+      "Bail mobilité (loi ELAN) : 1 à 10 mois, sans dépôt de garantie.",
+      "Sanctions : amende administrative jusqu'à 3 000 € (personne physique) / 15 000 € (personne morale)",
+      "exercice sans carte : 6 mois d'emprisonnement et 7 500 € d'amende (Hoguet).",
+      "Urbanisme : généralisation du PLUi, suppression du COS et de la taille minimale des terrains, caducité des POS non transformés (retour au RNU)."
     ]
   },
   "cadre-legal": {
@@ -3163,6 +4373,104 @@ export const ANIMATIONS_DATA: Record<string, AnimationModule> = {
       "Valorisez l'erreur comme matière première : demandez à ceux qui se trompent d'expliquer la bonne réponse, c'est le meilleur ancrage mémoriel.",
       "Distinguez clairement l'obligatoire du recommandé (ex. DPO pas toujours obligatoire, pige toujours légitime) pour éviter la peur paralysante autant que la fausse sécurité.",
       "Terminez par un tour de table d'engagement : chaque négociateur énonce à voix haute UN réflexe qu'il applique dès le lendemain, et comparez le score de fin avec celui du brise-glace pour mesurer le chemin parcouru."
+    ],
+    "materiel": [
+      "Paperboard ou tableau blanc + 4 marqueurs de couleur pour construire la frise des obligations (carte, mandat, LCB-FT, RGPD, démarchage)",
+      "Vidéoprojecteur et le support de slides du module (frise Hoguet, schéma Tracfin, timeline 2026)",
+      "Photocopies vierges : modèle de mandat numéroté, fiche de vigilance LCB-FT, grille de recueil du consentement de démarchage (opt-in)",
+      "Un exemplaire réel (anonymisé) d'attestation d'habilitation CCI et d'un registre des mandats de l'agence Icaza",
+      "Smartphones des stagiaires pour l'accès au site de la CCI et au registre national des bénéficiaires effectifs (INPI)",
+      "Jeu de cartes-cas (10 situations : chèque de réservation, locataire refusé, appel à froid, etc.) pour l'atelier objections"
+    ],
+    "messagesCles": [
+      "Sans mandat écrit préalable et conforme, vous n'êtes pas payé : le formalisme n'est pas de l'administratif, c'est votre rémunération.",
+      "La conformité protège d'abord VOUS et l'agence : une faute d'un négociateur engage la responsabilité du titulaire de la carte.",
+      "En LCB-FT, le déclencheur est le SOUPÇON, pas la preuve ; et la déclaration Tracfin est confidentielle, on n'en informe jamais le client.",
+      "À partir du 11 août 2026, plus de démarchage téléphonique sans consentement préalable (opt-in) : Bloctel disparaît, on recueille et on garde la preuve du consentement.",
+      "La non-discrimination n'est pas une option déontologique : c'est un délit pénal (jusqu'à 3 ans et 45 000 € d'amende)."
+    ],
+    "scriptOuverture": "Bonjour à tous. Aujourd'hui on parle de la partie du métier qu'on n'affiche pas en vitrine mais qui peut vous coûter votre commission, votre carte, ou pire. Je vais vous poser une question simple : qui ici a déjà pris un chèque « pour réserver » un bien ? Gardez la réponse pour vous, on y revient dans dix minutes. La loi Hoguet, le RGPD, Tracfin, le démarchage opt-in de 2026 : ça a l'air rébarbatif, mais je vais vous montrer que c'est surtout du bon sens et quelques réflexes à ancrer. Mon objectif ce matin n'est pas de faire de vous des juristes, mais des professionnels qui savent dire non au bon moment et sécuriser chaque dossier. On va travailler sur des cas réels de Martigues, et à la fin vous repartez avec une check-list de conformité utilisable dès demain sur le terrain.",
+    "questionsPublic": [
+      "Pour vous, à quoi sert vraiment la loi Hoguet : à vous contraindre, ou à vous protéger ?",
+      "Quelle différence entre la carte T, G et S, et laquelle couvre votre activité quotidienne ?",
+      "Un agent commercial peut-il prendre un mandat avant que son habilitation CCI soit enregistrée ? Pourquoi ?",
+      "Si vous trouvez l'acquéreur mais que le mandat écrit manque ou est non conforme, touchez-vous vos honoraires ?",
+      "Dans une annonce, qu'êtes-vous légalement obligé d'afficher concernant les honoraires ?",
+      "C'est quoi un bénéficiaire effectif, et à partir de quel seuil de détention ?",
+      "Vous avez un doute sérieux sur l'origine des fonds d'un acquéreur : vous faites quoi, et surtout, qu'est-ce que vous ne dites PAS au client ?",
+      "À partir de quand, et à quelles conditions, pourrez-vous encore appeler un particulier à froid ?",
+      "Un propriétaire vous demande d'écarter les candidats d'une certaine origine : votre réponse ?",
+      "Combien de temps conservez-vous les pièces d'identité et le dossier d'un client au regard du RGPD ?"
+    ],
+    "exemplesTerrain": [
+      {
+        "titre": "Le chèque de réservation refusé (Jonquières, Martigues)",
+        "texte": "Un acquéreur enthousiaste pour un T3 à 215 000 € quartier Jonquières tend un chèque de 5 000 € « pour bloquer le bien » le soir de la visite. Le négociateur refuse de l'encaisser et oriente vers un séquestre notaire au compromis. Bon réflexe : manier ces fonds sans que l'agence ait sa garantie financière, c'est se mettre hors-la-loi, et de toute façon un chèque le soir d'une visite n'a aucune valeur d'engagement."
+      },
+      {
+        "titre": "Le mandat non conforme qui fait perdre 9 600 € d'honoraires",
+        "texte": "Sur une maison vendue 320 000 € à Croix-Sainte, honoraires de 9 600 €, le vendeur refuse de payer en invoquant un mandat non numéroté au registre et sans mention manuscrite de la durée. L'agence perd le procès : article 6 de la loi Hoguet, pas de mandat conforme = pas d'honoraires. Un numéro de registre manquant a coûté 9 600 €."
+      },
+      {
+        "titre": "Signalement Tracfin sur un achat en espèces (secteur L'Île)",
+        "texte": "Un acquéreur veut acheter un studio 95 000 € secteur L'Île avec un apport en liquide difficile à tracer et une pression anormale sur le calendrier. Le négociateur alerte le dirigeant, correspondant Tracfin de l'agence, qui dépose une déclaration de soupçon sur la plateforme ERMES. La vente peut continuer, mais le client n'est jamais informé du signalement : l'en informer serait un délit."
+      },
+      {
+        "titre": "La demande discriminatoire d'un bailleur (Ferrières)",
+        "texte": "Un propriétaire d'un T2 à louer 680 €/mois à Ferrières demande « pas de dossiers avec des noms étrangers ». Le négociateur refuse clairement, explique le risque pénal (jusqu'à 3 ans et 45 000 €), et sélectionne sur les seuls critères de solvabilité. Rappel : la liste des pièces exigibles d'un candidat locataire est fixée par décret, on ne demande rien d'autre."
+      }
+    ],
+    "objectionsStagiaires": [
+      {
+        "question": "Franchement, un chèque de réservation c'est rendre service au client, où est le problème ?",
+        "reponse": "Le problème, c'est que vous maniez des fonds. Sans garantie financière de l'agence, c'est illégal, et un simple chèque n'engage juridiquement personne. Le seul outil sûr, c'est le séquestre chez le notaire au compromis. Rendre service, c'est sécuriser, pas prendre un risque pour l'agence."
+      },
+      {
+        "question": "Je suis agent commercial, donc indépendant : je fais ce que je veux, non ?",
+        "reponse": "Non. Indépendant sur votre organisation, oui, mais vous agissez sous la carte du titulaire et son habilitation. Chacune de vos fautes engage la responsabilité de l'agence. Vous êtes libre de votre emploi du temps, pas des règles de conformité."
+      },
+      {
+        "question": "Tracfin, c'est le travail de la banque et du notaire, pas le mien.",
+        "reponse": "Faux : l'agent immobilier est un professionnel assujetti à la LCB-FT à part entière. Vous avez une obligation de vigilance et de déclaration de soupçon. Ne pas déclarer malgré des indices concordants est un manquement sanctionnable, indépendamment de ce que fait la banque."
+      },
+      {
+        "question": "Si je soupçonne quelque chose, je préviens le client pour qu'il s'explique ?",
+        "reponse": "Surtout pas. Le client ne doit jamais savoir qu'une déclaration est envisagée ou faite : l'informer est un délit (délit de divulgation). Vous remontez l'information au correspondant Tracfin de l'agence, discrètement, et c'est lui qui déclare."
+      },
+      {
+        "question": "Le démarchage opt-in de 2026, ça va tuer la prospection téléphonique, non ?",
+        "reponse": "Ça tue le démarchage à froid sauvage, pas la prospection intelligente. Vous pourrez toujours appeler un prospect qui a donné son consentement, un client existant dans le cadre de la relation, ou un vendeur qui a publié une annonce entre particuliers (prospection B to B d'un bien à vendre). L'avenir, c'est la permission et la recommandation, pas le fichier acheté."
+      },
+      {
+        "question": "Afficher le montant exact des honoraires dans l'annonce, ça fait fuir le client.",
+        "reponse": "C'est une obligation légale depuis l'arrêté du 10 janvier 2017 : prix, montant TTC des honoraires et qui les paie. Le barème doit aussi être affiché en agence, en vitrine et sur le site. Ne pas le faire, c'est un manquement sanctionné par la DGCCRF. Et la transparence rassure plus qu'elle n'effraie."
+      },
+      {
+        "question": "Garder les pièces d'identité des clients, ce n'est pas du RGPD de toute façon obligatoire pour Tracfin ?",
+        "reponse": "Les deux coexistent : la LCB-FT vous impose de conserver les pièces de vigilance 5 ans après la fin de la relation, mais le RGPD exige que vous ne gardiez que le nécessaire, de façon sécurisée, et pas au-delà. On ne stocke pas des copies de CNI qui traînent dans une boîte mail : on documente la base légale et la durée."
+      }
+    ],
+    "erreursFrequentes": [
+      "Erreur : croire que la carte professionnelle est acquise à vie. Correction : elle se renouvelle tous les 3 ans auprès de la CCI, dans les délais.",
+      "Erreur : prendre un mandat avant l'enregistrement de l'habilitation CCI du collaborateur. Correction : enregistrer l'habilitation AVANT la première prise de mandat, le mandat est sinon fragile.",
+      "Erreur : rédiger un mandat sans le reporter au registre ou sans mention manuscrite de durée. Correction : numéroter chaque mandat au registre, mentions obligatoires complètes, sous peine de perdre les honoraires.",
+      "Erreur : encaisser un acompte « pour rendre service » sans garantie financière. Correction : tout passe par le séquestre notaire ou le compte dédié sous garantie financière.",
+      "Erreur : attendre la preuve d'un blanchiment pour agir. Correction : déclarer dès le soupçon (indices concordants), via le correspondant Tracfin, et sans en informer le client.",
+      "Erreur : acheter un fichier et appeler à froid après 2026. Correction : recueillir et conserver (3 ans minimum) le consentement préalable, miser sur recommandation et annonces de particuliers.",
+      "Erreur : accepter un critère de sélection discriminatoire d'un bailleur. Correction : refuser et sélectionner sur la seule solvabilité, via les pièces autorisées par décret ; rappeler le risque pénal.",
+      "Erreur : laisser des copies de CNI et dossiers clients sans durée ni sécurité. Correction : définir base légale, durée de conservation et stockage sécurisé conformes au RGPD."
+    ],
+    "chiffresCles": [
+      "LCB-FT / Tracfin : professionnels assujettis",
+      "déclencheur = le SOUPÇON (indices concordants), pas la preuve",
+      "déclaration de soupçon via la plateforme ERMES, confidentielle (interdiction d'informer le client, sous peine de délit)",
+      "bénéficiaire effectif = personne physique détenant directement ou indirectement plus de 25 % du capital ou des droits de vote, ou exerçant un contrôle effectif",
+      "conservation des pièces de vigilance 5 ans après la fin de la relation d'affaires. — RGPD : minimisation, base légale et durée de conservation définies, sécurité des données",
+      "amende jusqu'à 20 M€ ou 4 % du chiffre d'affaires annuel mondial. — Démarchage téléphonique : loi du 30 juin 2025, bascule vers le consentement préalable (opt-in) à compter du 11 août 2026, disparition de Bloctel",
+      "preuve du consentement conservée au moins 3 ans",
+      "amende administrative jusqu'à 375 000 € pour une personne morale. — Honoraires en annonce : prix + montant TTC des honoraires + partie qui les paie (arrêté du 10 janvier 2017)",
+      "barème affiché en agence, en vitrine et sur le site. — Carte professionnelle : mentions T / G / S, délivrée par la CCI, valable 3 ans",
+      "garantie financière minimum 110 000 € (30 000 € les deux premières années) dès que l'on manie des fonds. — Non-discrimination : jusqu'à 3 ans d'emprisonnement et 45 000 € d'amende (personne physique)."
     ]
   },
   "compromis": {
@@ -3371,6 +4679,103 @@ export const ANIMATIONS_DATA: Record<string, AnimationModule> = {
       "Ramenez chaque notion au terrain martégal (biens à 210-320 K€, risque sismique et inondation ERP en PACA, acquéreurs en SCI) : le contenu générique glisse, l'exemple local reste.",
       "Gérez le temps avec un chrono visible et un co-animateur ou un participant « gardien du temps ». Les jeux de rôle débordent toujours : fixez 5-6 min de jeu + 4-5 min de débrief et tenez-le.",
       "Terminez par le plan d'action individuel écrit : chacun note 3 engagements concrets qu'il applique dès demain, les lit à voix haute, et vous les reprenez en point d'étape à la prochaine réunion commerciale pour ancrer durablement."
+    ],
+    "materiel": [
+      "Vidéoprojecteur + slides : frise « offre acceptée vers acte » et schéma des conditions suspensives",
+      "Trame de compromis vierge de l'agence et une liste exhaustive des pièces annexes (ERP, diagnostics, PV d'AG, carnet d'entretien)",
+      "Fiche-outil : calcul du délai SRU de 10 jours (avec exemples de report week-end/férié)",
+      "Calculatrice ou simulateur de mensualités / taux d'effort HCSF (35 %) pour l'atelier financement",
+      "Modèle de clause suspensive de prêt bien rédigée (montant, taux max, durée, date butoir) à distribuer",
+      "Jeu de cas chronologiques (dates de notification, de dépôt de dossier bancaire) pour faire calculer les échéances à la salle"
+    ],
+    "messagesCles": [
+      "L'essentiel de la sécurité juridique d'une vente se joue au compromis, pas à l'acte : un compromis bien ficelé, c'est une vente qui va au bout.",
+      "Le compromis vaut vente (art. 1589) : il engage fermement les DEUX parties, d'où l'importance de vérifier tous les signataires et pouvoirs dès le mandat.",
+      "Maîtriser les délais, c'est protéger le dossier : 10 jours de rétractation SRU, 10 jours de réflexion sur l'offre de prêt, 1 mois minimum pour la condition de prêt.",
+      "Une condition suspensive de prêt mal rédigée (montant, taux, durée flous) peut faire échouer la vente ou ouvrir un contentieux : on la rédige au cordeau.",
+      "Votre rôle ne s'arrête pas à la signature du compromis : vous pilotez jusqu'à l'acte (dossier bancaire, purges, notaire)."
+    ],
+    "scriptOuverture": "Bonjour à tous. L'offre est acceptée, le client est content, vous aussi : et c'est précisément là que tout peut encore capoter. Entre l'offre acceptée et l'acte authentique, il y a deux à trois mois de délais, de conditions et de pièges, et c'est vous le chef d'orchestre. Aujourd'hui on va démonter le compromis pièce par pièce : rétractation, conditions suspensives, prêt, frais, pour que vous ne subissiez plus jamais un dossier qui traîne. Je veux qu'en sortant, vous sachiez calculer un délai SRU les yeux fermés et rédiger une condition suspensive de prêt qui tient. On va s'appuyer sur des ventes réelles du bassin de Martigues, avec de vrais chiffres, pour que ce soit directement transposable.",
+    "questionsPublic": [
+      "Quelle différence entre un compromis et une promesse unilatérale de vente, et quand conseiller l'une plutôt que l'autre ?",
+      "Le compromis « vaut vente » : qu'est-ce que ça change concrètement pour le vendeur comme pour l'acquéreur ?",
+      "Qui doit obligatoirement signer l'avant-contrat sur un bien en indivision ou appartenant à un couple ?",
+      "L'acquéreur dispose de combien de jours pour se rétracter, et à partir de quand court ce délai ?",
+      "Quelles sont les conditions suspensives qu'on retrouve quasi systématiquement dans un compromis ?",
+      "Quelle est la durée minimale légale de la condition suspensive de prêt, et laquelle prévoyez-vous en pratique ?",
+      "Combien de temps l'emprunteur doit-il attendre avant de pouvoir accepter une offre de prêt reçue ?",
+      "À combien s'élèvent les frais de notaire dans l'ancien, et combien dans le neuf ? Pourquoi cet écart ?",
+      "Que se passe-t-il si l'acquéreur se désiste hors rétractation et hors condition suspensive non réalisée ?",
+      "Quel est le taux d'effort maximal autorisé par le HCSF, et sur quelle durée maximale de prêt ?"
+    ],
+    "exemplesTerrain": [
+      {
+        "titre": "PUV avec substitution SCI (villa à Jonquières, 320 000 €)",
+        "texte": "Un couple veut acheter une villa 320 000 € à Jonquières mais doit d'abord revendre son appartement et créer une SCI familiale. On recommande une promesse unilatérale de 3 mois, indemnité d'immobilisation de 32 000 €, et clause de substitution au profit de la SCI à constituer. Le vendeur immobilise son bien contre indemnité, l'acquéreur garde la main sur son montage. La PUV est signée chez le notaire pour éviter le piège de l'enregistrement sous 10 jours."
+      },
+      {
+        "titre": "Calcul réel d'un délai SRU (compromis signé un vendredi)",
+        "texte": "Compromis signé, notification SRU présentée à l'acquéreur le vendredi 6 février. Le délai de 10 jours calendaires court à compter du lendemain, soit du samedi 7 ; il expire le lundi 16 février (le 10e jour, le 16, étant un lundi ouvrable). Si le dernier jour tombait un dimanche ou un férié, on reporterait au premier jour ouvrable suivant. On ne libère jamais le séquestre avant la fin de ce délai."
+      },
+      {
+        "titre": "Condition suspensive de prêt et taux d'effort (T4 à Canto-Perdrix, 250 000 €)",
+        "texte": "Pour un T4 à 250 000 € à Canto-Perdrix, l'acquéreur emprunte 230 000 € sur 25 ans. Le couple gagne 4 500 €/mois : à 35 % de taux d'effort maximal (assurance comprise), la mensualité plafond est d'environ 1 575 €. On rédige la condition de prêt avec montant maximum emprunté, taux d'intérêt maximum et durée, sur 45 jours, pour sécuriser à la fois l'acquéreur et le vendeur."
+      },
+      {
+        "titre": "Frais de notaire ancien vs neuf (comparatif Martigues)",
+        "texte": "Sur un appartement ancien acheté 200 000 € à Ferrières, les frais d'acquisition avoisinent 15 000 € (7,5 %). Sur un bien neuf en VEFA au même prix aux Laurons, ils tombent autour de 5 000 € (2,5 %) grâce aux droits de mutation réduits. Un argument concret pour orienter un primo-accédant hésitant entre ancien et neuf."
+      }
+    ],
+    "objectionsStagiaires": [
+      {
+        "question": "Une fois le compromis signé, mon travail est fini, c'est le notaire qui gère ?",
+        "reponse": "Non, c'est là que commence votre pilotage. Vous suivez le dépôt du dossier bancaire, relancez pour l'obtention du prêt, vérifiez l'avancement des purges et la date butoir. Un dossier non suivi, c'est une vente qui s'enlise et un client qui doute. Le notaire rédige, vous orchestrez."
+      },
+      {
+        "question": "L'acquéreur a signé le compromis, il est coincé, non ? Il ne peut plus reculer.",
+        "reponse": "Il peut reculer dans deux cas : pendant les 10 jours de rétractation SRU, sans justification et sans frais, et si une condition suspensive échoue (prêt refusé par exemple). Hors de ces cas, oui, il s'expose à la clause pénale (environ 10 %). D'où l'importance de bien expliquer ces délais dès la signature."
+      },
+      {
+        "question": "La condition suspensive de prêt, je mets juste « sous réserve d'obtention d'un prêt », ça suffit ?",
+        "reponse": "Non, c'est dangereux. Une clause imprécise peut être jugée non écrite ou permettre à l'acquéreur de se désister trop facilement. Il faut le montant emprunté, le taux d'intérêt maximum, la durée et une date butoir de réalisation. Une clause floue, c'est un contentieux assuré."
+      },
+      {
+        "question": "Pourquoi prévoir 45 ou 60 jours pour le prêt si le minimum légal est d'un mois ?",
+        "reponse": "Parce que le minimum légal d'un mois (loi Scrivener) est intenable en pratique : montage du dossier, instruction bancaire, délai de réflexion de 10 jours sur l'offre. En prévoyant 45 à 60 jours, on évite de devoir proroger le compromis et on sécurise le calendrier."
+      },
+      {
+        "question": "Le dépôt de garantie, c'est 10 % obligatoire ?",
+        "reponse": "Non, ce n'est pas une obligation légale, c'est un usage. On demande en général 5 à 10 % du prix, séquestrés chez le notaire ou à l'agence sous garantie financière. Le montant se négocie. Il s'impute sur le prix le jour de l'acte."
+      },
+      {
+        "question": "Un seul des deux indivisaires veut vendre et signer, on peut avancer quand même ?",
+        "reponse": "Non. Tous les indivisaires doivent signer, comme les deux époux pour un logement de la famille ou tous les héritiers d'une succession. Un signataire manquant et le compromis est fragilisé, voire inopposable. On vérifie capacité et pouvoir de vendre dès la prise de mandat."
+      },
+      {
+        "question": "Les règles HCSF, c'est pour les banques, pas pour nous.",
+        "reponse": "C'est vous qui qualifiez la faisabilité en amont. Si vous savez que le taux d'effort maxi est de 35 % assurance comprise, sur 25 ans max, vous évitez de placer un acquéreur sur un bien qu'aucune banque ne financera. Cela vous fait gagner du temps et de la crédibilité."
+      }
+    ],
+    "erreursFrequentes": [
+      "Erreur : confondre offre d'achat et compromis. Correction : l'offre n'est qu'une étape, c'est l'avant-contrat qui structure et sécurise réellement la vente.",
+      "Erreur : oublier un signataire (époux, indivisaire, héritier). Correction : vérifier tous les propriétaires et leurs pouvoirs dès le mandat.",
+      "Erreur : signer une PUV sous seing privé sans l'enregistrer dans les 10 jours. Correction : enregistrement au service des impôts sous peine de nullité, ou signature chez le notaire.",
+      "Erreur : rédiger une condition suspensive de prêt vague. Correction : préciser montant, taux maximum, durée et date butoir de réalisation.",
+      "Erreur : mal calculer le départ du délai SRU. Correction : il court le lendemain de la première présentation de la notification, avec report au jour ouvrable si échéance un samedi/dimanche/férié.",
+      "Erreur : libérer ou croire acquis le dépôt avant la fin des délais. Correction : ne rien débloquer avant la purge de la rétractation et la levée des conditions.",
+      "Erreur : annoncer à l'acquéreur qu'il peut accepter l'offre de prêt dès réception. Correction : délai de réflexion de 10 jours, acceptation au plus tôt le 11e jour.",
+      "Erreur : lâcher le dossier après la signature du compromis. Correction : piloter activement jusqu'à l'acte (prêt, purges, notaire, date butoir)."
+    ],
+    "chiffresCles": [
+      "Avant-contrat : compromis (promesse synallagmatique, art.",
+      "1589 « la promesse de vente vaut vente », engage les deux parties, plus de 90 % des cas) ou PUV (seul le vendeur s'engage, indemnité d'immobilisation ~10 %, enregistrement obligatoire sous 10 jours si sous seing privé, art.",
+      "1589-2). — Rétractation SRU : 10 jours CALENDAIRES pour l'acquéreur non professionnel (loi Macron 2015), à compter du lendemain de la première présentation de la notification",
+      "report au jour ouvrable suivant si le dernier jour est un samedi, un dimanche ou un férié. — Condition suspensive de prêt : durée minimale légale 1 mois (art.",
+      "L313-41 C. conso, loi Scrivener)",
+      "en pratique 45 à 60 jours. — Offre de prêt : délai de réflexion de 10 jours, acceptation au plus tôt le 11e jour",
+      "offre maintenue 30 jours minimum (art.",
+      "L313-24 et L313-34). — Conditions suspensives usuelles : obtention du prêt, purge des droits de préemption, urbanisme/servitudes. — Dépôt de garantie : usage de 5 à 10 % du prix, séquestré (notaire ou agence sous garantie financière), imputé sur le prix à l'acte. — Clause pénale : ~10 % du prix, joue dans les deux sens, modérable par le juge (art.",
+      "1231-5). — HCSF : taux d'effort maxi 35 % (assurance comprise), durée ≤ 25 ans (27 ans avec différé dans le neuf), flexibilité sur 20 % des dossiers. — Frais d'acquisition (« frais de notaire ») : ~7 à 8 % dans l'ancien, ~2 à 3 % dans le neuf. — Délai moyen compromis vers acte : 2 à 3 mois."
     ]
   },
   "dpe-energie": {
@@ -3596,6 +5001,105 @@ export const ANIMATIONS_DATA: Record<string, AnimationModule> = {
       "Ancrez chaque acquis par un moyen mnémotechnique répété : « la pire des deux lettres », « G-F-E = 25-28-34 », « l'audit descend l'échelle F/G puis E puis D ». Faites-les répéter à voix haute.",
       "Rattachez en permanence le contenu au terrain de Martigues (zone H3, confort d'été, copropriétés anciennes du centre) pour que ce soit concret et non du droit abstrait.",
       "Rappelez la posture déontologique : ne jamais arranger une classe (DPE opposable), ne jamais promettre un montant d'aide précis - renvoyer à France Rénov' et au diagnostiqueur certifié. Clôturez en faisant formuler à chacun un engagement concret du plan d'action."
+    ],
+    "materiel": [
+      "Vidéoprojecteur + slides : la bande des 7 classes A à G avec les seuils énergie primaire ET GES",
+      "Un vrai DPE récent (anonymisé) et un DPE périmé d'avant juillet 2021 pour comparer en direct",
+      "Fiche-mémo plastifiée des seuils des 7 classes et du calendrier des interdictions de louer (G 2025 / F 2028 / E 2034)",
+      "Accès à l'observatoire DPE de l'ADEME sur tablette/smartphone pour vérifier un numéro ADEME en live",
+      "Grille d'audit visuelle d'un logement (isolation, menuiseries, chauffage, ECS, ventilation) pour l'atelier estimation",
+      "Simulateur ou tableau des aides (MaPrimeRénov', éco-PTZ, CEE, TVA 5,5 %) pour chiffrer un gain de classe"
+    ],
+    "messagesCles": [
+      "Le DPE n'est plus une formalité : il pèse directement sur la valeur, la louabilité et parfois la vendabilité du bien.",
+      "On retient toujours la PIRE des deux étiquettes (énergie primaire et climat GES) : « la pire des deux lettres gagne ».",
+      "Depuis le 1er juillet 2021, le DPE est OPPOSABLE : la responsabilité du vendeur/bailleur et du diagnostiqueur est engagée sur les étiquettes et les consommations.",
+      "Le calendrier des interdictions de louer est un argument commercial majeur : G interdit depuis 2025, F en 2028, E en 2034.",
+      "Ne jamais confondre énergie primaire (les classes A à G) et énergie finale (le seuil d'interdiction de 2023 à 450 kWh/m²/an)."
+    ],
+    "scriptOuverture": "Bonjour à tous. Levez la main si un client vous a déjà dit : « de toute façon mon DPE ne vaut rien, c'est bidon ». On va voir pourquoi aujourd'hui c'est tout sauf anecdotique. Le DPE, c'est devenu le premier filtre des acquéreurs et des locataires, et parfois le couperet qui rend un bien tout simplement invendable ou inlouable. Mais c'est aussi une opportunité : savoir le lire et l'expliquer, c'est se crédibiliser face au client et transformer une contrainte en argumentaire. On va apprendre à décoder les deux étiquettes, à maîtriser le calendrier des interdictions, et à chiffrer un gain de classe avec les aides. Objectif concret : qu'en sortant, vous ne publiiez plus jamais une annonce avec une classe erronée ou un DPE périmé.",
+    "questionsPublic": [
+      "Un DPE affiche C en énergie mais E en climat : quelle classe retenez-vous dans l'annonce, et pourquoi ?",
+      "Depuis quand le DPE est-il opposable, et qu'est-ce que ça change pour la responsabilité du vendeur ?",
+      "Quelle est la durée de validité d'un DPE réalisé selon la méthode 2021 ?",
+      "Un vendeur vous remet un DPE de mars 2019 : pouvez-vous l'utiliser pour diffuser l'annonce aujourd'hui ?",
+      "Quelles classes sont déjà interdites à la location, et quelles sont les prochaines échéances ?",
+      "Quelle est la différence entre énergie primaire et énergie finale, et pourquoi c'est un piège ?",
+      "Quels biens sont concernés par l'audit énergétique réglementaire de vente, et depuis quand pour la classe E ?",
+      "Qu'a changé la réforme du 1er juillet 2024 pour les petites surfaces ?",
+      "Pour un bailleur d'un logement classé F, que pouvez-vous dire sur le loyer depuis 2022 ?",
+      "Parmi MaPrimeRénov', l'éco-PTZ, les CEE et la TVA à 5,5 %, laquelle est un prêt et non une subvention ?"
+    ],
+    "exemplesTerrain": [
+      {
+        "titre": "Le DPE périmé qui bloque la mise en vente (Martigues)",
+        "texte": "Un vendeur remet un DPE daté de mars 2019. Réalisé avant juillet 2021, il est périmé depuis le 31 décembre 2024 : impossible de diffuser l'annonce avec. Réflexe : commander immédiatement un nouveau DPE (environ 150 à 250 € sur le secteur) avant toute mise en vente, et s'en servir pour bâtir l'argumentaire travaux."
+      },
+      {
+        "titre": "C ou E ? Le double seuil qui requalifie (appartement chauffé au fioul)",
+        "texte": "Un appartement affiche 200 kWh/m²/an (zone C côté énergie) mais 60 kg CO2/m²/an côté climat à cause d'un chauffage au fioul. Le climat le classe E, pas C. Argument au vendeur : « En remplaçant la chaudière fioul par une pompe à chaleur, on vise un gain de deux classes et on sort du radar des passoires. »"
+      },
+      {
+        "titre": "Le F invendu au prix fort, puis la décote (maison à Croix-Sainte)",
+        "texte": "Une maison classée F à Croix-Sainte mise en vente à 290 000 € ne trouve pas preneur en 4 mois : les acquéreurs calculent le coût des travaux et l'échéance d'interdiction de louer en 2028. On repositionne à 265 000 € avec un devis de rénovation chiffré et une simulation d'aides : vente conclue. La passoire n'est pas invendable, elle est mal valorisée."
+      },
+      {
+        "titre": "Atout méditerranéen : zone H3 et confort d'été (Les Laurons)",
+        "texte": "Martigues est en zone climatique H3 (climat méditerranéen, hivers doux), ce qui allège la part chauffage et produit souvent de meilleurs DPE qu'en zone froide. Sur une villa aux Laurons, c'est un vrai argument ; en contrepartie, on insiste sur le confort d'été (volets, brise-soleil, isolation de toiture), critère qui pèse de plus en plus dans notre région."
+      }
+    ],
+    "objectionsStagiaires": [
+      {
+        "question": "Le DPE, tout le monde sait que c'est approximatif, pourquoi en faire tout un plat ?",
+        "reponse": "Parce que depuis le 1er juillet 2021 il est opposable : si l'étiquette est fausse, l'acquéreur ou le locataire peut engager la responsabilité du vendeur, du bailleur et du diagnostiqueur. Approximatif ou pas, il a désormais une vraie valeur juridique et commerciale. On ne le prend plus à la légère."
+      },
+      {
+        "question": "Je peux quand même diffuser une annonce avec un vieux DPE si le client n'en a pas d'autre ?",
+        "reponse": "Non. Depuis le 1er janvier 2025, tout DPE établi avant juillet 2021 est périmé. Diffuser une annonce avec un DPE périmé ou sans étiquette est sanctionnable. On commande un DPE neuf avant la mise en vente, point."
+      },
+      {
+        "question": "Une passoire thermique classée F ou G, c'est invendable, autant refuser le mandat.",
+        "reponse": "Invendable, non ; mal valorisée, souvent. L'acquéreur intègre le coût des travaux et l'échéance d'interdiction de louer. Avec un positionnement de prix juste, un devis de rénovation et une simulation d'aides (MaPrimeRénov', éco-PTZ, CEE), ça se vend. C'est même un segment porteur."
+      },
+      {
+        "question": "Classe F interdite à la location depuis 2025, c'est bien ça ?",
+        "reponse": "Non, attention : c'est G qui est interdit à la location depuis le 1er janvier 2025. F, c'est 2028, et E, 2034. Avant ça, les logements de plus de 450 kWh/m²/an d'énergie finale étaient déjà interdits depuis 2023. Ne pas se tromper d'échéance, c'est crucial face à un bailleur."
+      },
+      {
+        "question": "Énergie primaire, énergie finale, c'est pareil, non ?",
+        "reponse": "Non, et c'est un piège classique. L'énergie finale est celle qu'on paie, au compteur. L'énergie primaire ajoute les pertes de production et de transport : c'est elle qui donne les classes A à G. Le seuil d'interdiction de 2023 (450 kWh) est en énergie FINALE, pas primaire. On ne mélange jamais les deux unités."
+      },
+      {
+        "question": "La réforme de 2024, ça veut dire que je dois faire refaire tous les DPE des petites surfaces ?",
+        "reponse": "Non. La réforme du 1er juillet 2024 a corrigé le calcul des logements de 40 m² ou moins et reclassé environ 140 000 d'entre eux. Une attestation peut être rééditée à partir du numéro ADEME, sans refaire le diagnostic. C'est une bonne nouvelle à vérifier pour chaque petit logement."
+      },
+      {
+        "question": "L'audit énergétique, ce n'est que pour les F et G de toute façon ?",
+        "reponse": "Plus maintenant : F/G depuis le 1er avril 2023, E depuis le 1er janvier 2025, et D à partir de 2034. Il concerne les maisons individuelles et les immeubles entiers en mono-propriété lors de la vente, pas les lots de copropriété. À anticiper dès la prise de mandat sur un bien classé E."
+      }
+    ],
+    "erreursFrequentes": [
+      "Erreur : diffuser une annonce avec un DPE périmé ou sans étiquette. Correction : vérifier date et numéro ADEME, commander un DPE neuf avant la mise en vente.",
+      "Erreur : annoncer la classe énergie en oubliant le climat. Correction : retenir la pire des deux étiquettes (double seuil), sinon la classe publiée est fausse.",
+      "Erreur : confondre la classe (opposable) et les recommandations de travaux (indicatives). Correction : distinguer clairement les deux dans l'argumentaire.",
+      "Erreur : confondre énergie primaire et énergie finale. Correction : classes A-G en énergie primaire, seuil 2023 de 450 kWh en énergie finale.",
+      "Erreur : se tromper d'échéance d'interdiction de louer. Correction : G en 2025, F en 2028, E en 2034.",
+      "Erreur : refuser un mandat sur une passoire F/G. Correction : positionner juste, chiffrer les travaux et les aides, c'est un segment vendable.",
+      "Erreur : ignorer l'audit énergétique de vente sur un bien classé E. Correction : depuis le 1er janvier 2025, l'audit s'impose pour E (maisons et immeubles en mono-propriété).",
+      "Erreur : négliger le confort d'été en PACA. Correction : c'est un critère clé en zone H3, à valoriser (isolation toiture, protections solaires)."
+    ],
+    "chiffresCles": [
+      "DPE opposable depuis le 1er juillet 2021 (loi ELAN / loi Climat) : responsabilité du vendeur/bailleur et du diagnostiqueur sur les étiquettes et consommations",
+      "les recommandations de travaux restent indicatives. — Classes A à G, double seuil : on retient toujours la PIRE des deux étiquettes (énergie primaire en kWh/m²/an ET climat GES en kg CO2/m²/an).",
+      "Seuils : A ≤ 70 kWh et ≤ 6 kg",
+      "B ≤ 110 et ≤ 11",
+      "C ≤ 180 et ≤ 30",
+      "D ≤ 250 et ≤ 50",
+      "E ≤ 330 et ≤ 70",
+      "F ≤ 420 et ≤ 100",
+      "G au-delà. — Méthode unifiée 3CL-DPE 2021 (fin du DPE « vierge » depuis juillet 2021)",
+      "coefficient électricité en énergie primaire passé de 2,58 à 2,3. — Validité : 10 ans pour un DPE méthode 2021",
+      "tous les DPE antérieurs à juillet 2021 périmés depuis le 1er janvier 2025. — Calendrier décence énergétique (interdiction de louer) : > 450 kWh/m²/an d'énergie FINALE depuis 2023, puis G au 1er janvier 2025, F en 2028, E en 2034. — Gel des loyers des passoires F et G depuis le 24 août 2022 (loi Climat et Résilience) : interdiction d'augmenter le loyer, y compris à la relocation et à l'indexation. — Audit énergétique réglementaire de vente : F/G depuis le 1er avril 2023, E depuis le 1er janvier 2025, D à partir de 2034 (maisons individuelles et immeubles entiers en mono-propriété). — Réforme du 1er juillet 2024 : recalcul des logements ≤ 40 m², environ 140 000 sortis du statut de passoire, attestation rééditable via le numéro ADEME. — Aides : MaPrimeRénov' (subvention), éco-PTZ (prêt à taux zéro), CEE (primes), TVA à 5,5 % sur les travaux de rénovation énergétique. — Martigues en zone climatique H3 (méditerranéen) : part chauffage allégée, confort d'été à valoriser."
     ]
   },
   "mental-performance": {
@@ -3807,6 +5311,97 @@ export const ANIMATIONS_DATA: Record<string, AnimationModule> = {
       "Faites participer tout le monde : utilisez les déplacements physiques (ligne locus, Vrai/Faux debout) pour que personne ne reste spectateur, et interrogez nommément les plus discrets avec bienveillance.",
       "Ancrez par la reformulation : après chaque jeu, faites dire au groupe « ce que je retiens pour demain » plutôt que de conclure vous-même ; une idée formulée par le participant est retenue.",
       "Posez un cadre de confidentialité sur les parties émotionnelles (photolangage, stress, burnout) et prévoyez un point individuel de suivi pour les signaux de fatigue chronique repérés — ne traitez pas le cas personnel en groupe."
+    ],
+    "materiel": [
+      "Paperboard pour tracer le cercle d'influence vs cercle des préoccupations et la matrice d'Eisenhower",
+      "Chronomètre ou minuteur visible pour l'exercice de time-boxing (loi de Parkinson en direct)",
+      "Fiches « routine du matin » et « bilan du soir » à distribuer et à remplir sur place",
+      "Clochette ou gong symbolique pour matérialiser le « Next » de la règle SW-SW-SW-N après un refus",
+      "Tableau de bord d'activité vierge (contacts, RDV, estimations, mandats) pour piloter l'amont",
+      "Musique et espace dégagé pour un court exercice d'ancrage / respiration avant mise en situation"
+    ],
+    "messagesCles": [
+      "À compétences et secteur égaux, c'est le mental qui fait du simple au triple : la différence se joue dans la tête, pas dans le marché.",
+      "On pilote ce qu'on contrôle (l'activité : contacts, estimations, relances), on lâche prise sur le reste (taux, conjoncture, décision du client).",
+      "Un « non » n'est pas un échec mais une étape statistique qui a une valeur chiffrée et rapproche du prochain « oui ».",
+      "L'action crée la motivation, pas l'inverse : « fait » vaut mieux que « parfait », et on augmente l'activité quand les résultats baissent.",
+      "Les habitudes durables se construisent sur la régularité, pas sur la volonté : il faut tenir environ deux mois pour ancrer un comportement."
+    ],
+    "scriptOuverture": "Bonjour à tous. Dans cette salle, vous avez tous le même secteur, les mêmes outils, le même fichier. Et pourtant certains feront le triple des autres cette année. La différence, ce n'est pas le talent ni la chance : c'est ce qui se passe entre vos deux oreilles après un « non », un bien surévalué ou une matinée sans rendez-vous. Aujourd'hui on ne va pas parler technique de vente, on va muscler votre mental : refus, stress, temps, confiance, habitudes. Je vais vous donner des règles simples et éprouvées, Pareto, Parkinson, Eisenhower, SW-SW-SW-N, pour que vous arrêtiez de subir et que vous repreniez la main. Et on va construire ensemble votre routine, parce qu'un mental solide, ça ne se décrète pas un matin, ça se travaille comme un muscle.",
+    "questionsPublic": [
+      "Quand vos résultats baissent, votre réflexe naturel : vous ralentissez ou vous accélérez l'activité ?",
+      "Quand un prospect raccroche, c'est vous qu'il rejette, ou votre proposition à cet instant ?",
+      "Si vous signez 1 mandat tous les 10 contacts pour 5 000 € d'honoraires, combien vaut chacun de vos appels, même les refus ?",
+      "Sur quoi avez-vous vraiment le contrôle dans votre journée, et sur quoi n'en avez-vous aucun ?",
+      "Entre un objectif de résultat (« signer 3 mandats ») et un objectif d'activité (« faire 50 contacts »), lequel est le plus efficace à piloter ?",
+      "Dans la matrice d'Eisenhower, où rangez-vous la prospection, et pourquoi est-ce le quadrant des top performers ?",
+      "Quelles sont vos 20 % d'actions qui produisent 80 % de vos résultats ?",
+      "Combien de temps estimez-vous nécessaire pour ancrer durablement une nouvelle habitude ?",
+      "Après avoir annoncé vos honoraires en négociation, vous faites quoi dans les trois secondes qui suivent ?",
+      "Qu'est-ce qui, dans votre environnement actuel, tire votre mental vers le bas, et comment le limiter ?"
+    ],
+    "exemplesTerrain": [
+      {
+        "titre": "Julie et les 3 estimations sans mandat (agence de Martigues)",
+        "texte": "Julie enchaîne 3 estimations sans signer. Mentalité figée : « Je ne suis pas faite pour ça. » Mentalité de croissance : « Qu'ai-je raté ? » Elle rejoue ses entretiens, identifie qu'elle n'a jamais traité l'objection prix, s'entraîne, et signe le 4e. Même situation, deux issues : tout s'est joué dans l'interprétation, pas dans le marché."
+      },
+      {
+        "titre": "La valeur monétaire du non en prospection terrain",
+        "texte": "Un négociateur fait 40 contacts par semaine sur le secteur de Ferrières, signe 1 mandat tous les 10 contacts, pour 5 000 € d'honoraires moyens. Chaque contact vaut donc 500 €, y compris les 9 « non ». Il arrête de redouter le refus : il l'encaisse comme un acompte sur le prochain mandat et enchaîne, règle SW-SW-SW-N (« Some Will, Some Won't, So What, Next »)."
+      },
+      {
+        "titre": "Loi de Parkinson appliquée à l'estimation (time-boxing)",
+        "texte": "Un négociateur passait une demi-journée à préparer chaque estimation et n'en sortait jamais. En se fixant 45 minutes chrono par préparation (loi de Parkinson : le travail s'étale jusqu'à occuper le temps disponible), il double son nombre d'estimations hebdomadaires sans perte de qualité. La contrainte de temps a créé l'efficacité."
+      },
+      {
+        "titre": "Le silence qui fait gagner des honoraires (négociation à Jonquières)",
+        "texte": "Face à un vendeur qui conteste les honoraires sur une maison à Jonquières, la négociatrice annonce son chiffre, puis se tait. Trois secondes de silence inconfortable. Le vendeur, le premier à parler, dit : « Bon, d'accord. » Rappel : après une annonce de prix, celui qui parle le premier est souvent celui qui concède."
+      }
+    ],
+    "objectionsStagiaires": [
+      {
+        "question": "Le mental, le mindset, tout ça c'est du développement personnel, pas du concret.",
+        "reponse": "C'est pourtant le plus concret qui soit : deux négociateurs identiques font du simple au triple à cause de ça. La bonne nouvelle, c'est que ça se travaille avec des règles simples et mesurables, comme on travaille une technique de closing. Rien d'ésotérique, du concret."
+      },
+      {
+        "question": "Encaisser les « non » toute la journée, c'est épuisant, on n'est pas des robots.",
+        "reponse": "Justement, la clé est de dissocier le refus de votre personne : on ne rejette pas Julie, on rejette un appel reçu au mauvais moment. Et sur un grand nombre de contacts, votre taux se stabilise. Une matinée sans oui n'est pas anormale, c'est la loi des grands nombres. On ne juge jamais une carrière sur une journée."
+      },
+      {
+        "question": "J'attends d'être motivé pour attaquer ma prospection, sinon ça ne sert à rien.",
+        "reponse": "C'est exactement l'inverse : ce n'est pas la motivation qui crée l'action, c'est l'action qui crée la motivation. Vous lancez le premier appel imparfait, et l'élan vient ensuite. Attendre la motivation, c'est attendre un train qui ne part jamais."
+      },
+      {
+        "question": "Me fixer des objectifs d'appels, c'est infantilisant, je sais ce que j'ai à faire.",
+        "reponse": "Un objectif de résultat (« signer 3 mandats ») ne se pilote pas, il dépend du client. Un objectif d'activité (« 50 contacts, 5 estimations ») se pilote, lui, parce que vous le contrôlez. On agit sur l'amont, le résultat suit. Ce n'est pas infantilisant, c'est ce que font les meilleurs."
+      },
+      {
+        "question": "Le mythe des 21 jours pour une habitude, ça ne marche jamais sur moi.",
+        "reponse": "Parce que les 21 jours, c'est justement un mythe. L'étude de référence situe la moyenne autour de 66 jours. Si vous lâchez au bout de trois semaines, c'est normal que ça ne tienne pas : il faut tenir les deux premiers mois. La régularité bat la volonté."
+      },
+      {
+        "question": "Je n'ai jamais le temps de prospecter, je suis débordé par l'urgent.",
+        "reponse": "C'est le piège d'Eisenhower : vous vivez dans l'urgent-important et vous subissez les crises. Les top performers protègent l'important-non urgent, prospection et formation, en le planifiant. Et avec Pareto : 20 % de vos actions font 80 % de vos résultats. Bloquez ces créneaux-là avant tout le reste."
+      },
+      {
+        "question": "Après une mauvaise semaine, j'ai juste envie de lever le pied.",
+        "reponse": "C'est le réflexe du médiocre : réduire l'activité par découragement. Le top performer fait l'inverse, il l'augmente, parce que la vente est un jeu de nombres. Lever le pied après une mauvaise semaine, c'est transformer un trou statistique en spirale. On remet du volume, pas moins."
+      }
+    ],
+    "erreursFrequentes": [
+      "Erreur : réduire son activité quand les résultats baissent. Correction : l'augmenter, la vente est un jeu de nombres, on agit sur l'amont.",
+      "Erreur : prendre le refus personnellement. Correction : dissocier le non de soi, le prospect rejette une proposition à cet instant, pas votre personne.",
+      "Erreur : attendre la motivation pour agir. Correction : c'est l'action qui crée la motivation, on lance l'appel imparfait.",
+      "Erreur : se fixer seulement des objectifs de résultat. Correction : piloter des objectifs d'activité, le seul levier qu'on contrôle vraiment.",
+      "Erreur : rester scotché sur un refus et ruminer. Correction : appliquer SW-SW-SW-N, analyser puis passer au contact suivant.",
+      "Erreur : vouloir ancrer une habitude en 21 jours et lâcher. Correction : viser la régularité sur environ deux mois (66 jours de moyenne).",
+      "Erreur : se justifier ou baisser le chiffre juste après avoir annoncé ses honoraires. Correction : se taire et laisser l'autre réagir, le premier qui parle concède.",
+      "Erreur : se noyer dans l'urgent et sacrifier la prospection. Correction : protéger l'important-non urgent (Eisenhower) et ses 20 % d'actions à fort rendement (Pareto)."
+    ],
+    "chiffresCles": [
+      "Mémo mental (pas de normes juridiques ici) : les refus font partie du métier, 8 à 9 « non » sur 10 contacts en prospection",
+      "chaque contact a une valeur monétaire (ex.",
+      "1 mandat / 10 contacts à 5 000 € = 500 € par contact, refus compris). — Règle SW-SW-SW-N : « Some Will, Some Won't, So What, Next » (certains oui, d'autres non, et alors, au suivant) : on ne rumine pas, on enchaîne. — Loi de Pareto (80/20) : 80 % des résultats viennent de 20 % des actions (prospection, prise de mandat, relances acquéreurs) : les protéger en priorité. — Loi de Parkinson : le travail s'étale jusqu'à occuper tout le temps disponible : d'où le time-boxing (se fixer un chrono par tâche). — Matrice d'Eisenhower : le quadrant des top performers est l'important mais non urgent (prospection, formation), à planifier avant la crise. — Ancrage d'une habitude : environ 66 jours en moyenne (étude Lally, 2009), et non le mythe des 21 jours : tenir les deux premiers mois. — Objectifs : piloter l'activité (ce qu'on contrôle : contacts, estimations, relances), pas le résultat (ce qui dépend du client et du marché). — Loi des grands nombres : le taux de transformation se stabilise sur un grand volume, jamais sur une seule journée. — Mentalité de croissance (Carol Dweck) : ajouter « pas encore » à chaque limite. — Routines conseillées : routine du matin (préparation, visualisation, premiers appels avant 10h), bilan du soir (3 réussites, 1 axe de progrès), et le silence comme outil après une annonce de prix."
     ]
   },
   "marketing-bien": {
@@ -4049,6 +5644,100 @@ export const ANIMATIONS_DATA: Record<string, AnimationModule> = {
       "Utilisez les erreurs comme matière, jamais pour stigmatiser : une mauvaise réponse au quiz ou une photo ratée du groupe est la meilleure porte d'entrée vers la bonne pratique.",
       "Préparez votre matériel en amont : 6 à 8 photos de couverture (réussites + ratés) pour le photolangage, une photo de pièce encombrée pour le défi chrono, ardoises et cartons Vrai/Faux, paperboard pour les scores et la ligne de temps.",
       "Sur les points juridiques (drone/AlphaTango, honoraires, DPE/GES, pratique trompeuse), restez précis et factuel : c'est là que votre crédibilité de manager se joue et que les négociateurs retiennent les réflexes qui les protègent."
+    ],
+    "materiel": [
+      "Vidéoprojecteur + slides avec exemples AVANT/APRÈS de home-staging (photos réelles de l'agence Icaza, floutées si besoin).",
+      "Deux annonces imprimées du même type de bien : une \"amateur\" (photo sombre, texte \"F3 cuisine US\") et une \"pro\", pour faire voter la salle.",
+      "Smartphone + petit trépied/stabilisateur pour une démo live de photo et de courte vidéo verticale.",
+      "Un plan marketing écrit type CENTURY 21 (J+2 préparation, J+4 shooting, J+5 teasing fichier, J+7 multidiffusion, J+14 bilan vendeur) distribué en une page.",
+      "Grille de reporting hebdomadaire vierge (vues, contacts, visites, offres) à remplir ensemble.",
+      "Chronomètre ou minuteur visible pour l'exercice \"1 seconde pour accrocher\" sur la photo de couverture."
+    ],
+    "messagesCles": [
+      "On ne \"met pas une annonce\", on déroule un plan marketing daté et mesurable : vendre vite, vendre bien, sécuriser l'acquéreur.",
+      "90 % des recherches commencent en ligne : la photo de couverture et le titre décident du clic en une seconde.",
+      "Le capital nouveauté d'un bien se joue dans les 15 premiers jours et ne revient jamais : on ne lance jamais un bien qui n'est pas prêt.",
+      "Aucun visuel, aucune vidéo ne rattrape un prix hors marché : le marketing crée la demande, il ne corrige pas le prix.",
+      "Le plan marketing écrit est un outil de prise de mandat : il justifie les honoraires et l'exclusivité face au confrère."
+    ],
+    "scriptOuverture": "Bonjour à toutes et à tous. Fermez les yeux deux secondes : vous cherchez un bien, vous ouvrez le portail, vous faites défiler. En combien de temps décidez-vous de cliquer, ou de passer au suivant ? Une seconde. C'est tout ce que nous laisse un acheteur sur la photo de couverture. Aujourd'hui, on ne va pas apprendre à \"faire des annonces\". On va apprendre à construire un plan marketing qui crée de la demande, vite et au bon prix. Je vais vous montrer deux annonces du même appartement. Une va générer vingt contacts, l'autre zéro. Le bien est identique. La différence, c'est tout notre métier. Et à la fin de la session, chacun repart avec un plan marketing écrit, celui-là même qu'on pose sur la table au rendez-vous de mandat pour décrocher l'exclusivité.",
+    "questionsPublic": [
+      "Quand vous cherchez un bien en ligne, qu'est-ce qui vous fait cliquer en premier : la photo, le prix, le titre ?",
+      "Selon vous, sur quel pourcentage de recherches la première image est-elle décisive ?",
+      "Qu'est-ce qui, dans une annonce, vous donne au contraire envie de fuir ?",
+      "Pour vous, le home-staging c'est de la décoration ou de la stratégie commerciale ? Pourquoi ?",
+      "Pourquoi un bien est-il plus désirable dans ses quinze premiers jours de mise en vente ?",
+      "Un vendeur vous dit \"mettez-le sur tous les sites et aussi chez trois autres agences\" : quel est le risque ?",
+      "Comment faites-vous la différence entre \"j'ai de l'activité\" et \"j'ai du résultat\" sur un mandat ?",
+      "Un bien est très vu mais ne génère aucun contact : où est la fuite dans l'entonnoir ?",
+      "Et s'il n'est jamais vu du tout, où est le problème ?",
+      "Que répondez-vous à un vendeur qui dit \"ajoutez plus de pub, ça compensera le prix\" ?"
+    ],
+    "exemplesTerrain": [
+      {
+        "titre": "La maison de pêcheur du quartier de l'Île (Martigues)",
+        "texte": "Maison de caractère quartier de l'Île. Le propriétaire \"essaie seul\" sur Leboncoin pendant 3 mois : photos au téléphone volets fermés, titre \"maison à vendre\", zéro visite sérieuse. Reprise en mandat exclusif : désencombrement, shooting en lumière du matin, mise en avant de la vue canal et du cachet pierre. Résultat type : annonce multidiffusée J+7, premières visites dès la première semaine, et un bien qui repart au prix de marché au lieu de s'être \"grillé\" sur le web."
+      },
+      {
+        "titre": "Le T3 à Jonquières : photo de couverture refaite",
+        "texte": "T3 de 68 m² secteur Jonquières, en vente depuis 6 semaines, 11 vues/jour mais aucun contact. Diagnostic : la photo de couverture ouvrait sur la salle de bains. On recadre sur le séjour traversant plein sud, volets ouverts, 15h. Même prix, même texte : les contacts repartent. Démonstration que la fuite était en \"séduction\", pas en diffusion."
+      },
+      {
+        "titre": "Le home-staging léger qui réduit la négociation",
+        "texte": "Appartement de succession, meubles anciens et murs chargés, à Croix-Sainte. 300 à 500 € de home-staging léger (débarras, peinture d'un mur, linge neutre, lumière). Le bien, perçu \"à rafraîchir entièrement\" avant, devient \"à rafraîchir un peu\" : l'acheteur ne déduit plus 15 000 € de travaux dans sa tête, la marge de négociation fond d'autant."
+      },
+      {
+        "titre": "La multidiffusion sauvage qui tue un bien",
+        "texte": "Villa à Saint-Julien diffusée par 4 agences avec 4 prix différents (de 395 000 à 429 000 €) et des photos disparates. Perçue \"invendable\" par les acheteurs qui la croisent partout. Passage en exclusivité, prix unique, visuels uniques, portes ouvertes : un seul discours, un seul interlocuteur, et une crédibilité retrouvée."
+      }
+    ],
+    "objectionsStagiaires": [
+      {
+        "question": "Le home-staging, ça coûte cher et c'est au vendeur de payer, non ? Comment je lui vends ça ?",
+        "reponse": "On parle le plus souvent de home-staging léger : désencombrer, dépersonnaliser, neutraliser, soigner la lumière. Quelques centaines d'euros, parfois zéro. L'argument au vendeur n'est pas \"dépensez\", c'est \"chaque euro de préparation réduit la négociation et le temps de vente\". Un bien préparé se vend plus vite et se discute moins : le home-staging se rembourse presque toujours."
+      },
+      {
+        "question": "Franchement, prendre un photographe pro pour un studio à 90 000 €, est-ce rentable ?",
+        "reponse": "La photo ne se juge pas au prix du bien mais au nombre d'acheteurs qu'elle déclenche. Sur un petit prix, la concurrence est énorme : c'est justement là que la photo de couverture fait la différence entre 0 et 20 contacts. On adapte l'effort (shooting smartphone soigné pour un studio, photographe/drone pour une villa), mais on ne lance jamais des visuels bâclés."
+      },
+      {
+        "question": "Les clients trouvent le bien plus beau en photo qu'en vrai et sont déçus en visite. Je ne mens pas ?",
+        "reponse": "On valorise, on ne trompe pas. On montre le bien sous son meilleur jour réel : lumière naturelle, volumes justes, rangement. Ce qui est interdit, c'est le grand-angle qui courbe les murs, les retouches qui inventent une surface ou qui masquent un défaut. Une déception en visite, c'est une négociation ou un acheteur perdu : la cohérence photo/réalité est aussi une stratégie."
+      },
+      {
+        "question": "Le vendeur veut diffuser aussi sur son Leboncoin perso \"pour mettre plus de chances\". Je refuse ?",
+        "reponse": "On explique le capital nouveauté et la multidiffusion. Un même bien à deux prix et deux niveaux de photos se dévalorise : l'acheteur pense qu'il est bradé ou invendable. On propose un deal clair : un seul canal maîtrisé, un seul prix, un vrai plan, et un reporting chaque semaine. C'est précisément ce que justifie le mandat exclusif."
+      },
+      {
+        "question": "La vidéo et la visite 360°, c'est un gadget qui prend du temps, non ?",
+        "reponse": "C'est un filtre de pré-qualification. La vidéo et la visite immersive font visiter en ligne : les gens qui prennent rendez-vous après sont déjà séduits et projetés. Moins de visites \"touristes\", plus de visites \"acheteurs\". Sur un bien atypique ou éloigné, c'est un accélérateur, pas un gadget."
+      },
+      {
+        "question": "Mon vendeur est persuadé que \"plus de pub\" compensera son prix trop haut. Comment je le reprends ?",
+        "reponse": "On sépare clairement les deux. Le marketing agit sur la visibilité et l'envie ; le prix agit sur la décision d'achat. Un prix hors marché fait fuir avant même le clic, ou génère des visites sans offre. Montrez-lui les chiffres : beaucoup de vues, zéro offre = problème de prix perçu. Aucun budget pub ne rachète 10 % de surcote."
+      },
+      {
+        "question": "On me demande combien de temps avant de mettre l'annonce en ligne. Je publie tout de suite pour ne pas perdre de temps ?",
+        "reponse": "Non : publier avant d'avoir préparé et photographié le bien, c'est brûler l'effet de nouveauté, qui ne revient jamais. Le bon tempo : préparation puis shooting, puis teasing au fichier, puis mise en ligne quand les visuels sont au meilleur niveau. On gagne du temps commercial, pas du temps calendaire."
+      }
+    ],
+    "erreursFrequentes": [
+      "Erreur : publier l'annonce avant d'avoir préparé et photographié le bien. → Correction : respecter le tempo préparation → shooting → teasing → mise en ligne, pour protéger les 15 jours de capital nouveauté.",
+      "Erreur : ouvrir l'annonce sur une pièce technique (salle de bains, couloir, local poubelles). → Correction : photo de couverture = atout le plus séduisant (plus belle pièce, vue, façade).",
+      "Erreur : photographier volets fermés, en contre-jour ou au grand-angle déformant. → Correction : lumière naturelle, volets ouverts, de jour, format paysage, objectif qui respecte les volumes.",
+      "Erreur : ne pas formaliser le plan marketing par écrit. → Correction : un plan daté et mesurable, présenté au mandat, vendu au propriétaire et tenu semaine après semaine.",
+      "Erreur : confondre activité (\"j'ai mis l'annonce\") et résultat (contacts, visites, offres). → Correction : piloter avec un reporting hebdo vues/contacts/visites/offres et agir sur la fuite identifiée.",
+      "Erreur : accepter la multidiffusion sauvage avec plusieurs prix et photos. → Correction : exclusivité, prix unique, visuels uniques, discours unique.",
+      "Erreur : vouloir compenser un prix trop haut par \"plus de marketing\". → Correction : traiter le prix comme un levier à part ; réaligner le prix quand il y a des vues mais pas d'offres.",
+      "Erreur : home-staging \"cache-misère\" qui masque un défaut. → Correction : valoriser sans tromper ; la cohérence photo/réalité évite les visites déçues et les offres qui s'effondrent."
+    ],
+    "chiffresCles": [
+      "90 % des recherches d'acquéreurs commencent en ligne : le clic se décide en ~1 seconde sur la photo de couverture et le titre.",
+      "Capital nouveauté = les 15 premiers jours, non renouvelable.",
+      "Frais de notaire dans l'ancien : 7-8 % du prix (utile en comparaison VEFA 2-3 %).",
+      "Plan type Icaza : J+2 préparation / J+4 shooting / J+5 teasing fichier / J+7 multidiffusion / J+14 premier bilan vendeur.",
+      "Reporting hebdomadaire = vues → contacts → visites → offres.",
+      "Tolérance usuelle de home-staging léger : quelques centaines d'euros, souvent remboursés par la moindre négociation."
     ]
   },
   "investissement-locatif": {
@@ -4254,6 +5943,105 @@ export const ANIMATIONS_DATA: Record<string, AnimationModule> = {
       "Verrouiller les 3 pièges mortels du métier avant de se quitter : ne JAMAIS proposer un dispositif supprimé (Pinel, Censi-Bouvard), ne pas confondre nu et meublé, ne jamais faire visiter sans avoir dégrossi la capacité de financement.",
       "Faire participer les timides via les binômes et sous-groupes (défi chrono, étude de cas) : le petit groupe libère la parole mieux que le grand. Équilibrer primo et aguerris en mélangeant les niveaux dans chaque équipe.",
       "Clôturer par un engagement individuel écrit : chaque négociateur annonce à voix haute UNE action du plan qu'il applique dès le lendemain, à reprendre en point d'équipe la semaine suivante pour transformer la formation en résultats."
+    ],
+    "materiel": [
+      "Calculatrice ou tableur projeté avec les 3 formules de rendement (brut, net de charges, net-net) et le calcul de cash-flow, pré-remplissables en live.",
+      "Fiche recto-verso \"régimes fiscaux\" : micro-foncier vs réel (nu), micro-BIC vs réel (LMNP), à distribuer.",
+      "Trois fiches-biens Martigues/PACA chiffrées (studio, T2, immeuble de rapport) servant d'exercices.",
+      "Simulateur de mensualité de crédit (tableur ou appli) pour montrer l'effet de levier et le cash-flow en direct.",
+      "Grille de découverte investisseur (TMI, apport, effort d'épargne, horizon, meublé/nu, appétence gestion).",
+      "Paperboard pour dessiner l'échelle TMI (0 / 11 / 30 / 41 / 45 %) et placer les stagiaires-investisseurs fictifs."
+    ],
+    "messagesCles": [
+      "L'investisseur est le meilleur client de l'agence : rationnel, rapide, récurrent (tous les 2-3 ans), prescripteur et solvable.",
+      "On parle son langage : chiffres, loyer de marché, rendement, charges, fiscalité, PV d'AG, pas déco ni coup de cœur.",
+      "Avant tout conseil : identifier le moteur (cash-flow / patrimoine / défiscalisation / retraite / transmission) et recueillir la TMI.",
+      "Le vrai juge de paix n'est pas le rendement brut mais le cash-flow : loyers moins (crédit + charges + impôts).",
+      "L'effet de levier du crédit et le bon régime fiscal font plus pour la rentabilité que 0,5 % de rendement brut gagné à l'achat."
+    ],
+    "scriptOuverture": "Une question pour commencer : quel est, selon vous, le meilleur client d'une agence ? Celui qui a le coup de cœur pour la cuisine ? Non. C'est l'investisseur. Il achète un tableur, pas un coup de cœur. Il décide vite quand les chiffres sont bons, il revient tous les deux ou trois ans, et il vous amène ses amis investisseurs. Le problème, c'est que si vous lui parlez luminosité et charme de l'ancien, il part. Lui, il veut du rendement, du cash-flow, de la fiscalité. Aujourd'hui, on va apprendre à chiffrer un investissement en trente secondes et à qualifier son moteur en trois questions. À la fin, face à un cadre de Lavéra à 41 % de TMI qui vous dit \"je veux défiscaliser\", vous saurez exactement quoi répondre, chiffres à l'appui.",
+    "questionsPublic": [
+      "Pour vous, qu'est-ce qui distingue un acheteur résidence principale d'un investisseur dans sa façon de décider ?",
+      "Quelle est la toute première information à demander à un investisseur avant de lui proposer un bien ?",
+      "Comment calcule-t-on un rendement brut ? Et pourquoi ne décide-t-on jamais dessus ?",
+      "Quelle différence entre un cash-flow positif et un cash-flow négatif pour l'investisseur ?",
+      "C'est quoi, concrètement, l'effet de levier du crédit ?",
+      "Un client est à 41 % de TMI et veut réduire son impôt : vers quels leviers l'orientez-vous ?",
+      "Micro-foncier ou réel au foncier : à partir de quand bascule-t-on au réel ?",
+      "En meublé, pourquoi le LMNP au réel est-il souvent plus intéressant que le micro-BIC ?",
+      "Qu'est-ce que l'amortissement en LMNP, et qu'a changé la loi de finances 2025 à la revente ?",
+      "Quelles sont les cinq grandes motivations d'un investisseur, et pourquoi faut-il les identifier avant tout ?"
+    ],
+    "exemplesTerrain": [
+      {
+        "titre": "Studio centre-ville Martigues : le rendement brut vs net-net",
+        "texte": "Studio à 95 000 € frais inclus, loué 480 €/mois meublé (5 760 €/an). Brut = 5 760 / 95 000 = 6,06 %. On retire charges non récupérables, taxe foncière (~600 €), assurance PNO, provision vacance/gestion : le net-net tombe souvent autour de 4 %. Message aux stagiaires : le brut sert à trier, jamais à décider."
+      },
+      {
+        "titre": "T2 à Croix-Sainte financé à crédit : l'effet de levier",
+        "texte": "T2 à 130 000 € frais inclus, loyer 620 €/mois (7 440 €/an). Crédit 130 000 € sur 20 ans à ~3,8 % : mensualité ~775 €. Charges + taxe foncière + assurance ~150 €/mois. Cash-flow mensuel ≈ 620 − 775 − 150 = −305 € : effort d'épargne. En allongeant à 25 ans, la mensualité baisse et le cash-flow se rapproche de l'équilibre : on montre comment la durée pilote le cash-flow."
+      },
+      {
+        "titre": "Le cadre de Lavéra à 41 % de TMI qui veut défiscaliser",
+        "texte": "Chef de poste zone de Lavéra, TMI 41 %, un studio à 6 % brut ne répond pas à son besoin : les loyers s'ajoutent à ses revenus déjà lourdement taxés. On qualifie puis on oriente : nu au réel avec gros travaux (déficit foncier imputable jusqu'à 10 700 €/an sur le revenu global), ou LMNP au réel (amortissement qui gomme l'impôt sur les loyers), expert-comptable à l'appui."
+      },
+      {
+        "titre": "Immeuble de rapport à Port-de-Bouc : le bien que personne ne veut habiter",
+        "texte": "Petit immeuble de 3 lots, façade ingrate, invendable à un acquéreur résidence principale, mais 8,5 % brut. Parfait pour un investisseur cash-flow : on écoule un stock difficile et on sert le bon client. Démonstration que \"moins beau pour l'occupant\" peut être \"pépite pour l'investisseur\"."
+      }
+    ],
+    "objectionsStagiaires": [
+      {
+        "question": "Je ne suis pas expert-comptable ni conseiller en gestion de patrimoine : jusqu'où je peux aller sur la fiscalité ?",
+        "reponse": "Votre rôle est de qualifier, d'orienter et d'alerter, pas de produire une optimisation fiscale officielle. Vous maîtrisez les ordres de grandeur (micro vs réel, LMNP, déficit foncier) pour parler le langage de l'investisseur et cadrer le bien. Dès qu'on entre dans le chiffrage personnel, vous renvoyez à un expert-comptable : c'est plus sûr pour le client et pour vous, et ça crédibilise votre conseil."
+      },
+      {
+        "question": "Un client me dit \"6 % brut c'est génial, j'achète\". Je le laisse foncer ?",
+        "reponse": "Non : le brut ignore charges, taxe foncière, vacance et surtout fiscalité. Montrez-lui le net-net et le cash-flow réel. Un 6 % brut peut devenir un effort d'épargne de 200 €/mois une fois le crédit et l'impôt intégrés. On sécurise la décision en chiffrant jusqu'au bout, sinon l'euphorie se transforme en déception un an plus tard."
+      },
+      {
+        "question": "Le LMNP, ce n'est pas réservé aux gros patrimoines avec usine à gaz comptable ?",
+        "reponse": "Non. Le LMNP au réel est accessible dès un premier studio meublé. Oui il faut un expert-comptable (quelques centaines d'euros/an, souvent déductibles), mais l'amortissement du bien hors terrain et du mobilier peut effacer l'impôt sur les loyers pendant 10 à 20 ans. Pour beaucoup de primo-investisseurs, c'est le meilleur rapport simplicité/efficacité."
+      },
+      {
+        "question": "Avec les taux de crédit actuels, l'investissement locatif a-t-il encore un sens ?",
+        "reponse": "Le taux augmente le coût du levier, pas la logique du levier. On achète avec l'argent de la banque et les loyers remboursent tout ou partie de la mensualité. On ajuste la durée pour piloter le cash-flow, on négocie mieux le prix d'achat (le vrai levier aujourd'hui), et on vise les biens au bon couple prix/loyer. Le crédit reste le seul placement qu'on finance avec l'argent des autres."
+      },
+      {
+        "question": "Micro-foncier à 30 %, c'est simple : pourquoi s'embêter avec le réel ?",
+        "reponse": "Le micro-foncier et son abattement forfaitaire de 30 % (plafond 15 000 € de loyers nus/an) est intéressant quand vous avez peu de charges. Dès que vos charges réelles + travaux + intérêts d'emprunt dépassent 30 % des loyers, le régime réel devient gagnant, et il ouvre le déficit foncier. On compare toujours les deux avant de cocher la case."
+      },
+      {
+        "question": "Qu'est-ce que la réforme LMNP 2025 a cassé ? Je dois déconseiller le LMNP maintenant ?",
+        "reponse": "Non, le LMNP reste très intéressant. Le changement : depuis la loi de finances 2025, les amortissements déduits sont réintégrés dans le calcul de la plus-value à la revente (sauf résidences services gérées). Concrètement, l'avantage d'exploitation reste entier ; c'est à la sortie que la plus-value imposable sera plus élevée. On en informe le client et on raisonne net, exploitation + revente."
+      },
+      {
+        "question": "Le déficit foncier, combien ça fait gagner vraiment ?",
+        "reponse": "Les charges et travaux (hors intérêts d'emprunt) qui dépassent les loyers créent un déficit foncier imputable sur le revenu global jusqu'à 10 700 €/an (plafond porté à 21 400 € pour certains travaux de rénovation énergétique faisant sortir le bien des passoires). L'excédent et les intérêts se reportent sur les revenus fonciers des 10 années suivantes. Pour une forte TMI, c'est un levier puissant."
+      }
+    ],
+    "erreursFrequentes": [
+      "Erreur : parler déco, charme et luminosité à un investisseur. → Correction : parler chiffres (loyer de marché, rendement, charges, fiscalité, PV d'AG).",
+      "Erreur : proposer un bien avant d'avoir identifié le moteur et la TMI. → Correction : qualifier d'abord (cash-flow / patrimoine / défiscalisation / retraite / transmission) et recueillir la tranche marginale.",
+      "Erreur : décider sur le rendement brut. → Correction : raisonner net-net puis cash-flow réel (loyers − crédit − charges − impôts).",
+      "Erreur : oublier la vacance locative, la taxe foncière et les charges non récupérables dans le calcul. → Correction : les intégrer systématiquement avant d'annoncer une rentabilité.",
+      "Erreur : coller tout le monde au micro (foncier ou BIC) par facilité. → Correction : comparer micro vs réel ; dès que les charges dépassent l'abattement, le réel gagne.",
+      "Erreur : présenter l'amortissement LMNP comme une exonération d'impôt sans parler de la revente. → Correction : préciser la réintégration des amortissements dans la plus-value depuis 2025.",
+      "Erreur : noyer un primo-investisseur sous le jargon, ou au contraire faire perdre son temps à un aguerri. → Correction : adapter le niveau — pédagogie pour l'un, chiffres directs pour l'autre.",
+      "Erreur : se substituer à l'expert-comptable sur un chiffrage fiscal personnalisé. → Correction : qualifier, orienter, alerter et renvoyer à l'expert-comptable."
+    ],
+    "chiffresCles": [
+      "Rendement brut = (loyer annuel / prix frais inclus) × 100",
+      "net = après charges",
+      "net-net = après charges + fiscalité. Cash-flow = loyers − (mensualité crédit + charges + impôts)",
+      "positif = bien autofinancé.",
+      "Micro-foncier (nu) : abattement forfaitaire 30 %, plafond 15 000 € de loyers/an.",
+      "Micro-BIC (meublé longue durée) : abattement 50 %, plafond 77 700 €.",
+      "LMNP au réel : amortissement du bien hors terrain + mobilier",
+      "depuis la loi de finances 2025 les amortissements sont réintégrés dans la plus-value à la revente (sauf résidences services gérées).",
+      "Déficit foncier (hors intérêts d'emprunt) imputable sur le revenu global jusqu'à 10 700 €/an (21 400 € avec travaux de rénovation énergétique sortant de passoire), excédent reportable 10 ans.",
+      "TMI : 0 / 11 / 30 / 41 / 45 %.",
+      "IFI au-delà de 1,3 M€ de patrimoine immobilier net."
     ]
   },
   "vefa-neuf": {
@@ -4479,6 +6267,111 @@ export const ANIMATIONS_DATA: Record<string, AnimationModule> = {
       "Reliez chaque notion au terrain local (programme fictif « Les Terrasses de Ferrières » à Martigues, T3 à 265 000 €) : un chiffre incarné sur un vrai type de bien marque plus qu'une règle abstraite.",
       "Gérez les niveaux : mélangez les équipes pour que les plus expérimentés tirent les juniors, et sollicitez nommément les plus silencieux pendant les vrai/faux et brainstorms.",
       "Terminez impérativement par le plan d'action individuel écrit : demandez à chacun de verbaliser à voix haute UN engagement concret pour le lendemain ; c'est le transfert sur le terrain qui justifie la séance."
+    ],
+    "materiel": [
+      "Schéma projeté de l'échéancier légal des appels de fonds (35 % fondations / 70 % hors d'eau / 95 % achèvement / 5 % livraison).",
+      "Frise des 4 garanties (GFA à la construction, parfait achèvement 1 an, biennale 2 ans, décennale 10 ans) imprimée et affichée.",
+      "Exemple de contrat de réservation (anonymisé) et une notice descriptive type, pour pointer les mentions obligatoires.",
+      "Tableau comparatif neuf/ancien : frais de notaire, garanties, normes, taxe foncière, travaux.",
+      "Fiche programme fictif \"Les Terrasses de Ferrières\" (T3 63 m², 265 000 € TTC, livraison T3 2026) comme fil rouge.",
+      "Carte \"5 – 2 – 0\" plastifiée (dépôt de garantie selon le délai de l'acte) comme aide-mémoire."
+    ],
+    "messagesCles": [
+      "En VEFA on achète sur plan : l'acquéreur devient propriétaire du sol dès la signature puis des constructions au fur et à mesure (art. 1601-3 Code civil, L261-1 et s. CCH).",
+      "Notre valeur ajoutée n'est pas de \"vendre un plan\", c'est de sécuriser le parcours de la réservation à la remise des clés, face à l'achat direct promoteur.",
+      "Le dépôt de garantie suit un barème strict : 5 % / 2 % / 0 % selon le délai de signature de l'acte (mnémo 5–2–0), et il est bloqué sur compte séquestre.",
+      "Les appels de fonds sont plafonnés par la loi : 35 / 70 / 95 / 5 — jamais au-delà de l'avancement réel du chantier.",
+      "Le neuf, c'est frais de notaire réduits (2-3 %), RE2020, 4 garanties protectrices, exonération de taxe foncière 2 ans — autant d'arguments concrets."
+    ],
+    "scriptOuverture": "Imaginez : votre client signe pour un appartement qui n'existe pas encore. Pas de murs, pas de clés, juste un plan et une maquette. Rassurant ? Pas forcément, pour lui. C'est tout notre rôle aujourd'hui : transformer cette angoisse de l'achat sur plan en parcours sécurisé. La VEFA, c'est un cadre juridique ultra-protecteur : des garanties, un dépôt bloqué, des appels de fonds plafonnés par la loi. On va dérouler le fil d'un vrai programme martégal : du contrat de réservation jusqu'à la remise des clés, étape par étape. À la fin, vous saurez expliquer à un acquéreur pourquoi passer par une agence vaut mieux que signer seul au bureau de vente du promoteur.",
+    "questionsPublic": [
+      "En VEFA, à quel moment exact l'acquéreur devient-il propriétaire : à la réservation, à l'acte, à la livraison ?",
+      "Quels sont les deux contrats de la VEFA et qui les signe ?",
+      "À combien est plafonné le dépôt de garantie si l'acte est signé dans moins d'un an ? Entre 1 et 2 ans ? Au-delà ?",
+      "Où est versé ce dépôt, et le promoteur peut-il l'encaisser tout de suite ?",
+      "De combien de jours de rétractation dispose l'acquéreur après le contrat de réservation ?",
+      "Quel pourcentage cumulé des appels de fonds est atteint à la mise hors d'eau ?",
+      "Citez-moi les quatre garanties de la VEFA et leur durée.",
+      "À quoi sert précisément la Garantie Financière d'Achèvement si le promoteur fait faillite ?",
+      "Quels sont les frais de notaire dans le neuf, et pourquoi sont-ils plus bas que dans l'ancien ?",
+      "Si la surface livrée est inférieure de plus de 5 % à celle du contrat, que peut demander l'acquéreur ?"
+    ],
+    "exemplesTerrain": [
+      {
+        "titre": "Les Terrasses de Ferrières : le fil rouge chiffré",
+        "texte": "T3 de 63 m² affiché 265 000 € TTC, livraison T3 2026. Acte prévu dans moins d'un an : dépôt de garantie plafonné à 5 % = 13 250 €, versé sur compte séquestre notaire, bloqué. Frais de notaire réduits ~2,5 % = ~6 600 € au lieu de ~19 000 € dans l'ancien équivalent. Exonération de taxe foncière les 2 premières années. Démonstration : on chiffre tout devant l'acquéreur."
+      },
+      {
+        "titre": "L'échéancier d'appels de fonds qui rassure",
+        "texte": "Sur ce même T3 à 265 000 €, on déroule : 35 % aux fondations = 92 750 €, 70 % cumulés hors d'eau = 185 500 €, 95 % à l'achèvement = 251 750 €, puis 5 % de solde à la livraison = 13 250 €. On insiste : jamais le promoteur n'appelle plus que l'avancement réel du chantier, c'est la loi (art. R261-14 CCH)."
+      },
+      {
+        "titre": "La clause de révision BT01 à débusquer",
+        "texte": "Un acquéreur à Martigues a failli signer un contrat avec clause de révision. On lui explique : chaque révision est plafonnée à 70 % de la variation de l'indice BT01 entre la signature et l'exigibilité de chaque versement (art. L261-11-1 CCH). On a comparé avec un programme à prix ferme et définitif : l'argument \"zéro surprise\" a emporté la décision."
+      },
+      {
+        "titre": "La GFA, l'argument massue face au direct-promoteur",
+        "texte": "Un couple hésite à acheter en direct au bureau de vente. On met en avant la Garantie Financière d'Achèvement : même si le promoteur défaille, un garant (banque/assureur) finance l'achèvement de l'immeuble. Associée à la rétractation SRU de 10 jours et à notre accompagnement jusqu'aux réserves de livraison, elle fait la différence."
+      }
+    ],
+    "objectionsStagiaires": [
+      {
+        "question": "Pourquoi un client passerait par nous plutôt que d'aller directement au bureau de vente du promoteur, au même prix ?",
+        "reponse": "Parce qu'au bureau de vente, le commercial défend le promoteur, pas l'acquéreur. Nous, on lit le contrat de réservation, on vérifie la clause de révision, le dépôt, les garanties, la notice descriptive, on alerte sur les délais par trimestre et on accompagne jusqu'à la levée des réserves à la livraison. Le prix est le même pour l'acquéreur ; l'expertise et la sécurité, non."
+      },
+      {
+        "question": "Vendre du vide, c'est risqué : et si le chantier prend du retard ou si le promoteur fait faillite ?",
+        "reponse": "C'est exactement pourquoi la VEFA est si encadrée. Faillite : la Garantie Financière d'Achèvement fait financer l'achèvement par un garant. Retard : les délais sont donnés par trimestre et un retard anormal peut ouvrir des pénalités prévues au contrat. Notre travail est d'expliquer ces filets de sécurité pour transformer le \"risque perçu\" en confiance."
+      },
+      {
+        "question": "Les frais de notaire réduits dans le neuf, c'est un argument marketing ou c'est réel ?",
+        "reponse": "C'est réel : 2 à 3 % du prix dans le neuf contre 7 à 8 % dans l'ancien. La différence vient de la fiscalité (droits de mutation réduits sur le neuf). Sur un bien à 265 000 €, c'est environ 13 000 € d'économie. On le chiffre devant le client, c'est l'un des arguments les plus concrets du neuf."
+      },
+      {
+        "question": "Mon client a peur de ne pas se projeter sur un plan. Comment je le rassure ?",
+        "reponse": "On outille la projection : maquette, perspectives 3D, logement témoin, notice descriptive détaillée, et les TMA (travaux modificatifs acquéreur) qui lui permettent de choisir cloisons, carrelage et finitions. Et on rappelle la tolérance de surface : au-delà de 5 % en moins, il peut demander une diminution de prix. On ne vend pas un plan, on construit une projection sécurisée."
+      },
+      {
+        "question": "Le dépôt de garantie, est-ce que le client le perd s'il se rétracte ?",
+        "reponse": "Non. Pendant les 10 jours de rétractation SRU, il récupère l'intégralité du dépôt sans motif ni pénalité. Et comme le dépôt est bloqué sur compte séquestre, le promoteur ne l'a jamais encaissé. Le dépôt n'est définitivement acquis qu'une fois la vente conclue et les conditions remplies."
+      },
+      {
+        "question": "La TVA à 5,5 %, tous mes clients peuvent en profiter ?",
+        "reponse": "Non, c'est ciblé : elle s'applique dans certaines zones éligibles (notamment périmètres ANRU / quartiers prioritaires et sous conditions de ressources et d'occupation en résidence principale), au lieu de 20 %. Il faut vérifier l'éligibilité du programme et du client. Ne le promettez jamais sans l'avoir confirmé auprès du promoteur."
+      },
+      {
+        "question": "Quelle différence concrète entre parfait achèvement, biennale et décennale ? Je mélange tout.",
+        "reponse": "Repère par la durée et l'objet : parfait achèvement = 1 an, le promoteur reprend tous les désordres signalés à la réception ou dans l'année. Biennale = 2 ans, les équipements dissociables (volets, robinetterie, chaudière). Décennale = 10 ans, les désordres qui affectent la solidité de l'ouvrage ou le rendent impropre à sa destination. La GFA, elle, garantit l'achèvement, pas les défauts."
+      }
+    ],
+    "erreursFrequentes": [
+      "Erreur : présenter la VEFA comme \"la vente d'un plan\". → Correction : se positionner comme sécurisateur du parcours, de la réservation à la remise des clés.",
+      "Erreur : annoncer un dépôt de garantie \"à 10 %\" ou libre. → Correction : barème 5–2–0 (5 % si acte < 1 an, 2 % si 1-2 ans, 0 % si > 2 ans), sur compte séquestre.",
+      "Erreur : confondre le délai de rétractation : dire 7 jours. → Correction : 10 jours (loi SRU, art. L271-1 CCH), sans motif ni pénalité.",
+      "Erreur : mélanger les garanties et leurs durées. → Correction : GFA (achèvement) / parfait achèvement 1 an / biennale 2 ans / décennale 10 ans.",
+      "Erreur : laisser passer une clause de révision de prix sans la vérifier. → Correction : la repérer, l'expliquer (indexée BT01, plafonnée à 70 % de la variation) et comparer à un prix ferme.",
+      "Erreur : laisser le promoteur appeler des fonds au-delà de l'avancement. → Correction : rappeler les plafonds légaux 35/70/95/5 (art. R261-14 CCH).",
+      "Erreur : promettre une TVA à 5,5 % ou un dispositif sans vérifier l'éligibilité. → Correction : confirmer zone et conditions avant toute promesse.",
+      "Erreur : négliger la tolérance de surface et la notice descriptive. → Correction : expliquer la règle des 5 % et vérifier équipements/matériaux annoncés."
+    ],
+    "chiffresCles": [
+      "Cadre : art.",
+      "1601-3 Code civil, L261-1 et s.",
+      "CCH.",
+      "Rétractation SRU : 10 jours (art.",
+      "L271-1 CCH).",
+      "Dépôt de garantie 5–2–0 : 5 % si acte < 1 an, 2 % si 1 à 2 ans, 0 % si > 2 ans (art.",
+      "R261-28 CCH), sur compte séquestre.",
+      "Appels de fonds plafonnés 35 % (fondations) / 70 % (hors d'eau) / 95 % (achèvement) / 5 % (livraison) (art.",
+      "R261-14 CCH).",
+      "Révision de prix éventuelle : indexée BT01, plafonnée à 70 % de la variation (art.",
+      "L261-11-1 CCH).",
+      "Garanties : GFA (achèvement), parfait achèvement 1 an, biennale 2 ans, décennale 10 ans.",
+      "Frais de notaire neuf 2-3 % (vs 7-8 % ancien).",
+      "Exonération de taxe foncière 2 ans.",
+      "Norme RE2020 (depuis 01/01/2022).",
+      "TVA réduite à 5,5 % en zone éligible (sinon 20 %).",
+      "Tolérance de surface ~5 %."
     ]
   },
   "plus-value": {
@@ -4720,6 +6613,106 @@ export const ANIMATIONS_DATA: Record<string, AnimationModule> = {
       "Ancrez chaque acquis en faisant TOUJOURS reformuler la règle par un participant plutôt qu'en la donnant vous-même : la justification orale fixe mieux que la bonne case cochée.",
       "Ramenez chaque notion à Martigues et à des biens réels du portefeuille de l'agence : plus l'exemple est local et incarné, plus l'alerte deviendra un réflexe sur le terrain.",
       "Rappelez sans cesse la ligne rouge déontologique : on détecte et on alerte, on ne calcule ni ne promet jamais. Terminez par le tour de table des engagements individuels du plan d'action pour verrouiller le passage à l'action dès le lendemain."
+    ],
+    "materiel": [
+      "Tableau projeté du barème d'abattements (IR : 6 %/an de la 6e à la 21e année + 4 % la 22e ; PS : 1,65 %/an de la 6e à la 21e, 1,60 % la 22e, 9 %/an de la 23e à la 30e).",
+      "Fiche de calcul type reproduisant le formulaire 2048-IMM (prix de cession corrigé, prix d'acquisition corrigé, forfaits 7,5 % et 15 %).",
+      "Frise \"durée de détention\" avec les deux repères 22 ans (IR) et 30 ans (PS) et la zone grise entre les deux.",
+      "Fiche des exonérations (résidence principale, première cession hors RP, < 15 000 €, retraités/invalides, remploi, etc.).",
+      "Deux cas-types Martigues chiffrés (studio locatif 12 ans ; résidence secondaire 25 ans) à dérouler en direct.",
+      "Simulateur de plus-value (service public ou tableur) pour vérifier les ordres de grandeur en live."
+    ],
+    "messagesCles": [
+      "La plus-value est un impôt prélevé par le notaire le jour de la vente (prélèvement libératoire) : lourd ou totalement exonéré, le négociateur doit savoir le repérer.",
+      "Le négociateur ne calcule jamais officiellement : il détecte, alerte et renvoie au notaire — ce triptyque crédibilise le conseil et sécurise la vente.",
+      "Taux plein 36,2 % = 19 % d'IR + 17,2 % de prélèvements sociaux, avec deux calendriers d'abattement distincts.",
+      "La résidence principale effective au jour de la vente est exonérée sans condition de durée ni de montant (art. 150 U CGI).",
+      "Exonération IR à 22 ans, mais exonération totale (PS comprise) seulement à 30 ans : toujours raisonner en net réel avant de fixer le prix."
+    ],
+    "scriptOuverture": "Un vendeur vous dit : \"J'ai acheté 150 000, je vends 230 000, je mets 80 000 de côté.\" Vrai ou faux ? Souvent faux. Entre les deux, il y a un impôt que le notaire prélève directement sur le prix : la plus-value immobilière. Elle peut atteindre 36,2 %… ou être totalement effacée. Tout dépend du bien, de la durée de détention et de la situation du vendeur. Notre rôle n'est pas de la calculer officiellement — c'est le notaire — mais de la détecter, d'alerter le vendeur et de le renvoyer au bon moment. Parce qu'un vendeur qui découvre l'impôt le jour de l'acte, c'est une vente qui déraille. Aujourd'hui, on apprend à anticiper.",
+    "questionsPublic": [
+      "La vente de la résidence principale, elle est taxée ou exonérée ? Sous quelle condition de durée ?",
+      "Quel est le taux global de la plus-value quand elle est pleinement taxée, et comment se décompose-t-il ?",
+      "Après combien d'années l'impôt sur le revenu est-il exonéré ? Et les prélèvements sociaux ?",
+      "Qui calcule la plus-value, qui la paie, et quand ?",
+      "À partir de quel montant de plus-value imposable s'applique la surtaxe ?",
+      "Quels frais peut-on ajouter au prix d'acquisition pour réduire la base imposable ?",
+      "Qu'est-ce que le forfait de 7,5 % et le forfait travaux de 15 % ? Quand peut-on les utiliser ?",
+      "Une moins-value immobilière, est-elle déductible ou reportable ?",
+      "Pourquoi la plus-value nette imposable peut-elle poser problème au vendeur même si elle est libératoire ?",
+      "Qu'est-ce que la réforme LMNP 2025 change pour la plus-value d'un meublé à la revente ?"
+    ],
+    "exemplesTerrain": [
+      {
+        "titre": "Mme Roux : le studio locatif détenu 12 ans à Martigues",
+        "texte": "Studio locatif acheté 90 000 €, vendu 150 000 €. Plus-value brute ~60 000 € (avant forfaits). Détenu 12 ans : abattements partiels seulement (IR : 6 %/an de la 6e à la 12e = ~42 % ; PS beaucoup plus faibles). Il reste donc de l'impôt à payer chez le notaire. Le réflexe du négociateur : \"chiffrons votre net réel avant de fixer le prix\", pour éviter la déconvenue à l'acte."
+      },
+      {
+        "titre": "La résidence secondaire à Carro détenue 25 ans",
+        "texte": "Maison en bord de mer à Carro, résidence secondaire achetée il y a 25 ans. À 25 ans : IR totalement exonéré (seuil 22 ans dépassé), mais les prélèvements sociaux ne le sont pas encore (exonération PS à 30 ans). Reste donc 17,2 % sur une base PS réduite par les abattements. Message : au-delà de 22 ans, ne jamais dire \"c'est exonéré\" sans préciser le social."
+      },
+      {
+        "titre": "La résidence principale : l'exonération totale",
+        "texte": "Couple vendant sa maison à Jonquières, occupée comme résidence principale jusqu'au jour de la vente. Exonération totale, sans condition de durée ni de montant (art. 150 U CGI). Point de vigilance formateur : le bien doit être la RP effective au jour de la vente ; un logement quitté depuis longtemps et devenu vacant peut perdre le bénéfice (sauf délai normal de vente admis)."
+      },
+      {
+        "titre": "La surtaxe sur une grosse plus-value",
+        "texte": "Vente d'un terrain à bâtir à Saint-Mitre dégageant 120 000 € de plus-value imposable (par vendeur). Au-delà de 50 000 €, une surtaxe progressive de 2 % à 6 % s'ajoute aux 36,2 %. Le négociateur alerte le vendeur et le renvoie au notaire pour le chiffrage exact : l'écart sur le net peut être de plusieurs milliers d'euros."
+      }
+    ],
+    "objectionsStagiaires": [
+      {
+        "question": "Si je parle d'impôt au vendeur, je risque de le refroidir et de perdre le mandat, non ?",
+        "reponse": "C'est l'inverse. Un vendeur qui découvre la plus-value le jour de l'acte se sent trahi et peut faire capoter la vente. En l'alertant tôt, vous le protégez et vous apparaissez comme un conseiller, pas comme un simple apporteur d'acheteur. Vous ne chiffrez pas officiellement : vous détectez, vous alertez, vous renvoyez au notaire. C'est un argument de confiance, pas un repoussoir."
+      },
+      {
+        "question": "Un client me dit \"ma résidence principale, j'ai peur de payer la plus-value\". Je le rassure comment ?",
+        "reponse": "La résidence principale effective au jour de la vente est exonérée totalement, sans condition de durée ni de montant (art. 150 U CGI). Seul point de vigilance : il faut qu'elle soit bien sa RP au moment de vendre. S'il a déménagé, un délai normal de vente est généralement toléré, mais là on renvoie au notaire pour sécuriser."
+      },
+      {
+        "question": "Le vendeur détient depuis 23 ans, il me dit \"c'est exonéré\". Je confirme ?",
+        "reponse": "Attention : à 22 ans, seul l'impôt sur le revenu (19 %) est exonéré. Les prélèvements sociaux (17,2 %) ne le sont qu'à 30 ans. Donc à 23 ans, il reste du social à payer, sur une base déjà bien réduite par les abattements. Ne jamais dire \"totalement exonéré\" avant 30 ans."
+      },
+      {
+        "question": "Comment réduire la plus-value de mon vendeur ? Je peux l'optimiser ?",
+        "reponse": "Vous ne l'optimisez pas vous-même, mais vous rappelez les corrections légales : ajout au prix d'acquisition des frais d'acquisition (forfait 7,5 % ou frais réels) et des travaux (forfait 15 % si détention > 5 ans, ou travaux réels justifiés réalisés par des entreprises). Ces corrections, bien documentées, réduisent légalement la base. Le chiffrage reste au notaire."
+      },
+      {
+        "question": "Et si le vendeur vend à perte ? Il récupère quelque chose ?",
+        "reponse": "Non. Une moins-value immobilière des particuliers n'est en principe ni déductible ni reportable. S'il vend moins cher qu'il n'a acheté (frais inclus), il n'y a pas d'impôt de plus-value, mais aucune récupération fiscale. C'est un point à dire clairement pour éviter les fausses attentes."
+      },
+      {
+        "question": "La surtaxe, ça concerne beaucoup de dossiers ?",
+        "reponse": "Pas la majorité, mais dès qu'une plus-value imposable dépasse 50 000 € par vendeur, une surtaxe progressive de 2 % à 6 % s'ajoute. Sur les belles ventes (résidences secondaires anciennes de bord de mer, terrains), ça arrive. Le réflexe : la signaler et renvoyer au notaire pour le calcul exact."
+      },
+      {
+        "question": "Mon client vend un meublé LMNP : la plus-value change-t-elle avec la réforme 2025 ?",
+        "reponse": "Oui pour le calcul à la revente. Depuis la loi de finances 2025, les amortissements déduits pendant l'exploitation sont réintégrés dans le calcul de la plus-value (sauf résidences services gérées). La plus-value imposable est donc plus élevée qu'avant. On informe le client et, pour le chiffrage, on renvoie à l'expert-comptable et au notaire."
+      }
+    ],
+    "erreursFrequentes": [
+      "Erreur : annoncer au vendeur son \"net\" = prix de vente − prix d'achat, sans l'impôt. → Correction : intégrer la plus-value et chiffrer le net réel avant de fixer le prix.",
+      "Erreur : dire qu'un bien détenu 22-29 ans est \"totalement exonéré\". → Correction : IR exonéré à 22 ans, mais PS seulement à 30 ans.",
+      "Erreur : calculer officiellement la plus-value à la place du notaire. → Correction : détecter, alerter, renvoyer au notaire (formulaire 2048-IMM).",
+      "Erreur : oublier les corrections du prix d'acquisition. → Correction : rappeler les forfaits (7,5 % frais d'acquisition, 15 % travaux si > 5 ans) ou les frais/travaux réels justifiés.",
+      "Erreur : croire qu'une moins-value est déductible ou reportable. → Correction : elle n'est en principe ni l'un ni l'autre.",
+      "Erreur : affirmer l'exonération de la résidence principale sans vérifier qu'elle est la RP effective au jour de la vente. → Correction : confirmer l'occupation réelle ou le délai normal de vente, renvoyer au notaire au besoin.",
+      "Erreur : ignorer la surtaxe sur les grosses plus-values. → Correction : alerter dès que la plus-value imposable dépasse 50 000 € par vendeur.",
+      "Erreur : oublier l'impact de la plus-value nette sur le revenu fiscal de référence. → Correction : prévenir le vendeur sur les grosses opérations (perte d'avantages, franchissement de seuils)."
+    ],
+    "chiffresCles": [
+      "Taux plein 36,2 % = 19 % IR + 17,2 % prélèvements sociaux.",
+      "Abattements IR : 6 %/an de la 6e à la 21e année + 4 % la 22e → exonération IR à 22 ans.",
+      "Abattements PS : 1,65 %/an de la 6e à la 21e, 1,60 % la 22e, 9 %/an de la 23e à la 30e → exonération PS à 30 ans.",
+      "Exonération totale à 30 ans.",
+      "Résidence principale : exonérée sans condition de durée ni de montant (art.",
+      "150 U CGI).",
+      "Surtaxe progressive de 2 % à 6 % au-delà de 50 000 € de plus-value imposable par vendeur.",
+      "Corrections : prix d'acquisition + forfait frais 7,5 % (ou réels) + forfait travaux 15 % si détention > 5 ans (ou travaux réels justifiés).",
+      "Déclaration notaire : formulaire 2048-IMM (immeuble) / 2048-M (parts de société).",
+      "Prélèvement libératoire par le notaire le jour de la vente.",
+      "LMNP : depuis la loi de finances 2025, amortissements réintégrés dans la plus-value (sauf résidences services gérées).",
+      "Moins-value ni déductible ni reportable."
     ]
   },
   "location-baux": {
@@ -4937,6 +6930,105 @@ export const ANIMATIONS_DATA: Record<string, AnimationModule> = {
       "Privilégiez la verbalisation de la règle : demandez 'pourquoi ?' plus souvent que 'quelle est la réponse ?'. C'est la justification qui fixe la connaissance en mémoire.",
       "Reliez le plan d'action à la séance suivante : annoncez qu'au prochain point d'équipe, chacun partagera un cas où il a appliqué la check-list d'annexes ou refusé une pièce interdite. L'engagement public augmente le passage à l'acte.",
       "Gérez l'émotion sur les sujets sensibles (impayés, expulsion, discrimination) : rappelez que la rigueur juridique protège AUSSI le négociateur et l'agence, pas seulement le locataire ou le bailleur."
+    ],
+    "materiel": [
+      "Modèle de bail type ALUR (décret n°2015-587 du 29 mai 2015) vierge, vide et meublé, à parcourir ensemble.",
+      "Check-list des annexes obligatoires (DDT/DPE, notice d'information, état des lieux, règlement de copropriété, inventaire meublé).",
+      "Tableau projeté des durées (vide 3 ans / 6 ans personne morale, meublé 1 an, étudiant 9 mois, mobilité 1-10 mois) et des dépôts (1 mois vide / 2 mois meublé / 0 mobilité).",
+      "Fiche préavis (locataire 3 mois / 1 mois en zone tendue ou meublé ; bailleur 6 mois vide / 3 mois meublé) et motifs de congé.",
+      "Calendrier DPE décence énergétique (G interdit 2025, F en 2028, E en 2034) affiché.",
+      "Modèle d'état des lieux d'entrée/sortie et une grille de dossier locataire (pièces autorisées / interdites)."
+    ],
+    "messagesCles": [
+      "La location de résidence principale (vide ou meublée) relève de la loi du 6 juillet 1989, texte d'ordre public : toute clause défavorable au locataire est réputée non écrite.",
+      "Un bail bâclé ou incomplet est la première source de contentieux : le modèle type ALUR et les annexes ne sont pas négociables.",
+      "Durées et dépôts à connaître par cœur : vide 3 ans / dépôt 1 mois, meublé 1 an / dépôt 2 mois, étudiant 9 mois, mobilité 1-10 mois sans dépôt.",
+      "La décence énergétique conditionne désormais le droit de louer : G interdit depuis 2025, F en 2028, E en 2034.",
+      "L'état des lieux d'entrée et de sortie est le document qui protège le bailleur comme le locataire : il se soigne, contradictoire et détaillé."
+    ],
+    "scriptOuverture": "Posez-vous la question : quel est le document qui génère le plus de litiges dans une agence ? Le compromis ? Le mandat ? Non : le bail. Un bail mal fait, une annexe oubliée, un dépôt mal calculé, et c'est des mois de contentieux. La bonne nouvelle, c'est que tout est cadré par une loi d'ordre public de 1989 : si on respecte le modèle et les annexes, on se protège. Aujourd'hui, on va dérouler le bail de A à Z : durées, dépôt, préavis, état des lieux, encadrement, et la nouvelle bombe du DPE. À la fin, vous saurez monter un dossier et un bail blindés, et répondre au bailleur qui veut \"ajouter des clauses pour se protéger\" — souvent les plus dangereuses.",
+    "questionsPublic": [
+      "Quelle est la durée d'un bail de location vide quand le bailleur est une personne physique ? Et une personne morale ?",
+      "Combien de temps dure un bail meublé ? Un bail étudiant ?",
+      "Quel est le dépôt de garantie maximum en vide ? En meublé ? En bail mobilité ?",
+      "Quel est le préavis du locataire en meublé ? Et en vide hors zone tendue ? En zone tendue ?",
+      "Quel est le préavis du bailleur, et pour quels motifs peut-il donner congé ?",
+      "Depuis le 1er janvier 2025, quelle classe DPE est interdite à la location ?",
+      "Citez-moi trois clauses interdites, réputées non écrites, qu'un bailleur voudrait parfois glisser.",
+      "Quelles sont les annexes obligatoires d'un bail ?",
+      "Le bailleur peut-il exiger le prélèvement automatique comme seul mode de paiement ?",
+      "En zone d'encadrement des loyers, quelles mentions supplémentaires le bail doit-il contenir ?"
+    ],
+    "exemplesTerrain": [
+      {
+        "titre": "Le T2 meublé loué à Martigues : durées et dépôt",
+        "texte": "T2 meublé loué 620 € hors charges à Jonquières. Bail de 1 an reconductible tacitement, dépôt de garantie plafonné à 2 mois HC = 1 240 €. Préavis locataire réduit à 1 mois. Comparé au même bien loué vide : bail 3 ans, dépôt 1 mois (620 €), préavis locataire 3 mois (1 mois en zone tendue). Démonstration des écarts vide/meublé en conditions réelles."
+      },
+      {
+        "titre": "La passoire énergétique classée G qu'on ne peut plus louer",
+        "texte": "Studio ancien mal isolé, DPE classé G, à Croix-Sainte. Depuis le 1er janvier 2025, interdiction de le remettre en location (critère de décence énergétique, loi Climat et résilience). Le conseil au bailleur : travaux de rénovation (le déficit foncier majoré à 21 400 € peut aider), puis nouveau DPE, sous peine de ne plus pouvoir louer — et F sera interdit en 2028, E en 2034."
+      },
+      {
+        "titre": "Le bail mobilité pour un salarié en mission à Lavéra",
+        "texte": "Ingénieur en mission de 6 mois sur la zone industrielle de Lavéra. Bail mobilité (loi ELAN) de 1 à 10 mois, meublé, non reconductible, sans dépôt de garantie. Le bailleur se couvre via la garantie Visale (gratuite, Action Logement). Souplesse pour les deux parties : idéal pour les missions temporaires nombreuses sur le bassin."
+      },
+      {
+        "titre": "Le bailleur qui veut \"blinder\" son bail avec des clauses maison",
+        "texte": "Un propriétaire veut interdire les animaux, imposer le prélèvement automatique et prévoir une résiliation auto en cas de retard. On reprend : ces clauses sont réputées non écrites (loi 89, ordre public). On le rassure autrement : dossier locataire solide, garant ou Visale, assurance loyers impayés, état des lieux contradictoire soigné. Se protéger, oui ; par des clauses illégales, non."
+      }
+    ],
+    "objectionsStagiaires": [
+      {
+        "question": "Le bailleur veut ajouter ses propres clauses \"pour se protéger\". Comment je lui explique que c'est interdit ?",
+        "reponse": "La loi de 1989 est d'ordre public : toute clause défavorable au locataire est réputée non écrite, donc inutile et risquée. Interdire les animaux, imposer le prélèvement comme seul paiement, prévoir une résiliation automatique hors cas légaux : nul. On rassure autrement : dossier solide, garant ou Visale, assurance loyers impayés, état des lieux soigné. La vraie protection est là."
+      },
+      {
+        "question": "Un bailleur veut demander 3 mois de dépôt de garantie \"parce que le locataire a un petit dossier\". Possible ?",
+        "reponse": "Non : le dépôt est plafonné, 1 mois de loyer hors charges en vide, 2 mois en meublé, pas davantage. En bail mobilité, aucun dépôt. Pour sécuriser un dossier fragile, on actionne un garant (caution solidaire), la garantie Visale ou une assurance loyers impayés (GLI) — pas un dépôt gonflé, qui serait illégal."
+      },
+      {
+        "question": "Mon propriétaire a un logement classé F ou G : il peut encore le louer ?",
+        "reponse": "G : non, interdit à la location depuis le 1er janvier 2025. F : encore possible aujourd'hui mais interdit à partir de 2028 (E en 2034). Pour un G, soit il réalise des travaux de rénovation énergétique et refait le DPE, soit il ne peut plus louer. On peut l'orienter vers le déficit foncier majoré (jusqu'à 21 400 €/an) pour financer les travaux."
+      },
+      {
+        "question": "Le locataire veut partir avec seulement 1 mois de préavis sur un bail vide. Il a le droit ?",
+        "reponse": "Ça dépend. En location vide, le préavis locataire est de 3 mois, réduit à 1 mois en zone tendue (Martigues et une grande partie des Bouches-du-Rhône y sont), ou pour certains motifs (mutation, perte d'emploi, premier emploi, raisons de santé, RSA/AAH). En meublé, c'est 1 mois dans tous les cas. On vérifie la zone et le motif avant de valider."
+      },
+      {
+        "question": "Le bailleur veut récupérer son logement : quand et comment peut-il donner congé ?",
+        "reponse": "À l'échéance du bail seulement, avec préavis de 6 mois en vide (3 mois en meublé), et pour l'un des trois motifs légaux : reprise pour habiter (lui ou un proche), vente, ou motif légitime et sérieux (ex. impayés). En cas de vente, le locataire bénéficie d'un droit de préemption en location vide. Hors de ces cas, pas de congé."
+      },
+      {
+        "question": "Face à un impayé, on fait quoi, et dans quel ordre ?",
+        "reponse": "On agit vite : relance, puis mise en jeu du garant ou de l'assurance GLI, puis commandement de payer par huissier visant la clause résolutoire, saisine de la CCAPEX, et à défaut assignation. La clause résolutoire pour impayé est l'un des rares motifs de résiliation automatique admis. La clé est la réactivité : plus on attend, plus la dette et la procédure s'alourdissent."
+      },
+      {
+        "question": "L'état des lieux, est-ce vraiment si important ? On peut le faire vite ?",
+        "reponse": "C'est le document qui tranche tous les litiges de fin de bail et de dépôt de garantie. Entrée et sortie, contradictoire, détaillé pièce par pièce, avec photos datées. Un état des lieux bâclé, et le bailleur ne peut rien retenir sur le dépôt ; trop sévère et non contradictoire, il est contestable. On y consacre le temps nécessaire : c'est de la prévention de contentieux."
+      }
+    ],
+    "erreursFrequentes": [
+      "Erreur : utiliser un bail \"maison\" au lieu du modèle type ALUR. → Correction : bail conforme au décret n°2015-587, avec toutes les mentions obligatoires.",
+      "Erreur : oublier une annexe (DPE/DDT, notice d'information, état des lieux, règlement de copropriété, inventaire en meublé). → Correction : check-list des annexes systématique avant signature.",
+      "Erreur : demander plus d'un mois de dépôt en vide ou plus de deux en meublé. → Correction : 1 mois HC en vide, 2 mois HC en meublé, 0 en bail mobilité.",
+      "Erreur : se tromper de durée (louer un meublé \"3 ans\"). → Correction : vide 3 ans (6 ans personne morale), meublé 1 an, étudiant 9 mois non reconductible, mobilité 1-10 mois.",
+      "Erreur : appliquer un préavis locataire de 3 mois en meublé ou en zone tendue. → Correction : 1 mois en meublé et en zone tendue ; 3 mois en vide hors zone tendue.",
+      "Erreur : glisser des clauses interdites (animaux, prélèvement obligatoire, résiliation auto, frais de relance). → Correction : les retirer (réputées non écrites) et sécuriser par garant/Visale/GLI.",
+      "Erreur : remettre en location un logement classé G. → Correction : interdit depuis 2025 ; travaux + nouveau DPE, anticiper F (2028) et E (2034).",
+      "Erreur : bâcler l'état des lieux ou ne pas le faire contradictoirement. → Correction : entrée et sortie, détaillé, contradictoire, photos datées, pour sécuriser le dépôt de garantie."
+    ],
+    "chiffresCles": [
+      "Loi n°89-462 du 6 juillet 1989 (ordre public).",
+      "Bail type ALUR : décret n°2015-587 du 29 mai 2015.",
+      "Durées : vide 3 ans (6 ans si bailleur personne morale hors SCI familiale), meublé 1 an, étudiant 9 mois non reconductible, bail mobilité 1-10 mois.",
+      "Dépôt de garantie : 1 mois HC en vide, 2 mois HC en meublé, 0 en bail mobilité.",
+      "Préavis locataire : 3 mois en vide (1 mois en zone tendue ou motif légal), 1 mois en meublé.",
+      "Préavis bailleur : 6 mois en vide, 3 mois en meublé, à l'échéance et pour reprise / vente / motif légitime et sérieux.",
+      "Révision du loyer : indice IRL.",
+      "Encadrement : loyer de référence + majoré + dernier loyer si précédent locataire parti depuis < 18 mois.",
+      "DPE décence énergétique : G interdit depuis le 01/01/2025, F en 2028, E en 2034.",
+      "DDT/annexes : DPE, CREP plomb (avant 1949), amiante, électricité/gaz > 15 ans, ERP, bruit.",
+      "Garantie Visale (Action Logement) pour sécuriser les dossiers et le bail mobilité."
     ]
   }
 };

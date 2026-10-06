@@ -48,6 +48,38 @@ function pointsLecon(lec: { titre: string; contenu: string[] }): string[] {
   return lec.contenu.slice(0, 5).map(nettoie);
 }
 
+// Découpe une leçon en sections (par sous-titre "##").
+function sectionsLecon(lec: { titre: string; contenu: string[] }): { heading: string; raw: string[] }[] {
+  const secs: { heading: string; raw: string[] }[] = []; let cur: { heading: string; raw: string[] } | null = null;
+  const flush = () => { if (cur && (cur.heading || cur.raw.length)) secs.push(cur); cur = null; };
+  for (const l of lec.contenu) {
+    if (l.startsWith("## ")) { flush(); cur = { heading: l.slice(3).trim(), raw: [] }; }
+    else { if (!cur) cur = { heading: "", raw: [] }; cur.raw.push(l); }
+  }
+  flush();
+  return secs;
+}
+// Points essentiels d'une section, concis et lisibles (support PROJETÉ).
+function pointsSection(sec: { heading: string; raw: string[] }): string[] {
+  const bullets = sec.raw.filter((l) => l.startsWith("- ")).map((l) => nettoie(l)).filter(Boolean);
+  if (bullets.length) return bullets.slice(0, 4);
+  const paras = sec.raw.map((l) => nettoie(l)).filter(Boolean);
+  if (paras.length) { const p = paras[0]; const m = p.match(/^[^.]{20,180}\./); return [m ? m[0] : (p.length > 170 ? p.slice(0, 167) + "…" : p)]; }
+  return [];
+}
+// Regroupe les sections en diapos lisibles (~7 lignes/diapo) pour la PROJECTION.
+function groupesProjection(lec: { titre: string; contenu: string[] }): { heading: string; points: string[] }[][] {
+  const secs = sectionsLecon(lec).map((s) => ({ heading: s.heading, points: pointsSection(s) })).filter((s) => s.heading || s.points.length);
+  const groupes: { heading: string; points: string[] }[][] = []; let cur: { heading: string; points: string[] }[] = []; let lignes = 0;
+  for (const s of secs) {
+    const n = 1 + s.points.length;
+    if (lignes + n > 7 && cur.length) { groupes.push(cur); cur = []; lignes = 0; }
+    cur.push(s); lignes += n;
+  }
+  if (cur.length) groupes.push(cur);
+  return groupes.length ? groupes : [[{ heading: "", points: pointsLecon(lec).slice(0, 6) }]];
+}
+
 // Découpe le contenu d'une leçon en « pages » bornées (support FORMATEUR).
 function paginer(lines: string[], budget = 840): string[][] {
   const chunks: string[][] = []; let cur: string[] = []; let c = 0;
@@ -132,6 +164,22 @@ export async function telechargerSupportPptx(module: ModuleFormation, animation:
     if (estFormateur) s.addNotes(["CONSEILS D'ANIMATION :", ...animation.notesFormateur.map((n) => "• " + n)].join("\n"));
   }
 
+  // ---------- [Formateur] Comment utiliser ce guide ----------
+  if (estFormateur) {
+    const s = slideContenu("Mode d'emploi", "Comment animer avec ce guide");
+    s.addText([
+      { text: "Ce guide est complet : même sans connaître l'immobilier, vous pouvez animer la séance.", options: { bold: true, color: NAVY, fontSize: 15, breakLine: true, paraSpaceAfter: 10, fontFace: FONT } },
+      ...[
+        "Lisez d'abord le GLOSSAIRE : il définit chaque terme employé.",
+        "Les diapos « Apport » contiennent le texte à transmettre, mot pour mot — dites-le avec vos mots.",
+        "Les blocs verts (corrigés, réponses de quiz) et les notes du présentateur sont pour VOUS, pas pour la salle.",
+        "Projetez l'autre fichier « PROJECTION » aux négociateurs ; gardez celui-ci sous les yeux.",
+        "Suivez le minutage de l'agenda et faites participer avec les « Questions à poser ».",
+        "Pour chaque jeu : lisez la règle à voix haute, lancez, puis débriefez avec le corrigé.",
+      ].map((t) => ({ text: t, options: { bullet: { code: "2022", indent: 16 }, color: DARK, fontSize: 14, breakLine: true, paraSpaceAfter: 7, fontFace: FONT } })),
+    ], { x: 0.7, y: 1.8, w: 11.9, h: 5, valign: "top", autoFit: true });
+  }
+
   // ---------- Objectifs ----------
   {
     const s = slideContenu("Formation", "Objectifs de la séance");
@@ -154,6 +202,18 @@ export async function telechargerSupportPptx(module: ModuleFormation, animation:
       s.addShape(ROUND, { x: 0.7, y: 1.8, w: 11.9, h: 3.4, fill: { color: LIGHT }, line: { color: COPPER, width: 1 }, rectRadius: 0.1 });
       s.addText(`« ${nettoie(animation.scriptOuverture)} »`, { x: 1.0, y: 2.05, w: 11.3, h: 2.9, fontSize: 15, italic: true, color: DARK, valign: "top", autoFit: true, fontFace: FONT });
       if (animation.questionsPublic?.length) s.addText("Puis j'embraye en demandant : « " + nettoie(animation.questionsPublic[0]) + " »", { x: 0.7, y: 5.5, w: 11.9, h: 0.8, fontSize: 13, color: GREY, italic: true, valign: "top", autoFit: true, fontFace: FONT });
+    }
+    // Glossaire : le vocabulaire défini pour un formateur débutant.
+    if (animation.glossaire?.length) {
+      for (const grp of chunk(animation.glossaire, 6)) {
+        const s = slideContenu("Le vocabulaire à connaître", "Glossaire");
+        const runs: Run[] = [];
+        grp.forEach((g) => {
+          runs.push({ text: nettoie(g.terme), options: { bold: true, color: NAVY, fontSize: 14, breakLine: true, paraSpaceBefore: 7, paraSpaceAfter: 1, fontFace: FONT } });
+          runs.push({ text: nettoie(g.definition), options: { color: SLATE, fontSize: 12, breakLine: true, paraSpaceAfter: 5, fontFace: FONT } });
+        });
+        s.addText(runs, { x: 0.7, y: 1.75, w: 11.9, h: 5.15, valign: "top", autoFit: true });
+      }
     }
   }
 
@@ -195,8 +255,17 @@ export async function telechargerSupportPptx(module: ModuleFormation, animation:
         s.addText(renduRiche(chunk), { x: 0.7, y: 1.75, w: 11.9, h: 5.15, valign: "top", autoFit: true });
       });
     } else {
-      const s = slideContenu(`Apport ${i + 1}/${module.lecons.length}`, lec.titre);
-      s.addText(puces(pointsLecon(lec), { size: 16 }), { x: 0.7, y: 1.8, w: 11.9, h: 5, valign: "top", autoFit: true });
+      // Projection : sections structurées (sous-titre + points concis), lisibles.
+      const groupes = groupesProjection(lec);
+      groupes.forEach((grp, gi) => {
+        const s = slideContenu(`Apport ${i + 1}/${module.lecons.length}`, gi === 0 ? lec.titre : `${lec.titre} (suite)`);
+        const runs: Run[] = [];
+        grp.forEach((sec) => {
+          if (sec.heading) runs.push({ text: sec.heading, options: { bold: true, color: COPPER, fontSize: 16, breakLine: true, paraSpaceBefore: 10, paraSpaceAfter: 4, fontFace: FONT } });
+          sec.points.forEach((p) => runs.push({ text: p, options: { bullet: { code: "2022", indent: 16 }, color: DARK, fontSize: 14, breakLine: true, paraSpaceAfter: 6, fontFace: FONT } }));
+        });
+        s.addText(runs, { x: 0.7, y: 1.8, w: 11.9, h: 5, valign: "top", autoFit: true });
+      });
     }
   });
 

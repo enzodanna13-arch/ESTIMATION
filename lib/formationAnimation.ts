@@ -21,6 +21,7 @@ export interface JeuRole {
 }
 export interface ExempleTerrain { titre: string; texte: string; }
 export interface FaqStagiaire { question: string; reponse: string; }
+export interface TermeGlossaire { terme: string; definition: string; }
 
 export interface AnimationModule {
   id: string;
@@ -42,6 +43,7 @@ export interface AnimationModule {
   objectionsStagiaires?: FaqStagiaire[];
   erreursFrequentes?: string[];
   chiffresCles?: string[];
+  glossaire?: TermeGlossaire[];
 }
 
 // Rempli automatiquement (voir ANIMATIONS_DATA ci-dessous).
