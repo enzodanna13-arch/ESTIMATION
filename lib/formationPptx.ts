@@ -69,6 +69,10 @@ function repartir<T>(arr: T[], n: number): T[] {
   for (let i = 0; i < n; i++) out.push(arr[Math.floor(i * pas)]);
   return out;
 }
+function chunk<T>(arr: T[], n: number): T[][] {
+  const out: T[][] = []; for (let i = 0; i < arr.length; i += n) out.push(arr.slice(i, i + n)); return out;
+}
+type Run = { text: string; options: Record<string, unknown> };
 
 export async function telechargerSupportPptx(module: ModuleFormation, animation: AnimationModule, role: RolePptx = "projection"): Promise<void> {
   const mod = await import("pptxgenjs");
@@ -135,6 +139,24 @@ export async function telechargerSupportPptx(module: ModuleFormation, animation:
     if (estFormateur) s.addText("À dire : « Voici ce que vous saurez FAIRE en sortant. » Reliez chaque objectif à une situation de terrain vécue.", { x: 0.7, y: 6.6, w: 11.9, h: 0.5, fontSize: 11, italic: true, color: GREY, fontFace: FONT });
   }
 
+  // ---------- [Formateur] Préparation, messages à marteler, ouverture ----------
+  if (estFormateur) {
+    if (animation.materiel?.length) {
+      const s = slideContenu("Avant de commencer", "Préparation & matériel");
+      s.addText(puces(animation.materiel, { size: 15 }), { x: 0.7, y: 1.8, w: 11.9, h: 5, valign: "top", autoFit: true });
+    }
+    if (animation.messagesCles?.length) {
+      const s = slideContenu("Fil rouge", "Les messages à marteler");
+      s.addText(animation.messagesCles.map((m) => ({ text: nettoie(m), options: { bullet: { code: "2022" }, color: NAVY, bold: true, fontSize: 17, paraSpaceAfter: 12, breakLine: true, fontFace: FONT } })), { x: 0.8, y: 1.9, w: 11.7, h: 5, valign: "top", autoFit: true });
+    }
+    if (animation.scriptOuverture) {
+      const s = slideContenu("Ce que je dis", "Mon ouverture");
+      s.addShape(ROUND, { x: 0.7, y: 1.8, w: 11.9, h: 3.4, fill: { color: LIGHT }, line: { color: COPPER, width: 1 }, rectRadius: 0.1 });
+      s.addText(`« ${nettoie(animation.scriptOuverture)} »`, { x: 1.0, y: 2.05, w: 11.3, h: 2.9, fontSize: 15, italic: true, color: DARK, valign: "top", autoFit: true, fontFace: FONT });
+      if (animation.questionsPublic?.length) s.addText("Puis j'embraye en demandant : « " + nettoie(animation.questionsPublic[0]) + " »", { x: 0.7, y: 5.5, w: 11.9, h: 0.8, fontSize: 13, color: GREY, italic: true, valign: "top", autoFit: true, fontFace: FONT });
+    }
+  }
+
   // ---------- Au programme ----------
   {
     const s = slideContenu("Déroulé", "Au programme");
@@ -178,6 +200,25 @@ export async function telechargerSupportPptx(module: ModuleFormation, animation:
     }
   });
 
+  // ---------- [Formateur] Exemples terrain & questions à poser ----------
+  if (estFormateur) {
+    if (animation.exemplesTerrain?.length) {
+      for (const grp of chunk(animation.exemplesTerrain, 3)) {
+        const s = slideContenu("Pour illustrer", "Exemples & anecdotes terrain");
+        const runs: Run[] = [];
+        grp.forEach((e) => {
+          runs.push({ text: "▸ " + nettoie(e.titre), options: { bold: true, color: COPPER, fontSize: 14, breakLine: true, paraSpaceBefore: 8, paraSpaceAfter: 2, fontFace: FONT } });
+          runs.push({ text: nettoie(e.texte), options: { color: SLATE, fontSize: 12.5, breakLine: true, paraSpaceAfter: 6, fontFace: FONT } });
+        });
+        s.addText(runs, { x: 0.7, y: 1.8, w: 11.9, h: 5, valign: "top", autoFit: true });
+      }
+    }
+    if (animation.questionsPublic?.length) {
+      const s = slideContenu("Faire participer", "Questions à poser à la salle");
+      s.addText(puces(animation.questionsPublic, { size: 14 }), { x: 0.7, y: 1.8, w: 11.9, h: 5, valign: "top", autoFit: true });
+    }
+  }
+
   // ---------- Jeux ----------
   animation.jeux.forEach((j, i) => {
     const s = slideContenu(`Jeu ${i + 1} · ${j.type} · ${j.duree}`, `🎲 ${j.titre}`);
@@ -213,6 +254,29 @@ export async function telechargerSupportPptx(module: ModuleFormation, animation:
       s.addNotes(["DÉBRIEF :", ...jr.debrief.map((d) => "• " + d)].join("\n"));
     }
   });
+
+  // ---------- [Formateur] FAQ stagiaires, erreurs fréquentes, mémo chiffres ----------
+  if (estFormateur) {
+    if (animation.objectionsStagiaires?.length) {
+      for (const grp of chunk(animation.objectionsStagiaires, 3)) {
+        const s = slideContenu("Ils vont demander", "Objections des stagiaires — FAQ");
+        const runs: Run[] = [];
+        grp.forEach((f) => {
+          runs.push({ text: "Q.  " + nettoie(f.question), options: { bold: true, color: NAVY, fontSize: 13.5, breakLine: true, paraSpaceBefore: 8, paraSpaceAfter: 2, fontFace: FONT } });
+          runs.push({ text: "R.  " + nettoie(f.reponse), options: { color: SLATE, fontSize: 12.5, breakLine: true, paraSpaceAfter: 6, fontFace: FONT } });
+        });
+        s.addText(runs, { x: 0.7, y: 1.8, w: 11.9, h: 5, valign: "top", autoFit: true });
+      }
+    }
+    if (animation.erreursFrequentes?.length) {
+      const s = slideContenu("Points de vigilance", "Erreurs fréquentes à éviter");
+      s.addText(puces(animation.erreursFrequentes, { size: 14 }), { x: 0.7, y: 1.8, w: 11.9, h: 5, valign: "top", autoFit: true });
+    }
+    if (animation.chiffresCles?.length) {
+      const s = slideContenu("Mémo", "Chiffres & repères clés");
+      s.addText(puces(animation.chiffresCles, { size: 14, color: NAVY }), { x: 0.7, y: 1.8, w: 11.9, h: 5, valign: "top", autoFit: true });
+    }
+  }
 
   // ---------- Quiz en direct ----------
   const quizLive = repartir(module.quiz, Math.min(6, module.quiz.length));

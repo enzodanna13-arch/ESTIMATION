@@ -19,6 +19,9 @@ export interface JeuRole {
   objectif: string;
   debrief: string[];
 }
+export interface ExempleTerrain { titre: string; texte: string; }
+export interface FaqStagiaire { question: string; reponse: string; }
+
 export interface AnimationModule {
   id: string;
   sousTitre: string;
@@ -30,6 +33,15 @@ export interface AnimationModule {
   pointsCles: string[];
   planAction: string[];
   notesFormateur: string[];
+  // Complément GUIDE FORMATEUR (optionnel — affiché seulement dans la version formateur).
+  materiel?: string[];
+  messagesCles?: string[];
+  scriptOuverture?: string;
+  questionsPublic?: string[];
+  exemplesTerrain?: ExempleTerrain[];
+  objectionsStagiaires?: FaqStagiaire[];
+  erreursFrequentes?: string[];
+  chiffresCles?: string[];
 }
 
 // Rempli automatiquement (voir ANIMATIONS_DATA ci-dessous).
