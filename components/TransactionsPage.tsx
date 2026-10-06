@@ -6,6 +6,7 @@ import {
   ajouterPieceTransaction, telechargerPieceTransaction, supprimerPieceTransaction, renommerPieceTransaction,
   CATEGORIES_TRANSACTION, type Transaction, type PieceTransaction,
 } from "@/lib/transactions";
+import { listDocuments, getDocument, type DocHistoryMeta } from "@/lib/history";
 import { NEGOCIATEURS } from "@/lib/equipe";
 
 const euro = (n: number) => n > 0 ? new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR", maximumFractionDigits: 0 }).format(n) : "—";
@@ -28,9 +29,48 @@ export default function TransactionsPage({ onRetour }: { onRetour: () => void })
   const [ouvert, setOuvert] = useState<Transaction | null>(null);
   const [creation, setCreation] = useState(false);
   const [erreur, setErreur] = useState<string | null>(null);
+  // Création depuis une facture générée
+  const [picker, setPicker] = useState(false);
+  const [factures, setFactures] = useState<DocHistoryMeta[] | null>(null);
+  const [busyFacture, setBusyFacture] = useState(false);
 
   const recharger = () => listTransactions().then(setListe).catch(() => setListe([]));
   useEffect(() => { void recharger(); }, []);
+
+  const ouvrirPicker = async () => {
+    setPicker(true); setFactures(null); setErreur(null);
+    try {
+      const docs = await listDocuments();
+      setFactures(docs.filter((d) => d.docType === "facture"));
+    } catch { setFactures([]); }
+  };
+
+  const creerDepuisFacture = async (meta: DocHistoryMeta) => {
+    setBusyFacture(true); setErreur(null);
+    try {
+      const full = await getDocument(meta.id);
+      const inp = full?.input;
+      const notes = [
+        inp?.factureNumero ? `Facture n° ${inp.factureNumero}` : "",
+        inp?.factureNotaire ? `Notaire : Maître ${inp.factureNotaire}` : "",
+        inp?.factureClientAdresse ? `Adresse client : ${inp.factureClientAdresse}` : "",
+      ].filter(Boolean).join("\n");
+      const t = await createTransaction({
+        bien: inp?.factureBien || meta.reference || "",
+        honoraires: typeof inp?.commissionTTC === "number" ? inp.commissionTTC : 0,
+        dateVente: meta.createdAt,
+        vendeur: inp?.factureClientNom || "",
+        negociateur: meta.negociateur || "",
+        notes,
+      });
+      if (!t) { setErreur("Création impossible."); return; }
+      setPicker(false);
+      setOuvert(t);
+      void recharger();
+    } catch {
+      setErreur("Impossible de lire cette facture.");
+    } finally { setBusyFacture(false); }
+  };
 
   const resultats = useMemo(() => {
     const base = liste ?? [];
@@ -46,9 +86,39 @@ export default function TransactionsPage({ onRetour }: { onRetour: () => void })
       <div className="mb-4 flex flex-wrap items-center gap-3">
         <button onClick={onRetour} className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-100">← Accueil</button>
         <h2 className="text-2xl font-bold text-navy">💼 Transactions</h2>
-        <button onClick={() => setCreation(true)} className="ml-auto rounded-lg bg-navy px-4 py-2 text-sm font-bold text-white transition hover:brightness-110">➕ Nouvelle transaction</button>
+        <button onClick={() => void ouvrirPicker()} className="ml-auto rounded-lg border border-copper bg-white px-4 py-2 text-sm font-bold text-copper transition hover:bg-copper-soft/40">📄 Depuis une facture</button>
+        <button onClick={() => setCreation(true)} className="rounded-lg bg-navy px-4 py-2 text-sm font-bold text-white transition hover:brightness-110">➕ Nouvelle transaction</button>
       </div>
-      <p className="mb-4 text-sm text-slate-500">Vos ventes réalisées, avec les pièces de clôture : <strong>attestation du notaire</strong>, <strong>facture d'agence</strong>, acte, compromis…</p>
+      <p className="mb-4 text-sm text-slate-500">Vos ventes réalisées, avec les pièces de clôture : <strong>attestation du notaire</strong>, <strong>facture d'agence</strong>, acte, compromis… Créez une transaction de zéro ou <strong>directement à partir d'une facture déjà générée</strong>.</p>
+
+      {picker && (
+        <div className="mb-4 rounded-2xl border border-copper/40 bg-copper-soft/20 p-4">
+          <div className="mb-2 flex items-center justify-between">
+            <div className="text-sm font-bold text-navy">Créer une transaction depuis une facture générée</div>
+            <button onClick={() => setPicker(false)} className="text-xs font-semibold text-slate-500 hover:text-slate-700">Fermer</button>
+          </div>
+          {factures === null ? (
+            <p className="text-sm text-slate-500">Chargement des factures…</p>
+          ) : factures.length === 0 ? (
+            <p className="text-sm text-slate-400">Aucune facture générée pour l'instant (menu « Génération de documents » → Facture de commission).</p>
+          ) : (
+            <ul className="divide-y divide-copper/20">
+              {factures.map((d) => (
+                <li key={d.id} className="flex flex-wrap items-center justify-between gap-2 py-2">
+                  <div className="min-w-0">
+                    <div className="truncate text-sm font-semibold text-navy">{d.reference || d.titre}</div>
+                    <div className="text-xs text-slate-500">{[d.negociateur, dateFr(d.createdAt)].filter(Boolean).join(" · ")}</div>
+                  </div>
+                  <button disabled={busyFacture} onClick={() => void creerDepuisFacture(d)} className="rounded-lg bg-navy px-3 py-1.5 text-xs font-bold text-white transition hover:brightness-110 disabled:opacity-50">
+                    {busyFacture ? "…" : "Créer la transaction"}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+          <p className="mt-2 text-xs text-slate-400">La fiche sera pré-remplie (bien, honoraires, date, client, négociateur). Pensez à importer ensuite le PDF de la facture (type « Facture agence ») et l'attestation du notaire.</p>
+        </div>
+      )}
 
       {creation && <FormulaireCreation onCree={(t) => { setCreation(false); setOuvert(t); void recharger(); }} onAnnule={() => setCreation(false)} />}
 
