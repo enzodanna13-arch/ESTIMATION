@@ -243,6 +243,7 @@ function FicheTransaction({ t, onFermer, onMaj }: { t: Transaction; onFermer: ()
   const [msg, setMsg] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
   const [edit, setEdit] = useState<{ fileId: string; nom: string; categorie: string } | null>(null);
+  const [drag, setDrag] = useState(false);
 
   const champ = <K extends keyof Transaction>(k: K, v: Transaction[K]) => setF((p) => ({ ...p, [k]: v }));
 
@@ -258,12 +259,16 @@ function FicheTransaction({ t, onFermer, onMaj }: { t: Transaction; onFermer: ()
   };
   const importer = async (files: FileList | null) => {
     if (!files || files.length === 0) return;
-    const file = files[0];
-    if (!(file.name.toLowerCase().endsWith(".pdf") || file.type === "application/pdf")) { setErr("Choisissez un PDF."); return; }
+    const pdfs = Array.from(files).filter((fi) => fi.name.toLowerCase().endsWith(".pdf") || fi.type === "application/pdf");
+    if (pdfs.length === 0) { setErr("Choisissez un ou plusieurs PDF."); return; }
     setBusy(true); setErr(null); setMsg(null);
     try {
-      const maj = await ajouterPieceTransaction(f.id, file, file.name, cat);
-      if (maj) { setF(maj); onMaj(maj); setMsg(`« ${cat} » ajoutée`); }
+      let dernier: Transaction | null = null;
+      for (const file of pdfs) {
+        dernier = await ajouterPieceTransaction(f.id, file, file.name, cat);
+        if (dernier) { setF(dernier); onMaj(dernier); }
+      }
+      setMsg(`${pdfs.length} document${pdfs.length > 1 ? "s" : ""} ajouté${pdfs.length > 1 ? "s" : ""} en « ${cat} »`);
     } catch (e) { setErr(e instanceof Error ? e.message : "Import impossible"); }
     finally { setBusy(false); }
   };
@@ -309,7 +314,13 @@ function FicheTransaction({ t, onFermer, onMaj }: { t: Transaction; onFermer: ()
         </div>
 
         {/* Pièces */}
-        <div className="rounded-2xl border border-slate-200 bg-white p-4">
+        <div
+          className={`rounded-2xl border p-4 transition ${drag ? "border-2 border-dashed border-copper bg-copper-soft/40 ring-2 ring-copper/20" : "border-slate-200 bg-white"}`}
+          onDragOver={(e) => { e.preventDefault(); setDrag(true); }}
+          onDragEnter={(e) => { e.preventDefault(); setDrag(true); }}
+          onDragLeave={(e) => { e.preventDefault(); setDrag(false); }}
+          onDrop={(e) => { e.preventDefault(); setDrag(false); void importer(e.dataTransfer.files); }}
+        >
           <h3 className="mb-2 text-sm font-bold text-navy">Pièces de la transaction</h3>
           <div className="mb-3 flex flex-wrap items-end gap-2 rounded-xl border border-slate-200 bg-slate-50 p-3">
             <label className="text-xs text-slate-500">Type de pièce
@@ -317,8 +328,9 @@ function FicheTransaction({ t, onFermer, onMaj }: { t: Transaction; onFermer: ()
             </label>
             <label className={`cursor-pointer rounded-xl bg-copper px-4 py-2 text-sm font-bold text-white transition hover:brightness-110 ${busy ? "pointer-events-none opacity-50" : ""}`}>
               {busy ? "Envoi…" : "+ Importer un PDF"}
-              <input type="file" accept="application/pdf" className="hidden" onChange={(e) => { void importer(e.target.files); e.target.value = ""; }} />
+              <input type="file" accept="application/pdf" multiple className="hidden" onChange={(e) => { void importer(e.target.files); e.target.value = ""; }} />
             </label>
+            <span className="text-xs text-slate-400">{drag ? "Relâchez pour ajouter en « " + cat + " »" : "ou glissez‑déposez un PDF ici"}</span>
           </div>
           {f.pieces.length === 0 ? (
             <p className="p-4 text-sm text-slate-400">Aucune pièce — importez l'attestation du notaire et la facture d'agence.</p>
