@@ -162,7 +162,7 @@ export default function OrganisationPage({ onRetour }: { onRetour: () => void })
                 ))}
               </div>
               {stats.pct === 100 && <div className="mt-4 rounded-xl bg-emerald-50 p-3 text-center text-sm font-bold text-emerald-700">🎉 Journée bouclée — bravo !</div>}
-              <p className="mt-3 text-[11px] text-slate-400">Chasse (10 biens) et identification (5 biens) sont tes objectifs terrain fixes chaque jour. Le phoning, la prospection et la formation s'adaptent à tes RDV pour ne pas te surcharger.</p>
+              <p className="mt-3 text-[11px] text-slate-400">Chasse (10 biens) et identification (5 biens) sont tes objectifs terrain fixes chaque jour. Le phoning (30 min à 1h30), la prospection et la formation s'adaptent à tes RDV pour ne pas te surcharger.</p>
             </>
           )}
 

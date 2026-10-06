@@ -36,11 +36,20 @@ export const CATEGORIES = ["Chasse", "Identification", "Phoning", "Prospection",
 // formation) est dosé selon la charge de RDV pour ne pas surcharger.
 const CHASSE_PAR_JOUR = 10;
 const IDENT_PAR_JOUR = 5;
-const PROFILS: Record<Niveau, { phoning: number; prospection: number; form: number }> = {
-  intensif: { phoning: 30, prospection: 2, form: 1 },
-  equilibre: { phoning: 20, prospection: 1, form: 1 },
-  leger: { phoning: 10, prospection: 1, form: 0 },
+// Le phoning se mesure en TEMPS (minutes), pas en nombre de contacts : de 30 min
+// les journées très chargées en RDV à 1h30 les journées libres.
+const PROFILS: Record<Niveau, { phoningMin: number; prospection: number; form: number }> = {
+  intensif: { phoningMin: 90, prospection: 2, form: 1 },
+  equilibre: { phoningMin: 60, prospection: 1, form: 1 },
+  leger: { phoningMin: 30, prospection: 1, form: 0 },
 };
+
+// Minutes -> libellé court (30 min, 1h, 1h30).
+function dureeTexte(min: number): string {
+  const h = Math.floor(min / 60); const m = min % 60;
+  if (h === 0) return `${m} min`;
+  return m === 0 ? `${h}h` : `${h}h${String(m).padStart(2, "0")}`;
+}
 
 export function genererTaches(rdv: RdvJour): TacheOrg[] {
   const P = PROFILS[niveauDe(rdv)];
@@ -50,8 +59,8 @@ export function genererTaches(rdv: RdvJour): TacheOrg[] {
   add("Chasse", `Chasser ${CHASSE_PAR_JOUR} biens sur le terrain (démarchage des vendeurs : porte-à-porte, boîtage, contact direct)`, CHASSE_PAR_JOUR);
   // Identification : trouver des biens à la vente (objectif fixe quotidien).
   add("Identification", `Identifier ${IDENT_PAR_JOUR} biens à vendre (annonces, panneaux, bouche-à-oreille)`, IDENT_PAR_JOUR);
-  // Phoning : relance de la base (estimations, mandats, acquéreurs…).
-  add("Phoning", `Relancer ${P.phoning} contact(s) de la base phoning (estimations, mandats, acquéreurs)`, P.phoning);
+  // Phoning : relance de la base, en temps passé.
+  add("Phoning", `Faire ${dureeTexte(P.phoningMin)} de phoning (relance de la base : estimations, mandats, acquéreurs)`, P.phoningMin);
   // Prospection ciblée via l'outil CRM.
   add("Prospection", `Travailler ${P.prospection} secteur(s) de prospection ciblée (CRM : propriétaires, DVF)`, P.prospection);
   // Formation.
