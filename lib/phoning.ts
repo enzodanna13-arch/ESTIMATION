@@ -2,9 +2,13 @@
 // Stockage serveur par négociateur (voir serverPhoning), pour la visibilité manager.
 
 import { getHistoryKey } from "./history";
+import { STATUTS_NEGATIFS, STATUTS_POSITIFS, PHRASES_MOTIVATION_DEFAUT } from "./phoningScripts";
 import type { LignePhoning, PhoningData, PhoningNego } from "./serverPhoning";
 
 export type { LignePhoning, PhoningData, PhoningNego } from "./serverPhoning";
+
+export const estNegatif = (statut: string) => STATUTS_NEGATIFS.includes(statut);
+export const estPositif = (statut: string) => STATUTS_POSITIFS.includes(statut);
 
 const headers = () => ({ "x-history-key": getHistoryKey() });
 const jsonHeaders = () => ({ "content-type": "application/json", "x-history-key": getHistoryKey() });
@@ -64,4 +68,22 @@ export function statsLignes(lignes: LignePhoning[]): StatsPhoning {
 export function statsData(data: PhoningData): StatsPhoning {
   const toutes = Object.values(data).flat();
   return statsLignes(toutes);
+}
+
+// --- Phrases de remotivation (config globale, éditée par le manager) ---
+export async function chargerMotivation(): Promise<string[]> {
+  try {
+    const res = await fetch(`/api/phoning/motivation`, { cache: "no-store", headers: headers() });
+    if (!res.ok) return PHRASES_MOTIVATION_DEFAUT;
+    const d = (await res.json()) as { phrases?: string[] };
+    return d.phrases && d.phrases.length ? d.phrases : PHRASES_MOTIVATION_DEFAUT;
+  } catch { return PHRASES_MOTIVATION_DEFAUT; }
+}
+
+export async function sauverMotivation(phrases: string[]): Promise<string[] | null> {
+  try {
+    const res = await fetch(`/api/phoning/motivation`, { method: "PUT", headers: jsonHeaders(), body: JSON.stringify({ phrases }) });
+    if (!res.ok) return null;
+    return ((await res.json()) as { phrases?: string[] }).phrases ?? null;
+  } catch { return null; }
 }

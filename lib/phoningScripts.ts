@@ -181,3 +181,25 @@ export const STATUTS_PHONING = [
   "Mandat / Vente",
 ] as const;
 export type StatutPhoning = (typeof STATUTS_PHONING)[number];
+
+// « Non » et « non décroché » : comptent dans la série négative (remotivation).
+export const STATUTS_NEGATIFS = ["Pas intéressé", "Répondeur", "Injoignable"];
+// Résultats positifs : remettent la série négative à zéro (et on félicite).
+export const STATUTS_POSITIFS = ["RDV fixé", "Mandat / Vente"];
+
+// Toutes les N réponses négatives (non + non décroché), on affiche une phrase.
+export const PALIER_REMOTIVATION = 5;
+
+// Phrases de remotivation par défaut (personnalisables par le manager).
+export const PHRASES_MOTIVATION_DEFAUT = [
+  "Chaque non te rapproche du prochain oui. Garde le téléphone en main, la vente est au bout du fil ! 💪",
+  "Ce n'est pas toi qu'on refuse, c'est un timing. Le bon interlocuteur attend ton appel, là, maintenant.",
+  "Les meilleurs ne sont pas ceux qui n'entendent jamais non : ce sont ceux qui rappellent quand même. Enchaîne !",
+  "Un répondeur, c'est un rendez-vous raté d'une seconde. Note le rappel et passe au suivant, sans te poser de question.",
+  "5 refus d'affilée ? Statistiquement, tu te rapproches d'un gros oui. Remets le sourire dans la voix.",
+  "La régularité bat le talent. Appel après appel, tu construis ton chiffre du mois. Continue.",
+  "Respire, souris, compose le numéro suivant : ton énergie s'entend au téléphone.",
+  "Personne ne se souvient des non. Tout le monde se souviendra du mandat que tu vas signer cette semaine.",
+  "Tu fais le travail que les autres évitent. C'est exactement pour ça que tu vas réussir. On lâche rien !",
+  "Le prochain décroche. Mets-y la même conviction qu'à ton tout premier appel de la journée.",
+];

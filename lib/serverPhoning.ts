@@ -76,6 +76,33 @@ export async function savePhoningServer(negoId: string, data: PhoningData): Prom
   return payload;
 }
 
+// --- Phrases de remotivation (config globale, éditée par le manager) ---
+const CFG_PREFIX = "phoningcfg/";
+
+export async function getMotivationServer(): Promise<string[] | null> {
+  const { blobs } = await list({ prefix: `${CFG_PREFIX}motivation~`, limit: 100 });
+  if (blobs.length === 0) return null;
+  let best = blobs[0];
+  for (const b of blobs) if (version(b.pathname) > version(best.pathname)) best = b;
+  try {
+    const r = await fetch(best.url, { cache: "no-store" });
+    if (!r.ok) return null;
+    const d = (await r.json()) as { phrases?: unknown };
+    return Array.isArray(d.phrases) ? d.phrases.map((p) => String(p)) : null;
+  } catch { return null; }
+}
+
+export async function saveMotivationServer(phrases: unknown): Promise<string[]> {
+  const clean = (Array.isArray(phrases) ? phrases : []).map((p) => String(p).slice(0, 400)).map((p) => p.trim()).filter(Boolean).slice(0, 50);
+  const now = Date.now();
+  const nom = `${CFG_PREFIX}motivation~${now}.json`;
+  await put(nom, JSON.stringify({ phrases: clean }), { access: "public", addRandomSuffix: false, contentType: "application/json" });
+  const { blobs } = await list({ prefix: `${CFG_PREFIX}motivation~`, limit: 100 });
+  const anciennes = blobs.filter((b) => b.pathname !== nom).map((b) => b.url);
+  if (anciennes.length > 0) await del(anciennes);
+  return clean;
+}
+
 export async function listPhoningServer(): Promise<PhoningNego[]> {
   const { blobs } = await list({ prefix: PREFIX, limit: 1000 });
   const parId = new Map<string, { url: string; ts: number }>();
