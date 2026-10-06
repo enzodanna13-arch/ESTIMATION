@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import {
   listTransactions, createTransaction, updateTransaction, deleteTransaction,
-  ajouterPieceTransaction, telechargerPieceTransaction, supprimerPieceTransaction, renommerPieceTransaction,
+  ajouterPieceTransaction, analyserPieceTransaction, telechargerPieceTransaction, supprimerPieceTransaction, renommerPieceTransaction,
   CATEGORIES_TRANSACTION, type Transaction, type PieceTransaction,
 } from "@/lib/transactions";
 import { listDocuments, getDocument, type DocHistoryMeta } from "@/lib/history";
@@ -33,6 +33,7 @@ export default function TransactionsPage({ onRetour }: { onRetour: () => void })
   const [picker, setPicker] = useState(false);
   const [factures, setFactures] = useState<DocHistoryMeta[] | null>(null);
   const [busyFacture, setBusyFacture] = useState(false);
+  const [etatIA, setEtatIA] = useState<string | null>(null); // progression analyse attestation
 
   const recharger = () => listTransactions().then(setListe).catch(() => setListe([]));
   useEffect(() => { void recharger(); }, []);
@@ -43,6 +44,34 @@ export default function TransactionsPage({ onRetour }: { onRetour: () => void })
       const docs = await listDocuments();
       setFactures(docs.filter((d) => d.docType === "facture"));
     } catch { setFactures([]); }
+  };
+
+  // Création par IA depuis une attestation de vente / acte : on crée une
+  // transaction, on y attache le PDF, puis l'IA l'analyse et pré-remplit tout.
+  const creerDepuisAttestation = async (files: FileList | null) => {
+    if (!files || files.length === 0) return;
+    const file = files[0];
+    if (!(file.name.toLowerCase().endsWith(".pdf") || file.type === "application/pdf")) { setErreur("Choisissez un PDF (l'attestation de vente)."); return; }
+    setErreur(null);
+    setEtatIA("Création du dossier…");
+    try {
+      const t = await createTransaction({ bien: "", notes: "" });
+      if (!t) throw new Error("Création impossible");
+      setEtatIA("Envoi de l'attestation…");
+      const avecPiece = await ajouterPieceTransaction(t.id, file, file.name, "Attestation notaire");
+      const piece = (avecPiece?.pieces ?? []).find((p) => p.categorie === "Attestation notaire") ?? (avecPiece?.pieces ?? [])[0];
+      if (!avecPiece || !piece) throw new Error("Envoi du document impossible");
+      setEtatIA("Analyse du document par l'IA…");
+      const res = await analyserPieceTransaction(t.id, piece.fileId);
+      setEtatIA(null);
+      const finale = res?.transaction ?? avecPiece;
+      setOuvert(finale);
+      void recharger();
+      if (res?.analyseIndisponible) setErreur("Document enregistré mais non analysé (crédit IA ?). Complétez la fiche à la main.");
+    } catch (e) {
+      setEtatIA(null);
+      setErreur(e instanceof Error ? e.message : "Création depuis l'attestation impossible");
+    }
   };
 
   const creerDepuisFacture = async (meta: DocHistoryMeta) => {
@@ -86,10 +115,19 @@ export default function TransactionsPage({ onRetour }: { onRetour: () => void })
       <div className="mb-4 flex flex-wrap items-center gap-3">
         <button onClick={onRetour} className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-100">← Accueil</button>
         <h2 className="text-2xl font-bold text-navy">💼 Transactions</h2>
-        <button onClick={() => void ouvrirPicker()} className="ml-auto rounded-lg border border-copper bg-white px-4 py-2 text-sm font-bold text-copper transition hover:bg-copper-soft/40">📄 Depuis une facture</button>
+        <label className={`ml-auto cursor-pointer rounded-lg bg-copper px-4 py-2 text-sm font-bold text-white transition hover:brightness-110 ${etatIA ? "pointer-events-none opacity-60" : ""}`}>
+          {etatIA ? "Analyse…" : "🪄 Depuis une attestation (IA)"}
+          <input type="file" accept="application/pdf" className="hidden" onChange={(e) => { void creerDepuisAttestation(e.target.files); e.target.value = ""; }} />
+        </label>
+        <button onClick={() => void ouvrirPicker()} className="rounded-lg border border-copper bg-white px-4 py-2 text-sm font-bold text-copper transition hover:bg-copper-soft/40">📄 Depuis une facture</button>
         <button onClick={() => setCreation(true)} className="rounded-lg bg-navy px-4 py-2 text-sm font-bold text-white transition hover:brightness-110">➕ Nouvelle transaction</button>
       </div>
-      <p className="mb-4 text-sm text-slate-500">Vos ventes réalisées, avec les pièces de clôture : <strong>attestation du notaire</strong>, <strong>facture d'agence</strong>, acte, compromis… Créez une transaction de zéro ou <strong>directement à partir d'une facture déjà générée</strong>.</p>
+      {etatIA && (
+        <p className="mb-3 flex items-center gap-2 rounded-lg border border-copper/30 bg-copper/5 p-2.5 text-sm text-copper">
+          <span className="inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-copper/40 border-t-copper" />{etatIA}
+        </p>
+      )}
+      <p className="mb-4 text-sm text-slate-500">Vos ventes réalisées, avec les pièces de clôture : <strong>attestation du notaire</strong>, <strong>facture d'agence</strong>, acte, compromis… Créez une transaction de zéro, <strong>à partir d'une facture générée</strong>, ou <strong>en déposant l'attestation de vente</strong> : l'IA l'analyse et remplit le dossier toute seule.</p>
 
       {picker && (
         <div className="mb-4 rounded-2xl border border-copper/40 bg-copper-soft/20 p-4">

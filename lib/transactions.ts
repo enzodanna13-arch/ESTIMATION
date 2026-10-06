@@ -67,6 +67,19 @@ export async function telechargerPieceTransaction(id: string, fileId: string, no
   URL.revokeObjectURL(url);
 }
 
+// Analyse IA d'une pièce (attestation de vente / acte) pour pré-remplir la
+// transaction. Renvoie la transaction mise à jour.
+export async function analyserPieceTransaction(id: string, fileId: string): Promise<{ transaction: Transaction; analyseIndisponible: boolean } | null> {
+  const res = await fetch(`/api/transactions/${encodeURIComponent(id)}/analyser`, {
+    method: "POST", headers: jsonHeaders(), body: JSON.stringify({ fileId }),
+  });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => null)) as { error?: string } | null;
+    throw new Error(body?.error ?? "Analyse impossible");
+  }
+  return (await res.json()) as { transaction: Transaction; analyseIndisponible: boolean };
+}
+
 export async function supprimerPieceTransaction(id: string, fileId: string): Promise<Transaction | null> {
   const res = await fetch(`/api/transactions/${encodeURIComponent(id)}/files/${encodeURIComponent(fileId)}`, { method: "DELETE", headers: headers() });
   if (!res.ok) return null;
