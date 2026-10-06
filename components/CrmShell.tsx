@@ -53,6 +53,7 @@ const GROUPES: Groupe[] = [
   ] },
   { label: "Formation", items: [
     { v: "formation", t: "Centre de formation", i: "🎓" },
+    { v: "process", t: "Process & procédures", i: "⚙️" },
   ] },
   { label: "Archives", items: [
     { v: "historique", h: "", t: "Historiques", i: "🗂️" },
