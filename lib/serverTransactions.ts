@@ -114,6 +114,18 @@ export async function addTransactionPiecesServer(
   return t;
 }
 
+// Attache un PDF généré côté serveur (octets) à la transaction.
+export async function addTransactionPdfServer(id: string, nom: string, categorie: string, bytes: Uint8Array): Promise<Transaction | null> {
+  const t = await getTransactionServer(id);
+  if (!t) return null;
+  const fileId = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+  const res = await put(`${FILE_PREFIX}${t.id}/${fileId}.pdf`, Buffer.from(bytes), { access: "public", addRandomSuffix: false, contentType: "application/pdf" });
+  t.pieces.push({ fileId, nom: (nom || "document").slice(0, 200), taille: bytes.length, categorie, createdAt: Date.now(), url: res.url });
+  t.updatedAt = Date.now();
+  await putMeta(t);
+  return t;
+}
+
 export async function resoudreUrlPieceTransaction(id: string, fileId: string, url?: string): Promise<string | null> {
   if (url) return url;
   try {

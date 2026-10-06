@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import {
   listTransactions, createTransaction, updateTransaction, deleteTransaction,
-  ajouterPieceTransaction, analyserPieceTransaction, telechargerPieceTransaction, supprimerPieceTransaction, renommerPieceTransaction,
+  ajouterPieceTransaction, analyserPieceTransaction, genererFactureAgence, telechargerPieceTransaction, supprimerPieceTransaction, renommerPieceTransaction,
   CATEGORIES_TRANSACTION, type Transaction, type PieceTransaction,
 } from "@/lib/transactions";
 import { listDocuments, getDocument, type DocHistoryMeta } from "@/lib/history";
@@ -258,8 +258,24 @@ function FicheTransaction({ t, onFermer, onMaj }: { t: Transaction; onFermer: ()
   const [err, setErr] = useState<string | null>(null);
   const [edit, setEdit] = useState<{ fileId: string; nom: string; categorie: string } | null>(null);
   const [drag, setDrag] = useState(false);
+  const [factPicker, setFactPicker] = useState(false);
+  const [facts, setFacts] = useState<DocHistoryMeta[] | null>(null);
+  const [busyFact, setBusyFact] = useState(false);
 
   const champ = <K extends keyof Transaction>(k: K, v: Transaction[K]) => setF((p) => ({ ...p, [k]: v }));
+
+  const ouvrirFactPicker = async () => {
+    setFactPicker(true); setFacts(null); setErr(null);
+    try { setFacts((await listDocuments()).filter((d) => d.docType === "facture")); } catch { setFacts([]); }
+  };
+  const genererFacture = async (docId?: string) => {
+    setBusyFact(true); setErr(null); setMsg(null);
+    try {
+      const maj = await genererFactureAgence(f.id, docId);
+      if (maj) { setF(maj); onMaj(maj); setMsg("Facture d'agence générée et attachée"); setFactPicker(false); }
+    } catch (e) { setErr(e instanceof Error ? e.message : "Génération impossible"); }
+    finally { setBusyFact(false); }
+  };
 
   const enregistrer = async () => {
     setBusy(true); setErr(null);
@@ -344,8 +360,36 @@ function FicheTransaction({ t, onFermer, onMaj }: { t: Transaction; onFermer: ()
               {busy ? "Envoi…" : "+ Importer un PDF"}
               <input type="file" accept="application/pdf" multiple className="hidden" onChange={(e) => { void importer(e.target.files); e.target.value = ""; }} />
             </label>
+            <button onClick={() => void ouvrirFactPicker()} disabled={busyFact} className="rounded-xl border border-amber-300 bg-amber-50 px-4 py-2 text-sm font-bold text-amber-700 transition hover:bg-amber-100 disabled:opacity-50">🧾 Facture d'agence</button>
             <span className="text-xs text-slate-400">{drag ? "Relâchez pour ajouter en « " + cat + " »" : "ou glissez‑déposez un PDF ici"}</span>
           </div>
+
+          {factPicker && (
+            <div className="mb-3 rounded-xl border border-amber-200 bg-amber-50/50 p-3">
+              <div className="mb-2 flex items-center justify-between">
+                <div className="text-sm font-bold text-navy">Récupérer la facture d'agence</div>
+                <button onClick={() => setFactPicker(false)} className="text-xs font-semibold text-slate-500 hover:text-slate-700">Fermer</button>
+              </div>
+              <button onClick={() => void genererFacture()} disabled={busyFact} className="mb-2 w-full rounded-lg bg-navy px-3 py-2 text-xs font-bold text-white transition hover:brightness-110 disabled:opacity-50">
+                {busyFact ? "Génération…" : "Générer depuis cette transaction (honoraires, vendeur, bien)"}
+              </button>
+              <div className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">ou reprendre une facture déjà générée :</div>
+              {facts === null ? (
+                <p className="mt-1 text-xs text-slate-500">Chargement…</p>
+              ) : facts.length === 0 ? (
+                <p className="mt-1 text-xs text-slate-400">Aucune facture générée (menu « Génération de documents » → Facture de commission).</p>
+              ) : (
+                <ul className="mt-1 max-h-48 divide-y divide-amber-100 overflow-auto">
+                  {facts.map((d) => (
+                    <li key={d.id} className="flex items-center justify-between gap-2 py-1.5">
+                      <span className="min-w-0 truncate text-xs text-slate-600">{d.reference || d.titre} · {dateFr(d.createdAt)}</span>
+                      <button onClick={() => void genererFacture(d.id)} disabled={busyFact} className="shrink-0 rounded-lg bg-navy px-2.5 py-1 text-xs font-semibold text-white transition hover:brightness-110 disabled:opacity-50">Attacher</button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          )}
           {f.pieces.length === 0 ? (
             <p className="p-4 text-sm text-slate-400">Aucune pièce — importez l'attestation du notaire et la facture d'agence.</p>
           ) : (

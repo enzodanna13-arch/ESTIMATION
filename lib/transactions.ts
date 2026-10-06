@@ -80,6 +80,19 @@ export async function analyserPieceTransaction(id: string, fileId: string): Prom
   return (await res.json()) as { transaction: Transaction; analyseIndisponible: boolean };
 }
 
+// Génère la facture d'agence en PDF et l'attache à la transaction.
+// docId : reprend une facture déjà générée ; sinon génère depuis la transaction.
+export async function genererFactureAgence(id: string, docId?: string): Promise<Transaction | null> {
+  const res = await fetch(`/api/transactions/${encodeURIComponent(id)}/facture`, {
+    method: "POST", headers: jsonHeaders(), body: JSON.stringify(docId ? { docId } : {}),
+  });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => null)) as { error?: string } | null;
+    throw new Error(body?.error ?? "Génération de la facture impossible");
+  }
+  return ((await res.json()) as { transaction?: Transaction }).transaction ?? null;
+}
+
 export async function supprimerPieceTransaction(id: string, fileId: string): Promise<Transaction | null> {
   const res = await fetch(`/api/transactions/${encodeURIComponent(id)}/files/${encodeURIComponent(fileId)}`, { method: "DELETE", headers: headers() });
   if (!res.ok) return null;
