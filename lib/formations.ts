@@ -22,7 +22,7 @@ export interface ModuleFormation {
   id: string;
   titre: string;
   icone: string;
-  categorie: "Commercial" | "Juridique";
+  categorie: "Commercial" | "Transaction" | "Juridique";
   resume: string;
   duree: string; // durée de lecture estimée
   lecons: Lecon[];
@@ -409,6 +409,97 @@ export const MODULES_FORMATION: ModuleFormation[] = [
   },
 
   // ======================================================================
+  {
+    id: "transaction-notaire",
+    titre: "La transaction & le notaire",
+    icone: "🏛️",
+    categorie: "Transaction",
+    resume: "Le déroulé d'une vente, le rôle du notaire, l'attestation de propriété, les frais et le titre.",
+    duree: "20 min",
+    lecons: [
+      {
+        titre: "Le déroulé d'une transaction",
+        contenu: [
+          "Une vente immobilière suit une chaîne d'étapes que le négociateur doit **piloter de bout en bout** :",
+          "- **1. Mandat** : accord écrit vendeur ↔ agence (voir module Prise de mandat).",
+          "- **2. Mise en vente** : estimation, diffusion, visites, reporting.",
+          "- **3. Offre d'achat** : écrite, transmise au vendeur, négociée.",
+          "- **4. Avant-contrat** : compromis ou promesse, signé (souvent) chez le notaire ou à l'agence.",
+          "- **5. Rétractation & conditions** : 10 jours SRU, condition suspensive de prêt, préemption, diagnostics.",
+          "- **6. Acte authentique** : signature chez le notaire, paiement, remise des clés, publication.",
+          "## Le fil rouge : le notaire",
+          "Dès l'avant-contrat, le **notaire** entre dans la boucle. L'agent fait le **lien** entre vendeur, acquéreur, banque et notaire, et surveille les **délais** : c'est souvent là, entre compromis et acte, qu'une vente se perd faute de suivi.",
+        ],
+      },
+      {
+        titre: "Le rôle du notaire",
+        contenu: [
+          "Le **notaire** est un **officier public ministériel** : il agit au nom de l'État pour **authentifier** les actes et leur donner **force exécutoire** et **date certaine**.",
+          "## Ses missions dans une vente",
+          "- **Vérifier** la situation juridique du bien : titre de propriété, origine de propriété (30 ans), hypothèques, servitudes, urbanisme.",
+          "- **Purger** les droits : droit de rétractation, conditions suspensives, **droit de préemption** (commune, locataire, SAFER…).",
+          "- **Rédiger** et recevoir l'**acte authentique** de vente.",
+          "- **Séquestrer** les fonds (dépôt de garantie puis prix), puis **répartir** (vendeur, créanciers, trésor public, honoraires d'agence).",
+          "- **Publier** la vente au **service de publicité foncière** (ex-conservation des hypothèques) : c'est la publication qui rend la vente **opposable aux tiers**.",
+          "## Notaire unique ou deux notaires",
+          "Acquéreur et vendeur peuvent avoir **chacun leur notaire** : cela **ne coûte pas plus cher** (les notaires se partagent les émoluments). Un seul notaire est également possible.",
+        ],
+      },
+      {
+        titre: "L'attestation notariée de propriété",
+        contenu: [
+          "L'**attestation de propriété** (ou **attestation immobilière**) est un document **établi par le notaire** qui **certifie qu'une personne est propriétaire** d'un bien et **constate le transfert** de propriété. Attention à ne pas la confondre avec la **copie authentique de l'acte** (le titre complet).",
+          "## Deux grands cas d'usage",
+          "- **Après une VENTE** : le jour de la signature, le notaire remet une **attestation de propriété** (dite *attestation de vente*) à l'acquéreur. Elle est **provisoire** : elle prouve immédiatement la qualité de propriétaire (pour EDF, assurance, banque…) en attendant la **copie authentique** définitive, délivrée quelques mois plus tard après publication.",
+          "- **Après un DÉCÈS (succession) ou une DONATION** : le notaire établit une **attestation immobilière** qui constate le transfert du bien aux **héritiers**. Elle est ici **définitive** et constitue leur **titre de propriété**.",
+          "## Délais en succession",
+          "- L'attestation doit être établie dans un **délai de 6 mois** après le décès.",
+          "- Elle est **publiée au service de publicité foncière** dans les **2 mois** suivant sa signature.",
+          "## À distinguer : l'acte de notoriété",
+          "L'**acte de notoriété** **identifie les héritiers** et leurs droits ; l'**attestation immobilière** **transfère et publie** la propriété des biens. Les deux sont souvent établis ensemble dans une succession.",
+          "## Pourquoi ça vous concerne",
+          "Pour vendre, le propriétaire doit **justifier de son titre**. Sur un bien **issu d'une succession**, exigez l'**attestation immobilière** publiée : sans elle, la vente ne peut pas aboutir chez le notaire. Dans l'application, cette pièce se classe en **« Titre de propriété »** dans le dossier vendeur.",
+        ],
+      },
+      {
+        titre: "Les frais de notaire (frais d'acquisition)",
+        contenu: [
+          "Mal nommés : les « frais de notaire » sont en réalité des **frais d'acquisition**, dont le notaire ne garde qu'une petite part.",
+          "## Leur composition",
+          "- **Droits de mutation (DMTO)** : impôts versés à l'État et aux collectivités — la **plus grosse part** (environ **5,8 %** du prix dans l'ancien, selon les départements).",
+          "- **Émoluments du notaire** : sa rémunération, **réglementée** et dégressive selon le prix.",
+          "- **Débours & formalités** : sommes avancées par le notaire (documents, publication, géomètre…).",
+          "## Ordre de grandeur",
+          "- **Ancien** : environ **7 à 8 %** du prix de vente.",
+          "- **Neuf / VEFA** : environ **2 à 3 %** (droits réduits).",
+          "## Qui paie",
+          "Les frais d'acquisition sont **à la charge de l'acquéreur**. À distinguer des **honoraires d'agence**, qui peuvent être à la charge du vendeur ou de l'acquéreur selon le mandat — un point à **clarifier tôt** car il impacte le calcul du budget et l'assiette des droits.",
+        ],
+      },
+      {
+        titre: "Titre de propriété & pièces à réunir",
+        contenu: [
+          "## Le titre de propriété",
+          "C'est le document qui prouve que le vendeur est bien propriétaire : **copie authentique** de l'acte de vente antérieur, **attestation immobilière** (succession/donation), ou acte de partage. L'**origine de propriété** doit en principe être justifiée sur **30 ans**.",
+          "## Ce que vous collectez dès le mandat",
+          "- **Titre de propriété** (ou attestation notariée) et **pièce d'identité** des vendeurs.",
+          "- **Dossier de diagnostics techniques (DDT)** complet.",
+          "- En **copropriété** : règlement, PV d'AG, charges, carnet d'entretien, pré-état daté.",
+          "- **Taxe foncière**, documents d'urbanisme, et tout élément sur d'éventuelles **servitudes** ou litiges.",
+          "## Transmettre un dossier propre au notaire",
+          "Plus le dossier remis au notaire est **complet et classé**, plus la vente va vite. Dans l'application, le **dossier vendeur** liste les **pièces manquantes**, le **fractionnement IA** trie un PDF unique en pièces classées, et vous générez la **fiche Tracfin** en un clic — autant de temps gagné jusqu'à l'acte.",
+        ],
+      },
+    ],
+    quiz: [
+      { question: "Le notaire est…", options: ["Un commercial de l'agence", "Un officier public qui authentifie les actes", "Un agent de l'État des impôts", "Un avocat du vendeur"], correct: 1, explication: "Officier public ministériel, il authentifie les actes et leur donne force exécutoire et date certaine." },
+      { question: "Après une VENTE, l'attestation de propriété remise à l'acquéreur est…", options: ["Définitive", "Provisoire, en attendant la copie authentique", "Inutile", "Un acte de notoriété"], correct: 1, explication: "C'est une attestation provisoire prouvant la qualité de propriétaire en attendant la copie authentique." },
+      { question: "En succession, l'attestation immobilière doit être établie dans un délai de…", options: ["1 mois", "6 mois après le décès", "2 ans", "Aucun délai"], correct: 1, explication: "Dans les 6 mois après le décès, puis publiée au service de publicité foncière dans les 2 mois suivant sa signature." },
+      { question: "Les « frais de notaire » dans l'ancien représentent surtout…", options: ["La rémunération du notaire", "Les droits de mutation (impôts) ~5,8 %", "Les honoraires d'agence", "Les frais bancaires"], correct: 1, explication: "La plus grosse part est constituée des droits de mutation (DMTO) versés à l'État et aux collectivités." },
+      { question: "Quel document identifie les héritiers (≠ transfert du bien) ?", options: ["L'attestation immobilière", "L'acte de notoriété", "Le compromis", "Le DPE"], correct: 1, explication: "L'acte de notoriété identifie les héritiers ; l'attestation immobilière transfère et publie la propriété." },
+    ],
+  },
+
   {
     id: "loi-alur",
     titre: "Loi ALUR",

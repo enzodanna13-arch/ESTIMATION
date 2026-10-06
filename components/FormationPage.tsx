@@ -155,7 +155,7 @@ function VueModule({ module, progres, setProgres, onRetour }: {
 export default function FormationPage({ onRetour }: { onRetour: () => void }) {
   const [progres, setProgres] = useState<Progres>(() => lireProgres());
   const [ouvert, setOuvert] = useState<ModuleFormation | null>(null);
-  const [filtre, setFiltre] = useState<"" | "Commercial" | "Juridique">("");
+  const [filtre, setFiltre] = useState<"" | "Commercial" | "Transaction" | "Juridique">("");
 
   const avancement = (m: ModuleFormation) => {
     const p = progres[m.id];
@@ -191,7 +191,7 @@ export default function FormationPage({ onRetour }: { onRetour: () => void }) {
       <p className="mb-4 text-sm text-slate-500">Montez en compétence sur le métier : techniques commerciales et cadre légal (loi ALUR, Tracfin, compromis…). Chaque module se termine par un quiz. Votre progression est enregistrée sur cet appareil.</p>
 
       <div className="mb-4 inline-flex rounded-lg border border-slate-200 bg-white p-0.5 text-xs font-semibold">
-        {([["", "Tout"], ["Commercial", "Commercial"], ["Juridique", "Juridique"]] as const).map(([val, lbl]) => (
+        {([["", "Tout"], ["Commercial", "Commercial"], ["Transaction", "Transaction"], ["Juridique", "Juridique"]] as const).map(([val, lbl]) => (
           <button key={val} onClick={() => setFiltre(val)} className={`rounded-md px-3 py-1 transition ${filtre === val ? "bg-copper text-white" : "text-slate-600 hover:bg-slate-100"}`}>{lbl}</button>
         ))}
       </div>
@@ -207,7 +207,7 @@ export default function FormationPage({ onRetour }: { onRetour: () => void }) {
             >
               <div className="mb-2 flex items-center justify-between">
                 <span className="text-3xl">{m.icone}</span>
-                <span className={`rounded-full px-2 py-0.5 text-[11px] font-bold ${m.categorie === "Juridique" ? "bg-violet-100 text-violet-700" : "bg-blue-100 text-blue-700"}`}>{m.categorie}</span>
+                <span className={`rounded-full px-2 py-0.5 text-[11px] font-bold ${m.categorie === "Juridique" ? "bg-violet-100 text-violet-700" : m.categorie === "Transaction" ? "bg-amber-100 text-amber-700" : "bg-blue-100 text-blue-700"}`}>{m.categorie}</span>
               </div>
               <div className="text-base font-bold text-navy">{m.titre}</div>
               <p className="mt-0.5 text-xs text-slate-500">{m.resume}</p>
