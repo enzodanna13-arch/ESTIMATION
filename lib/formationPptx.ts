@@ -59,39 +59,39 @@ function sectionsLecon(lec: { titre: string; contenu: string[] }): { heading: st
   flush();
   return secs;
 }
-// Points essentiels d'une section, concis et lisibles (support PROJETÉ).
-function pointsSection(sec: { heading: string; raw: string[] }): string[] {
-  const bullets = sec.raw.filter((l) => l.startsWith("- ")).map((l) => nettoie(l)).filter(Boolean);
-  if (bullets.length) return bullets.slice(0, 4);
-  const paras = sec.raw.map((l) => nettoie(l)).filter(Boolean);
-  if (paras.length) { const p = paras[0]; const m = p.match(/^[^.]{20,180}\./); return [m ? m[0] : (p.length > 170 ? p.slice(0, 167) + "…" : p)]; }
-  return [];
+type SecDisplay = { heading: string; points: string[] };
+// Première phrase « propre » d'un paragraphe (pour condenser).
+function premierePhrase(p: string): string {
+  const m = p.match(/^.{20,210}?[.!?](\s|$)/);
+  return m ? m[0].trim() : (p.length > 200 ? p.slice(0, 197) + "…" : p);
 }
-// Regroupe les sections en diapos lisibles (~7 lignes/diapo) pour la PROJECTION.
-function groupesProjection(lec: { titre: string; contenu: string[] }): { heading: string; points: string[] }[][] {
-  const secs = sectionsLecon(lec).map((s) => ({ heading: s.heading, points: pointsSection(s) })).filter((s) => s.heading || s.points.length);
-  const groupes: { heading: string; points: string[] }[][] = []; let cur: { heading: string; points: string[] }[] = []; let lignes = 0;
-  for (const s of secs) {
-    const n = 1 + s.points.length;
-    if (lignes + n > 7 && cur.length) { groupes.push(cur); cur = []; lignes = 0; }
-    cur.push(s); lignes += n;
-  }
-  if (cur.length) groupes.push(cur);
-  return groupes.length ? groupes : [[{ heading: "", points: pointsLecon(lec).slice(0, 6) }]];
-}
-
-// Découpe le contenu d'une leçon en « pages » bornées (support FORMATEUR).
-function paginer(lines: string[], budget = 840): string[][] {
-  const chunks: string[][] = []; let cur: string[] = []; let c = 0;
-  const flush = () => { if (cur.length) { chunks.push(cur); cur = []; c = 0; } };
-  for (const l of lines) {
-    const len = nettoie(l).length + 8;
-    if (l.startsWith("## ") && c > budget * 0.5) flush();
-    if (c + len > budget && cur.length) flush();
-    cur.push(l); c += len;
-  }
-  flush();
-  return chunks.length ? chunks : [lines];
+// Condense une leçon en 1 à 2 diapos. En PROJECTION : titres + 1-2 points
+// concis par section. En FORMATEUR : plus dense (phrase d'intro + puces),
+// le texte intégral partant dans les notes du présentateur.
+function blocsLecon(lec: { titre: string; contenu: string[] }, role: RolePptx): SecDisplay[][] {
+  const secs = sectionsLecon(lec);
+  const display: SecDisplay[] = secs.map((s) => {
+    const bullets = s.raw.filter((l) => l.startsWith("- ")).map((l) => nettoie(l)).filter(Boolean);
+    const paras = s.raw.filter((l) => !l.startsWith("- ")).map((l) => nettoie(l)).filter(Boolean);
+    let points: string[] = [];
+    if (role === "projection") {
+      points = bullets.length ? bullets.slice(0, 2) : (paras.length ? [premierePhrase(paras[0])] : []);
+    } else {
+      if (paras.length) points.push(premierePhrase(paras[0]));
+      points.push(...bullets.slice(0, 4));
+      if (!points.length && paras.length) points.push(premierePhrase(paras[0]));
+    }
+    return { heading: s.heading, points };
+  }).filter((d) => d.heading || d.points.length);
+  if (!display.length) return [[{ heading: "", points: pointsLecon(lec).slice(0, 6) }]];
+  const poids = display.reduce((n, d) => n + 1 + d.points.length, 0);
+  const maxUneDiapo = role === "projection" ? 13 : 18;
+  if (poids <= maxUneDiapo) return [display];
+  // Deux diapos : coupe au milieu (par poids).
+  const moitie = poids / 2; let acc = 0, idx = display.length;
+  for (let i = 0; i < display.length; i++) { acc += 1 + display[i].points.length; if (acc >= moitie) { idx = i + 1; break; } }
+  idx = Math.max(1, Math.min(idx, display.length - 1));
+  return [display.slice(0, idx), display.slice(idx)];
 }
 
 // Choisit n éléments répartis régulièrement (déterministe → mêmes quiz dans les 2 versions).
@@ -133,13 +133,6 @@ export async function telechargerSupportPptx(module: ModuleFormation, animation:
 
   const puces = (items: string[], o: { color?: string; size?: number } = {}) =>
     items.filter(Boolean).map((t) => ({ text: nettoie(t), options: { bullet: { code: "2022", indent: 18 }, color: o.color ?? DARK, fontSize: o.size ?? 15, paraSpaceAfter: 8, breakLine: true, fontFace: FONT } }));
-
-  // Rendu riche (sous-titres, puces, paragraphes) — guide formateur.
-  const renduRiche = (lines: string[]) => lines.map((l) => {
-    if (l.startsWith("## ")) return { text: nettoie(l), options: { bold: true, color: COPPER, fontSize: 13.5, breakLine: true, paraSpaceBefore: 8, paraSpaceAfter: 2, fontFace: FONT } };
-    if (l.startsWith("- ")) return { text: nettoie(l), options: { bullet: { code: "2022", indent: 14 }, color: DARK, fontSize: 12.5, breakLine: true, paraSpaceAfter: 3, fontFace: FONT } };
-    return { text: nettoie(l), options: { color: SLATE, fontSize: 12.5, breakLine: true, paraSpaceAfter: 5, fontFace: FONT } };
-  });
 
   const slideContenu = (surtitre: string, titre: string) => {
     const s = pptx.addSlide({ masterName: "CONTENU" });
@@ -245,28 +238,24 @@ export async function telechargerSupportPptx(module: ModuleFormation, animation:
     s.addText(estFormateur ? "Le contenu complet à transmettre" : "Le contenu clé du module", { x: 0.9, y: 3.7, w: 11.5, h: 0.8, fontSize: 28, color: WHITE, bold: true, fontFace: FONT });
   }
 
-  // ---------- Apports ----------
+  // ---------- Apports : 1 à 2 diapos par leçon (optimisé) ----------
+  // Les deux versions restent alignées (même nombre de pages par leçon).
+  // Formateur : le texte INTÉGRAL de la leçon part dans les notes du présentateur.
   module.lecons.forEach((lec, i) => {
-    if (estFormateur) {
-      // Contenu INTÉGRAL, paginé.
-      const pages = paginer(lec.contenu, 840);
-      pages.forEach((chunk, pi) => {
-        const s = slideContenu(`Apport ${i + 1}/${module.lecons.length}`, pi === 0 ? lec.titre : `${lec.titre} (suite)`);
-        s.addText(renduRiche(chunk), { x: 0.7, y: 1.75, w: 11.9, h: 5.15, valign: "top", autoFit: true });
+    const blocs = blocsLecon(lec, estFormateur ? "formateur" : "projection");
+    blocs.forEach((grp, gi) => {
+      const s = slideContenu(`Apport ${i + 1}/${module.lecons.length}`, gi === 0 ? lec.titre : `${lec.titre} (suite)`);
+      const runs: Run[] = [];
+      grp.forEach((sec) => {
+        if (sec.heading) runs.push({ text: sec.heading, options: { bold: true, color: COPPER, fontSize: estFormateur ? 15 : 16, breakLine: true, paraSpaceBefore: 10, paraSpaceAfter: 4, fontFace: FONT } });
+        sec.points.forEach((p) => runs.push({ text: p, options: { bullet: { code: "2022", indent: 16 }, color: DARK, fontSize: estFormateur ? 13 : 14.5, breakLine: true, paraSpaceAfter: estFormateur ? 5 : 7, fontFace: FONT } }));
       });
-    } else {
-      // Projection : sections structurées (sous-titre + points concis), lisibles.
-      const groupes = groupesProjection(lec);
-      groupes.forEach((grp, gi) => {
-        const s = slideContenu(`Apport ${i + 1}/${module.lecons.length}`, gi === 0 ? lec.titre : `${lec.titre} (suite)`);
-        const runs: Run[] = [];
-        grp.forEach((sec) => {
-          if (sec.heading) runs.push({ text: sec.heading, options: { bold: true, color: COPPER, fontSize: 16, breakLine: true, paraSpaceBefore: 10, paraSpaceAfter: 4, fontFace: FONT } });
-          sec.points.forEach((p) => runs.push({ text: p, options: { bullet: { code: "2022", indent: 16 }, color: DARK, fontSize: 14, breakLine: true, paraSpaceAfter: 6, fontFace: FONT } }));
-        });
-        s.addText(runs, { x: 0.7, y: 1.8, w: 11.9, h: 5, valign: "top", autoFit: true });
-      });
-    }
+      s.addText(runs, { x: 0.7, y: 1.8, w: 11.9, h: 5, valign: "top", autoFit: true });
+      if (estFormateur) {
+        const notes = ["TEXTE COMPLET À TRANSMETTRE (ce que vous développez à l'oral) :", "", ...lec.contenu.map((l) => (l.startsWith("## ") ? "\n— " + nettoie(l) + " —" : (l.startsWith("- ") ? "• " + nettoie(l) : nettoie(l))))];
+        s.addNotes(notes.join("\n"));
+      }
+    });
   });
 
   // ---------- [Formateur] Exemples terrain & questions à poser ----------
