@@ -264,14 +264,14 @@ function Quiz({ module, meilleur, onReussi }: { module: ModuleFormation; meilleu
 function VueModule({ module, progres, persister, estManager, onRetour }: {
   module: ModuleFormation; progres: Progres; persister: (p: Progres) => void; estManager: boolean; onRetour: () => void;
 }) {
-  const [genPptx, setGenPptx] = useState(false);
+  const [genPptx, setGenPptx] = useState<"" | "formateur" | "projection">("");
   const animation = getAnimation(module.id);
-  const telechargerPptx = async () => {
+  const telechargerPptx = async (role: "formateur" | "projection") => {
     if (!animation) { alert("Le support de formation de ce module n'est pas encore disponible."); return; }
-    setGenPptx(true);
-    try { await telechargerSupportPptx(module, animation); }
+    setGenPptx(role);
+    try { await telechargerSupportPptx(module, animation, role); }
     catch { alert("Génération du support impossible."); }
-    finally { setGenPptx(false); }
+    finally { setGenPptx(""); }
   };
   const lus = progres[module.id]?.lecons ?? [];
   const basculerLu = (i: number) => {
@@ -299,15 +299,22 @@ function VueModule({ module, progres, persister, estManager, onRetour }: {
       </div>
 
       {estManager && (
-        <div className="mb-5 flex flex-wrap items-center gap-3 rounded-2xl border border-navy/15 bg-gradient-to-br from-navy to-navy/90 p-4 text-white shadow-sm">
-          <span className="text-2xl">📊</span>
-          <div className="flex-1">
-            <div className="text-sm font-bold">Support d'animation (PowerPoint)</div>
-            <div className="text-xs text-white/70">Pour animer ce module en présentiel avec tes négociateurs : objectifs, déroulé, jeux, jeux de rôle, quiz en direct et plan d'action.</div>
+        <div className="mb-5 rounded-2xl border border-navy/15 bg-gradient-to-br from-navy to-navy/90 p-4 text-white shadow-sm">
+          <div className="flex items-start gap-3">
+            <span className="text-2xl">📊</span>
+            <div className="flex-1">
+              <div className="text-sm font-bold">Supports d'animation PowerPoint</div>
+              <div className="text-xs text-white/70">Deux documents cohérents pour animer ce module : <strong>ta présentation complète</strong> (tout le texte à dire, exemples, corrigés et réponses) et le <strong>support à projeter</strong> aux négociateurs (sans les réponses).</div>
+            </div>
           </div>
-          <button onClick={telechargerPptx} disabled={genPptx} className="shrink-0 rounded-xl bg-copper px-4 py-2 text-sm font-bold text-white transition hover:brightness-110 disabled:opacity-50">
-            {genPptx ? "Génération…" : "⬇ Télécharger le .pptx"}
-          </button>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <button onClick={() => telechargerPptx("formateur")} disabled={!!genPptx} className="rounded-xl bg-copper px-4 py-2 text-sm font-bold text-white transition hover:brightness-110 disabled:opacity-50">
+              {genPptx === "formateur" ? "Génération…" : "⬇ Ma présentation (formateur)"}
+            </button>
+            <button onClick={() => telechargerPptx("projection")} disabled={!!genPptx} className="rounded-xl border border-white/30 bg-white/10 px-4 py-2 text-sm font-bold text-white transition hover:bg-white/20 disabled:opacity-50">
+              {genPptx === "projection" ? "Génération…" : "🖥️ Support à projeter (négociateurs)"}
+            </button>
+          </div>
         </div>
       )}
 
