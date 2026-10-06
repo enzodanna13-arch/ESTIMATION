@@ -5,6 +5,8 @@ import { MODULES_FORMATION, NIVEAUX_FORMATION, minutesModule, type ModuleFormati
 import { genererAttestationFormationPdf, nomFichierAttestation } from "@/lib/attestationFormationPdf";
 import { chargerProgresNego, sauverProgresNego, statsFormation, moduleValide, avancementModule } from "@/lib/formationProgres";
 import { EQUIPE } from "@/lib/equipe";
+import { getAnimation } from "@/lib/formationAnimation";
+import { telechargerSupportPptx } from "@/lib/formationPptx";
 
 const CLE_PROGRES = "formation:progres:v1";
 const CLE_NEGO = "formation:nego:v1";
@@ -259,9 +261,18 @@ function Quiz({ module, meilleur, onReussi }: { module: ModuleFormation; meilleu
   );
 }
 
-function VueModule({ module, progres, persister, onRetour }: {
-  module: ModuleFormation; progres: Progres; persister: (p: Progres) => void; onRetour: () => void;
+function VueModule({ module, progres, persister, estManager, onRetour }: {
+  module: ModuleFormation; progres: Progres; persister: (p: Progres) => void; estManager: boolean; onRetour: () => void;
 }) {
+  const [genPptx, setGenPptx] = useState(false);
+  const animation = getAnimation(module.id);
+  const telechargerPptx = async () => {
+    if (!animation) { alert("Le support de formation de ce module n'est pas encore disponible."); return; }
+    setGenPptx(true);
+    try { await telechargerSupportPptx(module, animation); }
+    catch { alert("Génération du support impossible."); }
+    finally { setGenPptx(false); }
+  };
   const lus = progres[module.id]?.lecons ?? [];
   const basculerLu = (i: number) => {
     const set = new Set(lus);
@@ -286,6 +297,19 @@ function VueModule({ module, progres, persister, onRetour }: {
           <p className="text-sm text-slate-500">{module.resume}</p>
         </div>
       </div>
+
+      {estManager && (
+        <div className="mb-5 flex flex-wrap items-center gap-3 rounded-2xl border border-navy/15 bg-gradient-to-br from-navy to-navy/90 p-4 text-white shadow-sm">
+          <span className="text-2xl">📊</span>
+          <div className="flex-1">
+            <div className="text-sm font-bold">Support d'animation (PowerPoint)</div>
+            <div className="text-xs text-white/70">Pour animer ce module en présentiel avec tes négociateurs : objectifs, déroulé, jeux, jeux de rôle, quiz en direct et plan d'action.</div>
+          </div>
+          <button onClick={telechargerPptx} disabled={genPptx} className="shrink-0 rounded-xl bg-copper px-4 py-2 text-sm font-bold text-white transition hover:brightness-110 disabled:opacity-50">
+            {genPptx ? "Génération…" : "⬇ Télécharger le .pptx"}
+          </button>
+        </div>
+      )}
 
       <div className="space-y-4">
         {module.lecons.map((lec, i) => (
@@ -385,8 +409,10 @@ export default function FormationPage({ onRetour }: { onRetour: () => void }) {
     }
   };
 
+  const estManager = (EQUIPE.find((m) => m.id === negoId)?.role ?? "").toLowerCase().includes("responsable");
+
   if (ouvert) {
-    return <VueModule module={ouvert} progres={progres} persister={persister} onRetour={() => setOuvert(null)} />;
+    return <VueModule module={ouvert} progres={progres} persister={persister} estManager={estManager} onRetour={() => setOuvert(null)} />;
   }
 
   const modules = MODULES_FORMATION.filter((m) => (!filtre || m.categorie === filtre) && (!niveau || m.niveau === niveau));
