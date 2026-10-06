@@ -21,6 +21,7 @@ import { consommerPrefillEstimation } from "@/lib/prefillEstimation";
 import DashboardPage from "@/components/DashboardPage";
 import NegociateursPage from "@/components/NegociateursPage";
 import FormationPage from "@/components/FormationPage";
+import PhoningPage from "@/components/PhoningPage";
 import TransactionsPage from "@/components/TransactionsPage";
 import EspaceNegociateurPage from "@/components/EspaceNegociateurPage";
 import { CrmChrome, MetierBientot, Portail, type Metier } from "@/components/CrmShell";
@@ -246,7 +247,7 @@ export default function Home() {
   const [step, setStep] = useState(0);
   // Accueil à deux univers : Estimation (les 4 missions) et Génération de
   // documents (menu des documents de l'agence)
-  const [univers, setUnivers] = useState<"" | "estimation" | "documents" | "clients" | "historique" | "visites" | "registre" | "leads" | "chasse" | "veille" | "acquereurs" | "prospection" | "ma-tournee" | "flyers" | "estimations-clients" | "dashboard" | "negociateurs" | "espace" | "formation" | "transactions" | "sauvegarde" | "reglages">("");
+  const [univers, setUnivers] = useState<"" | "estimation" | "documents" | "clients" | "historique" | "visites" | "registre" | "leads" | "chasse" | "veille" | "acquereurs" | "prospection" | "ma-tournee" | "flyers" | "estimations-clients" | "dashboard" | "negociateurs" | "espace" | "formation" | "transactions" | "phoning" | "sauvegarde" | "reglages">("");
   const [tourneeCible, setTourneeCible] = useState<string | undefined>(undefined);
   // Métier actif (compartimentage CRM) : Transaction contient tout l'existant ;
   // Syndic et Gestion locative sont préparés (écran « à venir »).
@@ -855,6 +856,7 @@ export default function Home() {
             {univers === "negociateurs" && <NegociateursPage onRetour={() => setUnivers("")} />}
             {univers === "espace" && <EspaceNegociateurPage onRetour={() => setUnivers("")} />}
             {univers === "formation" && <FormationPage onRetour={() => setUnivers("")} />}
+            {univers === "phoning" && <PhoningPage onRetour={() => setUnivers("")} />}
             {univers === "transactions" && <TransactionsPage onRetour={() => setUnivers("")} />}
             {univers === "reglages" && <><ReglagesMotDePasse /><ClePasserelleLeads /></>}
 

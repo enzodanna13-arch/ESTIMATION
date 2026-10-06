@@ -1,0 +1,67 @@
+// Client du service PHONING (tableaux d'appels par cible) + calculs de stats.
+// Stockage serveur par négociateur (voir serverPhoning), pour la visibilité manager.
+
+import { getHistoryKey } from "./history";
+import type { LignePhoning, PhoningData, PhoningNego } from "./serverPhoning";
+
+export type { LignePhoning, PhoningData, PhoningNego } from "./serverPhoning";
+
+const headers = () => ({ "x-history-key": getHistoryKey() });
+const jsonHeaders = () => ({ "content-type": "application/json", "x-history-key": getHistoryKey() });
+
+export async function chargerPhoning(negoId: string): Promise<PhoningData> {
+  try {
+    const res = await fetch(`/api/phoning/${encodeURIComponent(negoId)}`, { cache: "no-store", headers: headers() });
+    if (!res.ok) return {};
+    return ((await res.json()) as { data?: PhoningData }).data ?? {};
+  } catch { return {}; }
+}
+
+export async function sauverPhoning(negoId: string, data: PhoningData): Promise<boolean> {
+  try {
+    const res = await fetch(`/api/phoning/${encodeURIComponent(negoId)}`, {
+      method: "PUT", headers: jsonHeaders(), body: JSON.stringify({ data }),
+    });
+    return res.ok;
+  } catch { return false; }
+}
+
+// Vue manager : phoning de tous les négociateurs (negoId -> data).
+export async function listerPhoning(): Promise<Record<string, PhoningData>> {
+  try {
+    const res = await fetch(`/api/phoning`, { cache: "no-store", headers: headers() });
+    if (!res.ok) return {};
+    const d = (await res.json()) as { phoning?: PhoningNego[] };
+    const out: Record<string, PhoningData> = {};
+    for (const p of d.phoning ?? []) out[p.negoId] = p.data ?? {};
+    return out;
+  } catch { return {}; }
+}
+
+export interface StatsPhoning {
+  total: number;
+  aAppeler: number;
+  appeles: number;   // tout contact avec un statut autre que « À appeler »
+  rdv: number;
+  mandats: number;
+  rappels: number;   // statut « Rappel » ou rappel daté dans le futur/passé
+}
+
+const estAppele = (s: string) => s && s !== "À appeler";
+
+export function statsLignes(lignes: LignePhoning[]): StatsPhoning {
+  const st: StatsPhoning = { total: 0, aAppeler: 0, appeles: 0, rdv: 0, mandats: 0, rappels: 0 };
+  for (const l of lignes) {
+    st.total++;
+    if (!estAppele(l.statut)) st.aAppeler++; else st.appeles++;
+    if (l.statut === "RDV fixé") st.rdv++;
+    if (l.statut === "Mandat / Vente") st.mandats++;
+    if (l.statut === "Rappel" || l.rappel) st.rappels++;
+  }
+  return st;
+}
+
+export function statsData(data: PhoningData): StatsPhoning {
+  const toutes = Object.values(data).flat();
+  return statsLignes(toutes);
+}

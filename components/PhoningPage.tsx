@@ -1,0 +1,293 @@
+"use client";
+
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { EQUIPE } from "@/lib/equipe";
+import { SCRIPTS_PHONING, STATUTS_PHONING, type ScriptPhoning } from "@/lib/phoningScripts";
+import { chargerPhoning, sauverPhoning, listerPhoning, statsLignes, statsData, type LignePhoning, type PhoningData } from "@/lib/phoning";
+
+const CLE_NEGO = "phoning:nego:v1";
+const APPRENANTS = EQUIPE.filter((m) => m.sections.some((s) => s === "transaction" || s === "gestion"));
+
+const STYLE_STATUT: Record<string, string> = {
+  "À appeler": "bg-slate-100 text-slate-600",
+  "Répondeur": "bg-amber-100 text-amber-700",
+  "Rappel": "bg-blue-100 text-blue-700",
+  "Injoignable": "bg-slate-200 text-slate-500",
+  "Pas intéressé": "bg-red-100 text-red-600",
+  "RDV fixé": "bg-emerald-100 text-emerald-700",
+  "Mandat / Vente": "bg-copper/15 text-copper",
+};
+
+// --- markdown léger pour les scripts : "## ", "- ", **gras** ---
+function inline(t: string, k: string): ReactNode {
+  return t.split(/(\*\*[^*]+\*\*)/g).map((b, i) =>
+    b.startsWith("**") && b.endsWith("**")
+      ? <strong key={`${k}-${i}`} className="font-semibold text-navy">{b.slice(2, -2)}</strong>
+      : <span key={`${k}-${i}`}>{b}</span>,
+  );
+}
+function LigneScript({ l, k }: { l: string; k: string }) {
+  if (l.startsWith("- ")) return <li className="flex gap-2 text-sm leading-relaxed text-slate-700"><span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-copper" /><span className="flex-1">{inline(l.slice(2), k)}</span></li>;
+  return <p className="my-1.5 text-sm leading-relaxed text-slate-700">{inline(l, k)}</p>;
+}
+
+// --- dates ---
+const toInput = (ts?: number) => { if (!ts) return ""; const d = new Date(ts); const p = (n: number) => String(n).padStart(2, "0"); return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`; };
+const fromInput = (s: string) => { if (!s) return undefined; const t = new Date(`${s}T12:00:00`).getTime(); return Number.isFinite(t) ? t : undefined; };
+const nouvelId = () => `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+
+function ScriptPanneau({ script }: { script: ScriptPhoning }) {
+  const [ouvert, setOuvert] = useState(true);
+  return (
+    <div className="rounded-2xl border border-slate-200 bg-white shadow-sm">
+      <button onClick={() => setOuvert((o) => !o)} className="flex w-full items-center justify-between gap-2 p-4 text-left">
+        <span className="flex items-center gap-2 text-base font-bold text-navy"><span className="text-xl">{script.icone}</span> Script d'appel — {script.titre}</span>
+        <span className="text-slate-400">{ouvert ? "▾" : "▸"}</span>
+      </button>
+      {ouvert && (
+        <div className="border-t border-slate-100 p-4 pt-3">
+          <div className="mb-3 rounded-xl bg-copper/5 p-3 text-sm text-slate-700"><strong className="text-copper">🎯 Objectif : </strong>{script.objectif}</div>
+          <div className="space-y-4">
+            {script.blocs.map((b, bi) => (
+              <div key={bi}>
+                <h4 className="mb-1 text-[12.5px] font-bold uppercase tracking-wider text-copper">{b.titre}</h4>
+                <ul className="space-y-1">{b.lignes.map((l, li) => <LigneScript key={li} l={l} k={`${bi}-${li}`} />)}</ul>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default function PhoningPage({ onRetour }: { onRetour: () => void }) {
+  const [negoId, setNegoId] = useState<string>(() => { try { return localStorage.getItem(CLE_NEGO) ?? ""; } catch { return ""; } });
+  const [data, setData] = useState<PhoningData>({});
+  const [cible, setCible] = useState<string>(SCRIPTS_PHONING[0].id);
+  const [chargement, setChargement] = useState(false);
+  const [sauve, setSauve] = useState<"" | "en" | "ok">("");
+  const [vueEquipe, setVueEquipe] = useState(false);
+  const [equipe, setEquipe] = useState<Record<string, PhoningData>>({});
+  const timerRef = useRef<number | null>(null);
+  const dataRef = useRef<PhoningData>({});
+  dataRef.current = data;
+
+  // Chargement de la progression du négociateur choisi.
+  useEffect(() => {
+    try { if (negoId) localStorage.setItem(CLE_NEGO, negoId); else localStorage.removeItem(CLE_NEGO); } catch { /* ignore */ }
+    if (!negoId) { setData({}); return; }
+    let annule = false;
+    setChargement(true);
+    void (async () => {
+      const d = await chargerPhoning(negoId);
+      if (!annule) { setData(d); setChargement(false); }
+    })();
+    return () => { annule = true; };
+  }, [negoId]);
+
+  // Enregistrement différé (auto-save) après chaque modification.
+  const maj = (d: PhoningData) => {
+    setData(d); dataRef.current = d;
+    if (!negoId) return;
+    setSauve("en");
+    if (timerRef.current) window.clearTimeout(timerRef.current);
+    timerRef.current = window.setTimeout(async () => {
+      const ok = await sauverPhoning(negoId, dataRef.current);
+      setSauve(ok ? "ok" : "");
+    }, 700);
+  };
+
+  const lignes = data[cible] ?? [];
+  const majLignes = (nouv: LignePhoning[]) => maj({ ...data, [cible]: nouv });
+
+  const ajouter = () => majLignes([...lignes, { id: nouvelId(), contact: "", tel: "", statut: "À appeler", notes: "", createdAt: Date.now() }]);
+  const modifier = (id: string, patch: Partial<LignePhoning>) => majLignes(lignes.map((l) => {
+    if (l.id !== id) return l;
+    const n = { ...l, ...patch };
+    // si on passe « à appeler » → appelé et pas de date, on date du jour.
+    if (patch.statut && patch.statut !== "À appeler" && !n.date) n.date = Date.now();
+    return n;
+  }));
+  const supprimer = (id: string) => majLignes(lignes.filter((l) => l.id !== id));
+
+  const stCible = useMemo(() => statsLignes(lignes), [lignes]);
+  const stGlobal = useMemo(() => statsData(data), [data]);
+
+  // Vue équipe (manager)
+  useEffect(() => {
+    if (!vueEquipe) return;
+    let annule = false;
+    void (async () => { const e = await listerPhoning(); if (!annule) setEquipe(e); })();
+    return () => { annule = true; };
+  }, [vueEquipe]);
+
+  const scriptCourant = SCRIPTS_PHONING.find((s) => s.id === cible)!;
+  const inputCls = "w-full rounded-md border border-slate-200 bg-white px-2 py-1.5 text-sm focus:border-copper focus:outline-none";
+
+  return (
+    <div>
+      <div className="mb-4 flex flex-wrap items-center gap-3">
+        <button onClick={onRetour} className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-100">← Accueil</button>
+        <h2 className="text-2xl font-bold text-navy">📞 Phoning</h2>
+        <div className="ml-auto flex items-center gap-2">
+          <button onClick={() => setVueEquipe((v) => !v)} className={`rounded-lg border px-3 py-1.5 text-xs font-semibold transition ${vueEquipe ? "border-copper bg-copper text-white" : "border-slate-300 bg-white text-slate-600 hover:bg-slate-50"}`}>👔 Vue équipe</button>
+          <label className="text-xs font-semibold text-slate-500">Je suis</label>
+          <select value={negoId} onChange={(e) => setNegoId(e.target.value)} className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-semibold text-navy shadow-sm focus:border-copper focus:outline-none">
+            <option value="">— Sélectionner —</option>
+            {APPRENANTS.map((m) => <option key={m.id} value={m.id}>{m.nom}</option>)}
+          </select>
+          {negoId && <span className="text-[11px] font-semibold text-emerald-600">{sauve === "en" ? "Enregistrement…" : sauve === "ok" ? "✓ Enregistré" : ""}</span>}
+        </div>
+      </div>
+
+      {vueEquipe ? (
+        <VueEquipe equipe={equipe} onFermer={() => setVueEquipe(false)} />
+      ) : !negoId ? (
+        <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-4 text-sm text-amber-800">
+          Sélectionnez votre nom (en haut à droite) pour remplir vos tableaux de phoning. Votre activité est enregistrée et <strong>visible par la direction</strong> (bouton « Vue équipe »).
+        </div>
+      ) : (
+        <>
+          {/* onglets de cible */}
+          <div className="mb-4 flex flex-wrap gap-2">
+            {SCRIPTS_PHONING.map((s) => {
+              const n = (data[s.id] ?? []).length;
+              return (
+                <button key={s.id} onClick={() => setCible(s.id)} className={`rounded-xl border px-3 py-2 text-left text-sm font-semibold transition ${cible === s.id ? "border-copper bg-copper/10 text-navy" : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"}`}>
+                  <span className="mr-1">{s.icone}</span>{s.titre}{n > 0 && <span className="ml-1.5 rounded-full bg-navy/10 px-1.5 py-0.5 text-[10px] font-bold text-navy">{n}</span>}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* stats globales du négociateur */}
+          <div className="mb-4 grid grid-cols-3 gap-2 sm:grid-cols-6">
+            {([["Contacts", stGlobal.total], ["À appeler", stGlobal.aAppeler], ["Appelés", stGlobal.appeles], ["RDV", stGlobal.rdv], ["Mandats/Ventes", stGlobal.mandats], ["Rappels", stGlobal.rappels]] as const).map(([lbl, v]) => (
+              <div key={lbl} className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-center"><div className="text-lg font-bold text-navy">{v}</div><div className="text-[10px] text-slate-500">{lbl}</div></div>
+            ))}
+          </div>
+
+          <div className="grid gap-4 lg:grid-cols-[1fr_minmax(320px,380px)]">
+            {/* tableau interactif */}
+            <div>
+              <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+                <div className="flex items-center gap-2 text-sm text-slate-500">
+                  <span className="font-bold text-navy">{scriptCourant.icone} {scriptCourant.titre}</span>
+                  <span>· {stCible.total} contact(s) · {stCible.appeles} appelé(s) · {stCible.rdv} RDV</span>
+                </div>
+                <button onClick={ajouter} className="rounded-lg bg-navy px-3 py-1.5 text-sm font-bold text-white transition hover:brightness-110">+ Ajouter un contact</button>
+              </div>
+              {chargement ? (
+                <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center text-slate-400">Chargement…</div>
+              ) : lignes.length === 0 ? (
+                <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-8 text-center text-sm text-slate-400">Aucun contact pour cette cible. Cliquez sur « + Ajouter un contact » pour démarrer votre session de phoning.</div>
+              ) : (
+                <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-sm">
+                  <table className="w-full min-w-[760px] text-sm">
+                    <thead>
+                      <tr className="border-b border-slate-200 bg-slate-50 text-left text-xs font-semibold text-slate-500">
+                        <th className="px-2 py-2">Contact</th>
+                        <th className="px-2 py-2">Téléphone</th>
+                        <th className="px-2 py-2">Statut</th>
+                        <th className="px-2 py-2">Appelé le</th>
+                        <th className="px-2 py-2">Rappel le</th>
+                        <th className="px-2 py-2">Notes</th>
+                        <th className="px-2 py-2"></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {lignes.map((l) => (
+                        <tr key={l.id} className="border-b border-slate-100 align-top">
+                          <td className="px-2 py-1.5"><input value={l.contact} onChange={(e) => modifier(l.id, { contact: e.target.value })} placeholder="Nom" className={inputCls} /></td>
+                          <td className="px-2 py-1.5">
+                            <div className="flex items-center gap-1">
+                              <input value={l.tel} onChange={(e) => modifier(l.id, { tel: e.target.value })} placeholder="Téléphone" className={inputCls} />
+                              {l.tel && <a href={`tel:${l.tel.replace(/\s+/g, "")}`} title="Appeler" className="shrink-0 rounded-md bg-emerald-500 px-2 py-1.5 text-xs text-white">📞</a>}
+                            </div>
+                          </td>
+                          <td className="px-2 py-1.5">
+                            <select value={l.statut} onChange={(e) => modifier(l.id, { statut: e.target.value })} className={`rounded-md border-0 px-2 py-1.5 text-xs font-semibold ${STYLE_STATUT[l.statut] ?? "bg-slate-100 text-slate-600"}`}>
+                              {STATUTS_PHONING.map((s) => <option key={s} value={s}>{s}</option>)}
+                            </select>
+                          </td>
+                          <td className="px-2 py-1.5"><input type="date" value={toInput(l.date)} onChange={(e) => modifier(l.id, { date: fromInput(e.target.value) })} className={inputCls} /></td>
+                          <td className="px-2 py-1.5"><input type="date" value={toInput(l.rappel)} onChange={(e) => modifier(l.id, { rappel: fromInput(e.target.value) })} className={inputCls} /></td>
+                          <td className="px-2 py-1.5"><input value={l.notes} onChange={(e) => modifier(l.id, { notes: e.target.value })} placeholder="Notes…" className={inputCls} /></td>
+                          <td className="px-2 py-1.5 text-center"><button onClick={() => supprimer(l.id)} title="Supprimer" className="rounded-md px-2 py-1 text-slate-300 transition hover:bg-red-50 hover:text-red-500">🗑</button></td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+              <p className="mt-2 text-[11px] text-slate-400">Enregistrement automatique. Changez le statut au fil des appels : tout est consolidé dans la « Vue équipe » pour la direction.</p>
+            </div>
+
+            {/* script à côté */}
+            <div className="lg:sticky lg:top-4 lg:self-start"><ScriptPanneau script={scriptCourant} /></div>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+function VueEquipe({ equipe, onFermer }: { equipe: Record<string, PhoningData>; onFermer: () => void }) {
+  const rows = useMemo(() => {
+    const ids = new Set(APPRENANTS.map((m) => m.id));
+    for (const id of Object.keys(equipe)) ids.add(id);
+    return [...ids].map((id) => {
+      const membre = EQUIPE.find((m) => m.id === id);
+      return { id, nom: membre?.nom ?? id, role: membre?.role ?? "", st: statsData(equipe[id] ?? {}) };
+    }).sort((a, b) => b.st.appeles - a.st.appeles || b.st.total - a.st.total);
+  }, [equipe]);
+
+  const totaux = useMemo(() => rows.reduce((t, r) => ({
+    total: t.total + r.st.total, appeles: t.appeles + r.st.appeles, rdv: t.rdv + r.st.rdv, mandats: t.mandats + r.st.mandats, rappels: t.rappels + r.st.rappels,
+  }), { total: 0, appeles: 0, rdv: 0, mandats: 0, rappels: 0 }), [rows]);
+
+  return (
+    <div>
+      <div className="mb-3 flex items-center gap-2">
+        <h3 className="text-lg font-bold text-navy">👔 Phoning — vue équipe</h3>
+        <button onClick={onFermer} className="ml-auto rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 transition hover:bg-slate-50">← Revenir à mon phoning</button>
+      </div>
+      <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-sm">
+        <table className="w-full min-w-[640px] text-sm">
+          <thead>
+            <tr className="border-b border-slate-200 bg-slate-50 text-left text-xs font-semibold text-slate-500">
+              <th className="px-4 py-2.5">Négociateur</th>
+              <th className="px-3 py-2.5 text-center">Contacts</th>
+              <th className="px-3 py-2.5 text-center">Appelés</th>
+              <th className="px-3 py-2.5 text-center">RDV</th>
+              <th className="px-3 py-2.5 text-center">Mandats/Ventes</th>
+              <th className="px-3 py-2.5 text-center">Rappels</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((r) => (
+              <tr key={r.id} className="border-b border-slate-100 hover:bg-slate-50/60">
+                <td className="px-4 py-2.5"><div className="font-bold text-navy">{r.nom}</div>{r.role && <div className="text-[11px] text-slate-400">{r.role}</div>}</td>
+                <td className="px-3 py-2.5 text-center text-slate-700">{r.st.total || <span className="text-slate-300">0</span>}</td>
+                <td className="px-3 py-2.5 text-center font-bold text-copper">{r.st.appeles || <span className="text-slate-300">0</span>}</td>
+                <td className="px-3 py-2.5 text-center text-emerald-700">{r.st.rdv || <span className="text-slate-300">0</span>}</td>
+                <td className="px-3 py-2.5 text-center text-navy">{r.st.mandats || <span className="text-slate-300">0</span>}</td>
+                <td className="px-3 py-2.5 text-center text-blue-700">{r.st.rappels || <span className="text-slate-300">0</span>}</td>
+              </tr>
+            ))}
+            <tr className="border-t-2 border-slate-300 bg-slate-50 font-bold text-navy">
+              <td className="px-4 py-2.5">TOTAL ÉQUIPE</td>
+              <td className="px-3 py-2.5 text-center">{totaux.total}</td>
+              <td className="px-3 py-2.5 text-center">{totaux.appeles}</td>
+              <td className="px-3 py-2.5 text-center">{totaux.rdv}</td>
+              <td className="px-3 py-2.5 text-center">{totaux.mandats}</td>
+              <td className="px-3 py-2.5 text-center">{totaux.rappels}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p className="mt-3 text-xs text-slate-400">Consolidé en temps réel à partir des tableaux remplis par chaque négociateur (toutes cibles confondues).</p>
+    </div>
+  );
+}
