@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { MODULES_FORMATION, NIVEAUX_FORMATION, minutesModule, type ModuleFormation, type NiveauFormation } from "@/lib/formations";
 import { genererAttestationFormationPdf, nomFichierAttestation } from "@/lib/attestationFormationPdf";
-import { chargerProgresNego, sauverProgresNego } from "@/lib/formationProgres";
+import { chargerProgresNego, sauverProgresNego, statsFormation, moduleValide, avancementModule } from "@/lib/formationProgres";
 import { EQUIPE } from "@/lib/equipe";
 
 const CLE_PROGRES = "formation:progres:v1";
@@ -20,16 +20,9 @@ const STYLE_NIVEAU: Record<NiveauFormation, string> = {
   "Expert": "bg-rose-100 text-rose-700",
 };
 
-// Un module est « terminé » quand toutes les leçons sont lues et le quiz passé.
-function estTermine(m: ModuleFormation, p: Progres): boolean {
-  const e = p[m.id];
-  return !!e && (e.lecons?.length ?? 0) >= m.lecons.length && e.quiz !== undefined;
-}
-// « Validé » = terminé avec un quiz parfait (sert à l'attestation).
-function estValide(m: ModuleFormation, p: Progres): boolean {
-  const e = p[m.id];
-  return !!e && (e.lecons?.length ?? 0) >= m.lecons.length && e.quiz === m.quiz.length;
-}
+// Validation d'un module (leçons lues + quiz réussi au seuil) : on réutilise les
+// helpers partagés pour rester cohérent avec le Suivi des négociateurs.
+const estValide = (m: ModuleFormation, p: Progres) => moduleValide(m, p[m.id]);
 
 // Clé de cache locale : propre à chaque négociateur (ou globale si aucun choisi).
 const cleLocale = (negoId: string) => (negoId ? `${CLE_PROGRES}:${negoId}` : CLE_PROGRES);
@@ -82,55 +75,186 @@ function Contenu({ lignes }: { lignes: string[] }) {
   return <div>{blocs}</div>;
 }
 
-// Quiz d'un module.
-function Quiz({ module, onReussi }: { module: ModuleFormation; onReussi: (score: number) => void }) {
-  const [reponses, setReponses] = useState<Record<number, number>>({});
-  const [valide, setValide] = useState(false);
-  const score = module.quiz.reduce((n, q, i) => n + (reponses[i] === q.correct ? 1 : 0), 0);
-  return (
-    <div className="space-y-4">
-      {module.quiz.map((q, qi) => (
-        <div key={qi} className="rounded-xl border border-slate-200 bg-white p-4">
-          <div className="mb-2 text-sm font-bold text-navy">{qi + 1}. {q.question}</div>
-          <div className="space-y-1.5">
-            {q.options.map((o, oi) => {
-              const choisi = reponses[qi] === oi;
-              const bon = valide && oi === q.correct;
-              const faux = valide && choisi && oi !== q.correct;
-              return (
-                <button
-                  key={oi}
-                  disabled={valide}
-                  onClick={() => setReponses((r) => ({ ...r, [qi]: oi }))}
-                  className={`flex w-full items-center gap-2 rounded-lg border px-3 py-2 text-left text-sm transition ${
-                    bon ? "border-emerald-400 bg-emerald-50 text-emerald-800"
-                    : faux ? "border-red-300 bg-red-50 text-red-700"
-                    : choisi ? "border-copper bg-copper/10 text-navy"
-                    : "border-slate-200 hover:bg-slate-50"}`}
-                >
-                  <span className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-full border text-[10px] ${choisi || bon ? "border-current" : "border-slate-300"}`}>{bon ? "✓" : faux ? "✕" : ""}</span>
-                  {o}
-                </button>
-              );
-            })}
-          </div>
-          {valide && <p className="mt-2 text-xs text-slate-500">{q.explication}</p>}
+// Quiz d'un module — façon « code de la route » : questions enchaînées, chrono
+// par question (mode examen), ou correction immédiate (mode entraînement),
+// puis fiche de résultats avec seuil de réussite.
+const SECONDES_PAR_Q = 20;
+const SEUIL = 0.8;
+const lettre = (i: number) => String.fromCharCode(65 + i); // 0 -> A
+
+function Quiz({ module, meilleur, onReussi }: { module: ModuleFormation; meilleur?: number; onReussi: (score: number) => void }) {
+  const N = module.quiz.length;
+  const seuilN = Math.ceil(N * SEUIL);
+  const [etape, setEtape] = useState<"intro" | "run" | "fin">("intro");
+  const [mode, setMode] = useState<"examen" | "entrainement">("examen");
+  const [idx, setIdx] = useState(0);
+  const [, forceRender] = useState(0);
+  const [temps, setTemps] = useState(SECONDES_PAR_Q);
+  const [choisi, setChoisi] = useState<number | null>(null);
+  const repRef = useRef<(number | null)[]>([]);
+  const garde = useRef(false);
+
+  const q = module.quiz[idx];
+
+  const demarrer = (m: "examen" | "entrainement") => {
+    repRef.current = Array(N).fill(null);
+    setMode(m); setIdx(0); setTemps(SECONDES_PAR_Q); setChoisi(null); garde.current = false; setEtape("run");
+  };
+
+  const terminer = () => {
+    const score = module.quiz.reduce((n, qq, i) => n + (repRef.current[i] === qq.correct ? 1 : 0), 0);
+    onReussi(score);
+    setEtape("fin");
+  };
+  const avancer = () => {
+    if (garde.current) return;
+    garde.current = true;
+    if (idx + 1 < N) { setChoisi(null); setIdx(idx + 1); } else terminer();
+  };
+  const repondre = (oi: number) => {
+    if (choisi !== null) return;
+    repRef.current[idx] = oi; setChoisi(oi); forceRender((v) => v + 1);
+    if (mode === "examen") window.setTimeout(avancer, 420);
+  };
+
+  // Compte à rebours (examen uniquement) — relancé à chaque question.
+  useEffect(() => {
+    if (etape !== "run" || mode !== "examen") return;
+    garde.current = false; setChoisi(null); setTemps(SECONDES_PAR_Q);
+    const t = window.setInterval(() => {
+      setTemps((s) => { if (s <= 1) { window.clearInterval(t); avancer(); return 0; } return s - 1; });
+    }, 1000);
+    return () => window.clearInterval(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [etape, idx, mode]);
+  useEffect(() => { if (mode === "entrainement") { garde.current = false; } }, [idx, mode]);
+
+  // ---- Écran d'intro ----
+  if (etape === "intro") {
+    return (
+      <div className="rounded-2xl border border-copper/30 bg-white p-6 text-center">
+        <div className="text-lg font-bold text-navy">🚦 Examen du module</div>
+        <p className="mx-auto mt-1 max-w-md text-sm text-slate-500">Mets-toi en conditions : les questions s'enchaînent, chronométrées. À la fin, ta fiche de résultats et la correction.</p>
+        <div className="mx-auto mt-4 grid max-w-md grid-cols-3 gap-2 text-center">
+          <div className="rounded-xl bg-slate-50 px-2 py-3"><div className="text-lg font-bold text-navy">{N}</div><div className="text-[11px] text-slate-500">questions</div></div>
+          <div className="rounded-xl bg-slate-50 px-2 py-3"><div className="text-lg font-bold text-navy">{SECONDES_PAR_Q}s</div><div className="text-[11px] text-slate-500">par question</div></div>
+          <div className="rounded-xl bg-slate-50 px-2 py-3"><div className="text-lg font-bold text-navy">{seuilN}/{N}</div><div className="text-[11px] text-slate-500">pour réussir</div></div>
         </div>
-      ))}
-      {!valide ? (
-        <button
-          onClick={() => { setValide(true); onReussi(module.quiz.reduce((n, q, i) => n + (reponses[i] === q.correct ? 1 : 0), 0)); }}
-          disabled={Object.keys(reponses).length < module.quiz.length}
-          className="rounded-xl bg-navy px-4 py-2 text-sm font-bold text-white transition hover:brightness-110 disabled:opacity-50"
-        >
-          Valider le quiz
-        </button>
-      ) : (
-        <div className={`rounded-xl p-3 text-sm font-bold ${score === module.quiz.length ? "bg-emerald-50 text-emerald-700" : "bg-amber-50 text-amber-700"}`}>
-          Score : {score}/{module.quiz.length}{score === module.quiz.length ? " — parfait ! 🎉" : " — relis les leçons et réessaie."}
-          {score !== module.quiz.length && <button onClick={() => { setValide(false); setReponses({}); }} className="ml-3 rounded-lg border border-current px-2 py-0.5 text-xs">Recommencer</button>}
+        {meilleur !== undefined && (
+          <div className="mx-auto mt-3 inline-block rounded-full bg-copper/10 px-3 py-1 text-xs font-semibold text-copper">Meilleur score : {meilleur}/{N} ({Math.round((meilleur / N) * 100)}%)</div>
+        )}
+        <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
+          <button onClick={() => demarrer("examen")} className="rounded-xl bg-navy px-5 py-2.5 text-sm font-bold text-white transition hover:brightness-110">🚦 Démarrer l'examen (chronométré)</button>
+          <button onClick={() => demarrer("entrainement")} className="rounded-xl border border-slate-300 bg-white px-5 py-2.5 text-sm font-bold text-slate-600 transition hover:bg-slate-50">📚 Mode entraînement</button>
+        </div>
+      </div>
+    );
+  }
+
+  // ---- Écran de résultats ----
+  if (etape === "fin") {
+    const rep = repRef.current;
+    const score = module.quiz.reduce((n, qq, i) => n + (rep[i] === qq.correct ? 1 : 0), 0);
+    const pct = Math.round((score / N) * 100);
+    const reussi = score >= seuilN;
+    return (
+      <div>
+        <div className={`rounded-2xl p-5 text-center ${reussi ? "bg-emerald-50" : "bg-amber-50"}`}>
+          <div className={`text-sm font-bold uppercase tracking-wide ${reussi ? "text-emerald-700" : "text-amber-700"}`}>{reussi ? "✅ Réussi" : "❌ À retravailler"}</div>
+          <div className="mt-1 text-4xl font-black text-navy">{score}<span className="text-2xl text-slate-400">/{N}</span></div>
+          <div className="text-sm font-semibold text-slate-500">{pct}% · seuil de réussite {seuilN}/{N}</div>
+          <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
+            <button onClick={() => demarrer("examen")} className="rounded-xl bg-navy px-4 py-2 text-sm font-bold text-white transition hover:brightness-110">↻ Repasser l'examen</button>
+            <button onClick={() => demarrer("entrainement")} className="rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-600 transition hover:bg-slate-50">📚 Entraînement</button>
+          </div>
+        </div>
+        <div className="mt-4 space-y-2">
+          <div className="text-sm font-bold text-navy">Correction</div>
+          {module.quiz.map((qq, i) => {
+            const r = rep[i];
+            const bon = r === qq.correct;
+            return (
+              <div key={i} className={`rounded-xl border p-3 ${bon ? "border-emerald-200 bg-emerald-50/50" : "border-red-200 bg-red-50/50"}`}>
+                <div className="flex items-start gap-2 text-sm font-semibold text-navy">
+                  <span>{bon ? "✅" : "❌"}</span><span>{i + 1}. {qq.question}</span>
+                </div>
+                <div className="mt-1 pl-6 text-xs text-slate-600">
+                  <div>Bonne réponse : <strong className="text-emerald-700">{lettre(qq.correct)}. {qq.options[qq.correct]}</strong></div>
+                  {!bon && <div>Ta réponse : {r === null ? <em className="text-amber-600">⏱️ pas de réponse</em> : <span className="text-red-600">{lettre(r)}. {qq.options[r]}</span>}</div>}
+                  <div className="mt-0.5 text-slate-500">{qq.explication}</div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  }
+
+  // ---- Écran question (run) ----
+  const repondu = choisi !== null;
+  const minuteur = Math.round((temps / SECONDES_PAR_Q) * 100);
+  return (
+    <div>
+      <div className="mb-3 flex items-center justify-between gap-3">
+        <span className="text-sm font-bold text-navy">Question {idx + 1} <span className="text-slate-400">/ {N}</span></span>
+        <span className={`rounded-full px-2 py-0.5 text-[11px] font-bold ${mode === "examen" ? "bg-navy text-white" : "bg-slate-100 text-slate-500"}`}>{mode === "examen" ? "🚦 Examen" : "📚 Entraînement"}</span>
+      </div>
+      {/* barre de progression des questions */}
+      <div className="mb-3 flex gap-1">
+        {module.quiz.map((_, i) => (
+          <div key={i} className={`h-1.5 flex-1 rounded-full ${i < idx ? "bg-copper" : i === idx ? "bg-copper/50" : "bg-slate-200"}`} />
+        ))}
+      </div>
+      {/* chrono (examen) */}
+      {mode === "examen" && (
+        <div className="mb-4">
+          <div className="mb-1 flex items-center justify-between text-xs font-semibold">
+            <span className="text-slate-400">Temps restant</span>
+            <span className={temps <= 5 ? "text-red-600" : "text-navy"}>{temps}s</span>
+          </div>
+          <div className="h-2 overflow-hidden rounded-full bg-slate-200">
+            <div className={`h-full rounded-full transition-all duration-1000 ease-linear ${temps <= 5 ? "bg-red-500" : "bg-copper"}`} style={{ width: `${minuteur}%` }} />
+          </div>
         </div>
       )}
+      <div className="rounded-2xl border border-slate-200 bg-white p-5">
+        <div className="mb-3 text-base font-bold text-navy">{q.question}</div>
+        <div className="space-y-2">
+          {q.options.map((o, oi) => {
+            const estChoisi = choisi === oi;
+            const montreCorrection = mode === "entrainement" && repondu;
+            const bon = montreCorrection && oi === q.correct;
+            const faux = montreCorrection && estChoisi && oi !== q.correct;
+            const selExamen = mode === "examen" && estChoisi;
+            return (
+              <button
+                key={oi}
+                disabled={repondu}
+                onClick={() => repondre(oi)}
+                className={`flex w-full items-center gap-3 rounded-xl border px-3 py-2.5 text-left text-sm transition ${
+                  bon ? "border-emerald-400 bg-emerald-50 text-emerald-800"
+                  : faux ? "border-red-300 bg-red-50 text-red-700"
+                  : selExamen ? "border-copper bg-copper/10 text-navy"
+                  : "border-slate-200 hover:border-copper/40 hover:bg-slate-50 disabled:opacity-60"}`}
+              >
+                <span className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border text-xs font-bold ${bon ? "border-emerald-500 bg-emerald-500 text-white" : faux ? "border-red-400 bg-red-400 text-white" : selExamen ? "border-copper bg-copper text-white" : "border-slate-300 text-slate-500"}`}>{bon ? "✓" : faux ? "✕" : lettre(oi)}</span>
+                <span className="flex-1">{o}</span>
+              </button>
+            );
+          })}
+        </div>
+        {mode === "entrainement" && repondu && (
+          <div className="mt-3 rounded-xl bg-slate-50 p-3 text-xs text-slate-600">
+            <strong className={choisi === q.correct ? "text-emerald-700" : "text-red-600"}>{choisi === q.correct ? "Bonne réponse. " : "Mauvaise réponse. "}</strong>
+            {q.explication}
+            <div className="mt-2 text-right">
+              <button onClick={avancer} className="rounded-lg bg-navy px-4 py-1.5 text-xs font-bold text-white transition hover:brightness-110">{idx + 1 < N ? "Question suivante →" : "Voir mes résultats →"}</button>
+            </div>
+          </div>
+        )}
+      </div>
+      {mode === "examen" && <p className="mt-2 text-center text-[11px] text-slate-400">Sélectionne une réponse — la question suivante s'enchaîne automatiquement. Pas de retour en arrière.</p>}
     </div>
   );
 }
@@ -145,7 +269,9 @@ function VueModule({ module, progres, persister, onRetour }: {
     persister({ ...progres, [module.id]: { ...progres[module.id], lecons: [...set] } });
   };
   const noterQuiz = (score: number) => {
-    persister({ ...progres, [module.id]: { lecons: progres[module.id]?.lecons ?? [], quiz: score } });
+    const prev = progres[module.id]?.quiz;
+    const best = prev === undefined ? score : Math.max(prev, score); // on garde le meilleur score
+    persister({ ...progres, [module.id]: { lecons: progres[module.id]?.lecons ?? [], quiz: best } });
   };
   return (
     <div>
@@ -179,7 +305,7 @@ function VueModule({ module, progres, persister, onRetour }: {
 
         <div className="rounded-2xl border border-copper/30 bg-copper/5 p-5">
           <h3 className="mb-3 text-base font-bold text-navy">🧠 Quiz — {module.titre}</h3>
-          <Quiz module={module} onReussi={noterQuiz} />
+          <Quiz module={module} meilleur={progres[module.id]?.quiz} onReussi={noterQuiz} />
         </div>
       </div>
     </div>
@@ -221,33 +347,10 @@ export default function FormationPage({ onRetour }: { onRetour: () => void }) {
     return () => { annule = true; };
   }, [negoId]);
 
-  const avancement = (m: ModuleFormation) => {
-    const p = progres[m.id];
-    const lus = p?.lecons?.length ?? 0;
-    const total = m.lecons.length + 1; // +1 pour le quiz
-    const faits = lus + (p?.quiz !== undefined ? 1 : 0);
-    return Math.round((faits / total) * 100);
-  };
+  const avancement = (m: ModuleFormation) => avancementModule(m, progres[m.id]);
 
-  // Statistiques globales
-  const stats = useMemo(() => {
-    let leconsLues = 0, quizReussis = 0, termines = 0, valides = 0, minutesValidees = 0;
-    let avancementTotal = 0;
-    for (const m of MODULES_FORMATION) {
-      const e = progres[m.id];
-      leconsLues += e?.lecons?.length ?? 0;
-      if (e?.quiz === m.quiz.length) quizReussis += 1;
-      if (estTermine(m, progres)) termines += 1;
-      if (estValide(m, progres)) { valides += 1; minutesValidees += minutesModule(m); }
-      avancementTotal += avancement(m);
-    }
-    return {
-      leconsLues, quizReussis, termines, valides, minutesValidees,
-      globalPct: Math.round(avancementTotal / MODULES_FORMATION.length),
-      totalLecons: MODULES_FORMATION.reduce((s, m) => s + m.lecons.length, 0),
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [progres]);
+  // Statistiques globales (helper partagé avec le Suivi des négociateurs)
+  const stats = useMemo(() => statsFormation(progres), [progres]);
 
   const heuresValidees = Math.floor(stats.minutesValidees / 60);
   const minValidees = stats.minutesValidees % 60;
@@ -261,7 +364,7 @@ export default function FormationPage({ onRetour }: { onRetour: () => void }) {
 
   const telechargerAttestation = async () => {
     const valides = MODULES_FORMATION.filter((m) => estValide(m, progres));
-    if (valides.length === 0) { alert("Validez au moins un module (toutes les leçons lues + quiz parfait) pour obtenir une attestation."); return; }
+    if (valides.length === 0) { alert("Validez au moins un module (toutes les leçons lues + examen réussi à 80 %) pour obtenir une attestation."); return; }
     const nom = (window.prompt("Nom du titulaire de l'attestation :", "") ?? "").trim();
     if (!nom) return;
     setGenAttest(true);
@@ -340,7 +443,7 @@ export default function FormationPage({ onRetour }: { onRetour: () => void }) {
           {([
             [`${stats.valides}/${MODULES_FORMATION.length}`, "Modules validés"],
             [`${stats.leconsLues}/${stats.totalLecons}`, "Leçons lues"],
-            [`${stats.quizReussis}`, "Quiz réussis (100 %)"],
+            [`${stats.quizReussis}`, "Examens réussis (≥ 80 %)"],
             [heuresValidees > 0 ? `${heuresValidees} h${minValidees > 0 ? ` ${String(minValidees).padStart(2, "0")}` : ""}` : `${minValidees} min`, "Heures validées"],
           ] as const).map(([val, lbl]) => (
             <div key={lbl} className="rounded-xl bg-white/10 px-3 py-2">

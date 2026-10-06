@@ -20,13 +20,20 @@ export function avancementModule(m: ModuleFormation, e?: ProgresModule): number 
   const faits = lus + (e?.quiz !== undefined ? 1 : 0);
   return Math.round((faits / total) * 100);
 }
+// Seuil de réussite d'un examen (type code de la route) : 80 % de bonnes réponses.
+export const SEUIL_REUSSITE = 0.8;
+
+// Quiz réussi = score >= seuil (le score stocké est le nombre de bonnes réponses).
+export function quizReussi(m: ModuleFormation, e?: ProgresModule): boolean {
+  return !!e && e.quiz !== undefined && m.quiz.length > 0 && e.quiz / m.quiz.length >= SEUIL_REUSSITE;
+}
 // « Terminé » = toutes les leçons lues + quiz passé (quel que soit le score).
 export function moduleTermine(m: ModuleFormation, e?: ProgresModule): boolean {
   return !!e && (e.lecons?.length ?? 0) >= m.lecons.length && e.quiz !== undefined;
 }
-// « Validé » = toutes les leçons lues + quiz parfait (sert à l'attestation).
+// « Validé » = toutes les leçons lues + quiz réussi (>= seuil). Sert à l'attestation.
 export function moduleValide(m: ModuleFormation, e?: ProgresModule): boolean {
-  return !!e && (e.lecons?.length ?? 0) >= m.lecons.length && e.quiz === m.quiz.length;
+  return !!e && (e.lecons?.length ?? 0) >= m.lecons.length && quizReussi(m, e);
 }
 
 export interface StatsFormation {
@@ -43,7 +50,7 @@ export function statsFormation(progres: ProgresFormation): StatsFormation {
   for (const m of MODULES_FORMATION) {
     const e = progres[m.id];
     leconsLues += Math.min(e?.lecons?.length ?? 0, m.lecons.length);
-    if (e?.quiz === m.quiz.length) quizReussis += 1;
+    if (quizReussi(m, e)) quizReussis += 1;
     if (moduleTermine(m, e)) termines += 1;
     if (moduleValide(m, e)) { valides += 1; minutesValidees += minutesModule(m); }
     av += avancementModule(m, e);

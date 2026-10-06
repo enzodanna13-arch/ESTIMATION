@@ -286,7 +286,7 @@ export default function NegociateursPage({ onRetour }: { onRetour: () => void })
             </div>
             <p className="mt-3 text-xs text-slate-400">
               Chaque négociateur sélectionne son nom dans le <strong>Centre de formation</strong> ; sa progression se synchronise ici automatiquement.
-              Un module est <strong>validé</strong> quand toutes ses leçons sont lues et le quiz réussi à 100 % — c'est ce qui compte pour l'<strong>attestation ALUR</strong> et les heures validées.
+              Un module est <strong>validé</strong> quand toutes ses leçons sont lues et l'examen réussi (≥ 80 %) — c'est ce qui compte pour l'<strong>attestation ALUR</strong> et les heures validées.
             </p>
           </div>
         </>

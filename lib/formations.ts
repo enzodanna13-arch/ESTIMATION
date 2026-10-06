@@ -53,7 +53,7 @@ const MODULES_BRUTS: Omit<ModuleFormation, "niveau">[] = [
     "icone": "🎯",
     "categorie": "Commercial",
     "resume": "Bâtir un flux régulier de mandats : pige, cadre légal 2026, phoning, terrain, digital, acquéreurs, mental et pilotage.",
-    "duree": "42 min",
+    "duree": "48 min",
     "lecons": [
       {
         "titre": "Pourquoi la prospection est votre métier n°1",
@@ -525,6 +525,160 @@ const MODULES_BRUTS: Omit<ModuleFormation, "niveau">[] = [
         ],
         "correct": 2,
         "explication": "La prospection paie en différé : on se juge sur l'action du jour, sous son contrôle, pas sur un résultat immédiat. La régularité bat le talent."
+      },
+      {
+        "question": "Comment la « règle des 3 tiers du temps » répartit-elle idéalement la semaine d'un négociateur ?",
+        "options": [
+          "Un tiers prospection, un tiers découverte et estimations, un tiers vente et suivi",
+          "Un tiers administratif, un tiers visites, un tiers publicité",
+          "La moitié en prospection et la moitié en visites",
+          "Un tiers formation, un tiers prospection, un tiers congés"
+        ],
+        "correct": 0,
+        "explication": "La règle des 3 tiers équilibre la prospection, la transformation (découverte et estimations) et la récolte (vente et suivi) pour un pipeline régulier."
+      },
+      {
+        "question": "Selon la loi des grands nombres en prospection, que faut-il augmenter en priorité pour obtenir davantage de mandats ?",
+        "options": [
+          "La qualité de ses annonces avant tout",
+          "Le volume de contacts en haut du tunnel",
+          "Le montant de ses honoraires",
+          "Le nombre de ses jours de congé"
+        ],
+        "correct": 1,
+        "explication": "La prospection étant un jeu de ratios, c'est d'abord le volume d'entrée (biens pigés, appels) qui détermine le nombre final de mandats."
+      },
+      {
+        "question": "Parmi les gisements de la pige, quelle cible est considérée comme la n°1 ?",
+        "options": [
+          "Les mandats exclusifs des confrères",
+          "Les particuliers qui vendent seuls (PAP)",
+          "Les biens déjà sous compromis",
+          "Les logements neufs vendus par un promoteur"
+        ],
+        "correct": 1,
+        "explication": "Le PAP cherche à économiser la commission, pas à fuir les agences, ce qui en fait la cible prioritaire de la pige."
+      },
+      {
+        "question": "Pour être le plus efficace, sur quelles annonces le négociateur pige-t-il en priorité ?",
+        "options": [
+          "Les annonces parues depuis moins de 48 heures",
+          "Les annonces de plus de six mois uniquement",
+          "Les annonces sans photo exclusivement",
+          "Les annonces de biens déjà vendus"
+        ],
+        "correct": 0,
+        "explication": "Un bien fraîchement paru reçoit vite ses premiers appels : piger sous 48 h permet d'être le premier professionnel sérieux à contacter le vendeur."
+      },
+      {
+        "question": "Depuis le 11 août 2026, qu'est devenu le dispositif Bloctel (ancienne liste d'opposition au démarchage) ?",
+        "options": [
+          "Il a été renforcé et rendu obligatoire",
+          "Il a été supprimé",
+          "Il est devenu payant pour les professionnels",
+          "Il a été étendu aux e-mails"
+        ],
+        "correct": 1,
+        "explication": "Avec le passage au consentement préalable le 11 août 2026, Bloctel a été supprimé : s'y référer n'a plus aucun sens."
+      },
+      {
+        "question": "Quelle situation échappe à l'interdiction de démarchage téléphonique sans consentement préalable ?",
+        "options": [
+          "Un appel à froid pour proposer une estimation",
+          "Un appel portant sur un contrat en cours avec le client",
+          "Un SMS commercial envoyé le dimanche",
+          "Un appel à un numéro trouvé dans l'annuaire"
+        ],
+        "correct": 1,
+        "explication": "L'appel relatif à un contrat en cours, et à son objet, fait partie des rares exceptions au régime du consentement préalable."
+      },
+      {
+        "question": "Combien de temps au maximum peut-on conserver des données de prospection après le dernier contact avec la personne ?",
+        "options": [
+          "Un an",
+          "Trois ans",
+          "Dix ans",
+          "Sans limite"
+        ],
+        "correct": 1,
+        "explication": "Le RGPD et la CNIL fixent une conservation des données de prospection à trois ans maximum après le dernier contact."
+      },
+      {
+        "question": "Pour prospecter un particulier par e-mail ou SMS, de quoi a-t-on besoin au préalable ?",
+        "options": [
+          "De rien, c'est libre pour les professionnels",
+          "De son consentement préalable (opt-in)",
+          "D'une inscription sur Bloctel",
+          "D'un simple avis de la CNIL"
+        ],
+        "correct": 1,
+        "explication": "La prospection par e-mail ou SMS vers un particulier exige son consentement préalable au titre de l'article L.34-5 du Code des postes et des communications électroniques."
+      },
+      {
+        "question": "Dans la méthode CROC de l'appel de pige, que désigne la lettre O ?",
+        "options": [
+          "L'Observation du marché",
+          "L'Objectif, c'est-à-dire décrocher le rendez-vous",
+          "L'Offre de prix au téléphone",
+          "L'Organisation de l'agenda"
+        ],
+        "correct": 1,
+        "explication": "Dans CROC (Contact, Raison, Objectif, Conclusion), le O rappelle que le but de l'appel est d'obtenir le rendez-vous, pas de vendre au téléphone."
+      },
+      {
+        "question": "Face à un vendeur qui répond « j'ai déjà une agence », quelle est la bonne relance ?",
+        "options": [
+          "Raccrocher poliment",
+          "Demander si c'est en mandat simple ou en exclusivité",
+          "Critiquer l'agence concurrente",
+          "Proposer une baisse de commission immédiate"
+        ],
+        "correct": 1,
+        "explication": "Savoir si le mandat est simple ou exclusif permet, en mandat simple, de proposer ses propres acquéreurs en plus sans heurter l'agence en place."
+      },
+      {
+        "question": "La prospection en porte-à-porte, en face-à-face, est-elle soumise au régime du consentement préalable (opt-in) ?",
+        "options": [
+          "Oui, exactement comme le téléphone",
+          "Non, car ce n'est pas du démarchage téléphonique",
+          "Oui, mais seulement le week-end",
+          "Non, car elle est totalement interdite"
+        ],
+        "correct": 1,
+        "explication": "Le porte-à-porte n'est pas du démarchage téléphonique : il échappe à l'opt-in, à condition de rester courtois et d'accepter un refus."
+      },
+      {
+        "question": "Quel canal de prospection affiche le meilleur taux de transformation ?",
+        "options": [
+          "L'appel à froid à des inconnus",
+          "La recommandation (parrainage)",
+          "Le boîtage anonyme",
+          "L'envoi massif d'e-mails"
+        ],
+        "correct": 1,
+        "explication": "Une recommandation se transforme bien mieux qu'un appel à froid : c'est la prospection la plus rentable qui existe."
+      },
+      {
+        "question": "Pour un négociateur, quel est le rôle d'une fiche Google Business Profile bien tenue et d'avis clients nombreux ?",
+        "options": [
+          "Ils remplacent totalement la prospection terrain",
+          "Ils constituent une vitrine qui inspire confiance et attire des vendeurs",
+          "Ils sont interdits par la loi Hoguet",
+          "Ils dispensent de prendre un mandat"
+        ],
+        "correct": 1,
+        "explication": "La majorité des vendeurs vérifient l'agent en ligne : une fiche complète et de bons avis crédibilisent et génèrent de la pige entrante."
+      },
+      {
+        "question": "Avant de faire visiter un bien à un acquéreur, quel point faut-il valider en priorité ?",
+        "options": [
+          "Sa disponibilité le week-end",
+          "Sa finançabilité, c'est-à-dire sa capacité d'achat",
+          "Sa couleur préférée",
+          "Le nombre de biens déjà visités ailleurs"
+        ],
+        "correct": 1,
+        "explication": "Faire visiter sans avoir vérifié la finançabilité fait perdre du temps et bloque inutilement le bien du vendeur."
       }
     ]
   },
@@ -534,7 +688,7 @@ const MODULES_BRUTS: Omit<ModuleFormation, "niveau">[] = [
     "icone": "🔎",
     "categorie": "Commercial",
     "resume": "Questionner, écouter et qualifier le vendeur, l'acquéreur et le bien (motivation, délai, prix, financement, SONCAS) avant d'argumenter.",
-    "duree": "45 min",
+    "duree": "51 min",
     "lecons": [
       {
         "titre": "L'art du questionnement et de l'écoute active",
@@ -985,6 +1139,182 @@ const MODULES_BRUTS: Omit<ModuleFormation, "niveau">[] = [
         ],
         "correct": 1,
         "explication": "La vente d'un bien indivis exige l'accord de tous les indivisaires : chacun doit signer le mandat. Identifier ce « pouvoir de décision » dès le R1 évite un blocage au moment de signer."
+      },
+      {
+        "question": "En quoi consiste la technique de l'entonnoir en découverte ?",
+        "options": [
+          "Partir de questions fermées pour finir par des questions ouvertes",
+          "Partir de questions ouvertes et larges pour finir par des questions fermées et précises",
+          "Ne poser que des questions fermées",
+          "Commencer directement par la question du budget"
+        ],
+        "correct": 1,
+        "explication": "L'entonnoir structure l'échange du large vers le précis : on ouvre sur le projet et la motivation, puis on valide les faits comme le prix, le délai et le financement."
+      },
+      {
+        "question": "À quoi sert une question « ricochet » du type « c'est-à-dire ? » ou « par exemple ? » ?",
+        "options": [
+          "À conclure l'entretien",
+          "À relancer et faire approfondir sans orienter la réponse",
+          "À imposer un prix au client",
+          "À changer de sujet"
+        ],
+        "correct": 1,
+        "explication": "La question ricochet, ou relais, relance le client et le fait préciser sa pensée sans orienter sa réponse."
+      },
+      {
+        "question": "Après avoir posé une question importante au client, quelle est la bonne attitude ?",
+        "options": [
+          "Enchaîner aussitôt une deuxième question",
+          "Répondre soi-même à la place du client",
+          "Se taire et laisser le silence faire parler le client",
+          "Changer immédiatement de sujet"
+        ],
+        "correct": 2,
+        "explication": "Le silence est inconfortable : le client le comble en précisant sa pensée, livrant souvent l'information clé."
+      },
+      {
+        "question": "Dans la méthode M.D.P.P. de qualification du vendeur, que désigne le second P ?",
+        "options": [
+          "La Publicité",
+          "Le Prix",
+          "Le Pouvoir, c'est-à-dire qui décide et qui signe",
+          "La Présentation du bien"
+        ],
+        "correct": 2,
+        "explication": "M.D.P.P. signifie Motivation, Délai, Prix, Pouvoir : le dernier P vise l'identification de tous les décideurs qui devront signer."
+      },
+      {
+        "question": "Parmi ces motifs de vente, lequel traduit une motivation FORTE ?",
+        "options": [
+          "« On teste le marché pour voir »",
+          "Une mutation professionnelle",
+          "« On vend seulement si on a notre prix »",
+          "« Rien ne presse, on a le temps »"
+        ],
+        "correct": 1,
+        "explication": "Une mutation professionnelle impose un délai réel et une motivation concrète, contrairement aux vendeurs « testeurs » qui surévaluent presque toujours."
+      },
+      {
+        "question": "Quel est l'objectif principal du premier rendez-vous (R1) de découverte ?",
+        "options": [
+          "Faire signer le mandat à tout prix",
+          "Annoncer le prix de vente définitif",
+          "Comprendre le projet, créer la confiance et obtenir le R2",
+          "Encaisser un acompte"
+        ],
+        "correct": 2,
+        "explication": "Au R1, le but n'est pas de signer : c'est de comprendre, d'instaurer la confiance et de verrouiller le rendez-vous d'avis de valeur (R2)."
+      },
+      {
+        "question": "À quoi sert le « contrat de début d'entretien » annoncé au R1 ?",
+        "options": [
+          "À fixer le montant des honoraires",
+          "À annoncer le déroulé de l'entretien pour sécuriser le client et garder la main",
+          "À engager juridiquement le vendeur",
+          "À remplacer le mandat de vente"
+        ],
+        "correct": 1,
+        "explication": "Annoncer le cadre dès le départ sécurise le client, autorise vos questions et transforme la discussion en entretien dirigé."
+      },
+      {
+        "question": "Pourquoi ne faut-il pas donner de prix « à la louche » dès le R1 ?",
+        "options": [
+          "Parce que c'est interdit par la loi",
+          "Parce qu'on risque de se décrédibiliser ou de se piéger sans preuves",
+          "Parce que le vendeur n'a pas le droit de le connaître",
+          "Parce que seul le notaire peut estimer"
+        ],
+        "correct": 1,
+        "explication": "Le prix se présente au R2, comparables à l'appui : un chiffre lâché à chaud, sans analyse, décrédibilise ou enferme le négociateur."
+      },
+      {
+        "question": "Dans une succession, dans quel délai interviennent en principe la déclaration et le paiement des droits en métropole ?",
+        "options": [
+          "Dans le mois du décès",
+          "Dans les six mois du décès",
+          "Dans les deux ans du décès",
+          "Il n'y a aucun délai"
+        ],
+        "correct": 1,
+        "explication": "La déclaration de succession et le paiement des droits se font en principe dans les six mois du décès en métropole, ce qui crée une vraie pression vers la vente."
+      },
+      {
+        "question": "Dans la grille SONCASE, que désigne le E ajouté à SONCAS ?",
+        "options": [
+          "L'Épargne",
+          "L'Écologie : performance énergétique, charges et confort thermique",
+          "L'Exclusivité",
+          "L'Esthétique"
+        ],
+        "correct": 1,
+        "explication": "Le E de SONCASE correspond à l'Écologie : bon DPE, isolation, chauffage performant et factures maîtrisées."
+      },
+      {
+        "question": "Un acquéreur qui demande sans cesse « est-ce un quartier sûr ? » révèle quel levier SONCAS dominant ?",
+        "options": [
+          "Orgueil",
+          "Sécurité",
+          "Argent",
+          "Nouveauté"
+        ],
+        "correct": 1,
+        "explication": "Le besoin d'être rassuré et de ne pas avoir de mauvaise surprise trahit le levier Sécurité."
+      },
+      {
+        "question": "Quelle est la durée maximale d'emprunt fixée par les règles du HCSF ?",
+        "options": [
+          "15 ans",
+          "20 ans",
+          "25 ans, pouvant aller jusqu'à 27 ans dans le neuf ou avec travaux significatifs",
+          "35 ans"
+        ],
+        "correct": 2,
+        "explication": "Le HCSF plafonne la durée à 25 ans, étendue à 27 ans en cas d'achat dans le neuf ou de travaux importants avec différé d'amortissement."
+      },
+      {
+        "question": "À combien s'élèvent approximativement les frais de notaire pour un bien ancien ?",
+        "options": [
+          "2 à 3 % du prix",
+          "7 à 8 % du prix",
+          "15 % du prix",
+          "20 % du prix"
+        ],
+        "correct": 1,
+        "explication": "Dans l'ancien, les frais de notaire représentent environ 7 à 8 % du prix, contre 2 à 3 % dans le neuf."
+      },
+      {
+        "question": "Dans le BANT immobilier, que vérifie la lettre A (Authority) ?",
+        "options": [
+          "Le montant de l'apport",
+          "Si l'on parle bien au décideur, à celui qui signera",
+          "L'ancienneté de l'annonce",
+          "L'adresse exacte du bien"
+        ],
+        "correct": 1,
+        "explication": "Le A de BANT (Budget, Authority, Need, Timing) vérifie que l'on s'adresse au véritable décideur."
+      },
+      {
+        "question": "Au titre de la LCB-FT, à quel organisme l'agent immobilier doit-il déclarer un soupçon de blanchiment ?",
+        "options": [
+          "À la CNIL",
+          "À Tracfin",
+          "À la mairie",
+          "À la chambre des notaires"
+        ],
+        "correct": 1,
+        "explication": "L'agent immobilier, assujetti à la LCB-FT, doit identifier son client, comprendre l'origine des fonds et déclarer tout soupçon à Tracfin."
+      },
+      {
+        "question": "Que vérifie le mnémonique C.R.A.N. avant de passer à l'argumentation ?",
+        "options": [
+          "Le Compromis, le Règlement, l'Acte, le Notaire",
+          "Compris, Reformulé, Aligné, Noté",
+          "Le Contact, la Relance, l'Appel, la Négociation",
+          "La Commission, le Rabais, l'Avance, le Net"
+        ],
+        "correct": 1,
+        "explication": "Le C.R.A.N. valide que le besoin est Compris, Reformulé par une synthèse validée, Aligné sur les décideurs, le prix et le délai, et Noté avant d'argumenter."
       }
     ]
   },
@@ -994,7 +1324,7 @@ const MODULES_BRUTS: Omit<ModuleFormation, "niveau">[] = [
     "icone": "📐",
     "categorie": "Commercial",
     "resume": "Fixer le juste prix : méthodes, données DVF, mesurage Carrez, valeur verte, cas particuliers et présentation de l'avis de valeur.",
-    "duree": "40 min",
+    "duree": "48 min",
     "lecons": [
       {
         "titre": "Avis de valeur, estimation, expertise : bien nommer pour bien vendre",
@@ -1426,6 +1756,204 @@ const MODULES_BRUTS: Omit<ModuleFormation, "niveau">[] = [
         ],
         "correct": 1,
         "explication": "Loyer annuel 7 200 € divisé par 0,06 = 120 000 €. La valeur par le revenu se déduit du loyer et du rendement attendu sur le secteur."
+      },
+      {
+        "question": "Quel type d'évaluation est requis en cas de contentieux, de partage judiciaire ou de garantie bancaire importante ?",
+        "options": [
+          "L'avis de valeur de l'agent",
+          "L'expertise immobilière réalisée par un expert",
+          "L'estimation automatique en ligne",
+          "Le prix affiché par le voisin"
+        ],
+        "correct": 1,
+        "explication": "Seule l'expertise immobilière, rapport normé engageant la responsabilité de l'expert, a la valeur probante requise devant un tribunal."
+      },
+      {
+        "question": "À quoi correspond le prix net vendeur ?",
+        "options": [
+          "Au prix affiché frais d'agence inclus",
+          "Au prix FAI moins les honoraires d'agence",
+          "Au prix payé par le voisin en 2021",
+          "Au prix augmenté des frais de notaire"
+        ],
+        "correct": 1,
+        "explication": "Le net vendeur est ce que touche réellement le vendeur, soit le prix FAI diminué des honoraires d'agence."
+      },
+      {
+        "question": "Comment sont fixés les honoraires d'une agence immobilière en France ?",
+        "options": [
+          "Selon un barème légal imposé par l'État",
+          "Librement, mais ils doivent être affichés TTC et de façon lisible",
+          "Par le notaire lors du compromis",
+          "Au maximum à 3 % par la loi Hoguet"
+        ],
+        "correct": 1,
+        "explication": "Aucun barème légal ne s'impose : les honoraires sont librement fixés mais doivent être affichés TTC, selon l'arrêté du 10 janvier 2017."
+      },
+      {
+        "question": "Quelle méthode d'évaluation est la référence pour un appartement ou une maison d'habitation ?",
+        "options": [
+          "Le bilan promoteur",
+          "La méthode par comparaison",
+          "Le coût de remplacement",
+          "La capitalisation du revenu"
+        ],
+        "correct": 1,
+        "explication": "La méthode par comparaison, fondée sur des biens similaires réellement vendus, est la reine en résidentiel."
+      },
+      {
+        "question": "Dans la méthode par capitalisation, que devient la valeur d'un bien si le rendement exigé par le marché augmente, à loyer constant ?",
+        "options": [
+          "Elle augmente",
+          "Elle baisse",
+          "Elle reste identique",
+          "Elle double"
+        ],
+        "correct": 1,
+        "explication": "Valeur égale loyer annuel divisé par le taux de rendement : rendement et prix évoluent en sens inverse, donc un rendement plus élevé fait baisser la valeur."
+      },
+      {
+        "question": "Quelle méthode est la mieux adaptée à un bien atypique, neuf ou sans comparable ?",
+        "options": [
+          "La méthode par comparaison",
+          "Le coût de remplacement ou de reconstruction",
+          "La surface pondérée seule",
+          "Les prix affichés des concurrents"
+        ],
+        "correct": 1,
+        "explication": "Faute de comparables, le coût de remplacement (terrain plus reconstruction à neuf moins vétusté) permet d'objectiver la valeur d'un bien atypique."
+      },
+      {
+        "question": "Dans le calcul d'une surface pondérée, quel coefficient applique-t-on généralement à une terrasse ou un balcon ?",
+        "options": [
+          "1",
+          "De l'ordre de 0,3 à 0,5",
+          "2",
+          "0, car on ne compte jamais l'extérieur"
+        ],
+        "correct": 1,
+        "explication": "Un extérieur se pondère de l'ordre de 0,3 à 0,5, davantage en PACA où la terrasse est très prisée."
+      },
+      {
+        "question": "À quelle fréquence la base DVF des valeurs foncières est-elle mise à jour ?",
+        "options": [
+          "Tous les jours",
+          "Deux fois par an, en avril et en octobre",
+          "Une fois tous les cinq ans",
+          "Jamais, elle est figée"
+        ],
+        "correct": 1,
+        "explication": "DVF, publiée en open data par la DGFiP, couvre les cinq dernières années et est mise à jour deux fois par an, en avril et en octobre."
+      },
+      {
+        "question": "Quels territoires la base DVF ne couvre-t-elle pas ?",
+        "options": [
+          "La région PACA",
+          "L'Alsace-Moselle (Bas-Rhin, Haut-Rhin, Moselle) et Mayotte",
+          "Toute l'Île-de-France",
+          "Les communes de moins de 2 000 habitants"
+        ],
+        "correct": 1,
+        "explication": "DVF ne couvre pas l'Alsace-Moselle ni Mayotte, qui relèvent du livre foncier."
+      },
+      {
+        "question": "Quel est l'ordre de grandeur de la marge de négociation moyenne entre prix affiché et prix vendu ?",
+        "options": [
+          "De l'ordre de 4 à 7 %",
+          "Environ 25 %",
+          "0 %, le prix affiché est toujours le prix vendu",
+          "Environ 50 %"
+        ],
+        "correct": 0,
+        "explication": "Un bien se vend presque toujours sous son prix d'affichage, avec une marge de négociation moyenne de l'ordre de 4 à 7 %, plus forte pour les biens surévalués ou énergivores."
+      },
+      {
+        "question": "À quoi sert la surface « loi Boutin » ?",
+        "options": [
+          "À la vente d'un lot en copropriété",
+          "Aux baux d'habitation, en location vide",
+          "Au calcul des frais de notaire",
+          "À l'estimation d'un terrain à bâtir"
+        ],
+        "correct": 1,
+        "explication": "La surface habitable loi Boutin figure dans les baux d'habitation, alors que la loi Carrez concerne la vente d'un lot en copropriété."
+      },
+      {
+        "question": "Pourquoi afficher un bien à 199 000 € plutôt qu'à 205 000 € peut-il être judicieux ?",
+        "options": [
+          "Pour payer moins de frais de notaire",
+          "Pour apparaître dans les recherches « jusqu'à 200 000 € » et toucher plus d'acquéreurs",
+          "Parce que la loi l'impose",
+          "Pour réduire la commission de l'agence"
+        ],
+        "correct": 1,
+        "explication": "Les acquéreurs cherchent par tranches de budget : un bien à 205 000 € est exclu de la recherche « jusqu'à 200 000 € », ce qui le prive d'une partie de son audience."
+      },
+      {
+        "question": "À quelle décote, dans la tête de l'acheteur, correspondent souvent 20 000 € de travaux réels ?",
+        "options": [
+          "À 5 000 € seulement",
+          "À exactement 20 000 €",
+          "À 30 000 à 40 000 €, à cause du coût psychologique (temps, risque, effort)",
+          "À aucune décote"
+        ],
+        "correct": 2,
+        "explication": "L'acquéreur déduit le coût des travaux mais aussi le temps, le risque et l'effort : 20 000 € réels pèsent souvent 30 000 à 40 000 € dans sa tête."
+      },
+      {
+        "question": "Qu'a changé la réforme du DPE entrée en vigueur le 1er juillet 2024 ?",
+        "options": [
+          "Elle a supprimé le DPE",
+          "Elle a corrigé le calcul pour les logements de 40 m² ou moins, sortant environ 140 000 logements du statut de passoire",
+          "Elle a rendu le DPE valable 20 ans",
+          "Elle a interdit la vente des biens classés A"
+        ],
+        "correct": 1,
+        "explication": "Depuis le 1er juillet 2024, le calcul du DPE a été corrigé pour les petits logements de 40 m² ou moins, jusque-là pénalisés, faisant sortir environ 140 000 logements du statut de passoire."
+      },
+      {
+        "question": "De quel ordre est la décote d'un logement vendu occupé (loué) par rapport au même bien vendu libre ?",
+        "options": [
+          "Il n'y a aucune décote",
+          "De l'ordre de 10 à 20 %",
+          "Environ 50 %",
+          "Une plus-value de 20 %"
+        ],
+        "correct": 1,
+        "explication": "L'acquéreur hérite du locataire et ne peut occuper le bien : la décote d'occupation est couramment de l'ordre de 10 à 20 % selon le bail et le loyer."
+      },
+      {
+        "question": "En viager occupé, en quoi se transforme la valeur vénale du bien ?",
+        "options": [
+          "En un loyer mensuel unique",
+          "En un bouquet versé à la signature plus une rente viagère, après décote d'occupation",
+          "En frais de notaire majorés",
+          "En une simple donation"
+        ],
+        "correct": 1,
+        "explication": "La valeur vénale se transforme en bouquet versé à la signature et en rente viagère, après une décote reflétant le droit d'usage conservé par le crédirentier."
+      },
+      {
+        "question": "Que se passe-t-il quand un bien reste trop longtemps surévalué sur le marché ?",
+        "options": [
+          "Il prend de la valeur avec le temps",
+          "Il « se grille » : les acquéreurs l'écartent et le soupçonnent d'avoir un problème",
+          "Il se vend plus vite et plus cher",
+          "Il devient exonéré de plus-value"
+        ],
+        "correct": 1,
+        "explication": "Passé le pic d'intérêt, un bien surévalué devient du « vieux stock » que les acquéreurs écartent, aboutissant à une vente plus longue et moins chère."
+      },
+      {
+        "question": "Lors de la présentation de l'avis de valeur en R2, dans quel ordre faut-il procéder ?",
+        "options": [
+          "Annoncer le prix d'abord, puis éventuellement les preuves",
+          "Présenter la méthode et les comparables, puis seulement ensuite le prix",
+          "Ne jamais montrer les comparables au vendeur",
+          "Laisser le vendeur fixer seul le prix"
+        ],
+        "correct": 1,
+        "explication": "La valeur se démontre avant de s'annoncer : on présente d'abord la méthode et les preuves (comparables), puis le prix qui en découle."
       }
     ]
   },
@@ -1435,7 +1963,7 @@ const MODULES_BRUTS: Omit<ModuleFormation, "niveau">[] = [
     "icone": "📝",
     "categorie": "Commercial",
     "resume": "Décrocher l'exclusivité, rédiger un mandat sans faille (Hoguet, ALUR), vérifier qui peut signer et sécuriser le dossier jusqu'à la commercialisation.",
-    "duree": "46 min",
+    "duree": "51 min",
     "lecons": [
       {
         "titre": "Panorama des mandats : simple, exclusif, semi-exclusif (et les autres)",
@@ -1927,6 +2455,149 @@ const MODULES_BRUTS: Omit<ModuleFormation, "niveau">[] = [
         ],
         "correct": 1,
         "explication": "L'agent immobilier est assujetti à la LCB-FT : dès l'entrée en relation, il identifie et vérifie l'identité du client (KYC), apprécie le risque, et conserve les pièces de vigilance pendant 5 ans."
+      },
+      {
+        "question": "Dans un mandat semi-exclusif, par rapport au mandat exclusif classique, le vendeur...",
+        "options": [
+          "garde le droit de vendre lui-même son bien a un acquereur qu'il trouve seul",
+          "peut confier le bien a autant d'agences qu'il le souhaite",
+          "ne peut plus resilier avant le terme du mandat",
+          "double automatiquement les honoraires de l'agence"
+        ],
+        "correct": 0,
+        "explication": "Le semi-exclusif reserve l'exclusivite vis-a-vis des autres agences tout en laissant le vendeur libre de vendre lui-meme."
+      },
+      {
+        "question": "Le bon de visite signe par un acquereur...",
+        "options": [
+          "fonde a lui seul le droit de l'agence a percevoir sa commission",
+          "remplace le mandat lorsque le vendeur est presse",
+          "prouve seulement qu'une visite a eu lieu et n'ouvre aucun droit a commission",
+          "oblige l'acquereur a faire une offre d'achat"
+        ],
+        "correct": 2,
+        "explication": "Seul le mandat ecrit signe par le vendeur fonde la remuneration ; le bon de visite n'est qu'une preuve de visite."
+      },
+      {
+        "question": "Le fichier commun AMEPI permet a un vendeur de beneficier...",
+        "options": [
+          "d'une baisse automatique des frais de notaire",
+          "de l'exclusivite tout en profitant de la force de frappe de plusieurs agences adherentes",
+          "d'un mandat sans duree determinee",
+          "d'une dispense de diagnostics techniques"
+        ],
+        "correct": 1,
+        "explication": "L'AMEPI est un reseau de mandats exclusifs partages : un seul interlocuteur, mais plusieurs agences qui presentent leurs acquereurs."
+      },
+      {
+        "question": "Dans le deroule d'un entretien de prise de mandat (R2), les honoraires s'annoncent...",
+        "options": [
+          "des les premieres minutes, avant tout autre sujet",
+          "apres avoir presente l'avis de valeur et la strategie de commercialisation",
+          "uniquement par ecrit, jamais a l'oral",
+          "seulement une fois le compromis signe"
+        ],
+        "correct": 1,
+        "explication": "On cree d'abord la valeur (avis de valeur, plan d'action) avant d'annoncer les honoraires comme la contrepartie logique du resultat."
+      },
+      {
+        "question": "Depuis l'arrete du 10 janvier 2017, le bareme d'honoraires de l'agence doit etre affiche...",
+        "options": [
+          "uniquement sur demande ecrite du client",
+          "en vitrine, sur le site internet et rappele dans les annonces, en TTC",
+          "seulement au siege de la CCI",
+          "exclusivement en hors taxes"
+        ],
+        "correct": 1,
+        "explication": "Le bareme TTC doit etre affiche en vitrine, sur le site et rappele dans les annonces ; un affichage non conforme est une pratique commerciale trompeuse."
+      },
+      {
+        "question": "Pour un prix net vendeur de 330 000 euros et des honoraires de 5 % (16 500 euros TTC) a la charge de l'acquereur, le prix FAI affiche est de...",
+        "options": [
+          "313 500 euros",
+          "330 000 euros",
+          "346 500 euros",
+          "363 000 euros"
+        ],
+        "correct": 2,
+        "explication": "Le prix FAI (frais d'agence inclus) = prix net vendeur + honoraires, soit 330 000 + 16 500 = 346 500 euros."
+      },
+      {
+        "question": "La carte professionnelle Transactions sur immeubles (carte T)...",
+        "options": [
+          "est delivree par la CCI, valable 3 ans et renouvelable",
+          "est delivree a vie par le notaire",
+          "est delivree par la prefecture pour 10 ans",
+          "n'est pas necessaire si l'agence ne manie pas de fonds"
+        ],
+        "correct": 0,
+        "explication": "La carte T est delivree par la CCI, valable 3 ans et renouvelable, notamment sous condition de formation continue."
+      },
+      {
+        "question": "La formation continue obligatoire imposee par la loi ALUR pour renouveler la carte T est de...",
+        "options": [
+          "7 heures par an",
+          "14 heures par an, soit 42 heures sur 3 ans",
+          "20 heures tous les 5 ans",
+          "100 heures en une seule fois"
+        ],
+        "correct": 1,
+        "explication": "La loi ALUR impose 14 heures de formation par an ou 42 heures sur 3 ans, condition du renouvellement de la carte."
+      },
+      {
+        "question": "Un mandat de vente doit obligatoirement...",
+        "options": [
+          "etre conclu pour une duree determinee",
+          "prevoir une duree illimitee pour securiser l'agence",
+          "etre renouvele chaque mois par le vendeur",
+          "etre signe devant notaire"
+        ],
+        "correct": 0,
+        "explication": "La duree determinee est obligatoire : un mandat a duree illimitee est irregulier."
+      },
+      {
+        "question": "Le registre des mandats doit etre tenu...",
+        "options": [
+          "par ordre alphabetique des vendeurs",
+          "cote et numerote sans discontinuite, par ordre chronologique de signature",
+          "uniquement sur support papier, jamais electronique",
+          "sans numerotation, pour preserver la confidentialite"
+        ],
+        "correct": 1,
+        "explication": "Le registre est numerote sans discontinuite et par ordre chronologique ; un mandat non inscrit ou non numerote est irregulier."
+      },
+      {
+        "question": "Pour vendre un bien appartenant a une SCI, le mandat doit etre signe par...",
+        "options": [
+          "n'importe quel associe minoritaire",
+          "le gerant, sous reserve de ce que prevoient les statuts (decision des associes eventuelle)",
+          "le locataire du bien",
+          "la CCI qui delivre la carte T"
+        ],
+        "correct": 1,
+        "explication": "C'est la societe qui vend, representee par son gerant ; il faut verifier les statuts et, le cas echeant, obtenir une decision collective des associes."
+      },
+      {
+        "question": "Si l'agent omet d'informer le vendeur de son droit de retractation pour un mandat signe hors etablissement, ce delai...",
+        "options": [
+          "reste bloque a 14 jours",
+          "est supprime",
+          "est prolonge jusqu'a 12 mois",
+          "passe a 48 heures"
+        ],
+        "correct": 2,
+        "explication": "A defaut d'information correcte, le delai de retractation est prolonge jusqu'a 12 mois (art. L221-20 du Code de la consommation)."
+      },
+      {
+        "question": "Au titre de la lutte anti-blanchiment (LCB-FT), les documents d'identification et de vigilance du client doivent etre conserves pendant...",
+        "options": [
+          "6 mois",
+          "2 ans",
+          "5 ans",
+          "30 ans"
+        ],
+        "correct": 2,
+        "explication": "L'article L561-12 du Code monetaire et financier impose une conservation de 5 ans des documents d'identification et de vigilance."
       }
     ]
   },
@@ -1936,7 +2607,7 @@ const MODULES_BRUTS: Omit<ModuleFormation, "niveau">[] = [
     "icone": "🤝",
     "categorie": "Commercial",
     "resume": "Préparer, ancrer le prix, échanger concessions et contreparties, négocier des deux côtés et verrouiller un accord qui tient jusqu'à l'acte.",
-    "duree": "42 min",
+    "duree": "48 min",
     "lecons": [
       {
         "titre": "La négociation se gagne avant de commencer",
@@ -2331,6 +3002,149 @@ const MODULES_BRUTS: Omit<ModuleFormation, "niveau">[] = [
         ],
         "correct": 2,
         "explication": "L'acquéreur dispose de 10 jours pour se rétracter sans motif, à compter du lendemain de la 1re présentation de la notification de l'avant-contrat. Le vendeur, lui, n'a pas ce droit."
+      },
+      {
+        "question": "La ZOPA (zone d'accord possible) correspond...",
+        "options": [
+          "au montant des honoraires de l'agence",
+          "a l'espace compris entre le prix plancher du vendeur et le plafond de l'acquereur",
+          "au delai legal de retractation de l'acquereur",
+          "a la marge de l'agence sur une vente"
+        ],
+        "correct": 1,
+        "explication": "La ZOPA est la zone de recouvrement entre le plancher du vendeur et le plafond de l'acquereur ; sans recouvrement, aucune technique ne cree l'accord."
+      },
+      {
+        "question": "La MESORE (ou BATNA) d'une partie designe...",
+        "options": [
+          "sa meilleure solution de repli si la negociation echoue",
+          "la commission minimale de l'agent",
+          "le prix affiche dans l'annonce",
+          "la duree de validite de l'offre d'achat"
+        ],
+        "correct": 0,
+        "explication": "La MESORE est ce que chaque partie fera si la negociation n'aboutit pas ; une MESORE forte donne une position de negociation haute."
+      },
+      {
+        "question": "L'effet d'ancrage, en negociation, signifie que...",
+        "options": [
+          "le dernier chiffre enonce est toujours ignore",
+          "le premier chiffre enonce fixe le cadre de toute la discussion",
+          "le prix ne peut jamais evoluer apres l'affichage",
+          "l'acquereur doit toujours parler en premier"
+        ],
+        "correct": 1,
+        "explication": "Le premier chiffre sert d'ancre ; face a une offre tres basse, on re-ancre aussitot sur les comparables DVF."
+      },
+      {
+        "question": "L'effet de dotation explique pourquoi...",
+        "options": [
+          "un acquereur sous-evalue systematiquement un bien",
+          "les frais de notaire baissent dans le neuf",
+          "un proprietaire a tendance a surevaluer son bien parce qu'il lui appartient",
+          "la banque refuse de financer un bien"
+        ],
+        "correct": 2,
+        "explication": "L'effet de dotation pousse le vendeur a surevaluer son bien ; on le recentre sur les faits (comparables, retours de visites)."
+      },
+      {
+        "question": "En 2025, la marge de negociation moyenne au niveau national se situe autour de...",
+        "options": [
+          "1 a 2 %",
+          "8 a 10 %",
+          "20 a 25 %",
+          "0 %, les biens se vendant au prix"
+        ],
+        "correct": 1,
+        "explication": "Longtemps autour de 5 %, la marge s'est elargie a environ 8 a 10 % en 2025, davantage sur les maisons que sur les appartements."
+      },
+      {
+        "question": "Pour signaler qu'on approche de sa limite, les concessions doivent etre accordees...",
+        "options": [
+          "par paliers de plus en plus petits (decroissants)",
+          "par paliers egaux a chaque fois",
+          "par paliers de plus en plus grands",
+          "toutes en une seule fois"
+        ],
+        "correct": 0,
+        "explication": "Des concessions decroissantes (6 000, puis 2 500, puis 1 000 euros) signalent qu'on approche de la limite ; des paliers egaux ou croissants relancent la surenchere."
+      },
+      {
+        "question": "Au stade de l'offre d'achat, l'agent immobilier...",
+        "options": [
+          "encaisse un acompte de 10 % pour bloquer le bien",
+          "ne doit recevoir aucun versement de l'acquereur",
+          "verse lui-meme le depot de garantie",
+          "exige un cheque de caution encaisse immediatement"
+        ],
+        "correct": 1,
+        "explication": "Aucune somme ne se verse au stade de l'offre ; le depot de garantie n'intervient qu'au compromis et se detient chez le notaire."
+      },
+      {
+        "question": "Lorsqu'un acquereur offre exactement le prix et les conditions du mandat, sous un mandat simple...",
+        "options": [
+          "la vente est automatiquement conclue sans l'accord du vendeur",
+          "le vendeur reste libre d'accepter ou non l'offre",
+          "l'agent peut signer le compromis a la place du vendeur",
+          "l'acquereur devient immediatement proprietaire"
+        ],
+        "correct": 1,
+        "explication": "Sous mandat simple, l'agent est charge de trouver un acquereur, pas de vendre ; une offre au prix ne force pas la vente, le vendeur garde son consentement."
+      },
+      {
+        "question": "La duree minimale legale de la condition suspensive d'obtention de pret (loi Scrivener) est de...",
+        "options": [
+          "8 jours",
+          "un mois",
+          "six mois",
+          "un an"
+        ],
+        "correct": 1,
+        "explication": "La duree minimale legale est d'un mois (art. L313-41 du Code de la consommation), en pratique 45 a 60 jours."
+      },
+      {
+        "question": "Un acquereur qui achete comptant et renonce a la condition suspensive de pret doit...",
+        "options": [
+          "obtenir l'accord ecrit de la banque",
+          "porter une mention manuscrite de renonciation (art. L313-42)",
+          "verser 20 % du prix a l'agence",
+          "attendre 10 jours supplementaires"
+        ],
+        "correct": 1,
+        "explication": "Sans mention manuscrite de renonciation, la condition suspensive de pret est reputee s'appliquer malgre un achat comptant."
+      },
+      {
+        "question": "Les frais de notaire (droits de mutation et frais) representent, dans l'ancien, de l'ordre de...",
+        "options": [
+          "1 a 2 % du prix",
+          "7 a 8 % du prix, contre 2 a 3 % dans le neuf",
+          "15 % du prix",
+          "le meme taux que dans le neuf"
+        ],
+        "correct": 1,
+        "explication": "Dans l'ancien, les frais tournent autour de 7 a 8 % (un peu plus depuis 2025 dans les departements ayant releve les droits), contre 2 a 3 % dans le neuf."
+      },
+      {
+        "question": "La vente de la residence principale du vendeur est, au titre de la plus-value des particuliers...",
+        "options": [
+          "taxee a 36,2 %",
+          "totalement exoneree",
+          "taxee uniquement apres 22 ans de detention",
+          "soumise a une surtaxe automatique"
+        ],
+        "correct": 1,
+        "explication": "La residence principale est totalement exoneree de plus-value ; la taxation (19 % + 17,2 %) ne concerne que les autres biens."
+      },
+      {
+        "question": "Une negociation integrative consiste a...",
+        "options": [
+          "se battre uniquement sur le prix, variable fixe",
+          "ajouter des variables (delai, meubles, date de liberation, travaux) pour creer de la valeur des deux cotes",
+          "imposer son prix sans discuter",
+          "refuser toute concession"
+        ],
+        "correct": 1,
+        "explication": "La negociation integrative agrandit le gateau en jouant sur d'autres variables que le seul prix, la ou le professionnel fait la difference."
       }
     ]
   },
@@ -2340,7 +3154,7 @@ const MODULES_BRUTS: Omit<ModuleFormation, "niveau">[] = [
     "icone": "🏆",
     "categorie": "Commercial",
     "resume": "Persuasion et argumentation des vendeurs d'élite : émotion, CAP/SONCASE, principes de Cialdini, storytelling, congruence et persuasion éthique.",
-    "duree": "35 min",
+    "duree": "39 min",
     "lecons": [
       {
         "titre": "Vendre de l'émotion, pas des caractéristiques",
@@ -2748,6 +3562,149 @@ const MODULES_BRUTS: Omit<ModuleFormation, "niveau">[] = [
         ],
         "correct": 1,
         "explication": "La rareté et la preuve sociale ne persuadent que si elles sont réelles : une fausse rareté relève des pratiques commerciales trompeuses (Code de la consommation), et taire sciemment un vice déterminant constitue un dol pouvant faire annuler la vente. La persuasion éthique sert une décision que le client ne regrettera pas."
+      },
+      {
+        "question": "Dans la methode CAP, la lettre P designe...",
+        "options": [
+          "la Projection",
+          "le Prix",
+          "la Preuve",
+          "la Promesse"
+        ],
+        "correct": 2,
+        "explication": "CAP = Caracteristique, Avantage, Preuve ; c'est l'avantage prouve qui declenche l'adhesion."
+      },
+      {
+        "question": "La phrase de liaison (ce qui veut dire pour vous que...) sert a...",
+        "options": [
+          "conclure la vente immediatement",
+          "traduire une caracteristique en avantage concret pour le client",
+          "annoncer le prix",
+          "demander une recommandation"
+        ],
+        "correct": 1,
+        "explication": "La liaison oblige a passer du fait (caracteristique) au benefice client (avantage), chainon central de la methode CAP."
+      },
+      {
+        "question": "Dans le moyen mnemotechnique SONCASE, la lettre E correspond a...",
+        "options": [
+          "l'Economie de temps",
+          "l'Emotion",
+          "l'Ecologie",
+          "l'Engagement"
+        ],
+        "correct": 2,
+        "explication": "Le E de SONCASE correspond a l'Ecologie, levier devenu majeur avec le calendrier d'interdiction de location des passoires thermiques."
+      },
+      {
+        "question": "Selon la regle d'or du dosage de l'argumentation, il vaut mieux...",
+        "options": [
+          "aligner dix arguments de force egale",
+          "un seul argument fort que dix arguments faibles",
+          "ne donner aucun argument et laisser le bien parler",
+          "repeter le meme argument sans cesse"
+        ],
+        "correct": 1,
+        "explication": "Un argument fort ancre la decision ; dix arguments dilues ne laissent rien en memoire."
+      },
+      {
+        "question": "Le principe de reciprocite de Cialdini invite le negociateur a...",
+        "options": [
+          "demander avant de donner quoi que ce soit",
+          "offrir quelque chose (etude de marche, conseils) avant de demander l'engagement du client",
+          "exiger un acompte pour prouver le serieux",
+          "ne jamais rendre service gratuitement"
+        ],
+        "correct": 1,
+        "explication": "On se sent redevable envers qui nous a donne : offrir une estimation argumentee avant de demander le mandat active la reciprocite."
+      },
+      {
+        "question": "Le principe d'autorite de Cialdini se traduit, chez le negociateur, par...",
+        "options": [
+          "l'arrogance et la pression",
+          "l'affichage d'une expertise credible (chiffres precis, connaissance fine du secteur)",
+          "le fait de parler fort et vite",
+          "la multiplication des promesses"
+        ],
+        "correct": 1,
+        "explication": "On suit l'avis de l'expert credible : une expertise demontree, sans arrogance, rassure et fait autorite."
+      },
+      {
+        "question": "Au-dela des six principes historiques, le 7e levier ajoute par Cialdini est...",
+        "options": [
+          "la peur",
+          "l'unite (le sentiment d'appartenir au meme groupe)",
+          "la repetition",
+          "la flatterie"
+        ],
+        "correct": 1,
+        "explication": "L'unite repose sur le nous (memes origines, meme situation), une alliance qui desarme la mefiance."
+      },
+      {
+        "question": "Les travaux d'Albert Mehrabian etablissent que, lorsque le verbal et le non-verbal se contredisent dans l'expression d'une emotion, l'interlocuteur se fie surtout...",
+        "options": [
+          "aux mots eux-memes",
+          "au contrat ecrit",
+          "a la voix et au non-verbal (ton, regard, posture)",
+          "au prix affiche"
+        ],
+        "correct": 2,
+        "explication": "En cas de contradiction sur une emotion ou une attitude, c'est le paraverbal et le non-verbal qui priment sur les mots ; d'ou l'importance de la congruence."
+      },
+      {
+        "question": "La congruence, en communication persuasive, signifie que...",
+        "options": [
+          "le fond, la voix et le corps disent la meme chose",
+          "on parle le plus vite possible",
+          "on evite tout silence",
+          "on recite un argumentaire par coeur"
+        ],
+        "correct": 0,
+        "explication": "La congruence rend credible : on ne peut l'atteindre que sur ce qu'on croit vraiment, d'ou la necessite d'une conviction sincere."
+      },
+      {
+        "question": "Dans une bonne histoire de vente (storytelling), le heros doit etre...",
+        "options": [
+          "l'agent lui-meme",
+          "le client (ou un client qui lui ressemble)",
+          "le directeur de l'agence",
+          "le concurrent"
+        ],
+        "correct": 1,
+        "explication": "Le heros est le client : faire de soi le heros est une erreur frequente qui affaiblit le recit."
+      },
+      {
+        "question": "Le meilleur moment pour solliciter une recommandation est...",
+        "options": [
+          "au premier contact telephonique",
+          "juste apres un compromis signe, quand le client est satisfait",
+          "des annees apres la vente",
+          "jamais, pour ne pas deranger"
+        ],
+        "correct": 1,
+        "explication": "La recommandation se provoque a chaud, lorsque le client est ravi : juste apres un compromis signe est l'instant ideal."
+      },
+      {
+        "question": "Taire sciemment un defaut determinant pour arracher la signature constitue...",
+        "options": [
+          "une technique de closing recommandee",
+          "un simple argument de rarete",
+          "un dol (ou reticence dolosive) pouvant entrainer l'annulation de la vente",
+          "une pratique legale si le defaut est mineur"
+        ],
+        "correct": 2,
+        "explication": "Le dol ou la reticence dolosive peut faire annuler la vente et donner lieu a des dommages-interets : mieux vaut traiter honnetement un defaut."
+      },
+      {
+        "question": "L'effet de recence recommande au negociateur de...",
+        "options": [
+          "donner son meilleur argument au tout debut puis l'oublier",
+          "terminer son argumentation par son argument le plus fort",
+          "ne jamais conclure",
+          "placer tous ses arguments au milieu"
+        ],
+        "correct": 1,
+        "explication": "On ouvre fort (primaute) et on termine par le plus fort (recence), car c'est ce qui reste le plus en tete du client."
       }
     ]
   },
@@ -2757,7 +3714,7 @@ const MODULES_BRUTS: Omit<ModuleFormation, "niveau">[] = [
     "icone": "🛡️",
     "categorie": "Commercial",
     "resume": "Accueillir, creuser, isoler et lever chaque objection (prix, « je réfléchis »…), côté vendeur comme acquéreur, jusqu'à la signature.",
-    "duree": "38 min",
+    "duree": "43 min",
     "lecons": [
       {
         "titre": "Comprendre l'objection : nature, typologie et posture",
@@ -3121,6 +4078,149 @@ const MODULES_BRUTS: Omit<ModuleFormation, "niveau">[] = [
         ],
         "correct": 0,
         "explication": "L'acquéreur non-professionnel dispose de 10 jours de rétractation à compter du lendemain de la notification du compromis signé, sans motif ni pénalité (L271-1 CCH) ; combiné à la condition suspensive de prêt, c'est un argument de réassurance décisif."
+      },
+      {
+        "question": "Une objection vague et répétée comme « il faut voir, on verra » est le plus souvent...",
+        "options": [
+          "une objection sincère et unique",
+          "un prétexte qui cache un autre frein",
+          "un refus définitif et sans appel",
+          "une objection purement tactique de négociation"
+        ],
+        "correct": 1,
+        "explication": "Une objection vague et répétée trahit généralement un prétexte, alors qu'une objection précise et argumentée est plutôt sincère."
+      },
+      {
+        "question": "Pour vérifier si une objection est sincère ou n'est qu'un prétexte, la question-test la plus fiable est...",
+        "options": [
+          "« Si je règle ce point, on avance ? »",
+          "« Vous avez d'autres questions ? »",
+          "« Vous voulez réfléchir ? »",
+          "« C'est votre dernier mot ? »"
+        ],
+        "correct": 0,
+        "explication": "S'il dit oui, l'objection était sincère et unique ; s'il enchaîne un autre frein, le premier n'était qu'un prétexte."
+      },
+      {
+        "question": "Dans la méthode CRAC, les quatre temps sont, dans l'ordre...",
+        "options": [
+          "Convaincre, Rassurer, Argumenter, Conclure",
+          "Comprendre, Répondre, Accueillir, Clore",
+          "Creuser, Reformuler, Argumenter, Contrôler",
+          "Creuser, Répondre, Accepter, Céder"
+        ],
+        "correct": 2,
+        "explication": "CRAC signifie Creuser, Reformuler, Argumenter, Contrôler, souvent précédé d'un temps zéro : Accueillir."
+      },
+      {
+        "question": "La technique dite de « l'édredon » consiste à...",
+        "options": [
+          "répondre aussitôt par un argument fort",
+          "contredire fermement le client",
+          "ignorer l'objection et changer de sujet",
+          "amortir l'objection sans la contredire pour rester allié"
+        ],
+        "correct": 3,
+        "explication": "L'édredon amortit le choc (« je comprends », « bonne question ») et désamorce l'agressivité avant d'argumenter."
+      },
+      {
+        "question": "Pour argumenter efficacement face à une objection, il vaut mieux...",
+        "options": [
+          "empiler le plus d'arguments possible",
+          "sortir une seule preuve forte",
+          "répéter plusieurs fois le même argument",
+          "parler plus fort que le client"
+        ],
+        "correct": 1,
+        "explication": "Un argument fort et prouvé vaut mieux que dix arguments faibles qui diluent le message."
+      },
+      {
+        "question": "Face à un acquéreur qui lance « c'est trop cher » d'emblée, le réflexe à éviter absolument est...",
+        "options": [
+          "baisser le prix immédiatement",
+          "creuser « par rapport à quoi ? »",
+          "sortir des comparables DVF",
+          "ramener l'écart à une mensualité"
+        ],
+        "correct": 0,
+        "explication": "Baisser dès la première objection avoue que le prix était gonflé et invite le client à pousser encore."
+      },
+      {
+        "question": "Pour prouver qu'un prix est dans le marché, l'agent s'appuie en priorité sur...",
+        "options": [
+          "les prix réellement signés (base DVF)",
+          "les prix affichés des concurrents",
+          "sa seule intuition de professionnel",
+          "le prix souhaité par le vendeur"
+        ],
+        "correct": 0,
+        "explication": "Le prix affiché ne prouve rien ; seul le prix réellement payé, consultable sur la base DVF, fait référence."
+      },
+      {
+        "question": "La technique de « la division » pour traiter un écart de prix consiste à...",
+        "options": [
+          "diviser le bien en plusieurs lots",
+          "partager la commission avec l'acquéreur",
+          "ramener l'écart à un coût mensuel sur la durée du prêt",
+          "proposer deux biens au choix"
+        ],
+        "correct": 2,
+        "explication": "Fractionner l'écart en mensualité (« 5 000 €, c'est moins de 30 € par mois sur 20 ans ») dédramatise le montant."
+      },
+      {
+        "question": "Au vendeur qui veut confier son bien à plusieurs agences, l'argument-clé est...",
+        "options": [
+          "« c'est interdit par la loi »",
+          "« vous paierez plusieurs commissions »",
+          "« aucune agence n'acceptera »",
+          "« plus d'agences n'est pas plus d'acheteurs »"
+        ],
+        "correct": 3,
+        "explication": "Ce sont les mêmes acquéreurs du secteur qui voient le bien partout ; à prix et photos différents, il se banalise."
+      },
+      {
+        "question": "Quand un concurrent a annoncé au vendeur un prix nettement plus élevé que le vôtre, il s'agit souvent...",
+        "options": [
+          "d'un mandat gonflé pour emporter la signature",
+          "d'une meilleure connaissance du marché",
+          "d'une simple erreur de calcul",
+          "d'un prix imposé par la loi"
+        ],
+        "correct": 0,
+        "explication": "Un prix trop haut grille le bien les premières semaines, et le bien se vend finalement plus long et moins cher."
+      },
+      {
+        "question": "Un client qui recule, se tait et interroge son conjoint du regard exprime...",
+        "options": [
+          "un signal d'achat immédiat",
+          "une objection muette à faire sortir",
+          "un refus définitif",
+          "une objection tactique de négociation"
+        ],
+        "correct": 1,
+        "explication": "L'objection muette est un frein non exprimé qu'il faut faire verbaliser (« je vous sens hésitant, qu'est-ce qui vous retient ? »)."
+      },
+      {
+        "question": "Transformer « il y a trop de travaux » en « c'est justement pour ça que le prix est déjà attractif et que vous personnalisez » relève de la technique...",
+        "options": [
+          "du boomerang",
+          "de la division",
+          "de l'alternative",
+          "de l'édredon"
+        ],
+        "correct": 0,
+        "explication": "Le boomerang retourne l'objection pour en faire une raison d'acheter."
+      },
+      {
+        "question": "En prospection téléphonique, l'objectif unique d'un appel confronté à une objection est...",
+        "options": [
+          "de conclure la vente à distance",
+          "de convaincre le propriétaire de baisser son prix",
+          "d'obtenir le rendez-vous d'estimation",
+          "d'envoyer une plaquette par mail"
+        ],
+        "correct": 2,
+        "explication": "On ne vend pas au téléphone ; le seul but est de décrocher le rendez-vous, sans visuel ni bien à montrer."
       }
     ]
   },
@@ -3130,7 +4230,7 @@ const MODULES_BRUTS: Omit<ModuleFormation, "niveau">[] = [
     "icone": "✍️",
     "categorie": "Commercial",
     "resume": "Repérer les signaux, oser la question de conclusion, maîtriser les techniques, respecter le cadre légal et sécuriser le oui jusqu'à l'acte.",
-    "duree": "37 min",
+    "duree": "42 min",
     "lecons": [
       {
         "titre": "Oser conclure : l'état d'esprit du closeur",
@@ -3527,6 +4627,160 @@ const MODULES_BRUTS: Omit<ModuleFormation, "niveau">[] = [
         ],
         "correct": 0,
         "explication": "La loi Hoguet (loi n° 70-9 du 2 janvier 1970) impose un mandat écrit avant toute négociation ; sans mandat valable, les honoraires ne sont pas dus."
+      },
+      {
+        "question": "Selon le module, le pire closing est...",
+        "options": [
+          "celui qu'on ne tente pas",
+          "celui qu'on tente trop tôt",
+          "celui qui dure trop longtemps",
+          "celui qu'on formalise par écrit"
+        ],
+        "correct": 0,
+        "explication": "Une vente non demandée est perdue à coup sûr : ne pas oser poser la question de conclusion est l'erreur reine."
+      },
+      {
+        "question": "Un acquéreur qui demande « les enfants seraient dans quelle école ? » émet...",
+        "options": [
+          "un signal d'achat : il se projette",
+          "une objection de temporisation",
+          "un refus poli",
+          "une question piège à éviter"
+        ],
+        "correct": 0,
+        "explication": "Se projeter dans le bien (école, aménagement, date d'entrée) est un signal d'achat clair."
+      },
+      {
+        "question": "Continuer à argumenter alors que le client a déjà donné des signaux d'achat s'appelle...",
+        "options": [
+          "la survente, qui réveille des objections",
+          "le pré-closing, qui verrouille",
+          "l'ancrage, qui rassure",
+          "le calibrage, qui synchronise"
+        ],
+        "correct": 0,
+        "explication": "Quand c'est gagné, on arrête de vendre : trop d'arguments réveillent le doute et tuent la vente."
+      },
+      {
+        "question": "Une « conclusion d'essai » (trial close) sert à...",
+        "options": [
+          "tester le niveau d'engagement sans demander encore la décision finale",
+          "signer immédiatement le compromis",
+          "fixer le prix du mandat",
+          "encaisser le dépôt de garantie"
+        ],
+        "correct": 0,
+        "explication": "Elle est sans risque : une réponse positive fait avancer, une réponse négative révèle un frein à traiter."
+      },
+      {
+        "question": "La technique des « petits oui » repose sur le principe psychologique...",
+        "options": [
+          "de cohérence : rester en accord avec ses engagements précédents",
+          "de rareté",
+          "d'aversion à la perte",
+          "d'ancrage"
+        ],
+        "correct": 0,
+        "explication": "Enchaîner des oui installe une dynamique d'accord qu'il devient difficile de rompre par un « non » final."
+      },
+      {
+        "question": "La technique du « bilan » (balance de Benjamin Franklin) consiste à...",
+        "options": [
+          "opposer une longue liste d'avantages à de courtes réserves",
+          "proposer deux dates de signature",
+          "verser un acompte symbolique",
+          "baisser le prix progressivement"
+        ],
+        "correct": 0,
+        "explication": "On fait pencher la décision en récapitulant les avantages (idéalement listés par le client) face aux réserves minimisées."
+      },
+      {
+        "question": "Préparer l'offre et demander l'orthographe des noms « pour le compromis » avant même le oui formel relève de la technique...",
+        "options": [
+          "de la présomption, réservée aux signaux d'achat clairs",
+          "de l'édredon",
+          "du différentiel",
+          "de la preuve sociale"
+        ],
+        "correct": 0,
+        "explication": "La présomption agit comme si la décision était prise ; elle ne s'emploie que sur des signaux nets, sans arrogance."
+      },
+      {
+        "question": "Parmi ces formulations, laquelle est une vraie question de conclusion ?",
+        "options": [
+          "« Je rédige l'offre ? »",
+          "« Vous voulez réfléchir ? »",
+          "« Je vous laisse mon numéro ? »",
+          "« Alors, qu'en pensez-vous ? »"
+        ],
+        "correct": 0,
+        "explication": "Une question de conclusion est fermée et engageante ; les formulations molles invitent au report."
+      },
+      {
+        "question": "Tenir un long silence juste après la question de conclusion est utile car...",
+        "options": [
+          "le premier qui parle « perd » et le client est mis en situation de décider",
+          "cela montre qu'on doute de son bien",
+          "il faut se laisser le temps de baisser le prix",
+          "le silence culpabilise le client et le force à signer"
+        ],
+        "correct": 0,
+        "explication": "Combler le silence rouvre la discussion et offre une porte de sortie ; le tenir met le client face à sa décision."
+      },
+      {
+        "question": "Selon la loi Hoguet, avant toute négociation l'agent doit impérativement disposer...",
+        "options": [
+          "d'un mandat écrit et signé",
+          "d'un chèque de l'acquéreur",
+          "d'un simple accord oral du vendeur",
+          "d'une estimation notariale"
+        ],
+        "correct": 0,
+        "explication": "Pas de mandat écrit, pas de closing : les honoraires ne sont dus que si un mandat valable existe."
+      },
+      {
+        "question": "Le dépôt de garantie versé par l'acquéreur intervient...",
+        "options": [
+          "au compromis, séquestré chez le notaire ou l'agent garanti",
+          "dès la signature de l'offre d'achat",
+          "dès la première visite",
+          "au moment de l'avis de valeur"
+        ],
+        "correct": 0,
+        "explication": "Au stade de l'offre, aucune somme ne peut être exigée (article 1589-1 du Code civil) ; le dépôt n'intervient qu'au compromis."
+      },
+      {
+        "question": "Pour prévenir le remords de l'acheteur (buyer's remorse) après le oui, le négociateur doit...",
+        "options": [
+          "rappeler, féliciter et rester présent les jours suivants",
+          "disparaître une fois l'accord obtenu",
+          "minimiser le délai de rétractation",
+          "éviter tout contact pour ne pas raviver le doute"
+        ],
+        "correct": 0,
+        "explication": "Le silence de l'agent nourrit le doute ; rassurer et ré-ancrer les raisons d'achat protège la vente pendant les 10 jours SRU."
+      },
+      {
+        "question": "Face à un acquéreur « chaud » qui dit « je vous rappelle demain », le bon réflexe est...",
+        "options": [
+          "de faire écrire l'offre sur-le-champ",
+          "d'accepter et d'attendre son appel",
+          "de demander un acompte pour bloquer le bien",
+          "de baisser le prix pour le décider"
+        ],
+        "correct": 0,
+        "explication": "Une intention orale n'engage pas ; seule l'offre écrite fait avancer, tant que l'émotion de la visite est présente."
+      },
+      {
+        "question": "Inventer un faux acquéreur ou une fausse visite pour accélérer la décision est...",
+        "options": [
+          "une pratique commerciale trompeuse interdite",
+          "une technique de rareté admise",
+          "recommandé dès que le bien plaît",
+          "sans aucune conséquence juridique"
+        ],
+        "correct": 0,
+        "explication": "La fausse urgence engage la responsabilité de l'agent et ruine sa crédibilité ; l'urgence ne s'emploie que si elle est réelle."
       }
     ]
   },
@@ -3536,7 +4790,7 @@ const MODULES_BRUTS: Omit<ModuleFormation, "niveau">[] = [
     "icone": "💬",
     "categorie": "Commercial",
     "resume": "Mots à bannir, lexique persuasif, storytelling, chiffres, voix et silence, écrit, sur-mesure client et éthique : tout l'arsenal des mots qui vendent.",
-    "duree": "34 min",
+    "duree": "39 min",
     "lecons": [
       {
         "titre": "Les mots noirs à bannir",
@@ -3889,6 +5143,160 @@ const MODULES_BRUTS: Omit<ModuleFormation, "niveau">[] = [
         ],
         "correct": 2,
         "explication": "Les articles L121-2 à L121-4 du Code de la consommation l'interdisent : jusqu'à 2 ans de prison et 300 000 € d'amende, contrôlé par la DGCCRF."
+      },
+      {
+        "question": "Dans le discours commercial, le mot préféré du client, à privilégier largement, est...",
+        "options": [
+          "« vous / votre »",
+          "« je / mon »",
+          "« nous / notre »",
+          "« on »"
+        ],
+        "correct": 0,
+        "explication": "Parlez du client, pas de vous : visez un ratio de « vous » très supérieur à « je »."
+      },
+      {
+        "question": "Le mot « commission » gagne à être remplacé par...",
+        "options": [
+          "« honoraires »",
+          "« marge »",
+          "« pourcentage »",
+          "« forfait »"
+        ],
+        "correct": 0,
+        "explication": "« Commission » évoque le démarchage ; « honoraires » renvoie au professionnel réglementé."
+      },
+      {
+        "question": "Commencer une phrase par « honnêtement, franchement, pour être sincère » est à éviter car...",
+        "options": [
+          "cela sous-entend que le reste du propos ne l'était pas",
+          "c'est trop familier",
+          "cela allonge inutilement la phrase",
+          "c'est interdit par la loi Hoguet"
+        ],
+        "correct": 0,
+        "explication": "Ces tics de langage installent paradoxalement le doute sur la sincérité du reste du discours."
+      },
+      {
+        "question": "La formule « ce qui veut dire pour vous » sert à...",
+        "options": [
+          "transformer une caractéristique du bien en bénéfice concret pour le client",
+          "annoncer le prix en douceur",
+          "conclure la vente",
+          "clôturer un email de relance"
+        ],
+        "correct": 0,
+        "explication": "« Double vitrage, ce qui veut dire pour vous des factures allégées et le calme » : on relie la donnée à la vie du client."
+      },
+      {
+        "question": "À un client qui dit « je le sens / c'est du concret », on répond plutôt...",
+        "options": [
+          "« vous allez vous sentir bien ici »",
+          "« vous voyez le potentiel »",
+          "« ça vous parle, non ? »",
+          "« sentez cette bonne odeur »"
+        ],
+        "correct": 0,
+        "explication": "On reprend son canal dominant (VAKOG) : ce client est kinesthésique, on emploie le registre du ressenti et du concret."
+      },
+      {
+        "question": "Les trois ingrédients d'une bonne histoire de bien sont...",
+        "options": [
+          "le lieu, la vie possible et le détail qui ancre",
+          "le prix, la surface et le DPE",
+          "l'accroche, l'intérêt et l'action",
+          "le ton, le rythme et le silence"
+        ],
+        "correct": 0,
+        "explication": "On plante le décor, on projette le futur propriétaire, puis on ancre avec un détail unique et vrai."
+      },
+      {
+        "question": "Dans le storytelling d'un bien, révéler que le vendeur divorce et doit vendre vite...",
+        "options": [
+          "trahit le devoir de loyauté et affaiblit sa position en négociation",
+          "est un bon gage d'authenticité",
+          "rassure l'acquéreur hésitant",
+          "est une mention obligatoire"
+        ],
+        "correct": 0,
+        "explication": "Une information confidentielle ou déterminante sur le vendeur ne se divulgue jamais : elle le fragiliserait."
+      },
+      {
+        "question": "Dire « quand vous serez installés... » plutôt que « si vous achetez... » est...",
+        "options": [
+          "un présupposé positif qui installe la projection",
+          "une manipulation interdite",
+          "une faute de grammaire",
+          "une formule réservée au vendeur"
+        ],
+        "correct": 0,
+        "explication": "Le présupposé parle de l'après comme acquis et fait naturellement se projeter le client."
+      },
+      {
+        "question": "Annoncer d'abord « des biens comme celui-ci se négocient autour de 320 000 € » avant de dire « ici, à 299 000 € » exploite...",
+        "options": [
+          "l'effet d'ancrage",
+          "l'aversion à la perte",
+          "le fractionnement",
+          "la preuve sociale"
+        ],
+        "correct": 0,
+        "explication": "Le premier chiffre énoncé devient la référence ; à condition d'être vrai, il valorise le prix annoncé ensuite."
+      },
+      {
+        "question": "Formuler « chaque mois de retard, c'est un crédit relais qui court et un bien qui fatigue » joue sur...",
+        "options": [
+          "l'aversion à la perte",
+          "l'effet d'ancrage",
+          "la preuve sociale",
+          "le vocabulaire sensoriel"
+        ],
+        "correct": 0,
+        "explication": "Les gens détestent perdre plus qu'ils n'aiment gagner ; on formule l'enjeu en perte évitée."
+      },
+      {
+        "question": "Pour crédibiliser une estimation, il vaut mieux annoncer...",
+        "options": [
+          "« estimé à 297 500 € »",
+          "« environ 300 000 € »",
+          "« dans les 300 000 € »",
+          "« autour de 300 000 € »"
+        ],
+        "correct": 0,
+        "explication": "Un chiffre précis paraît issu d'un vrai calcul et inspire plus confiance qu'un chiffre rond."
+      },
+      {
+        "question": "Pour qu'une phrase importante sonne comme une affirmation sûre, on la termine...",
+        "options": [
+          "sur un ton descendant",
+          "sur un ton montant",
+          "en accélérant le débit",
+          "en haussant le volume"
+        ],
+        "correct": 0,
+        "explication": "Le ton descendant marque l'autorité et l'affirmation ; le ton montant évoque la question ou l'hésitation."
+      },
+      {
+        "question": "Dans un texte de vente, la méthode AIDA enchaîne...",
+        "options": [
+          "Attention, Intérêt, Désir, Action",
+          "Accroche, Information, Détail, Appel",
+          "Annonce, Image, Données, Adresse",
+          "Attirer, Informer, Décrire, Afficher"
+        ],
+        "correct": 0,
+        "explication": "AIDA structure une annonce : capter l'Attention, susciter l'Intérêt, créer le Désir, déclencher l'Action."
+      },
+      {
+        "question": "Taire sciemment une servitude ou une nuisance connue à l'acquéreur peut...",
+        "options": [
+          "faire annuler la vente pour dol",
+          "accélérer la signature sans aucun risque",
+          "relever du simple argumentaire commercial",
+          "être entièrement couvert par le mandat"
+        ],
+        "correct": 0,
+        "explication": "Le manquement au devoir de conseil engage la responsabilité de l'agent et peut annuler la vente pour dol (article 1137 du Code civil)."
       }
     ]
   },
@@ -3898,7 +5306,7 @@ const MODULES_BRUTS: Omit<ModuleFormation, "niveau">[] = [
     "icone": "💶",
     "categorie": "Commercial",
     "resume": "Honoraires libres, barème, valeur vs PAP, objections et concessions : assumer et défendre sa commission sans jamais la brader.",
-    "duree": "26 min",
+    "duree": "30 min",
     "lecons": [
       {
         "titre": "Pourquoi ne jamais brader ses honoraires",
@@ -4181,6 +5589,138 @@ const MODULES_BRUTS: Omit<ModuleFormation, "niveau">[] = [
         ],
         "correct": 0,
         "explication": "On accueille l'objection sans se crisper, on creuse pour isoler la vraie question, on recadre sur la valeur et le net, puis on engage vers l'accord."
+      },
+      {
+        "question": "Un barème d'honoraires dit « dégressif » signifie que le pourcentage appliqué...",
+        "options": [
+          "Augmente à mesure que le prix du bien monte",
+          "Diminue à mesure que le prix du bien augmente",
+          "Reste identique quel que soit le prix",
+          "Change selon le profil du client"
+        ],
+        "correct": 1,
+        "explication": "Dans un barème dégressif, le taux baisse quand le prix du bien augmente."
+      },
+      {
+        "question": "Sur une maison à 350 000 € net vendeur, passer du barème de 5 % à 4 % fait perdre à l'agence...",
+        "options": [
+          "1 000 €",
+          "3 500 €",
+          "7 000 €",
+          "17 500 €"
+        ],
+        "correct": 1,
+        "explication": "17 500 € moins 14 000 € font 3 500 € perdus, soit 20 % de la rémunération du dossier."
+      },
+      {
+        "question": "La technique du « sandwich » pour annoncer ses honoraires consiste à...",
+        "options": [
+          "Annoncer trois tarifs différents",
+          "Encadrer le prix par de la valeur : valeur, prix, valeur",
+          "Diviser les honoraires en trois versements",
+          "Répéter le montant trois fois de suite"
+        ],
+        "correct": 1,
+        "explication": "On encadre le chiffre de valeur : valeur, puis prix, puis valeur à nouveau."
+      },
+      {
+        "question": "Depuis quel texte les honoraires d'agence sont-ils librement fixés en France ?",
+        "options": [
+          "La loi Hoguet du 2 janvier 1970",
+          "L'ordonnance du 1er décembre 1986 sur la liberté des prix",
+          "La loi ALUR du 24 mars 2014",
+          "La loi Macron du 6 août 2015"
+        ],
+        "correct": 1,
+        "explication": "L'ordonnance n° 86-1243 du 1er décembre 1986 a libéré les prix, dont les honoraires d'agence."
+      },
+      {
+        "question": "Un barème annoncé « 5 % TTC » correspond, hors taxe, à environ...",
+        "options": [
+          "3 % HT",
+          "4,17 % HT",
+          "5 % HT",
+          "6 % HT"
+        ],
+        "correct": 1,
+        "explication": "Avec une TVA à 20 %, 5 % TTC équivalent à environ 4,17 % HT."
+      },
+      {
+        "question": "Le prix FAI (frais d'agence inclus) affiché dans l'annonce correspond à...",
+        "options": [
+          "Le prix net vendeur seul",
+          "Les honoraires seuls",
+          "Le prix net vendeur plus les honoraires",
+          "Le prix hors TVA"
+        ],
+        "correct": 2,
+        "explication": "Le prix FAI est la somme du net vendeur et des honoraires d'agence."
+      },
+      {
+        "question": "Face à « l'agence d'à côté ne prend que 3 % », la bonne attitude est de...",
+        "options": [
+          "Dénigrer la concurrence",
+          "S'aligner immédiatement sur son tarif",
+          "Ne jamais dénigrer et recentrer sur qui vend le mieux et le plus sûrement",
+          "Refuser le mandat"
+        ],
+        "correct": 2,
+        "explication": "On ne dénigre pas un confrère ; on recentre sur le net final et la sécurité de la vente."
+      },
+      {
+        "question": "Selon la règle d'or de la négociation, une concession sur les honoraires doit...",
+        "options": [
+          "Être accordée dès la première objection",
+          "S'échanger contre une contrepartie, jamais se donner",
+          "Être proposée spontanément pour rassurer",
+          "Être offerte pour conclure plus vite"
+        ],
+        "correct": 1,
+        "explication": "Une concession ne se donne jamais : elle s'échange contre une contrepartie comme l'exclusivité."
+      },
+      {
+        "question": "Quand les honoraires sont mis à la charge de l'acquéreur et distinctement mentionnés, les droits de mutation se calculent...",
+        "options": [
+          "Sur le prix FAI",
+          "Sur le prix hors honoraires",
+          "Sur les honoraires seuls",
+          "Sur le net vendeur majoré d'une taxe"
+        ],
+        "correct": 1,
+        "explication": "L'assiette des droits de mutation est alors le prix hors honoraires, ce qui réduit un peu les frais de l'acquéreur."
+      },
+      {
+        "question": "Juste après avoir annoncé clairement le montant de ses honoraires, l'agent doit...",
+        "options": [
+          "Enchaîner par une justification détaillée",
+          "Se taire et laisser le client réagir",
+          "Proposer aussitôt une remise",
+          "Changer de sujet"
+        ],
+        "correct": 1,
+        "explication": "Le silence après l'annonce est l'allié de l'agent : c'est à l'autre de parler."
+      },
+      {
+        "question": "Les honoraires d'agence financent notamment...",
+        "options": [
+          "Uniquement le salaire du négociateur",
+          "Seulement la publicité en vitrine",
+          "La diffusion sur les portails, les charges de l'agence, la TVA et la part du négociateur",
+          "Les frais de notaire de l'acquéreur"
+        ],
+        "correct": 2,
+        "explication": "L'honoraire couvre la diffusion, les charges, l'enseigne, la TVA et la part du négociateur."
+      },
+      {
+        "question": "La formule conditionnelle « si... alors... » sert, en négociation, à...",
+        "options": [
+          "Menacer le client de retirer le bien",
+          "Ne consentir un geste qu'en échange d'une contrepartie",
+          "Reporter indéfiniment la signature",
+          "Justifier le montant par les heures passées"
+        ],
+        "correct": 1,
+        "explication": "Elle conditionne tout geste sur les honoraires à une contrepartie, par exemple l'exclusivité."
       }
     ]
   },
@@ -4190,7 +5730,7 @@ const MODULES_BRUTS: Omit<ModuleFormation, "niveau">[] = [
     "icone": "🏛️",
     "categorie": "Transaction",
     "resume": "Piloter une vente de A à Z : le notaire, le séquestre, les préemptions, les frais d'acquisition, qui peut vendre, l'attestation et le titre.",
-    "duree": "31 min",
+    "duree": "35 min",
     "lecons": [
       {
         "titre": "Le déroulé complet d'une transaction",
@@ -4525,6 +6065,149 @@ const MODULES_BRUTS: Omit<ModuleFormation, "niveau">[] = [
         ],
         "correct": 1,
         "explication": "Les droits de mutation (DMTO), versés au département, à la commune et à l'État, représentent l'essentiel des ~7 à 8 % de frais dans l'ancien."
+      },
+      {
+        "question": "La durée moyenne entre l'accord sur le prix et la remise des clés est d'environ...",
+        "options": [
+          "2 à 3 semaines",
+          "1 mois",
+          "3 à 4 mois",
+          "1 an"
+        ],
+        "correct": 2,
+        "explication": "Une vente immobilière s'étale en moyenne sur 3 à 4 mois entre l'accord et l'acte."
+      },
+      {
+        "question": "La première cause de ventes qui échouent entre le compromis et l'acte est...",
+        "options": [
+          "Le droit de préemption de la commune",
+          "La condition suspensive de prêt non réalisée",
+          "Le délai de rétractation",
+          "Le refus du notaire de signer"
+        ],
+        "correct": 1,
+        "explication": "La condition suspensive d'obtention du prêt est le jalon le plus risqué à surveiller."
+      },
+      {
+        "question": "Ce qui rend la vente opposable aux tiers est...",
+        "options": [
+          "La signature du compromis",
+          "La publication de l'acte au service de la publicité foncière",
+          "L'offre d'achat acceptée",
+          "La remise de l'attestation de propriété"
+        ],
+        "correct": 1,
+        "explication": "C'est la publication au service de la publicité foncière qui rend la vente opposable aux tiers."
+      },
+      {
+        "question": "Le notaire doit vérifier l'origine de propriété d'un bien sur au moins...",
+        "options": [
+          "10 ans",
+          "20 ans",
+          "30 ans",
+          "50 ans"
+        ],
+        "correct": 2,
+        "explication": "La règle des 30 ans correspond à la prescription acquisitive et garantit un titre incontestable."
+      },
+      {
+        "question": "Le dépôt de garantie versé par l'acquéreur au compromis représente usuellement...",
+        "options": [
+          "1 à 2 % du prix",
+          "5 à 10 % du prix",
+          "20 % du prix",
+          "50 % du prix"
+        ],
+        "correct": 1,
+        "explication": "L'usage est un dépôt de 5 à 10 % du prix, imputé ensuite sur le prix à l'acte."
+      },
+      {
+        "question": "En cas de rétractation de l'acquéreur dans le délai SRU de 10 jours, son dépôt lui est restitué sous...",
+        "options": [
+          "7 jours maximum",
+          "21 jours maximum",
+          "1 mois maximum",
+          "3 mois maximum"
+        ],
+        "correct": 1,
+        "explication": "Le dépôt est intégralement restitué à l'acquéreur sous 21 jours maximum en cas de rétractation."
+      },
+      {
+        "question": "L'agence ne peut détenir elle-même le dépôt de garantie (séquestre) que si...",
+        "options": [
+          "Le vendeur donne son accord oral",
+          "Elle dispose d'une garantie financière couvrant le maniement de fonds et d'un compte séquestre dédié",
+          "Le montant est inférieur à 10 000 €",
+          "Le notaire l'y autorise par écrit"
+        ],
+        "correct": 1,
+        "explication": "Sans garantie financière couvrant le maniement de fonds, l'agent ne doit jamais encaisser le dépôt."
+      },
+      {
+        "question": "Après réception de la déclaration d'intention d'aliéner (DIA), la commune dispose, pour exercer son droit de préemption urbain, de...",
+        "options": [
+          "15 jours",
+          "1 mois",
+          "2 mois",
+          "6 mois"
+        ],
+        "correct": 2,
+        "explication": "La mairie a 2 mois pour répondre ; son silence vaut renonciation."
+      },
+      {
+        "question": "Les frais d'acquisition (« frais de notaire ») dans l'ancien représentent environ...",
+        "options": [
+          "2 à 3 % du prix",
+          "5 % du prix",
+          "7 à 8 % du prix",
+          "10 à 12 % du prix"
+        ],
+        "correct": 2,
+        "explication": "Tout compris, les frais d'acquisition dans l'ancien tournent autour de 7 à 8 % du prix."
+      },
+      {
+        "question": "Depuis le 1er avril 2025, les départements peuvent relever leur part des droits de mutation jusqu'à...",
+        "options": [
+          "4,50 %",
+          "5,00 %",
+          "6,00 %",
+          "7,00 %"
+        ],
+        "correct": 1,
+        "explication": "La loi de finances 2025 autorise un relèvement de 4,50 % à 5,00 %, portant le total DMTO à environ 6,3 %."
+      },
+      {
+        "question": "Pour vendre un bien commun d'un couple marié sous le régime de la communauté, il faut...",
+        "options": [
+          "La signature d'un seul époux",
+          "L'accord des deux époux",
+          "L'autorisation préalable du juge",
+          "L'accord du seul notaire"
+        ],
+        "correct": 1,
+        "explication": "La vente d'un bien commun exige l'accord des deux époux (art. 1424 du Code civil)."
+      },
+      {
+        "question": "L'acte de notoriété, dans une succession, sert à...",
+        "options": [
+          "Transférer et publier la propriété du bien",
+          "Identifier les héritiers et leurs droits",
+          "Fixer le prix de vente du bien",
+          "Purger le droit de préemption"
+        ],
+        "correct": 1,
+        "explication": "L'acte de notoriété identifie les héritiers ; c'est l'attestation immobilière qui transfère et publie la propriété."
+      },
+      {
+        "question": "L'attestation immobilière d'un bien issu d'une succession doit être établie et publiée dans le délai de...",
+        "options": [
+          "1 mois",
+          "3 mois",
+          "6 mois après le décès",
+          "2 ans"
+        ],
+        "correct": 2,
+        "explication": "Elle doit être publiée dans les 6 mois suivant le décès, comme la déclaration de succession."
       }
     ]
   },
@@ -4534,7 +6217,7 @@ const MODULES_BRUTS: Omit<ModuleFormation, "niveau">[] = [
     "icone": "⚖️",
     "categorie": "Juridique",
     "resume": "Honoraires, annonces, mandats, copropriété, location, urbanisme et formation : le vrai mode d'emploi de la loi ALUR, à jour 2024-2026.",
-    "duree": "39 min",
+    "duree": "43 min",
     "lecons": [
       {
         "titre": "Ce qu'a changé la loi ALUR (2014)",
@@ -4974,6 +6657,160 @@ const MODULES_BRUTS: Omit<ModuleFormation, "niveau">[] = [
         ],
         "correct": 1,
         "explication": "En transaction, les honoraires sont libres mais bornés par le barème affiché (plafond opposable) ; ils ne sont dus qu'une fois la vente conclue par acte authentique (règle Hoguet). Le plafonnement légal au m² ne concerne que la location."
+      },
+      {
+        "question": "Que signifie l'acronyme ALUR ?",
+        "options": [
+          "Aménagement du Logement Urbain Rénové",
+          "Accès au Logement et Urbanisme Rénové",
+          "Autorité du Logement et de l'Urbanisme Réglementé",
+          "Accord Locatif et Urbanisme Régional"
+        ],
+        "correct": 1,
+        "explication": "ALUR signifie « Accès au Logement et un Urbanisme Rénové » (loi du 24 mars 2014)."
+      },
+      {
+        "question": "La loi ALUR a été promulguée le...",
+        "options": [
+          "2 janvier 1970",
+          "24 mars 2014",
+          "6 août 2015",
+          "23 novembre 2018"
+        ],
+        "correct": 1,
+        "explication": "La loi n° 2014-366 ALUR date du 24 mars 2014."
+      },
+      {
+        "question": "Depuis ALUR, la carte professionnelle d'agent immobilier est...",
+        "options": [
+          "Valable 10 ans et délivrée par la préfecture",
+          "Valable 3 ans et délivrée par la CCI",
+          "Valable 5 ans et délivrée par la mairie",
+          "Valable à vie"
+        ],
+        "correct": 1,
+        "explication": "ALUR a ramené la carte de 10 à 3 ans, désormais délivrée par la CCI."
+      },
+      {
+        "question": "Sur le cycle de 3 ans de la carte, la formation continue doit comprendre au minimum...",
+        "options": [
+          "2 heures de déontologie et 2 heures de non-discrimination",
+          "10 heures de déontologie",
+          "Aucune thématique imposée",
+          "5 heures de droit fiscal"
+        ],
+        "correct": 0,
+        "explication": "Sur les 42 heures du cycle, au moins 2 h de déontologie et 2 h de non-discrimination sont exigées."
+      },
+      {
+        "question": "Le barème d'honoraires doit être affiché...",
+        "options": [
+          "Uniquement à l'accueil de l'agence",
+          "En vitrine, à l'accueil et sur le site internet, en TTC",
+          "Seulement sur demande du client",
+          "Uniquement en HT"
+        ],
+        "correct": 1,
+        "explication": "Le barème s'affiche en vitrine, à l'accueil et sur le site internet, toujours en TTC."
+      },
+      {
+        "question": "Les honoraires de location à la charge du locataire sont plafonnés, en zone très tendue, à...",
+        "options": [
+          "8 €/m²",
+          "10 €/m²",
+          "12 €/m²",
+          "15 €/m²"
+        ],
+        "correct": 2,
+        "explication": "Le plafond est de 12 €/m² en zone très tendue, auquel s'ajoute 3 €/m² pour l'état des lieux."
+      },
+      {
+        "question": "Les honoraires du syndic pour l'établissement de l'état daté sont plafonnés à...",
+        "options": [
+          "180 € TTC",
+          "380 € TTC",
+          "500 € TTC",
+          "non plafonnés"
+        ],
+        "correct": 1,
+        "explication": "L'état daté, obligatoire à l'acte, est plafonné à 380 € TTC."
+      },
+      {
+        "question": "Le fonds de travaux obligatoire des copropriétés représente une cotisation annuelle d'au moins...",
+        "options": [
+          "2 % du budget prévisionnel",
+          "5 % du budget prévisionnel",
+          "10 % des charges courantes",
+          "Un mois de charges"
+        ],
+        "correct": 1,
+        "explication": "Le fonds de travaux est alimenté d'au moins 5 % du budget prévisionnel annuel."
+      },
+      {
+        "question": "Le compte bancaire séparé du syndicat de copropriété est obligatoire, sauf dispense votée dans les copropriétés de...",
+        "options": [
+          "5 lots ou moins",
+          "10 lots ou moins",
+          "15 lots ou moins",
+          "50 lots ou moins"
+        ],
+        "correct": 2,
+        "explication": "La dispense de compte séparé ne peut être votée que dans les copropriétés de 15 lots ou moins."
+      },
+      {
+        "question": "Pour un logement classé F ou G, l'annonce doit obligatoirement porter la mention...",
+        "options": [
+          "« Passoire thermique »",
+          "« Logement à consommation énergétique excessive »",
+          "« Bien à rénover »",
+          "« Interdit à la location »"
+        ],
+        "correct": 1,
+        "explication": "Depuis le 1er janvier 2022, les logements F ou G portent la mention « Logement à consommation énergétique excessive »."
+      },
+      {
+        "question": "Le bail mobilité, créé par la loi ELAN, est un bail meublé...",
+        "options": [
+          "De 1 à 10 mois, non renouvelable et sans dépôt de garantie",
+          "De 3 ans minimum",
+          "D'un an renouvelable avec dépôt de garantie",
+          "De 6 ans"
+        ],
+        "correct": 0,
+        "explication": "Le bail mobilité dure de 1 à 10 mois, n'est pas renouvelable et n'exige aucun dépôt de garantie."
+      },
+      {
+        "question": "Exercer l'activité d'agent immobilier sans carte professionnelle est passible de...",
+        "options": [
+          "Une simple amende de 1 500 €",
+          "6 mois d'emprisonnement et 7 500 € d'amende",
+          "2 ans d'emprisonnement et 30 000 € d'amende",
+          "Aucune sanction pénale"
+        ],
+        "correct": 1,
+        "explication": "La loi Hoguet punit l'exercice sans carte de 6 mois d'emprisonnement et 7 500 € d'amende."
+      },
+      {
+        "question": "En matière d'urbanisme, ALUR a notamment généralisé...",
+        "options": [
+          "Le coefficient d'occupation des sols (COS)",
+          "Le PLU intercommunal (PLUi)",
+          "Le permis de construire tacite",
+          "Les plans d'occupation des sols (POS)"
+        ],
+        "correct": 1,
+        "explication": "ALUR généralise le PLU intercommunal, transférant la compétence aux intercommunalités."
+      },
+      {
+        "question": "La Garantie universelle des loyers (GUL) créée par ALUR a été...",
+        "options": [
+          "Généralisée à tous les baux",
+          "Jamais appliquée, puis remplacée par le dispositif Visale",
+          "Rendue obligatoire en 2020",
+          "Fusionnée avec le DPE"
+        ],
+        "correct": 1,
+        "explication": "La GUL n'a jamais été mise en œuvre ; elle a été remplacée par Visale d'Action Logement."
       }
     ]
   },
@@ -4983,7 +6820,7 @@ const MODULES_BRUTS: Omit<ModuleFormation, "niveau">[] = [
     "icone": "🛡️",
     "categorie": "Juridique",
     "resume": "Loi Hoguet, carte pro, mandat et honoraires, LCB-FT/Tracfin, RGPD, démarchage opt-in 2026 et non-discrimination : toutes vos obligations.",
-    "duree": "27 min",
+    "duree": "31 min",
     "lecons": [
       {
         "titre": "Loi Hoguet : le socle du métier",
@@ -5311,6 +7148,138 @@ const MODULES_BRUTS: Omit<ModuleFormation, "niveau">[] = [
         ],
         "correct": 2,
         "explication": "La discrimination (articles 225-1 et 225-2 du Code pénal) est un délit puni jusqu'à 3 ans de prison et 45 000 € d'amende ; l'agent qui relaie la consigne du propriétaire en est co-responsable."
+      },
+      {
+        "question": "Quelle est la durée de validité de la carte professionnelle d'agent immobilier ?",
+        "options": [
+          "1 an",
+          "3 ans",
+          "5 ans",
+          "À vie"
+        ],
+        "correct": 1,
+        "explication": "La carte professionnelle est valable 3 ans et se renouvelle auprès de la CCI dans les délais."
+      },
+      {
+        "question": "Depuis la loi ALUR de 2014, qui délivre la carte professionnelle d'agent immobilier ?",
+        "options": [
+          "La préfecture",
+          "La CCI (chambre de commerce et d'industrie)",
+          "Le tribunal de commerce",
+          "La mairie"
+        ],
+        "correct": 1,
+        "explication": "Depuis la loi ALUR de 2014, la carte est délivrée par la CCI, et non plus par la préfecture."
+      },
+      {
+        "question": "La garantie financière, minimum 110 000 €, est réduite à quel montant durant les deux premières années d'exercice ?",
+        "options": [
+          "10 000 €",
+          "30 000 €",
+          "55 000 €",
+          "75 000 €"
+        ],
+        "correct": 1,
+        "explication": "La garantie financière minimale de 110 000 € est ramenée à 30 000 € les deux premières années d'exercice."
+      },
+      {
+        "question": "Que couvre la mention « S » de la carte professionnelle ?",
+        "options": [
+          "La transaction",
+          "La gestion locative",
+          "L'activité de syndic de copropriété",
+          "Le service d'estimation"
+        ],
+        "correct": 2,
+        "explication": "La mention S autorise l'administration de copropriétés, c'est-à-dire l'activité de syndic."
+      },
+      {
+        "question": "Un négociateur (salarié ou agent commercial) agit grâce à quel document ?",
+        "options": [
+          "Sa propre carte professionnelle T",
+          "Une attestation d'habilitation délivrée par la CCI",
+          "Un simple contrat de travail",
+          "Une inscription au barreau"
+        ],
+        "correct": 1,
+        "explication": "Le négociateur ne détient pas de carte : il agit via une attestation d'habilitation (ex-carte blanche) délivrée par la CCI à la demande du titulaire."
+      },
+      {
+        "question": "Selon l'article 6 de la loi Hoguet, sans mandat écrit préalable conforme, l'agent immobilier…",
+        "options": [
+          "Peut quand même percevoir ses honoraires s'il a trouvé l'acquéreur",
+          "Ne peut réclamer aucun honoraire",
+          "Perçoit la moitié de ses honoraires",
+          "Doit saisir le juge pour être payé"
+        ],
+        "correct": 1,
+        "explication": "Le mandat écrit préalable est d'ordre public : sans lui, l'agent ne peut réclamer aucun honoraire, même s'il a trouvé l'acquéreur."
+      },
+      {
+        "question": "Passé un délai de 3 mois, un mandat exclusif peut être dénoncé par chaque partie moyennant un préavis de…",
+        "options": [
+          "48 heures",
+          "8 jours",
+          "15 jours",
+          "1 mois"
+        ],
+        "correct": 2,
+        "explication": "Au-delà de 3 mois, chaque partie peut dénoncer le mandat exclusif à tout moment par lettre recommandée, avec un préavis de 15 jours."
+      },
+      {
+        "question": "En location d'habitation, le plafond d'honoraires à la charge du locataire en zone tendue (hors état des lieux) est de…",
+        "options": [
+          "8 €/m²",
+          "10 €/m²",
+          "12 €/m²",
+          "15 €/m²"
+        ],
+        "correct": 1,
+        "explication": "Les honoraires du locataire sont plafonnés à 10 €/m² en zone tendue (12 € en zone très tendue, 8 € ailleurs), plus 3 €/m² pour l'état des lieux."
+      },
+      {
+        "question": "Depuis l'ordonnance de 2020, la location entre dans le champ de la LCB-FT dès que le loyer mensuel atteint…",
+        "options": [
+          "1 000 €",
+          "5 000 €",
+          "10 000 €",
+          "25 000 €"
+        ],
+        "correct": 2,
+        "explication": "La location est assujettie à la vigilance LCB-FT dès que le loyer mensuel atteint 10 000 €."
+      },
+      {
+        "question": "Combien de temps faut-il conserver les justificatifs de vigilance LCB-FT après la fin de la relation d'affaires ?",
+        "options": [
+          "1 an",
+          "3 ans",
+          "5 ans",
+          "10 ans"
+        ],
+        "correct": 2,
+        "explication": "L'article L.561-12 du Code monétaire et financier impose une conservation de 5 ans après la fin de la relation d'affaires."
+      },
+      {
+        "question": "Par quel canal s'effectue une déclaration de soupçon à Tracfin ?",
+        "options": [
+          "Par courrier recommandé",
+          "Par téléphone au commissariat",
+          "Par la téléprocédure sécurisée Ermes",
+          "Par e-mail au procureur"
+        ],
+        "correct": 2,
+        "explication": "La déclaration de soupçon se fait exclusivement via la téléprocédure sécurisée Ermes de Tracfin."
+      },
+      {
+        "question": "Même avec le consentement du prospect, le démarchage téléphonique est autorisé…",
+        "options": [
+          "7 jours sur 7 de 8 h à 22 h",
+          "Du lundi au vendredi, de 10 h à 13 h et de 14 h à 20 h",
+          "Uniquement le week-end",
+          "À toute heure sans restriction"
+        ],
+        "correct": 1,
+        "explication": "Le démarchage reste cantonné du lundi au vendredi, de 10 h à 13 h et de 14 h à 20 h, interdit samedi, dimanche et jours fériés."
       }
     ]
   },
@@ -5320,7 +7289,7 @@ const MODULES_BRUTS: Omit<ModuleFormation, "niveau">[] = [
     "icone": "🏦",
     "categorie": "Juridique",
     "resume": "De l'offre acceptée à la signature : avant-contrat, rétractation SRU, conditions suspensives, prêt, VEFA, frais et pilotage jusqu'à l'acte.",
-    "duree": "41 min",
+    "duree": "45 min",
     "lecons": [
       {
         "titre": "Compromis ou promesse unilatérale ?",
@@ -5745,6 +7714,138 @@ const MODULES_BRUTS: Omit<ModuleFormation, "niveau">[] = [
         ],
         "correct": 0,
         "explication": "Environ 7 à 8 % dans l'ancien, 2 à 3 % dans le neuf (droits de mutation allégés). Ils sont composés surtout de taxes ; le notaire n'en conserve qu'une faible part (ses émoluments)."
+      },
+      {
+        "question": "Le compromis de vente (promesse synallagmatique) engage…",
+        "options": [
+          "Seulement le vendeur",
+          "Seulement l'acquéreur",
+          "Les deux parties, vendeur et acquéreur",
+          "Ni l'une ni l'autre tant que le notaire n'a pas signé"
+        ],
+        "correct": 2,
+        "explication": "Selon l'article 1589 du Code civil, « la promesse de vente vaut vente » : le compromis engage fermement les deux parties."
+      },
+      {
+        "question": "Une promesse unilatérale de vente signée sous seing privé doit être enregistrée au service des impôts dans un délai de…",
+        "options": [
+          "3 jours",
+          "10 jours",
+          "1 mois",
+          "3 mois"
+        ],
+        "correct": 1,
+        "explication": "L'article 1589-2 impose l'enregistrement dans les 10 jours de l'acceptation, sous peine de nullité."
+      },
+      {
+        "question": "Après exercice de son droit de rétractation SRU, le dépôt de garantie de l'acquéreur doit être restitué dans un délai maximal de…",
+        "options": [
+          "7 jours",
+          "14 jours",
+          "21 jours",
+          "2 mois"
+        ],
+        "correct": 2,
+        "explication": "Le dépôt est restitué intégralement, sans pénalité, dans un délai maximal de 21 jours."
+      },
+      {
+        "question": "Le délai de rétractation SRU de 10 jours commence à courir…",
+        "options": [
+          "Le jour même de la signature du compromis",
+          "Le lendemain de la première présentation de la notification à l'acquéreur",
+          "À la signature de l'acte authentique",
+          "Dès l'acceptation de l'offre d'achat"
+        ],
+        "correct": 1,
+        "explication": "Le délai court à compter du lendemain de la première présentation de la notification de l'avant-contrat signé."
+      },
+      {
+        "question": "Une condition suspensive est « réputée accomplie » lorsque…",
+        "options": [
+          "Le délai de réalisation est dépassé",
+          "La partie qui avait intérêt à sa défaillance en a empêché la réalisation",
+          "Le notaire le décide",
+          "L'acquéreur change d'avis"
+        ],
+        "correct": 1,
+        "explication": "L'article 1304-3 du Code civil répute la condition accomplie si celui qui avait intérêt à sa défaillance en a empêché la réalisation."
+      },
+      {
+        "question": "Une condition potestative, qui dépend de la seule volonté de celui qui s'engage, est…",
+        "options": [
+          "Valable",
+          "Nulle",
+          "Valable seulement chez le notaire",
+          "Valable si écrite à la main"
+        ],
+        "correct": 1,
+        "explication": "La condition potestative (« j'achète si je le décide ») est nulle : la condition doit dépendre d'un événement extérieur à la volonté des parties."
+      },
+      {
+        "question": "L'agent immobilier peut séquestrer le dépôt de garantie uniquement s'il dispose…",
+        "options": [
+          "D'un simple compte courant d'agence",
+          "D'une garantie financière suffisante et d'un compte séquestre dédié",
+          "De l'accord verbal du vendeur",
+          "D'une carte G"
+        ],
+        "correct": 1,
+        "explication": "Sans garantie financière adaptée et compte séquestre dédié, l'agent ne peut pas détenir les fonds ; sinon, le notaire séquestre."
+      },
+      {
+        "question": "La cotisation annuelle au fonds de travaux d'une copropriété ne peut être inférieure à…",
+        "options": [
+          "1 % du budget prévisionnel",
+          "5 % du budget prévisionnel",
+          "10 % du budget prévisionnel",
+          "25 % du budget prévisionnel"
+        ],
+        "correct": 1,
+        "explication": "Le fonds de travaux obligatoire impose une cotisation d'au moins 5 % du budget prévisionnel (ou 2,5 % du plan pluriannuel)."
+      },
+      {
+        "question": "Dans l'échéancier de paiement d'une VEFA, quel pourcentage du prix est atteint à la mise hors d'eau (toiture posée) ?",
+        "options": [
+          "35 %",
+          "70 %",
+          "95 %",
+          "100 %"
+        ],
+        "correct": 1,
+        "explication": "L'article R261-14 du CCH plafonne le paiement à 35 % aux fondations, 70 % à la mise hors d'eau, 95 % à l'achèvement et 5 % à la livraison."
+      },
+      {
+        "question": "La loi de finances pour 2025 autorise les départements à relever la part départementale des droits de mutation de 4,50 % à…",
+        "options": [
+          "4,80 %",
+          "5 %",
+          "5,50 %",
+          "6 %"
+        ],
+        "correct": 1,
+        "explication": "Les départements peuvent relever la part départementale des DMTO à 5 % pour les actes signés entre le 1er avril 2025 et le 31 mars 2028."
+      },
+      {
+        "question": "La plus-value réalisée lors de la vente de sa résidence principale est…",
+        "options": [
+          "Taxée à 36,2 %",
+          "Taxée à 19 %",
+          "Totalement exonérée",
+          "Taxée seulement au-delà de 50 000 €"
+        ],
+        "correct": 2,
+        "explication": "La plus-value de la résidence principale est totalement exonérée d'impôt et de prélèvements sociaux."
+      },
+      {
+        "question": "En zone de droit de préemption urbain, de quel délai dispose la mairie pour se porter acquéreur après la déclaration d'intention d'aliéner ?",
+        "options": [
+          "15 jours",
+          "1 mois",
+          "2 mois",
+          "6 mois"
+        ],
+        "correct": 2,
+        "explication": "La mairie dispose de 2 mois pour préempter ou renoncer ; son silence vaut renonciation."
       }
     ]
   },
@@ -5754,7 +7855,7 @@ const MODULES_BRUTS: Omit<ModuleFormation, "niveau">[] = [
     "icone": "🌡️",
     "categorie": "Juridique",
     "resume": "DPE opposable, seuils & double étiquette, réforme 2024, DPE collectif, audit de vente, interdictions de louer, RE2020 et aides.",
-    "duree": "31 min",
+    "duree": "35 min",
     "lecons": [
       {
         "titre": "Le DPE : définition, contenu et valeur juridique",
@@ -6173,6 +8274,138 @@ const MODULES_BRUTS: Omit<ModuleFormation, "niveau">[] = [
         ],
         "correct": 1,
         "explication": "Depuis le 24 août 2022, les loyers des passoires F et G sont gelés : pas de révision par l'IRL, pas de réévaluation au renouvellement, pas de hausse après travaux tant que le bien reste F ou G."
+      },
+      {
+        "question": "L'étiquette énergie du DPE mesure la consommation en…",
+        "options": [
+          "Kilowattheures d'énergie primaire par m² et par an",
+          "Kilogrammes de CO2 par m² et par an",
+          "Euros par mois",
+          "Litres de fioul par an"
+        ],
+        "correct": 0,
+        "explication": "L'étiquette énergie exprime la consommation d'énergie primaire en kWh/m²/an ; l'étiquette climat, elle, mesure les émissions de GES."
+      },
+      {
+        "question": "Depuis juillet 2021, avec la méthode 3CL-DPE 2021, le DPE « vierge » (établi à partir des factures)…",
+        "options": [
+          "Est devenu la norme",
+          "A disparu",
+          "N'est autorisé qu'en copropriété",
+          "Reste valable 10 ans"
+        ],
+        "correct": 1,
+        "explication": "La méthode unifiée 3CL-DPE 2021 repose sur les caractéristiques physiques du bâtiment : le DPE vierge a disparu."
+      },
+      {
+        "question": "Le coefficient de conversion de l'électricité en énergie primaire est passé de 2,58 à…",
+        "options": [
+          "1,0",
+          "2,3",
+          "2,5",
+          "3,0"
+        ],
+        "correct": 1,
+        "explication": "Le passage de 2,58 à 2,3 a amélioré le classement de nombreux logements chauffés à l'électricité."
+      },
+      {
+        "question": "Pour être classé A, un logement doit respecter au plus…",
+        "options": [
+          "110 kWh/m²/an et 11 kg CO2/m²/an",
+          "70 kWh/m²/an et 6 kg CO2/m²/an",
+          "180 kWh/m²/an et 30 kg CO2/m²/an",
+          "70 kWh/m²/an seulement"
+        ],
+        "correct": 1,
+        "explication": "La classe A exige au plus 70 kWh/m²/an ET au plus 6 kg CO2/m²/an : les deux seuils doivent être respectés."
+      },
+      {
+        "question": "À quelle date la classe F sera-t-elle interdite à la location (résidence principale, métropole) ?",
+        "options": [
+          "1er janvier 2025",
+          "1er janvier 2028",
+          "1er janvier 2031",
+          "1er janvier 2034"
+        ],
+        "correct": 1,
+        "explication": "Le calendrier des interdictions est G en 2025, F en 2028 et E en 2034 (mnémo G-F-E = 25-28-34)."
+      },
+      {
+        "question": "Depuis le 24 août 2022, pour un logement classé F ou G, le bailleur…",
+        "options": [
+          "Peut augmenter le loyer avec l'IRL",
+          "Ne peut plus augmenter le loyer (gel des loyers)",
+          "Peut le louer sans restriction",
+          "Doit doubler le dépôt de garantie"
+        ],
+        "correct": 1,
+        "explication": "Les loyers des passoires F et G sont gelés : ni révision IRL, ni réévaluation au renouvellement, ni hausse après travaux tant que le bien reste F/G."
+      },
+      {
+        "question": "Le DPE collectif est obligatoire pour les copropriétés à usage principal d'habitation dont le permis de construire est antérieur au…",
+        "options": [
+          "1er janvier 1997",
+          "1er janvier 2005",
+          "1er janvier 2013",
+          "1er juillet 2021"
+        ],
+        "correct": 2,
+        "explication": "Le DPE collectif concerne les copropriétés d'habitation dont le permis est antérieur au 1er janvier 2013."
+      },
+      {
+        "question": "Depuis le 1er janvier 2022, toute annonce doit afficher, outre les deux étiquettes…",
+        "options": [
+          "Le nom du diagnostiqueur",
+          "L'estimation du coût annuel théorique d'énergie",
+          "La taxe foncière du bien",
+          "Le montant des charges de copropriété"
+        ],
+        "correct": 1,
+        "explication": "Depuis le 1er janvier 2022, l'annonce doit indiquer l'estimation du coût annuel théorique d'énergie (fourchette min-max)."
+      },
+      {
+        "question": "Un logement classé F ou G doit porter dans l'annonce la mention…",
+        "options": [
+          "« Bien à rénover »",
+          "« Logement à consommation énergétique excessive »",
+          "« Logement non conforme »",
+          "« Passoire thermique »"
+        ],
+        "correct": 1,
+        "explication": "La mention obligatoire pour un F ou un G est « logement à consommation énergétique excessive »."
+      },
+      {
+        "question": "L'audit énergétique réglementaire de vente concerne…",
+        "options": [
+          "Tout lot de copropriété vendu",
+          "Les maisons individuelles et immeubles entiers en mono-propriété les plus énergivores",
+          "Uniquement les biens neufs",
+          "Tous les logements, comme le DPE"
+        ],
+        "correct": 1,
+        "explication": "L'audit de vente vise les maisons individuelles et immeubles en mono-propriété énergivores ; la vente d'un lot de copropriété relève du DPE, pas de l'audit."
+      },
+      {
+        "question": "La réforme du 1er juillet 2024 a appliqué un coefficient correcteur aux logements de…",
+        "options": [
+          "40 m² ou moins",
+          "50 à 100 m²",
+          "Plus de 100 m²",
+          "Toutes surfaces"
+        ],
+        "correct": 0,
+        "explication": "La méthode pénalisait injustement les petits logements de 40 m² ou moins ; un coefficient correcteur a sorti environ 140 000 d'entre eux du statut de passoire."
+      },
+      {
+        "question": "Depuis le 1er janvier 2022, un logement neuf construit selon la RE2020 ressort en général au DPE en classe…",
+        "options": [
+          "A ou B",
+          "C ou D",
+          "E",
+          "F ou G"
+        ],
+        "correct": 0,
+        "explication": "La RE2020, qui remplace la RT2012 pour le neuf, conduit généralement à un classement A ou B au DPE."
       }
     ]
   },
@@ -6182,7 +8415,7 @@ const MODULES_BRUTS: Omit<ModuleFormation, "niveau">[] = [
     "icone": "🧠",
     "categorie": "Commercial",
     "resume": "Mindset, gestion du refus, du stress et du temps, confiance, négociation et habitudes durables : le mental qui fait la différence.",
-    "duree": "38 min",
+    "duree": "43 min",
     "lecons": [
       {
         "titre": "L'état d'esprit des top performers",
@@ -6580,6 +8813,138 @@ const MODULES_BRUTS: Omit<ModuleFormation, "niveau">[] = [
         ],
         "correct": 1,
         "explication": "Contrairement au mythe des 21 jours, l'étude Lally (2009) situe la moyenne autour de 66 jours : il faut tenir bon les deux premiers mois."
+      },
+      {
+        "question": "La loi de Pareto appliquée au négociateur signifie que…",
+        "options": [
+          "20 % des résultats viennent de 80 % des actions",
+          "80 % des résultats viennent de 20 % des actions",
+          "Tout se vaut en termes d'effort",
+          "Il faut travailler 80 heures par semaine"
+        ],
+        "correct": 1,
+        "explication": "80 % des résultats proviennent de 20 % des actions : prospection, prise de mandat et relances acquéreurs, à protéger en priorité."
+      },
+      {
+        "question": "La loi de Parkinson énonce que…",
+        "options": [
+          "Le travail s'étale jusqu'à occuper tout le temps disponible",
+          "Il faut toujours en faire plus",
+          "On travaille mieux sous la contrainte d'autrui",
+          "Les tâches difficiles doivent être reportées"
+        ],
+        "correct": 0,
+        "explication": "Le travail s'étale jusqu'à occuper le temps disponible : fixer des délais courts et fermes crée l'efficacité."
+      },
+      {
+        "question": "Dans un objectif SMART, le « T » signifie…",
+        "options": [
+          "Technique",
+          "Temporel (daté)",
+          "Théorique",
+          "Transversal"
+        ],
+        "correct": 1,
+        "explication": "SMART = Spécifique, Mesurable, Atteignable, Réaliste et Temporel (daté)."
+      },
+      {
+        "question": "Selon la mentalité de croissance de Carol Dweck, face à une limite il faut ajouter le mot…",
+        "options": [
+          "« jamais »",
+          "« pas encore »",
+          "« peut-être »",
+          "« toujours »"
+        ],
+        "correct": 1,
+        "explication": "Dire « je ne suis pas encore bon au téléphone » plutôt que « je suis mauvais » est le levier de la progression."
+      },
+      {
+        "question": "Un négociateur à locus de contrôle interne considère que sa réussite dépend avant tout…",
+        "options": [
+          "Des taux de crédit et de la conjoncture",
+          "De la chance",
+          "De ses propres actions et de son attitude",
+          "De la décision finale du client"
+        ],
+        "correct": 2,
+        "explication": "Le locus interne concentre l'énergie sur ce qu'on maîtrise (actions, préparation, attitude) et lâche prise sur le reste."
+      },
+      {
+        "question": "La « règle des 1 % » (s'améliorer de 1 % par jour) conduit en un an à être environ…",
+        "options": [
+          "2 fois meilleur",
+          "10 fois meilleur",
+          "37 fois meilleur",
+          "100 fois meilleur"
+        ],
+        "correct": 2,
+        "explication": "1,01 puissance 365 vaut environ 37,8 : la performance est une accumulation de micro-progrès, pas un bond spectaculaire."
+      },
+      {
+        "question": "La technique de respiration dite de cohérence cardiaque 3-6-5 consiste à pratiquer…",
+        "options": [
+          "3 fois par jour, 6 respirations par minute, pendant 5 minutes",
+          "3 minutes, 6 fois par jour, 5 jours par semaine",
+          "365 respirations d'affilée",
+          "6 fois par jour, 3 minutes, 5 respirations"
+        ],
+        "correct": 0,
+        "explication": "La cohérence cardiaque 3-6-5 : 3 fois par jour, 6 respirations par minute (inspirer 5 s / expirer 5 s), pendant 5 minutes."
+      },
+      {
+        "question": "Dans la méthode STOP de gestion des émotions, que représente le « O » ?",
+        "options": [
+          "Oublier l'incident",
+          "Observer la situation et ses émotions avec recul",
+          "Ordonner au client de se calmer",
+          "Opposer un argument"
+        ],
+        "correct": 1,
+        "explication": "STOP = Stop (ne pas réagir à chaud), Take a breath (respirer), Observer avec recul, Procéder de façon choisie."
+      },
+      {
+        "question": "La « posture de non-besoin » en négociation repose sur…",
+        "options": [
+          "Le fait d'avoir absolument besoin de cette vente",
+          "Un portefeuille d'affaires rempli qui permet de négocier détendu",
+          "L'agressivité envers le client",
+          "La baisse immédiate des honoraires"
+        ],
+        "correct": 1,
+        "explication": "Un pipeline rempli est la meilleure arme mentale : qui n'a pas besoin de cette vente ne brade ni ses honoraires ni le prix."
+      },
+      {
+        "question": "La méthode CAP de préparation d'avant-RDV correspond à…",
+        "options": [
+          "Calme, Attention, Patience",
+          "Corps, Ancrage, Projection",
+          "Confiance, Argument, Prix",
+          "Contact, Accueil, Proposition"
+        ],
+        "correct": 1,
+        "explication": "CAP = Corps (posture haute), Ancrage (geste déclencheur) et Projection (visualiser l'entretien réussi)."
+      },
+      {
+        "question": "Selon le modèle de Maslach, le burnout se construit sur trois dimensions : épuisement émotionnel, cynisme/dépersonnalisation et…",
+        "options": [
+          "Excès de confiance",
+          "Perte du sentiment d'accomplissement",
+          "Hyperactivité",
+          "Perfectionnisme"
+        ],
+        "correct": 1,
+        "explication": "Les trois dimensions du burnout sont l'épuisement émotionnel, le cynisme/dépersonnalisation et la perte du sentiment d'accomplissement."
+      },
+      {
+        "question": "La règle d'or pour ne pas abandonner une habitude en cours d'installation est…",
+        "options": [
+          "Ne jamais manquer une seule fois",
+          "Ne jamais manquer deux fois de suite",
+          "Tout changer d'un coup",
+          "Attendre la motivation"
+        ],
+        "correct": 1,
+        "explication": "Rater une fois n'est pas grave ; rater deux fois de suite installe la rechute : « ne jamais manquer deux fois »."
       }
     ]
   },
@@ -6589,7 +8954,7 @@ const MODULES_BRUTS: Omit<ModuleFormation, "niveau">[] = [
     "icone": "📸",
     "categorie": "Commercial",
     "resume": "Construire et piloter le plan marketing d'un bien : home-staging, photo, vidéo, annonce, diffusion, conformité légale et pilotage de la performance.",
-    "duree": "49 min",
+    "duree": "54 min",
     "lecons": [
       {
         "titre": "Le plan marketing : penser comme un stratège",
@@ -7133,6 +9498,149 @@ const MODULES_BRUTS: Omit<ModuleFormation, "niveau">[] = [
         ],
         "correct": 1,
         "explication": "Des visites nombreuses sans offre signifient que le bien plaît mais que le prix réel, ou l'état perçu en visite, ne suit pas : c'est le signal le plus clair d'un réajustement, documenté par le bilan vendeur."
+      },
+      {
+        "question": "Dans le modèle AIDA appliqué à l'immobilier, qu'est-ce qui capte en premier l'Attention de l'acheteur ?",
+        "options": [
+          "La photo de couverture et le titre de l'annonce",
+          "La visite virtuelle 360°",
+          "Le prix net vendeur",
+          "Le dossier de diagnostics techniques"
+        ],
+        "correct": 0,
+        "explication": "L'Attention se joue en une seconde sur la photo de couverture et le titre, car 90 % des recherches commencent en ligne."
+      },
+      {
+        "question": "Pendant combien de temps un bien bénéficie-t-il de son capital maximal de nouveauté aux yeux des acheteurs ?",
+        "options": [
+          "Ses 15 premiers jours de commercialisation",
+          "Ses 6 premiers mois",
+          "Toute la durée du mandat",
+          "Sa première année en ligne"
+        ],
+        "correct": 0,
+        "explication": "Un bien n'est jamais aussi désirable que dans ses 15 premiers jours, un capital de nouveauté qui ne revient pas."
+      },
+      {
+        "question": "Un home-staging léger (désencombrement, peinture, quelques accessoires) représente généralement quel budget ?",
+        "options": [
+          "De 1 à 3 % du prix de vente",
+          "Environ 10 % du prix de vente",
+          "Au moins 15 % du prix de vente",
+          "Le montant des honoraires d'agence"
+        ],
+        "correct": 0,
+        "explication": "Quelques centaines d'euros, soit 1 à 3 % du prix, suffisent souvent à gagner des milliers d'euros et des semaines de délai."
+      },
+      {
+        "question": "Combien de photos nettes et soignées constituent une bonne annonce immobilière ?",
+        "options": [
+          "Entre 15 et 25 photos",
+          "Exactement 3 photos",
+          "Au moins 50 photos",
+          "Une seule, la photo de couverture"
+        ],
+        "correct": 0,
+        "explication": "15 à 25 photos nettes valent mieux que 50 médiocres, en couvrant chaque pièce, les extérieurs et les atouts."
+      },
+      {
+        "question": "Dans quel format faut-il prendre les photos destinées aux portails immobiliers ?",
+        "options": [
+          "Format paysage (horizontal)",
+          "Format portrait (vertical)",
+          "Format carré uniquement",
+          "Peu importe, le portail s'adapte toujours"
+        ],
+        "correct": 0,
+        "explication": "Les portails attendent le format paysage et recadrent les photos verticales, qui se trouvent amputées."
+      },
+      {
+        "question": "Pour filmer un bien avec un drone équipé d'une caméra, même de moins de 250 g, l'exploitant doit obligatoirement…",
+        "options": [
+          "S'enregistrer sur le portail AlphaTango",
+          "Ne rien faire en dessous de 250 g",
+          "Obtenir un permis de construire",
+          "Déclarer le vol au syndic de copropriété"
+        ],
+        "correct": 0,
+        "explication": "Tout drone avec caméra impose l'enregistrement de l'exploitant sur AlphaTango, même un appareil de moins de 250 g, car il capte des données personnelles."
+      },
+      {
+        "question": "À quelle altitude maximale un drone de prise de vue peut-il voler en règle générale ?",
+        "options": [
+          "120 mètres",
+          "50 mètres",
+          "300 mètres",
+          "Aucune limite hors agglomération"
+        ],
+        "correct": 0,
+        "explication": "La réglementation limite l'altitude à 120 mètres et interdit le survol de personnes, avec de fortes restrictions en agglomération."
+      },
+      {
+        "question": "Dans toute annonce immobilière, quelles étiquettes doivent obligatoirement figurer ?",
+        "options": [
+          "Les étiquettes énergie (DPE) et climat (GES)",
+          "Uniquement l'étiquette DPE",
+          "Uniquement la surface loi Carrez",
+          "Le numéro de mandat"
+        ],
+        "correct": 0,
+        "explication": "Toute annonce doit afficher les étiquettes DPE et GES, ainsi que l'estimation des coûts annuels d'énergie."
+      },
+      {
+        "question": "Que ne faut-il jamais indiquer dans une annonce diffusée au public ?",
+        "options": [
+          "L'adresse exacte du bien",
+          "La classe énergétique du bien",
+          "Le montant des honoraires",
+          "La surface habitable"
+        ],
+        "correct": 0,
+        "explication": "On ne donne jamais l'adresse exacte pour protéger le vendeur du démarchage, des risques de sécurité et des visites sauvages."
+      },
+      {
+        "question": "Que faut-il obligatoirement détenir avant de diffuser une annonce sur un bien (loi Hoguet) ?",
+        "options": [
+          "Un mandat écrit autorisant expressément la publicité",
+          "Un simple accord verbal du vendeur",
+          "L'avis favorable du syndic",
+          "Un compromis de vente signé"
+        ],
+        "correct": 0,
+        "explication": "La loi Hoguet interdit toute publicité sans mandat écrit autorisant expressément la diffusion sur les supports choisis."
+      },
+      {
+        "question": "Effacer numériquement un défaut permanent (fissure, pylône) sur une photo constitue une pratique commerciale trompeuse passible de…",
+        "options": [
+          "2 ans d'emprisonnement et 300 000 € d'amende",
+          "Un simple avertissement",
+          "Une amende de 1 500 € maximum",
+          "Aucune sanction si le bien se vend"
+        ],
+        "correct": 0,
+        "explication": "L'effacement d'un défaut permanent est une pratique commerciale trompeuse (articles L.121-2 et suivants) punie jusqu'à 2 ans de prison et 300 000 € d'amende."
+      },
+      {
+        "question": "Quand retire-t-on le panneau « À vendre » posé devant le bien ?",
+        "options": [
+          "Dès la signature du compromis",
+          "Seulement le jour de l'acte authentique",
+          "Un an après la vente",
+          "Jamais, c'est de la publicité pour l'agence"
+        ],
+        "correct": 0,
+        "explication": "On retire le panneau dès le compromis signé pour éviter les contacts inutiles et les faux espoirs."
+      },
+      {
+        "question": "Une annonce ne génère quasiment aucune vue : sur quel levier agir en priorité ?",
+        "options": [
+          "L'emballage : titre, photo de couverture et diffusion",
+          "Baisser aussitôt le prix de 10 %",
+          "Attendre deux mois sans rien changer",
+          "Retirer les diagnostics de l'annonce"
+        ],
+        "correct": 0,
+        "explication": "Peu de vues signale un problème d'emballage ou de diffusion : on relance, on change l'accroche et la première photo."
       }
     ]
   },
@@ -7142,7 +9650,7 @@ const MODULES_BRUTS: Omit<ModuleFormation, "niveau">[] = [
     "icone": "📈",
     "categorie": "Transaction",
     "resume": "Conseiller l'investisseur de A à Z : rendement, cash-flow, effet de levier, LMNP, foncier, défiscalisation, montages et revente.",
-    "duree": "32 min",
+    "duree": "37 min",
     "lecons": [
       {
         "titre": "L'investisseur : une clientèle en or à comprendre",
@@ -7498,6 +10006,149 @@ const MODULES_BRUTS: Omit<ModuleFormation, "niveau">[] = [
         ],
         "correct": 1,
         "explication": "Micro-BIC meublé longue durée : abattement de 50 % jusqu'à 77 700 € de recettes, plus avantageux que le micro-foncier du nu (30 %). Attention : pour les meublés de tourisme, la loi Le Meur a abaissé ces seuils depuis les revenus 2025."
+      },
+      {
+        "question": "Quel rendement intègre la fiscalité (régime et TMI) et constitue le seul chiffre vraiment décisif pour l'investisseur ?",
+        "options": [
+          "Le rendement net-net (après impôt)",
+          "Le rendement brut",
+          "Le rendement net de charges",
+          "Le taux d'usure"
+        ],
+        "correct": 0,
+        "explication": "Le rendement net-net intègre l'impôt : c'est le seul chiffre qui compte réellement, d'où le repère « le brut ment, le net informe, le net-net décide »."
+      },
+      {
+        "question": "Pour ne pas surévaluer un rendement, que doit-on toujours inclure au dénominateur du calcul ?",
+        "options": [
+          "Les frais d'acquisition (notaire, agence, travaux, mobilier)",
+          "Uniquement le prix affiché",
+          "Les loyers des années suivantes",
+          "La taxe d'habitation du locataire"
+        ],
+        "correct": 0,
+        "explication": "Un rendement calculé sur le seul prix affiché, sans les frais d'acquisition, est toujours surévalué."
+      },
+      {
+        "question": "Selon les règles du HCSF (2024-2026), le taux d'endettement maximal d'un emprunteur est de…",
+        "options": [
+          "35 % des revenus, assurance emprunteur comprise",
+          "50 % des revenus",
+          "33 % hors assurance",
+          "25 % des revenus"
+        ],
+        "correct": 0,
+        "explication": "Le HCSF plafonne l'endettement à 35 % des revenus, assurance comprise, avec une marge de dérogation de 20 % des dossiers."
+      },
+      {
+        "question": "La durée maximale d'un crédit immobilier fixée par le HCSF est en principe de…",
+        "options": [
+          "25 ans, portée à 27 ans avec différé dans le neuf ou gros travaux",
+          "30 ans",
+          "20 ans",
+          "15 ans"
+        ],
+        "correct": 0,
+        "explication": "La durée maximale est de 25 ans, jusqu'à 27 ans avec différé pour le neuf ou des travaux représentant au moins 10 % de l'opération."
+      },
+      {
+        "question": "Pour calculer la capacité d'emprunt d'un investisseur, les banques retiennent généralement quelle part des loyers attendus ?",
+        "options": [
+          "Environ 70 %",
+          "100 %",
+          "50 %",
+          "30 %"
+        ],
+        "correct": 0,
+        "explication": "Les banques ne retiennent en général que 70 % des loyers attendus, par prudence face à la vacance et aux charges."
+      },
+      {
+        "question": "Le régime du micro-foncier (location nue) est accessible jusqu'à 15 000 € de revenus bruts et applique un abattement forfaitaire de…",
+        "options": [
+          "30 %",
+          "50 %",
+          "10 %",
+          "71 %"
+        ],
+        "correct": 0,
+        "explication": "Le micro-foncier applique un abattement de 30 %, moins généreux que le micro-BIC du meublé (50 %)."
+      },
+      {
+        "question": "L'option pour le régime réel en revenus fonciers est irrévocable pendant…",
+        "options": [
+          "3 ans, puis reconductible tacitement",
+          "1 an",
+          "9 ans",
+          "5 ans"
+        ],
+        "correct": 0,
+        "explication": "Optionnel sous 15 000 €, le régime réel engage pour 3 ans irrévocables, puis se reconduit tacitement."
+      },
+      {
+        "question": "Les intérêts d'emprunt qui génèrent un déficit foncier s'imputent…",
+        "options": [
+          "Uniquement sur les revenus fonciers",
+          "Sur le revenu global sans limite",
+          "Sur le revenu global jusqu'à 10 700 €",
+          "Sur la plus-value de revente"
+        ],
+        "correct": 0,
+        "explication": "Les intérêts d'emprunt ne s'imputent que sur les revenus fonciers ; seule la part de déficit hors intérêts frappe le revenu global jusqu'à 10 700 €."
+      },
+      {
+        "question": "Pour des travaux faisant sortir un logement du statut de passoire énergétique, le plafond d'imputation du déficit foncier sur le revenu global est porté à…",
+        "options": [
+          "21 400 €",
+          "10 700 €",
+          "15 300 €",
+          "30 000 €"
+        ],
+        "correct": 0,
+        "explication": "Le plafond est doublé à 21 400 € pour les travaux faisant passer un logement de E, F ou G vers A, B, C ou D, pour les dépenses payées de 2023 à 2027."
+      },
+      {
+        "question": "On reste loueur en meublé non professionnel (LMNP) tant que les recettes meublées sont…",
+        "options": [
+          "Inférieures ou égales à 23 000 €/an, ou inférieures aux autres revenus d'activité",
+          "Inférieures à 15 000 €/an",
+          "Inférieures à 77 700 €/an",
+          "Inférieures à 72 600 €/an"
+        ],
+        "correct": 0,
+        "explication": "Le statut LMNP vaut par défaut tant que les recettes ne dépassent pas 23 000 €/an ou restent inférieures aux autres revenus d'activité du foyer."
+      },
+      {
+        "question": "Pour obtenir un numéro SIRET en LMNP, l'activité doit être déclarée (formulaire P0i) sur le guichet unique de l'INPI dans un délai de…",
+        "options": [
+          "15 jours",
+          "3 mois",
+          "1 an",
+          "30 jours"
+        ],
+        "correct": 0,
+        "explication": "La déclaration de début d'activité (P0i) se fait dans les 15 jours sur le guichet unique de l'INPI pour obtenir le SIRET."
+      },
+      {
+        "question": "Depuis la loi Le Meur (revenus 2025), l'abattement micro-BIC d'un meublé de tourisme non classé est ramené à…",
+        "options": [
+          "30 %, plafond 15 000 €",
+          "50 %, plafond 77 700 €",
+          "71 %",
+          "0 %"
+        ],
+        "correct": 0,
+        "explication": "La loi Le Meur ramène l'abattement à 30 % (plafond 15 000 €) pour les meublés de tourisme non classés, contre 50 % (77 700 €) pour les classés."
+      },
+      {
+        "question": "Lequel de ces mécanismes n'entre PAS dans le plafonnement global des niches fiscales à 10 000 €/an ?",
+        "options": [
+          "Le déficit foncier et l'amortissement LMNP",
+          "La réduction d'impôt Denormandie",
+          "La réduction d'impôt Loc'Avantages",
+          "Les réductions pour investissement locatif neuf"
+        ],
+        "correct": 0,
+        "explication": "Le déficit foncier et l'amortissement LMNP sont des charges déductibles, pas des réductions d'impôt : ils échappent au plafonnement des niches, d'où leur puissance."
       }
     ]
   },
@@ -7507,7 +10158,7 @@ const MODULES_BRUTS: Omit<ModuleFormation, "niveau">[] = [
     "icone": "🏗️",
     "categorie": "Transaction",
     "resume": "Vendre et sécuriser l'achat sur plan : contrat de réservation, 10 jours SRU, garanties, appels de fonds, TVA, frais réduits et dispositifs.",
-    "duree": "24 min",
+    "duree": "30 min",
     "lecons": [
       {
         "titre": "La VEFA : acheter et vendre sur plan",
@@ -7820,6 +10471,160 @@ const MODULES_BRUTS: Omit<ModuleFormation, "niveau">[] = [
         ],
         "correct": 1,
         "explication": "À 18 mois, la garantie de parfait achèvement (1 an) est expirée ; un équipement dissociable comme un volet relève de la garantie biennale de bon fonctionnement (2 ans, art. 1792-3 du Code civil)."
+      },
+      {
+        "question": "Si l'acte de vente VEFA doit être signé entre 1 et 2 ans après la réservation, le dépôt de garantie est plafonné à…",
+        "options": [
+          "2 % du prix",
+          "5 % du prix",
+          "10 % du prix",
+          "Aucun plafond légal"
+        ],
+        "correct": 0,
+        "explication": "Le barème « 5 – 2 – 0 » fixe le dépôt à 2 % maximum pour une signature prévue entre 1 et 2 ans."
+      },
+      {
+        "question": "Quand le délai prévu de signature de l'acte VEFA dépasse 2 ans, le dépôt de garantie autorisé est…",
+        "options": [
+          "Aucun dépôt",
+          "2 % du prix",
+          "5 % du prix",
+          "1 % du prix"
+        ],
+        "correct": 0,
+        "explication": "Au-delà de 2 ans, aucun dépôt de garantie n'est autorisé (règle « 5 – 2 – 0 »)."
+      },
+      {
+        "question": "Où est versé le dépôt de garantie d'un contrat de réservation VEFA ?",
+        "options": [
+          "Sur un compte séquestre bloqué chez le notaire ou en banque",
+          "Directement sur le compte du promoteur",
+          "En espèces à l'agence",
+          "Sur un compte d'épargne de l'acquéreur"
+        ],
+        "correct": 0,
+        "explication": "Le dépôt est séquestré et bloqué : il n'est pas encaissé par le promoteur, encaisser hors séquestre est strictement interdit."
+      },
+      {
+        "question": "Lorsqu'un prix VEFA est révisable, la révision est indexée sur l'indice BT01 et limitée à…",
+        "options": [
+          "70 % de la variation de l'indice",
+          "100 % de la variation",
+          "35 % de la variation",
+          "50 % de la variation"
+        ],
+        "correct": 0,
+        "explication": "La loi encadre la clause de révision : chaque révision est plafonnée à 70 % de la variation de l'indice BT01."
+      },
+      {
+        "question": "Si la surface réellement livrée est inférieure de plus de 5 % à celle du contrat, l'acquéreur peut…",
+        "options": [
+          "Demander une diminution du prix",
+          "Rien exiger, c'est toléré",
+          "Annuler la vente dès 2 % d'écart",
+          "Exiger un autre logement d'office"
+        ],
+        "correct": 0,
+        "explication": "Une tolérance d'environ 5 % existe ; au-delà, l'acquéreur peut demander une diminution proportionnelle du prix."
+      },
+      {
+        "question": "Dans l'échéancier légal des appels de fonds, quel pourcentage est atteint à l'achèvement des fondations ?",
+        "options": [
+          "35 %",
+          "70 %",
+          "50 %",
+          "95 %"
+        ],
+        "correct": 0,
+        "explication": "Le barème maximal est « 35 aux fondations, 70 hors d'eau, 95 achevé, 5 à la clé »."
+      },
+      {
+        "question": "Quel pourcentage cumulé du prix est appelé à l'achèvement de l'immeuble, avant livraison ?",
+        "options": [
+          "95 %",
+          "70 %",
+          "100 %",
+          "90 %"
+        ],
+        "correct": 0,
+        "explication": "À l'achèvement, 95 % du prix est appelé au maximum ; le solde de 5 % n'est dû qu'à la livraison."
+      },
+      {
+        "question": "Le solde de 5 % en VEFA est dû à la livraison ; en cas de réserves, l'acquéreur peut…",
+        "options": [
+          "Le consigner chez un tiers jusqu'à la levée des réserves",
+          "En exiger le remboursement total",
+          "Le verser sans condition",
+          "Le réduire de moitié définitivement"
+        ],
+        "correct": 0,
+        "explication": "En présence de réserves, consigner les 5 % de solde est un levier de pression légitime jusqu'à leur levée."
+      },
+      {
+        "question": "Pendant la construction, les intérêts que l'emprunteur paie uniquement sur les sommes déjà débloquées s'appellent…",
+        "options": [
+          "Les intérêts intercalaires",
+          "Les intérêts de retard",
+          "Les intérêts composés",
+          "Les frais de garantie"
+        ],
+        "correct": 0,
+        "explication": "Les intérêts intercalaires portent sur les seules sommes libérées ; la mensualité pleine ne démarre généralement qu'à la livraison, d'où une double charge à anticiper."
+      },
+      {
+        "question": "Depuis le 1er janvier 2015, quelle forme de Garantie Financière d'Achèvement est seule admise en VEFA ?",
+        "options": [
+          "La GFA extrinsèque, délivrée par un établissement tiers",
+          "La GFA intrinsèque",
+          "La caution personnelle du promoteur",
+          "L'assurance dommages-ouvrage"
+        ],
+        "correct": 0,
+        "explication": "Depuis 2015, seule la GFA extrinsèque (banque ou assureur) est admise ; la garantie intrinsèque a disparu."
+      },
+      {
+        "question": "À quoi sert l'assurance dommages-ouvrage souscrite par le promoteur avant le chantier ?",
+        "options": [
+          "Préfinancer les réparations décennales sans attendre une décision de justice",
+          "Garantir l'achèvement en cas de faillite du promoteur",
+          "Couvrir les loyers impayés du futur locataire",
+          "Rembourser le dépôt de garantie"
+        ],
+        "correct": 0,
+        "explication": "La dommages-ouvrage préfinance les réparations relevant de la décennale sans attendre un procès, et se transmet aux acquéreurs successifs pendant 10 ans."
+      },
+      {
+        "question": "Dans le neuf, pendant la première année suivant la réception, quelle garantie couvre tous les désordres signalés, même mineurs ?",
+        "options": [
+          "La garantie de parfait achèvement",
+          "La garantie biennale",
+          "La garantie décennale",
+          "La garantie d'isolation phonique"
+        ],
+        "correct": 0,
+        "explication": "La garantie de parfait achèvement (article 1792-6) oblige le promoteur à réparer tous les désordres signalés la première année."
+      },
+      {
+        "question": "Depuis le 1er avril 2025, le prêt à taux zéro (PTZ) dans le neuf est…",
+        "options": [
+          "Ouvert sur tout le territoire et à tous les logements neufs, maisons individuelles incluses",
+          "Réservé au collectif en zone tendue",
+          "Supprimé",
+          "Réservé aux résidences secondaires"
+        ],
+        "correct": 0,
+        "explication": "Depuis le 1er avril 2025 et jusqu'au 31 décembre 2027, le PTZ neuf est ouvert partout et à tous les logements neufs, y compris les maisons individuelles."
+      },
+      {
+        "question": "Pour bénéficier de l'exonération de taxe foncière de 2 ans dans le neuf, il faut déclarer l'achèvement au fisc dans un délai de…",
+        "options": [
+          "90 jours",
+          "30 jours",
+          "6 mois",
+          "1 an"
+        ],
+        "correct": 0,
+        "explication": "La construction neuve est exonérée de taxe foncière 2 ans, à condition de déclarer l'achèvement dans les 90 jours via « Gérer mes biens immobiliers »."
       }
     ]
   },
@@ -7829,7 +10634,7 @@ const MODULES_BRUTS: Omit<ModuleFormation, "niveau">[] = [
     "icone": "🧾",
     "categorie": "Juridique",
     "resume": "Calcul, abattements 22/30 ans, exonérations, surtaxe, SCI, réforme LMNP 2025 et rôle du négociateur sur la plus-value immobilière des particuliers.",
-    "duree": "32 min",
+    "duree": "38 min",
     "lecons": [
       {
         "titre": "Comprendre la plus-value : champ, acteurs et enjeux",
@@ -8188,6 +10993,160 @@ const MODULES_BRUTS: Omit<ModuleFormation, "niveau">[] = [
         ],
         "correct": 1,
         "explication": "La loi de finances 2025 réintègre les amortissements dans le calcul de la plus-value LMNP (cessions postérieures au 15 février 2025) : ils diminuent le prix d'acquisition et augmentent donc la base imposable, tout en restant dans le régime des particuliers (abattements 22/30 ans)."
+      },
+      {
+        "question": "La plus-value brute d'un particulier correspond à…",
+        "options": [
+          "Le prix de cession corrigé moins le prix d'acquisition corrigé",
+          "Le prix de vente moins les frais d'agence",
+          "Les loyers perçus moins les charges",
+          "Le prix d'achat moins les travaux"
+        ],
+        "correct": 0,
+        "explication": "La plus-value brute est la différence entre le prix de cession corrigé et le prix d'acquisition corrigé, avant tout abattement."
+      },
+      {
+        "question": "L'impôt de plus-value immobilière prélevé par le notaire le jour de l'acte est…",
+        "options": [
+          "Libératoire : aucune régularisation ultérieure sur cette plus-value",
+          "À régulariser l'année suivante",
+          "Remboursable à 100 %",
+          "Reportable sur 10 ans"
+        ],
+        "correct": 0,
+        "explication": "Le prélèvement est libératoire : le vendeur n'a aucune démarche à faire a posteriori, seule la plus-value nette entre dans le revenu fiscal de référence."
+      },
+      {
+        "question": "À défaut de justificatifs, les frais d'acquisition majorant le prix d'achat sont évalués au forfait de…",
+        "options": [
+          "7,5 % du prix d'achat",
+          "15 % du prix d'achat",
+          "30 % du prix d'achat",
+          "10 % du prix d'achat"
+        ],
+        "correct": 0,
+        "explication": "Le forfait de frais d'acquisition est de 7,5 % du prix d'achat, applicable uniquement pour une acquisition à titre onéreux."
+      },
+      {
+        "question": "L'exonération d'impôt sur le revenu (19 %) sur la plus-value immobilière est acquise après…",
+        "options": [
+          "22 ans de détention",
+          "30 ans de détention",
+          "15 ans de détention",
+          "5 ans de détention"
+        ],
+        "correct": 0,
+        "explication": "L'abattement de 6 %/an de la 6e à la 21e année, plus 4 % la 22e, aboutit à l'exonération d'impôt sur le revenu à 22 ans."
+      },
+      {
+        "question": "Après 22 ans de détention d'un bien locatif, que reste-t-il à payer en cas de vente ?",
+        "options": [
+          "Les prélèvements sociaux, jusqu'à 30 ans de détention",
+          "Rien, tout est exonéré",
+          "L'impôt sur le revenu seul",
+          "La surtaxe uniquement"
+        ],
+        "correct": 0,
+        "explication": "À 22 ans l'impôt sur le revenu disparaît, mais les prélèvements sociaux courent jusqu'à l'exonération totale à 30 ans."
+      },
+      {
+        "question": "La plus-value immobilière pleinement taxée (sans abattement) supporte…",
+        "options": [
+          "19 % d'impôt sur le revenu et 17,2 % de prélèvements sociaux, soit 36,2 %",
+          "30 % de flat tax",
+          "19 % en tout",
+          "36,2 % d'impôt sur le revenu seul"
+        ],
+        "correct": 0,
+        "explication": "Le taux global est de 36,2 % : 19 % d'impôt sur le revenu et 17,2 % de prélèvements sociaux."
+      },
+      {
+        "question": "Les 17,2 % de prélèvements sociaux sur la plus-value se décomposent en…",
+        "options": [
+          "CSG 9,2 %, CRDS 0,5 % et prélèvement de solidarité 7,5 %",
+          "17,2 % de CSG seule",
+          "CSG 8 % et CRDS 9,2 %",
+          "TVA 5,5 % et CSG 11,7 %"
+        ],
+        "correct": 0,
+        "explication": "Les prélèvements sociaux se répartissent en CSG 9,2 %, CRDS 0,5 % et prélèvement de solidarité 7,5 %, non déductibles sur la plus-value."
+      },
+      {
+        "question": "La surtaxe sur les plus-values imposables supérieures à 50 000 € est progressive de…",
+        "options": [
+          "2 % à 6 %",
+          "1 % à 3 %",
+          "5 % à 10 %",
+          "0,5 % à 1,5 %"
+        ],
+        "correct": 0,
+        "explication": "La surtaxe va de 2 % à 6 % par tranche et s'applique à la totalité de la plus-value imposable au-delà de 50 000 €."
+      },
+      {
+        "question": "Lequel de ces biens est exclu de la surtaxe sur les plus-values élevées ?",
+        "options": [
+          "Les terrains à bâtir",
+          "Les résidences secondaires",
+          "Les biens locatifs",
+          "Les parts de SCI à l'IR"
+        ],
+        "correct": 0,
+        "explication": "Les terrains à bâtir sont exclus de la surtaxe, tout comme la résidence principale, déjà exonérée."
+      },
+      {
+        "question": "L'exonération de la plus-value de la résidence principale est soumise à…",
+        "options": [
+          "Aucune condition de durée de détention ni de montant",
+          "Une détention minimale de 5 ans",
+          "Un plafond de 150 000 €",
+          "Une détention de 22 ans"
+        ],
+        "correct": 0,
+        "explication": "La vente de la résidence principale est totalement exonérée (article 150 U du CGI), sans condition de durée ni de montant."
+      },
+      {
+        "question": "Un vendeur ayant déménagé avant de vendre conserve l'exonération de résidence principale si le bien est vendu dans un délai normal, en pratique de…",
+        "options": [
+          "Un an, sans que le bien ait été loué entre-temps",
+          "Cinq ans",
+          "Trois mois",
+          "Deux ans dans tous les cas"
+        ],
+        "correct": 0,
+        "explication": "Le délai normal de vente est d'environ un an, à condition que le bien n'ait pas été loué ni occupé gratuitement et que les démarches aient été entreprises sans tarder."
+      },
+      {
+        "question": "Une cession immobilière dont le prix est inférieur ou égal à 15 000 € est…",
+        "options": [
+          "Totalement exonérée de plus-value",
+          "Taxée au taux plein de 36,2 %",
+          "Soumise à la surtaxe",
+          "Exonérée seulement après 22 ans"
+        ],
+        "correct": 0,
+        "explication": "Les petites cessions à 15 000 € ou moins sont exonérées ; le seuil s'apprécie par bien et par vendeur (utile pour un garage ou une cave)."
+      },
+      {
+        "question": "Donner un bien à ses enfants avant la vente permet, lorsque la donation est réelle, de…",
+        "options": [
+          "Purger la plus-value, la valeur retenue devenant celle de la donation récente",
+          "Doubler l'abattement pour durée",
+          "Éviter uniquement les droits de succession",
+          "Reporter l'impôt sur 10 ans"
+        ],
+        "correct": 0,
+        "explication": "La donation avant cession purge la plus-value, mais la donation doit être réelle sous peine d'abus de droit : à monter exclusivement avec le notaire."
+      },
+      {
+        "question": "Quel formulaire le notaire établit-il pour déclarer la plus-value sur la cession d'un immeuble ?",
+        "options": [
+          "Le formulaire 2048-IMM",
+          "Le formulaire 2044",
+          "Le formulaire P0i",
+          "Le formulaire 2042"
+        ],
+        "correct": 0,
+        "explication": "La cession d'un immeuble se déclare sur le 2048-IMM, celle de parts de société à prépondérance immobilière sur le 2048-M."
       }
     ]
   },
@@ -8197,7 +11156,7 @@ const MODULES_BRUTS: Omit<ModuleFormation, "niveau">[] = [
     "icone": "🔑",
     "categorie": "Juridique",
     "resume": "Bail loi 89, baux spécifiques, dossier et garanties, loyer et encadrement, état des lieux, congé, impayés et décence énergétique.",
-    "duree": "38 min",
+    "duree": "43 min",
     "lecons": [
       {
         "titre": "Le bail loi 89 : cadre, durées, contrat type & mentions obligatoires",
@@ -8632,6 +11591,171 @@ const MODULES_BRUTS: Omit<ModuleFormation, "niveau">[] = [
         ],
         "correct": 1,
         "explication": "En zone tendue, la part locataire est plafonnée à 10 €/m² de surface habitable (12 €/m² en zone très tendue, 8 €/m² ailleurs), plus 3 €/m² maximum pour l'état des lieux, sans jamais dépasser la part payée par le bailleur."
+      },
+      {
+        "question": "Dans un bail d'habitation régi par la loi de 1989, une clause défavorable au locataire qui déroge à la loi est…",
+        "options": [
+          "Réputée non écrite",
+          "Valable dès lors qu'elle est signée",
+          "Valable pendant un an",
+          "Soumise à la validation du juge"
+        ],
+        "correct": 0,
+        "explication": "La loi de 1989 est d'ordre public : toute clause dérogeant à son détriment au locataire est réputée non écrite."
+      },
+      {
+        "question": "La durée d'un bail meublé de résidence principale (hors étudiant) est de…",
+        "options": [
+          "1 an reconductible tacitement",
+          "3 ans",
+          "6 ans",
+          "9 mois"
+        ],
+        "correct": 0,
+        "explication": "Le bail meublé de résidence principale est d'1 an reconductible, contre 3 ans en location vide."
+      },
+      {
+        "question": "Le bail meublé étudiant a une durée de 9 mois…",
+        "options": [
+          "Non reconductible tacitement, il faut signer un nouveau bail",
+          "Reconductible pour 9 mois",
+          "Reconductible pour 1 an",
+          "Reconductible pour 3 ans"
+        ],
+        "correct": 0,
+        "explication": "Le bail étudiant de 9 mois prend fin automatiquement sans congé ; le reconduire oralement est une erreur, il faut un nouveau bail."
+      },
+      {
+        "question": "La durée d'un bail vide consenti par un bailleur personne morale (hors SCI familiale) est de…",
+        "options": [
+          "6 ans",
+          "3 ans",
+          "1 an",
+          "9 ans"
+        ],
+        "correct": 0,
+        "explication": "Le bail vide dure 3 ans pour un bailleur personne physique ou SCI familiale, mais 6 ans pour une personne morale."
+      },
+      {
+        "question": "Le dépôt de garantie maximal en location vide est de…",
+        "options": [
+          "1 mois de loyer hors charges",
+          "2 mois de loyer hors charges",
+          "3 mois de loyer hors charges",
+          "Interdit"
+        ],
+        "correct": 0,
+        "explication": "Le dépôt est limité à 1 mois de loyer hors charges en vide, contre 2 mois en meublé et aucun en bail mobilité."
+      },
+      {
+        "question": "Le mobilier obligatoire d'un logement loué meublé est fixé par décret et comporte au minimum…",
+        "options": [
+          "11 éléments (literie, plaques de cuisson, réfrigérateur, vaisselle…)",
+          "5 éléments",
+          "Aucune liste précise",
+          "20 éléments"
+        ],
+        "correct": 0,
+        "explication": "Le décret n°2015-981 fixe une liste de 11 éléments minimum ; un meublé incomplet peut être requalifié en location vide."
+      },
+      {
+        "question": "Réclamer une pièce interdite au candidat locataire (relevé bancaire, carte Vitale…) expose à une amende administrative pouvant atteindre…",
+        "options": [
+          "3 000 € pour une personne physique",
+          "300 €",
+          "50 €",
+          "Aucune sanction"
+        ],
+        "correct": 0,
+        "explication": "Le décret du 5 novembre 2015 fixe une liste limitative ; exiger une pièce hors liste est passible de 3 000 € (personne physique) et 15 000 € (personne morale)."
+      },
+      {
+        "question": "La règle de prudence courante pour la solvabilité fixe un loyer charges comprises inférieur ou égal à…",
+        "options": [
+          "33 % des revenus nets du foyer",
+          "50 % des revenus nets",
+          "10 % des revenus nets",
+          "75 % des revenus nets"
+        ],
+        "correct": 0,
+        "explication": "Le taux d'effort prudent est de 33 % des revenus nets, seuil exigé par la plupart des assurances GLI."
+      },
+      {
+        "question": "Depuis la loi ALUR, un colocataire qui donne congé reste solidaire de la dette jusqu'à l'arrivée d'un remplaçant, et au plus tard…",
+        "options": [
+          "6 mois après la date d'effet de son congé",
+          "3 mois après",
+          "1 an après",
+          "Jusqu'à la fin du bail en cours"
+        ],
+        "correct": 0,
+        "explication": "La loi ALUR limite la solidarité du colocataire partant à l'arrivée d'un remplaçant, et au plus tard 6 mois après l'effet de son congé."
+      },
+      {
+        "question": "Une résidence principale peut être louée en meublé de tourisme au maximum 120 jours par an, plafond que la commune peut abaisser à…",
+        "options": [
+          "90 jours (loi Le Meur du 19 novembre 2024)",
+          "60 jours",
+          "30 jours",
+          "180 jours"
+        ],
+        "correct": 0,
+        "explication": "Depuis la loi Le Meur, la commune peut ramener le plafond de location de 120 à 90 jours par an pour une résidence principale."
+      },
+      {
+        "question": "La révision annuelle du loyer par l'indice de référence des loyers (IRL) n'est possible que si…",
+        "options": [
+          "Le bail contient une clause de révision",
+          "Le locataire l'accepte chaque année",
+          "Le loyer est manifestement sous-évalué",
+          "Le logement est classé A ou B"
+        ],
+        "correct": 0,
+        "explication": "La révision IRL n'est possible qu'en présence d'une clause de révision, une fois par an, et n'est pas rétroactive si on l'oublie."
+      },
+      {
+        "question": "Depuis le 24 août 2022, les loyers des logements classés F ou G sont…",
+        "options": [
+          "Gelés : ni révision IRL, ni hausse à la relocation",
+          "Plafonnés à +3,5 %",
+          "Entièrement libres",
+          "Majorés de l'IRL chaque année"
+        ],
+        "correct": 0,
+        "explication": "Les loyers des passoires F et G sont gelés : aucune révision ni réévaluation tant que le bien reste F ou G."
+      },
+      {
+        "question": "Le bailleur ne peut donner congé qu'à l'échéance du bail, avec un préavis de…",
+        "options": [
+          "6 mois en location vide, 3 mois en meublé",
+          "3 mois en vide, 1 mois en meublé",
+          "1 mois dans tous les cas",
+          "2 mois en vide, 1 mois en meublé"
+        ],
+        "correct": 0,
+        "explication": "Le congé du bailleur, à l'échéance et pour un motif légal (vente, reprise, motif légitime et sérieux), respecte un préavis de 6 mois en vide et 3 mois en meublé."
+      },
+      {
+        "question": "Depuis la loi du 27 juillet 2023, après un commandement de payer, le locataire dispose pour régulariser sa dette d'un délai de…",
+        "options": [
+          "6 semaines",
+          "2 mois",
+          "1 mois",
+          "3 mois"
+        ],
+        "correct": 0,
+        "explication": "La loi du 27 juillet 2023 a ramené ce délai de 2 mois à 6 semaines, à défaut de quoi l'assignation devant le juge peut suivre."
+      },
+      {
+        "question": "Aucune expulsion locative ne peut être exécutée pendant la trêve hivernale, du…",
+        "options": [
+          "1er novembre au 31 mars",
+          "1er décembre au 1er mars",
+          "15 octobre au 15 avril",
+          "1er novembre au 15 mars"
+        ],
+        "correct": 0,
+        "explication": "La trêve hivernale court du 1er novembre au 31 mars, sauf relogement assuré ou cas de squat."
       }
     ]
   }
