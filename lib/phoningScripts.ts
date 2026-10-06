@@ -190,16 +190,30 @@ export const STATUTS_POSITIFS = ["RDV fixé", "Mandat / Vente"];
 // Toutes les N réponses négatives (non + non décroché), on affiche une phrase.
 export const PALIER_REMOTIVATION = 5;
 
-// Phrases de remotivation par défaut (personnalisables par le manager).
+// Phrases de remotivation par défaut (générées, signées « Enzo », éditables par le manager).
 export const PHRASES_MOTIVATION_DEFAUT = [
-  "Chaque non te rapproche du prochain oui. Garde le téléphone en main, la vente est au bout du fil ! 💪",
-  "Ce n'est pas toi qu'on refuse, c'est un timing. Le bon interlocuteur attend ton appel, là, maintenant.",
-  "Les meilleurs ne sont pas ceux qui n'entendent jamais non : ce sont ceux qui rappellent quand même. Enchaîne !",
-  "Un répondeur, c'est un rendez-vous raté d'une seconde. Note le rappel et passe au suivant, sans te poser de question.",
-  "5 refus d'affilée ? Statistiquement, tu te rapproches d'un gros oui. Remets le sourire dans la voix.",
-  "La régularité bat le talent. Appel après appel, tu construis ton chiffre du mois. Continue.",
-  "Respire, souris, compose le numéro suivant : ton énergie s'entend au téléphone.",
-  "Personne ne se souvient des non. Tout le monde se souviendra du mandat que tu vas signer cette semaine.",
-  "Tu fais le travail que les autres évitent. C'est exactement pour ça que tu vas réussir. On lâche rien !",
-  "Le prochain décroche. Mets-y la même conviction qu'à ton tout premier appel de la journée.",
+  "Un non, c'est juste un « pas encore ». Décroche le suivant, c'est peut-être LE bon. 🔥",
+  "Les champions ne comptent pas les non, ils comptent les appels. On continue !",
+  "Pas décroché ? Tant mieux, t'as gagné 30 secondes. Compose le suivant tout de suite. 🚀",
+  "Le téléphone pèse 3 tonnes avant l'appel et 10 grammes après. Soulève-le encore. 💪",
+  "T'es pas en train de déranger, t'es en train d'aider quelqu'un à vendre au meilleur prix.",
+  "Chaque refus te paie : plus t'en encaisses, plus le oui approche. Garde le rythme.",
+  "Le sourire s'entend. Remets-en un et rappelle : ton énergie fait la moitié du résultat.",
+  "Ceux qui réussissent ont juste décroché plus souvent que les autres. Sois celui-là.",
+  "Un bon phoneur, c'est pas un chanceux, c'est un régulier. Et toi, t'es en train de le devenir.",
+  "Le prochain décroche. Mets-y la pêche de ton premier appel du matin. 🚀",
+  "Respire. Souris. Compose. Répète. C'est aussi simple — et aussi puissant — que ça.",
+  "On ne retient pas les non. On retient le mandat que tu signes cette semaine. Vas-y.",
+  "T'as le bras lourd ? C'est que t'as bossé. Encore quelques appels et tu tiens ta série. 💥",
+  "Statistiquement, t'as déjà fait le plus dur. Le oui est dans les prochains numéros.",
+  "Un appel raté n'existe pas : soit un RDV, soit de l'expérience. Dans les deux cas tu gagnes.",
+  "Le marché récompense ceux qui osent appeler. Aujourd'hui, c'est toi. Fonce.",
+  "T'es à un appel de changer ta journée — peut-être même ton mois. Compose.",
+  "Les non d'aujourd'hui, ce sont tes commissions de demain. Continue d'investir.",
+  "Pas de pression : un appel à la fois, un sourire à la fois. Et ça finit toujours par payer.",
+  "Tu fais le taf que 90 % n'osent pas faire. C'est exactement pour ça que tu vas gagner.",
+  "Relève la tête, cale ton script, et repars. Le meilleur appel de la journée est devant toi.",
+  "La confiance se construit un appel après l'autre. T'es en plein chantier, continue. 🔨",
+  "Allez, encore 5 appels. Juste 5. Et tu verras : la dynamique repart. 💥",
+  "T'es pas loin. Les vendeurs qui lâchent sont ceux qui s'arrêtent juste avant le oui. Pas toi.",
 ];
