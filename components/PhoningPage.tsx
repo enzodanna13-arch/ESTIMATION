@@ -46,6 +46,39 @@ const toInput = (ts?: number) => { if (!ts) return ""; const d = new Date(ts); c
 const fromInput = (s: string) => { if (!s) return undefined; const t = new Date(`${s}T12:00:00`).getTime(); return Number.isFinite(t) ? t : undefined; };
 const nouvelId = () => `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 
+// --- Import CSV ---
+// Analyse un CSV (détecte le séparateur , ; ou tabulation ; gère les guillemets).
+function parseCSV(texte: string): { headers: string[]; rows: string[][] } {
+  const t = texte.replace(/^﻿/, "");
+  const premiere = t.slice(0, t.indexOf("\n") >= 0 ? t.indexOf("\n") : t.length);
+  const c: Record<string, number> = { ",": 0, ";": 0, "\t": 0 };
+  for (const ch of premiere) if (ch in c) c[ch]++;
+  const delim = c[";"] >= c[","] && c[";"] >= c["\t"] ? ";" : c["\t"] > c[","] ? "\t" : ",";
+  const rows: string[][] = []; let row: string[] = []; let champ = ""; let q = false;
+  for (let i = 0; i < t.length; i++) {
+    const ch = t[i];
+    if (q) {
+      if (ch === '"') { if (t[i + 1] === '"') { champ += '"'; i++; } else q = false; }
+      else champ += ch;
+    } else if (ch === '"') q = true;
+    else if (ch === delim) { row.push(champ); champ = ""; }
+    else if (ch === "\n") { row.push(champ); rows.push(row); row = []; champ = ""; }
+    else if (ch !== "\r") champ += ch;
+  }
+  if (champ.length || row.length) { row.push(champ); rows.push(row); }
+  const clean = rows.filter((r) => r.some((x) => x.trim() !== ""));
+  if (!clean.length) return { headers: [], rows: [] };
+  return { headers: clean[0].map((h) => h.trim()), rows: clean.slice(1) };
+}
+function guessCol(headers: string[], mots: string[], exclure: string[] = []): number {
+  for (let i = 0; i < headers.length; i++) {
+    const h = headers[i].toLowerCase();
+    if (exclure.some((e) => h.includes(e))) continue;
+    if (mots.some((m) => h.includes(m))) return i;
+  }
+  return -1;
+}
+
 function ScriptPanneau({ script }: { script: ScriptPhoning }) {
   const [ouvert, setOuvert] = useState(true);
   return (
@@ -65,6 +98,103 @@ function ScriptPanneau({ script }: { script: ScriptPhoning }) {
               </div>
             ))}
           </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ImportCSV({ cibleDefaut, onImporter, onFermer }: { cibleDefaut: string; onImporter: (cible: string, lignes: LignePhoning[]) => void; onFermer: () => void }) {
+  const [headers, setHeaders] = useState<string[]>([]);
+  const [rows, setRows] = useState<string[][]>([]);
+  const [map, setMap] = useState({ prenom: -1, nom: -1, tel: -1, notes: -1 });
+  const [cible, setCible] = useState(cibleDefaut);
+  const [colle, setColle] = useState("");
+  const [erreur, setErreur] = useState("");
+
+  const traiter = (texte: string) => {
+    const r = parseCSV(texte);
+    if (!r.headers.length) { setErreur("Fichier/texte vide ou illisible."); setHeaders([]); setRows([]); return; }
+    setErreur(""); setHeaders(r.headers); setRows(r.rows);
+    setMap({
+      prenom: guessCol(r.headers, ["prénom", "prenom", "first"]),
+      nom: guessCol(r.headers, ["nom", "contact", "client", "propriétaire", "proprietaire", "vendeur", "acquéreur", "acquereur", "name"], ["prénom", "prenom"]),
+      tel: guessCol(r.headers, ["téléphone", "telephone", "tél", "tel", "mobile", "portable", "gsm", "phone"]),
+      notes: guessCol(r.headers, ["note", "observation", "commentaire", "adresse", "bien", "ville", "email", "mail", "remarque", "type", "secteur"]),
+    });
+  };
+  const onFichier = (f: File | null) => { if (!f) return; const rd = new FileReader(); rd.onload = () => traiter(String(rd.result || "")); rd.readAsText(f); };
+
+  const val = (r: string[], i: number) => (i >= 0 ? (r[i] ?? "").trim() : "");
+  const construire = (): LignePhoning[] => rows.map((r) => ({
+    id: nouvelId(),
+    contact: [val(r, map.prenom), val(r, map.nom)].filter(Boolean).join(" ") || val(r, 0),
+    tel: val(r, map.tel),
+    statut: "À appeler",
+    notes: val(r, map.notes),
+    createdAt: Date.now(),
+  })).filter((l) => l.contact || l.tel).slice(0, 2000);
+  const apercu = headers.length ? construire() : [];
+
+  const sel = (valeur: number, onCh: (n: number) => void) => (
+    <select value={valeur} onChange={(e) => onCh(Number(e.target.value))} className="w-full rounded-md border border-slate-200 px-2 py-1.5 text-sm focus:border-copper focus:outline-none">
+      <option value={-1}>— aucune —</option>
+      {headers.map((h, i) => <option key={i} value={i}>{h || `Colonne ${i + 1}`}</option>)}
+    </select>
+  );
+
+  return (
+    <div className="mb-4 rounded-2xl border border-copper/30 bg-white p-4 shadow-sm">
+      <div className="mb-2 flex items-center justify-between">
+        <h3 className="text-base font-bold text-navy">📥 Importer des contacts (CSV)</h3>
+        <button onClick={onFermer} className="rounded-lg border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-500 transition hover:bg-slate-50">✕ Fermer</button>
+      </div>
+      <p className="mb-3 text-xs text-slate-500">Exportez votre liste depuis Excel / votre CRM en CSV (séparateur <strong>,</strong> ou <strong>;</strong>, avec une ligne d'en-têtes). Les colonnes sont détectées automatiquement — ajustez si besoin.</p>
+
+      <div className="flex flex-wrap items-center gap-3">
+        <label className="cursor-pointer rounded-lg bg-navy px-4 py-2 text-sm font-bold text-white transition hover:brightness-110">
+          Choisir un fichier CSV
+          <input type="file" accept=".csv,text/csv,text/plain" className="hidden" onChange={(e) => onFichier(e.target.files?.[0] ?? null)} />
+        </label>
+        <span className="text-xs text-slate-400">ou collez vos lignes ci-dessous</span>
+      </div>
+      <div className="mt-2 flex gap-2">
+        <textarea value={colle} onChange={(e) => setColle(e.target.value)} rows={3} placeholder="Nom;Téléphone;Notes&#10;M. Durand;0612345678;Estimation 2024" className="flex-1 rounded-lg border border-slate-200 p-2 font-mono text-xs focus:border-copper focus:outline-none" />
+        <button onClick={() => traiter(colle)} disabled={!colle.trim()} className="shrink-0 self-start rounded-lg border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-50 disabled:opacity-40">Analyser</button>
+      </div>
+
+      {erreur && <p className="mt-2 text-sm text-red-600">{erreur}</p>}
+
+      {headers.length > 0 && (
+        <div className="mt-4 border-t border-slate-100 pt-4">
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <div><label className="text-xs font-semibold text-slate-500">Prénom (option.)</label>{sel(map.prenom, (n) => setMap((m) => ({ ...m, prenom: n })))}</div>
+            <div><label className="text-xs font-semibold text-slate-500">Nom / Contact</label>{sel(map.nom, (n) => setMap((m) => ({ ...m, nom: n })))}</div>
+            <div><label className="text-xs font-semibold text-slate-500">Téléphone</label>{sel(map.tel, (n) => setMap((m) => ({ ...m, tel: n })))}</div>
+            <div><label className="text-xs font-semibold text-slate-500">Notes (option.)</label>{sel(map.notes, (n) => setMap((m) => ({ ...m, notes: n })))}</div>
+          </div>
+          <div className="mt-3 flex flex-wrap items-end gap-3">
+            <div><label className="text-xs font-semibold text-slate-500">Importer dans la cible</label>
+              <select value={cible} onChange={(e) => setCible(e.target.value)} className="block w-full rounded-md border border-slate-200 px-2 py-1.5 text-sm font-semibold text-navy focus:border-copper focus:outline-none">
+                {SCRIPTS_PHONING.map((s) => <option key={s.id} value={s.id}>{s.icone} {s.titre}</option>)}
+              </select>
+            </div>
+            <button onClick={() => { onImporter(cible, construire()); onFermer(); }} disabled={apercu.length === 0} className="rounded-lg bg-copper px-4 py-2 text-sm font-bold text-white transition hover:brightness-110 disabled:opacity-40">
+              Importer {apercu.length} contact(s)
+            </button>
+          </div>
+          {apercu.length > 0 && (
+            <div className="mt-3">
+              <div className="text-xs font-semibold text-slate-500">Aperçu ({apercu.length} ligne(s)) :</div>
+              <div className="mt-1 overflow-x-auto rounded-lg border border-slate-100">
+                <table className="w-full text-xs"><tbody>
+                  {apercu.slice(0, 4).map((l) => (
+                    <tr key={l.id} className="border-b border-slate-50 last:border-0"><td className="px-2 py-1 font-semibold text-navy">{l.contact || "—"}</td><td className="px-2 py-1 text-slate-600">{l.tel || "—"}</td><td className="px-2 py-1 text-slate-400">{l.notes}</td></tr>
+                  ))}
+                </tbody></table>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>
@@ -92,6 +222,7 @@ export default function PhoningPage({ onRetour }: { onRetour: () => void }) {
   const [remotiv, setRemotiv] = useState<string | null>(null);
   const [celebr, setCelebr] = useState<string | null>(null);
   const [editeur, setEditeur] = useState(false);
+  const [importOuvert, setImportOuvert] = useState(false);
 
   const estManager = (EQUIPE.find((m) => m.id === negoId)?.role ?? "").toLowerCase().includes("responsable");
 
@@ -159,6 +290,11 @@ export default function PhoningPage({ onRetour }: { onRetour: () => void }) {
     return n;
   }));
   const supprimer = (id: string) => majLignes(lignes.filter((l) => l.id !== id));
+  const importer = (cibleCible: string, nouvelles: LignePhoning[]) => {
+    if (!nouvelles.length) return;
+    maj({ ...data, [cibleCible]: [...(data[cibleCible] ?? []), ...nouvelles] });
+    setCible(cibleCible);
+  };
 
   const stCible = useMemo(() => statsLignes(lignes), [lignes]);
   const stGlobal = useMemo(() => statsData(data), [data]);
@@ -263,6 +399,8 @@ export default function PhoningPage({ onRetour }: { onRetour: () => void }) {
             </div>
           )}
 
+          {importOuvert && <ImportCSV cibleDefaut={cible} onImporter={importer} onFermer={() => setImportOuvert(false)} />}
+
           <div className="grid gap-4 lg:grid-cols-[1fr_minmax(320px,380px)]">
             {/* tableau interactif */}
             <div>
@@ -271,7 +409,10 @@ export default function PhoningPage({ onRetour }: { onRetour: () => void }) {
                   <span className="font-bold text-navy">{scriptCourant.icone} {scriptCourant.titre}</span>
                   <span>· {stCible.total} contact(s) · {stCible.appeles} appelé(s) · {stCible.rdv} RDV</span>
                 </div>
-                <button onClick={ajouter} className="rounded-lg bg-navy px-3 py-1.5 text-sm font-bold text-white transition hover:brightness-110">+ Ajouter un contact</button>
+                <div className="flex gap-2">
+                  <button onClick={() => setImportOuvert((o) => !o)} className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-bold text-slate-600 transition hover:bg-slate-50">📥 Importer CSV</button>
+                  <button onClick={ajouter} className="rounded-lg bg-navy px-3 py-1.5 text-sm font-bold text-white transition hover:brightness-110">+ Ajouter un contact</button>
+                </div>
               </div>
               {chargement ? (
                 <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center text-slate-400">Chargement…</div>
