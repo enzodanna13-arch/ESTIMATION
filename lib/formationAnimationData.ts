@@ -1997,5 +1997,2946 @@ export const ANIMATIONS_DATA: Record<string, AnimationModule> = {
       "Partir du terrain : illustrez chaque principe avec un bien réel de l'agence en portefeuille à Martigues — c'est bien plus marquant qu'un exemple abstrait.",
       "Clore par l'engagement : faites remplir puis lire à voix haute le plan d'action individuel. Un engagement verbalisé devant le groupe pèse bien plus qu'une bonne intention gardée pour soi."
     ]
+  },
+  "closing": {
+    "id": "closing",
+    "sousTitre": "Oser demander, se taire, sécuriser le oui jusqu'à l'acte : l'atelier terrain du closing immobilier",
+    "objectifs": [
+      "Être capable de repérer en temps réel les signaux d'achat (verbaux, non verbaux et côté vendeur) et d'identifier le point de maturité pour arrêter d'argumenter au bon moment",
+      "Maîtriser au moins cinq techniques de conclusion (alternative, bilan, dernière objection, présomption, projection) et savoir les adapter au profil SONCAS du client",
+      "Savoir poser une question de conclusion fermée et engageante, puis tenir le silence sans combler ni brader",
+      "Être capable de sécuriser l'après-oui : verrouiller par écrit, prévenir le remords de l'acheteur et piloter le tunnel compromis-acte",
+      "Maîtriser le cadre juridique du closing (loi Hoguet, art. 1589-1 et 1583 du Code civil, délais SRU et Scrivener, LCB-FT) au moment précis où l'on conclut",
+      "Dépasser la peur du non et assumer de demander la décision comme un service rendu au client"
+    ],
+    "agenda": [
+      {
+        "titre": "Accueil et brise-glace : « Le oui qui m'a échappé »",
+        "duree": "10 min"
+      },
+      {
+        "titre": "Apport 1 : l'état d'esprit du closeur et la peur du non (mnémonique OSER)",
+        "duree": "10 min"
+      },
+      {
+        "titre": "Jeu 1 — Vrai/Faux déontologie et closing (buzzer)",
+        "duree": "10 min"
+      },
+      {
+        "titre": "Apport 2 : repérer les signaux d'achat et le point de maturité",
+        "duree": "10 min"
+      },
+      {
+        "titre": "Jeu 2 — Défi chrono « Signal ou pas signal ? »",
+        "duree": "10 min"
+      },
+      {
+        "titre": "Apport 3 : les grandes techniques de conclusion et le pouvoir du silence",
+        "duree": "10 min"
+      },
+      {
+        "titre": "Jeu 3 — Quiz-battle en équipes (techniques et cadre juridique)",
+        "duree": "15 min"
+      },
+      {
+        "titre": "Jeu 4 — Étude de cas « Le couple de La Couronne »",
+        "duree": "10 min"
+      },
+      {
+        "titre": "Jeu de rôle 1 — Faire accepter l'offre au vendeur, au téléphone",
+        "duree": "15 min"
+      },
+      {
+        "titre": "Jeu de rôle 2 — Conclure la prise de mandat face à « je veux comparer »",
+        "duree": "15 min"
+      },
+      {
+        "titre": "Synthèse : points-clés et plan d'action individuel",
+        "duree": "15 min"
+      }
+    ],
+    "briseGlace": {
+      "titre": "« Le oui qui m'a échappé » : chacun raconte sa vente ratée au moment de conclure",
+      "consignes": [
+        "En cercle, chaque négociateur raconte en 60 secondes maximum une vente (mandat ou transaction) qu'il sentait gagnée et qui lui a filé entre les doigts au moment de conclure : le couple qui repart « réfléchir », le vendeur qui signe ailleurs, l'acquéreur jamais rappelé.",
+        "Consigne unique pour l'auditoire : à la fin de chaque histoire, dire en un mot l'erreur commise selon eux (« pas osé », « trop parlé », « pas écrit », « lâché trop vite »).",
+        "L'animateur note les mots-clés au paperboard, sans juger ni corriger : ils serviront de fil rouge et seront repris en synthèse.",
+        "Conclure l'exercice par la phrase d'accroche du module : « Le pire closing est celui qu'on ne tente pas. » Aujourd'hui, on apprend à oser, puis à sécuriser."
+      ]
+    },
+    "jeux": [
+      {
+        "titre": "Vrai / Faux : les réflexes du closeur légal",
+        "type": "Vrai/Faux (buzzer)",
+        "duree": "10 min",
+        "consignes": [
+          "L'animateur lit à voix haute une affirmation. Les participants lèvent un carton VRAI (vert) ou FAUX (rouge) distribués au départ, ou se lèvent pour VRAI / restent assis pour FAUX afin de dynamiser.",
+          "Après chaque vote, l'animateur demande à un participant « pourquoi ? » avant de donner la réponse et la règle sous-jacente.",
+          "Enchaîner vite, une affirmation toutes les 30 à 40 secondes, pour maintenir le rythme.",
+          "Affirmations à lire : 1) « Dès qu'un signal d'achat clair apparaît, je rajoute deux ou trois arguments pour être sûr. » 2) « Au stade de l'offre d'achat, je peux demander un chèque de 5 000 € pour bloquer le bien. » 3) « Une offre au prix du mandat acceptée par le vendeur rend la vente parfaite. » 4) « Je peux négocier sérieusement un bien sans mandat écrit signé, on régularisera après. » 5) « Après ma question de conclusion, c'est à moi de reparler le premier pour rassurer. » 6) « Inventer une deuxième visite inexistante pour accélérer, c'est de bonne guerre. » 7) « Toute offre écrite reçue doit être transmise au vendeur, même si je la trouve trop basse. » 8) « Le dépôt de garantie se verse au compromis, séquestré, pas à l'offre. »"
+        ],
+        "animation": [
+          "Valoriser les bonnes justifications plutôt que la simple bonne couleur : c'est le raisonnement qui ancre l'acquis.",
+          "Sur les items juridiques (2, 4, 6, 7, 8), citer la référence à l'oral : « article 1589-1 », « loi Hoguet », « pratique commerciale trompeuse » : la répétition fixe le réflexe.",
+          "Repérer les désaccords dans la salle et les faire débattre 20 secondes avant de trancher : l'erreur assumée s'oublie moins."
+        ],
+        "corrige": [
+          "1) FAUX : c'est la survente, qui réveille des objections ; dès le signal, on conclut.",
+          "2) FAUX : l'article 1589-1 du Code civil frappe de nullité tout versement exigé à l'offre ; ni chèque, ni acompte.",
+          "3) VRAI : art. 1583 du Code civil, accord sur la chose et le prix ; le vendeur reste libre tant qu'il n'a pas accepté.",
+          "4) FAUX : pas de mandat écrit, pas de closing (loi Hoguet) ; sans mandat valable, aucun honoraire n'est dû.",
+          "5) FAUX : le premier qui parle « perd » ; on tient le silence et on laisse le client décider.",
+          "6) FAUX : fausse urgence = pratique commerciale trompeuse, interdite et sanctionnée ; l'urgence ne s'emploie que si elle est réelle.",
+          "7) VRAI : obligation de transmission de toute offre écrite, on ne filtre jamais selon son intérêt.",
+          "8) VRAI : rien à l'offre (art. 1589-1), dépôt séquestré au compromis chez le notaire ou l'agent garanti."
+        ]
+      },
+      {
+        "titre": "Défi chrono : « Signal ou pas signal ? »",
+        "type": "Défi chrono en équipes",
+        "duree": "10 min",
+        "consignes": [
+          "Diviser le groupe en deux équipes. L'animateur projette ou lit une série de 12 phrases prononcées par un client en visite ; chaque équipe a 90 secondes pour trier : SIGNAL D'ACHAT, OBJECTION/FREIN, ou NEUTRE.",
+          "Une équipe répond, l'autre peut contester (vol de point si la contestation est juste).",
+          "Pour chaque SIGNAL identifié, bonus d'un point si l'équipe propose en 10 secondes une conclusion d'essai ou une question de conclusion adaptée.",
+          "Phrases à trier : a) « Les enfants seraient dans quelle école ? » b) « Il faut vraiment que j'en parle à mon frère. » c) « La cuisine reste, c'est bien ça ? » d) « On serait bien, là, le matin, avec le café sur le balcon. » e) « C'est un peu cher quand même. » f) « Et ensuite, comment ça se passe, il faut déjà un acompte ? » g) « Je regarde encore deux-trois biens avant de me décider. » h) « Notre chambre, on la mettrait côté jardin. » i) « Les charges sont bien de 120 € par mois ? » j) « Je ne suis pas sûr pour le quartier. » k) « Quand on sera installés, on repeindra le séjour. » l) « Vous me laissez votre carte, je vous rappelle. »"
+        ],
+        "animation": [
+          "Tenir le chrono visiblement (téléphone ou sablier projeté) : la pression de temps reproduit l'énergie de la visite.",
+          "Insister sur le réflexe-clé : un signal détecté = on arrête d'argumenter et on enchaîne une conclusion d'essai, on ne commente pas.",
+          "Faire remarquer que les signaux faibles (d, h, k) sont les plus rentables car les moins repérés par les négociateurs."
+        ],
+        "corrige": [
+          "Signaux d'achat : a, c, d, f, h, i, k (projection, questions de détail concret, demande de l'après, confirmation, futur de possession).",
+          "Objections/freins : b, e, g, j (temporisation, prix, comparaison, doute quartier) : à traiter avant de conclure.",
+          "Neutre tendance report : l (« je vous rappelle » = report à transformer en offre écrite sur-le-champ)."
+        ]
+      },
+      {
+        "titre": "Quiz-battle : techniques de closing et cadre légal",
+        "type": "Quiz-battle en équipes",
+        "duree": "15 min",
+        "consignes": [
+          "Former 2 ou 3 équipes avec un nom. L'animateur pose les questions à l'oral ; la première équipe qui lève la main (ou buzze) répond. Bonne réponse = 2 points ; si faux, la main passe à l'équipe suivante pour 1 point.",
+          "Trois manches : Manche 1 « Techniques » (questions 1 à 4), Manche 2 « Le silence et la question » (5 et 6), Manche 3 « Le droit » (7 à 10).",
+          "Questions : 1) Nommer la technique : « Vous préférez signer mardi matin ou jeudi en fin de journée ? » 2) Comment s'appelle la technique qui oppose une longue liste d'avantages à de courtes réserves ? 3) « Si je règle la question du parking, on y va ? » : quelle technique ? 4) Sur quel principe psychologique repose la technique des petits oui ? 5) Juste après la question de conclusion, que fait le bon closeur ? 6) Citer une vraie question de conclusion et une fausse (molle). 7) Quel texte impose le mandat écrit avant toute négociation ? 8) Quel article du Code civil interdit d'exiger une somme de l'acquéreur à l'offre ? 9) Combien de jours de rétractation SRU pour l'acquéreur non professionnel d'un logement ? 10) Que doit faire l'agent de toute offre écrite reçue ?",
+          "Classement final affiché, petit lot symbolique à l'équipe gagnante (café offert, premier choix sur un créneau de visite…)."
+        ],
+        "animation": [
+          "Garder un rythme télé-crochet : annoncer les scores entre chaque manche pour entretenir la compétition.",
+          "Pour chaque bonne réponse, redonner en une phrase le « pourquoi terrain » : la technique ne vaut que si on comprend quand l'utiliser.",
+          "Si une équipe domine trop, inverser l'ordre des buzz ou donner une question bonus à l'équipe en retard pour garder tout le monde mobilisé."
+        ],
+        "corrige": [
+          "1) L'alternative (choix dirigé entre deux oui). 2) Le bilan / la balance de Benjamin Franklin. 3) La dernière objection (conclusion conditionnelle). 4) Le principe de cohérence (rester en accord avec ses engagements). 5) Il se tait et laisse le silence agir (le premier qui parle perd). 6) Vraie : « Je rédige l'offre ? » / « On signe le mandat maintenant ? » ; molle : « Vous voulez réfléchir ? », « Je vous laisse mon numéro ? ». 7) La loi Hoguet (loi n° 70-9 du 2 janvier 1970). 8) L'article 1589-1 du Code civil. 9) 10 jours (art. L271-1 du CCH). 10) La transmettre au vendeur, sans jamais la filtrer selon son intérêt."
+        ]
+      },
+      {
+        "titre": "Étude de cas : « Le couple de La Couronne »",
+        "type": "Étude de cas",
+        "duree": "10 min",
+        "consignes": [
+          "Projeter ou distribuer le cas : « Un couple visite pour la deuxième fois un T4 à La Couronne (Martigues). Ils sont enthousiastes : madame dit ‘notre chambre, on la mettrait côté jardin', monsieur demande ‘et ensuite, comment ça se passe ?'. Le négociateur, mal à l'aise, enchaîne dix minutes d'arguments sur le quartier. Le couple repart ‘pour réfléchir' et achète ailleurs le lendemain. »",
+          "En binômes, 4 minutes pour répondre à trois questions : 1) Quels signaux d'achat le négociateur a-t-il ratés ? 2) Quelle erreur de closing a-t-il commise et comment s'appelle-t-elle ? 3) Rejouer la scène : qu'aurait-il dû dire, mot pour mot, au lieu des dix minutes d'arguments ?",
+          "Restitution : 2 ou 3 binômes partagent leur reformulation à l'oral ; le groupe vote pour la conclusion la plus naturelle.",
+          "L'animateur conclut sur la règle d'or : dès le signal, on arrête d'argumenter et on engage la conclusion, sous peine de survente."
+        ],
+        "animation": [
+          "Laisser les binômes buter sur la question 3 : c'est en cherchant les mots exacts qu'ils progressent. Circuler et souffler des amorces (« notre chambre côté jardin, vous disiez… donc je prépare l'offre ? »).",
+          "Faire nommer la survente et la peur du non : relier au brise-glace du début.",
+          "Valoriser les reformulations courtes : une bonne conclusion tient en une phrase + un silence."
+        ],
+        "corrige": [
+          "Signaux ratés : le futur de possession (« notre chambre »), la projection d'aménagement, la question de l'après (« comment ça se passe ensuite ? ») : le bien était vendu dans leur tête.",
+          "Erreur : la survente par peur du non ; en continuant d'argumenter, il a réveillé le doute et laissé l'émotion retomber.",
+          "Reformulation type : « Je vous arrête : ‘notre chambre côté jardin', vous y êtes déjà. On est d'accord, l'emplacement, le budget, les chambres, tout vous convient ? (oui) Alors on ne laisse pas filer : je prépare votre offre maintenant, elle est valable 7 jours, sans aucun versement. » Puis silence."
+        ]
+      },
+      {
+        "titre": "Brainstorm mural : « Nos vraies raisons d'urgence »",
+        "type": "Brainstorm",
+        "duree": "10 min",
+        "consignes": [
+          "L'animateur pose la question centrale au paperboard : « Quelles urgences RÉELLES et HONNÊTES pouvons-nous utiliser pour aider un client à décider, sans jamais mentir ? »",
+          "Chaque négociateur écrit ses idées sur des post-it (une idée par post-it), 3 minutes, puis vient les coller au mur en les lisant.",
+          "L'animateur regroupe les post-it par thèmes (autres visites réelles, tension du marché local, taux, saisonnalité, rareté du bien…) et barre en rouge toute idée qui frôle la fausse urgence ou l'invention.",
+          "Co-construire une courte liste d'arguments d'urgence déontologiques réutilisables sur le terrain à Martigues, photographiée et envoyée au groupe après la séance."
+        ],
+        "animation": [
+          "Accueillir toutes les idées d'abord, trier ensuite : la phase de production ne se censure pas.",
+          "Dès qu'une idée flirte avec le mensonge (« dire qu'on a déjà une offre quand c'est faux »), s'en servir comme contre-exemple pédagogique : illégal, art. pratiques trompeuses, et un cas vécu qui coûte dix recommandations.",
+          "Terminer sur la règle : l'urgence est un moteur légitime seulement si elle est vraie et vérifiable."
+        ],
+        "corrige": [
+          "Urgences légitimes : d'autres visites ou offres réellement programmées, un bien rare sur le secteur, une fenêtre de taux ou de saison, un vendeur pressé par un projet daté, la priorité qu'offre une offre écrite immédiate.",
+          "Interdits (barrés) : faux acquéreur, fausse offre, fausse deuxième visite, délai inventé : pratique commerciale trompeuse, responsabilité de l'agent engagée."
+        ]
+      }
+    ],
+    "jeuxRole": [
+      {
+        "titre": "Faire accepter l'offre au vendeur, au téléphone",
+        "contexte": "Transaction à Martigues. Un acquéreur financé, sans bien à vendre au préalable, a signé une offre écrite à 305 000 € sur un bien mandaté 319 000 €. Le négociateur appelle le vendeur pour présenter l'offre et obtenir son accord. Mise en situation réellement téléphonique : les deux joueurs sont dos à dos pour ne travailler qu'à la voix.",
+        "roleA": "Le négociateur : présente l'offre avec son contexte (acquéreur sérieux, financé, rapide), pose une vraie question de conclusion (« On l'accepte ? »), puis TIENT LE SILENCE. Il ne doit ni baisser spontanément les honoraires ni rouvrir la négociation du prix par malaise.",
+        "roleB": "Le vendeur : espérait le prix du mandat, reste silencieux quelques secondes après la question, puis lâche une objection (« c'est 14 000 € de moins, je ne sais pas… »). Il signera si le négociateur tient le silence, valorise la solidité du dossier et re-pose la question après avoir traité l'objection.",
+        "objectif": "S'entraîner à présenter une offre par son contexte (pas seulement un chiffre), à poser une question de conclusion fermée et à tenir physiquement le silence de 5 à 15 secondes sans le combler.",
+        "debrief": [
+          "Le négociateur a-t-il tenu le silence après sa question, ou l'a-t-il comblé par un argument ou une baisse ?",
+          "A-t-il présenté le contexte (financement, rapidité, solidité) ou seulement le montant ?",
+          "A-t-il re-posé la question de conclusion après avoir traité l'objection, plutôt que d'abandonner ?",
+          "Le vendeur s'est-il senti conseillé et respecté (gagnant-gagnant) ou mis sous pression ?",
+          "Chronométrer le silence réel tenu et le comparer au ressenti du négociateur (« ça m'a paru une éternité ») pour dédramatiser."
+        ]
+      },
+      {
+        "titre": "Conclure la prise de mandat face à « je veux comparer »",
+        "contexte": "Chez CENTURY 21 Icaza Immobilier à Martigues, après un avis de valeur à 320 000 € sur une maison, le vendeur est convaincu de la valeur mais veut « réfléchir et voir deux autres agences avant de signer ». Le négociateur veut conclure le mandat aujourd'hui, idéalement en exclusivité 3 mois, sans brader ses honoraires.",
+        "roleA": "Le négociateur : enchaîne juste après l'avis de valeur, lève la dernière objection (« qu'est-ce qui vous empêcherait de me confier la vente aujourd'hui ? »), valorise l'exclusivité en une phrase, utilise alternative + présomption, et a son mandat prêt à signer. Il ne rouvre pas le débat des honoraires dans la précipitation.",
+        "roleB": "Le vendeur : poli mais prudent, veut comparer, teste la réaction du négociateur (« les autres sont peut-être moins chers »). Il acceptera de démarrer aujourd'hui si le négociateur prouve son résultat (ventes récentes dans le quartier), s'engage sur un suivi écrit et répond sans se braquer sur le prix.",
+        "objectif": "S'entraîner à conclure un mandat sans laisser repartir le vendeur « pour réfléchir », en faisant sortir le vrai frein et en défendant l'exclusivité et les honoraires avec sérénité.",
+        "debrief": [
+          "Le négociateur a-t-il fait exprimer le vrai frein (prix du service ? confiance ? comparaison de principe ?) avant de répondre ?",
+          "A-t-il valorisé l'exclusivité par le bénéfice (interlocuteur unique, plan marketing, vente plus rapide) sans la survendre ?",
+          "A-t-il tenu ses honoraires sans les brader sous la pression de conclure ?",
+          "A-t-il proposé une date de mise en marché et un engagement de suivi concret ?",
+          "A-t-il pensé au délai de rétractation de 14 jours du vendeur-consommateur si le mandat est signé hors établissement (à domicile) ?"
+        ]
+      }
+    ],
+    "pointsCles": [
+      "Le pire closing est celui qu'on ne tente pas : une vente non demandée est perdue à coup sûr. Oser demander la décision fait partie du service rendu au client.",
+      "Dès qu'un signal d'achat apparaît (projection, question de détail, futur de possession, demande de l'après), on arrête d'argumenter : trop vendre quand c'est gagné réveille des objections (la survente).",
+      "Le closing se prépare en amont : conclusions d'essai, escalier de petits oui et pré-cadrage font que la décision est déjà largement prise au moment de la question finale.",
+      "On adapte la technique au profil et au moment : alternative, bilan, dernière objection, présomption, projection : jamais « oui ou non », toujours deux modalités d'un même oui.",
+      "Poser une question de conclusion fermée et claire, une seule fois, puis se taire : le premier qui parle perd. Ne jamais combler le silence ni baisser le prix par malaise.",
+      "On retente après chaque objection traitée : la majorité des ventes se signent après une ou plusieurs objections levées, rarement du premier coup.",
+      "Pas de mandat écrit, pas de closing (loi Hoguet) ; à l'offre, aucune somme exigée de l'acquéreur (art. 1589-1 du Code civil) ; une offre au prix acceptée rend la vente parfaite (art. 1583).",
+      "Jamais de fausse urgence ni de faux acquéreur : c'est une pratique commerciale trompeuse, illégale, qui engage la responsabilité de l'agent et ruine la relation.",
+      "Le oui n'est pas la fin : on verrouille par écrit immédiatement, on prévient le remords de l'acheteur (délai SRU de 10 jours) en restant présent et en ré-ancrant les raisons d'achat.",
+      "La vente se perd souvent entre le compromis et l'acte : rétroplanning partagé, relances de chaque acteur et gagnant-gagnant pour que l'accord tienne jusqu'à la signature."
+    ],
+    "planAction": [
+      "Dès demain, à chaque visite ou rendez-vous, poser au moins une conclusion d'essai dès le premier signal d'achat, puis enchaîner la question de conclusion sans ajouter d'argument.",
+      "Pré-cadrer systématiquement en début de rendez-vous : annoncer qu'on pourra poser une offre ou signer le mandat le jour même si tout convient.",
+      "S'imposer la règle du silence : après la question de conclusion, compter mentalement jusqu'à 10 avant de reparler, sans jamais combler ni baisser le prix.",
+      "Ne plus jamais laisser repartir un acquéreur « chaud » sans offre écrite : faire écrire sur-le-champ, en rappelant qu'aucune somme n'est exigée à ce stade (art. 1589-1).",
+      "Vérifier avant chaque closing que le mandat écrit est signé et prêt, et annoncer clairement les délais protecteurs (SRU 10 jours, condition suspensive de prêt) pour sécuriser la vente.",
+      "Rappeler chaque acquéreur dans les 24 heures suivant le oui pour conforter son choix, verrouiller par un mail récapitulatif et prévenir le remords pendant le délai de rétractation."
+    ],
+    "notesFormateur": [
+      "Alterner strictement apport court (10 min max) et jeu : le module est dense (droit + technique + posture), le rythme soutenu évite le cours magistral et ancre par la pratique.",
+      "Faire reposer l'ancrage sur le vécu : relier en permanence les jeux aux histoires du brise-glace (« le oui qui a échappé ») et aux secteurs réels (La Couronne, Jonquières, Martigues) pour que rien ne paraisse théorique.",
+      "Soigner le temps : afficher l'agenda minuté, nommer un gardien du temps dans la salle, et tenir le chrono visible sur les défis. Si on déborde, sacrifier le brainstorm (jeu 5) plutôt qu'un jeu de rôle.",
+      "Sur les jeux de rôle, filmer ou faire chronométrer le silence : c'est l'exercice le plus inconfortable et le plus formateur ; dédramatiser en montrant que 8 secondes paraissent interminables mais passent très bien côté client.",
+      "Faire participer tout le monde : constituer les équipes en mélangeant anciens et juniors, donner la parole aux plus silencieux sur les débriefs, valoriser les justifications plutôt que les bonnes réponses.",
+      "En synthèse, exiger un plan d'action écrit et individuel (pas collectif) : chaque négociateur repart avec 2 ou 3 engagements datés, que le manager ré-abordera en point individuel la semaine suivante pour transformer l'acquis en habitude."
+    ]
+  },
+  "defendre-prix": {
+    "id": "defendre-prix",
+    "sousTitre": "Assumer sa commission, prouver sa valeur et n'échanger une concession que contre un avantage : 1h45 pour transformer chaque négo d'honoraires en net gagné.",
+    "objectifs": [
+      "Savoir annoncer ses honoraires en euros et en TTC, avec aplomb, au bon moment de la prise de mandat.",
+      "Maîtriser les 4 raisons chiffrées de ne jamais brader (dévalorisation, marge, précédent, ancrage) et les restituer en situation.",
+      "Être capable de traiter les 6 objections les plus fréquentes avec la méthode A.C.R.E. et des scripts rodés.",
+      "Savoir démontrer la valeur apportée face au PAP, aux mandataires et au discount, sans jamais dénigrer un confrère.",
+      "Maîtriser la négociation d'une concession par la formule « si… alors… » : aucun geste sans contrepartie écrite.",
+      "Être capable de citer sans hésiter le cadre juridique (honoraires libres depuis l'ordonnance de 1986, commission due seulement à l'acte — loi Hoguet, affichage TTC loi ALUR)."
+    ],
+    "agenda": [
+      {
+        "titre": "Accueil, objectifs et règle du jeu de la séance",
+        "duree": "5 min"
+      },
+      {
+        "titre": "Brise-glace : « Le dernier point lâché » (tour de table chiffré)",
+        "duree": "10 min"
+      },
+      {
+        "titre": "Apport 1 : pourquoi ne jamais brader — les maths de la concession et l'ancrage",
+        "duree": "15 min"
+      },
+      {
+        "titre": "Jeu 1 : Quiz-battle en équipes « Défends ton prix »",
+        "duree": "15 min"
+      },
+      {
+        "titre": "Apport 2 : ce que financent vos honoraires + cadre juridique (1986 / Hoguet / ALUR)",
+        "duree": "10 min"
+      },
+      {
+        "titre": "Jeu 2 : Vrai/Faux debout « Droit & honoraires »",
+        "duree": "10 min"
+      },
+      {
+        "titre": "Apport 3 : annoncer avec aplomb + méthode A.C.R.E.",
+        "duree": "10 min"
+      },
+      {
+        "titre": "Jeu 3 : Défi chrono des objections (cartes-objections)",
+        "duree": "10 min"
+      },
+      {
+        "titre": "Jeu de rôle : prise de mandat à 350 000 € + débrief collectif",
+        "duree": "20 min"
+      },
+      {
+        "titre": "Synthèse : les points-clés + plan d'action individuel du lendemain",
+        "duree": "10 min"
+      }
+    ],
+    "briseGlace": {
+      "titre": "Le dernier point lâché",
+      "consignes": [
+        "Demandez à chacun, en tour de table rapide, de citer de mémoire la dernière fois où il a baissé ses honoraires : à quel pourcentage il est descendu, et surtout combien d'euros cela représentait sur le dossier (montant perdu, pas le pourcentage).",
+        "Notez les montants au paperboard, colonne « € lâchés ». Faites additionner le total de l'équipe à voix haute : l'effet de masse crée le déclic.",
+        "Reliez immédiatement au thème : « Ce total, c'est du net qui ne reviendra jamais. Aujourd'hui, on apprend à ne plus le lâcher — ou à l'échanger. » Enchaînez sur les objectifs.",
+        "Variante si l'équipe est gênée de parler argent : faites écrire le montant sur un post-it anonyme, collez-les, puis commentez le total."
+      ]
+    },
+    "jeux": [
+      {
+        "titre": "Quiz-battle « Défends ton prix »",
+        "type": "Quiz-battle en équipes",
+        "duree": "15 min",
+        "consignes": [
+          "Constituez 2 à 3 équipes. Chaque équipe choisit un nom et désigne un porte-parole qui seul donne la réponse finale (évite qu'un seul leader monopolise).",
+          "Posez 8 questions tirées du quiz du module, projetées une par une au PowerPoint. Laissez 20 secondes de concertation à voix basse par question.",
+          "Au top, les porte-parole lèvent un carton numéroté (1 à 4) correspondant à l'option choisie. 1 point par bonne réponse, 2 points si l'équipe sait citer le texte de loi ou le chiffre exact (ex. « ordonnance de 1986 », « 3 500 € perdus »).",
+          "Après chaque question, l'animateur lit l'explication et illustre par un exemple local (Martigues, Port-de-Bouc, Istres).",
+          "Tenez le score au paperboard. L'équipe gagnante choisit en premier son rôle dans le jeu de rôle final (motivation)."
+        ],
+        "animation": [
+          "Rythmez : un buzzer sonore ou un simple « top ! » maintient l'énergie. Ne laissez pas débattre plus de 20 secondes.",
+          "Valorisez la précision juridique : le bonus « cite le texte » ancre durablement l'ordonnance de 1986 et la loi Hoguet.",
+          "Si une équipe se trompe, demandez à une autre de corriger avant de donner la réponse : la correction par les pairs marque plus."
+        ],
+        "corrige": [
+          "Brader au premier doute → dévalorise la prestation et entame directement la marge (pas de coût variable à amortir).",
+          "« Vos honoraires sont élevés » → démontrer la valeur (meilleur net, sécurité, temps gagné), ne jamais se justifier.",
+          "Honoraires libres depuis l'ordonnance n° 86-1243 du 1er décembre 1986 ; barème affiché TTC, négociable à la baisse.",
+          "Commission due seulement une fois la vente conclue — art. 6 loi Hoguet ; payé le jour de l'acte authentique.",
+          "Passer de 5 % à 4 % sur 350 000 € = 3 500 € perdus, soit 20 % de la rémunération du dossier.",
+          "A.C.R.E. = Accueillir, Creuser, Recadrer, Engager.",
+          "Barème dégressif = le taux diminue quand le prix du bien augmente.",
+          "5 % TTC ≈ 4,17 % HT (TVA 20 %)."
+        ]
+      },
+      {
+        "titre": "Vrai / Faux debout « Droit & honoraires »",
+        "type": "Vrai/Faux dynamique",
+        "duree": "10 min",
+        "consignes": [
+          "Tout le monde se lève. L'animateur annonce une affirmation. « Vrai » = on reste debout ; « Faux » = on s'assoit. Pas de carton, c'est le corps qui répond — personne ne se cache derrière le voisin.",
+          "Marquez un temps après chaque affirmation, regardez la salle, puis donnez la réponse et la justification.",
+          "Celui qui se trompe gagne le droit… d'argumenter : demandez-lui d'expliquer pourquoi il pensait l'inverse. On transforme l'erreur en apprentissage.",
+          "Enchaînez 8 à 10 affirmations rapides, en alternant évidences et pièges."
+        ],
+        "animation": [
+          "Glissez volontairement des pièges de vocabulaire (ex. « les honoraires s'annoncent HT ») pour corriger les réflexes de langage.",
+          "Gardez le rythme vif : c'est un jeu d'énergie post-apport, pas un cours.",
+          "Reliez chaque réponse à une phrase à réemployer sur le terrain."
+        ],
+        "corrige": [
+          "« L'État fixe un tarif maximum d'honoraires » → FAUX : honoraires libres depuis 1986, le barème de l'agence fait foi (plafond propre, négociable à la baisse).",
+          "« Je peux dépasser mon barème affiché si le client est d'accord » → FAUX : le barème affiché est un plafond, jamais un plancher.",
+          "« Les honoraires s'annoncent toujours en TTC » → VRAI : TVA 20 % incluse (loi ALUR / arrêté du 10 janvier 2017) ; 5 % TTC ≈ 4,17 % HT.",
+          "« Je touche ma commission dès la signature du mandat » → FAUX : rien n'est dû avant l'acte authentique (loi Hoguet, art. 6).",
+          "« Prix FAI = net vendeur + honoraires » → VRAI.",
+          "« Honoraires à la charge de l'acquéreur distinctement mentionnés = droits de mutation calculés hors honoraires » → VRAI : léger gain pour l'acquéreur.",
+          "« Dénigrer le mandataire d'à côté est autorisé si c'est vrai » → FAUX : contraire à la déontologie (décret n° 2015-1090).",
+          "« Un barème dégressif augmente avec le prix du bien » → FAUX : il diminue."
+        ]
+      },
+      {
+        "titre": "Défi chrono des objections",
+        "type": "Défi chrono / cartes-objections",
+        "duree": "10 min",
+        "consignes": [
+          "Préparez un jeu de cartes, une objection par carte (voir corrigé). Chaque participant tire une carte au hasard et a 30 secondes de préparation.",
+          "Au top, il répond à voix haute, debout, face au groupe, comme s'il avait le vendeur en face. Chrono visible : 45 secondes maximum pour dérouler A.C.R.E.",
+          "Le groupe évalue à main levée : la réponse tenait-elle le prix sans dénigrer ni s'excuser ? L'animateur relève un point fort et un axe d'amélioration.",
+          "Faites tourner jusqu'à ce que chacun soit passé au moins une fois ; gardez les objections les plus dures pour les profils les plus à l'aise."
+        ],
+        "animation": [
+          "Imposez la contrainte « une phrase calme vaut mieux qu'un plaidoyer » : coupez les réponses qui partent en justification bavarde.",
+          "Traquez le langage perdant : « petite commission », « seulement », « désolé », « normalement » — faites reformuler sur-le-champ.",
+          "Rappelez le silence stratégique : après le recadrage, on se tait. Chronométrez-le, c'est le plus dur à tenir."
+        ],
+        "corrige": [
+          "« C'est trop cher. » → « Élevé par rapport à quoi ? À ce que vous allez gagner et sécuriser, c'est un très bon placement. Ce qui compte, c'est votre net, pas le pourcentage. »",
+          "« Le mandataire d'à côté prend 3 %. » → Jamais de dénigrement : « C'est possible. La vraie question n'est pas qui est le moins cher, mais qui vous vend le mieux. Un bien qui traîne 5 % moins cher coûte plus cher qu'un point de commission. »",
+          "« Autant d'argent pour quelques visites ? » → « Les visites sont la partie visible. Vous payez l'estimation juste, la mise en valeur, la diffusion, la sélection d'acquéreurs financés, la négociation, la sécurité juridique, le suivi jusqu'à l'acte — et seulement si ça aboutit. »",
+          "« Je vais d'abord essayer de vendre seul. » → « C'est votre droit. Donnons-nous deux semaines : je vous montre ce que je fais que vous ne pouvez pas faire seul, sans griller le bien à un prix mal calibré. »",
+          "« J'ai déjà un acheteur / c'est pour un proche. » → « Intégrons-le au mandat : même avec un acquéreur connu, il vous faut un prix juste, un avant-contrat sécurisé et le suivi jusqu'à l'acte. On adapte la mission, pas le risque juridique. »",
+          "« Baissez et je signe tout de suite. » → On n'échange jamais sans contrepartie : « Avec plaisir si on avance ensemble : partons en exclusivité et au juste prix, et j'étudie un geste car je me rattrape sur l'efficacité. »"
+        ]
+      },
+      {
+        "titre": "Brainstorm « preuves de valeur »",
+        "type": "Brainstorm minuté",
+        "duree": "10 min",
+        "consignes": [
+          "Au paperboard, tracez deux colonnes : « Ce que je fais que le PAP ne peut pas faire » et « Mes preuves chiffrées à sortir en rendez-vous ».",
+          "En 5 minutes chrono, chacun lance des idées sans filtre, l'animateur note tout. Visez la quantité (objectif : 20 items).",
+          "En 3 minutes, le groupe sélectionne les 5 preuves les plus percutantes et locales (délai de vente moyen, taux de concrétisation, ventes comparables récentes à Martigues via la base DVF, réseau d'acquéreurs CENTURY 21, avis clients).",
+          "Chaque négociateur repart avec sa « liste de 5 preuves » notée sur sa fiche : c'est son argumentaire de valeur personnalisé."
+        ],
+        "animation": [
+          "Interdisez la critique pendant la phase de production d'idées : on trie après, pas pendant.",
+          "Poussez vers le concret et le local : un chiffre réel du secteur vaut dix généralités.",
+          "Faites verbaliser la bascule « je chiffre la valeur, pas l'effort » : 3 à 5 % de prix de vente gagnés sur 300 000 € = 9 000 à 15 000 €, souvent plus que les honoraires."
+        ],
+        "corrige": [
+          "Preuves attendues : délai de vente moyen de l'agence, taux de concrétisation, ventes comparables récentes (DVF, références notariales), réseau d'acquéreurs en portefeuille, notoriété de l'enseigne, avis clients et recommandations.",
+          "Argument acquéreur concret : honoraires à sa charge = ~6 % du montant des honoraires économisés sur les frais de notaire (≈ 900 € sur 15 000 € d'honoraires)."
+        ]
+      }
+    ],
+    "jeuxRole": [
+      {
+        "titre": "La prise de mandat à 350 000 €",
+        "contexte": "Maison à Martigues, 350 000 € net vendeur, barème agence 5 % TTC (17 500 €). Le vendeur a reçu un mandataire qui propose 3 %. Rendez-vous de prise de mandat au domicile du vendeur. Le négociateur a déroulé son plan de commercialisation et doit maintenant annoncer puis défendre ses honoraires.",
+        "roleA": "Le négociateur CENTURY 21 : il annonce 17 500 € / 5 % TTC en euros et avec aplomb, se tait après l'annonce, traite les objections par A.C.R.E., et n'accorde un geste (jusqu'à 4,7 % = 16 450 €) qu'en échange d'une exclusivité et d'un prix calé au juste niveau.",
+        "roleB": "Le vendeur : sympathique mais pingre, il enchaîne « c'est cher », « le mandataire prend 3 % », « faites un geste et je signe ». Il teste la fermeté du négociateur et guette la moindre hésitation de langage.",
+        "objectif": "Obtenir le mandat sans brader : soit à 5 % assumé, soit au maximum à 4,7 % contre exclusivité + juste prix, avec un geste présenté comme final et formalisé par écrit.",
+        "debrief": [
+          "Le montant a-t-il été annoncé en euros et en TTC, puis suivi d'un silence tenu ? Repérer le premier qui a parlé après le chiffre.",
+          "A-t-on entendu un mot perdant (« petite », « seulement », « désolé ») ou une justification défensive bavarde ?",
+          "La concession a-t-elle été échangée (si… alors… exclusivité + juste prix) et annoncée comme finale, ou donnée pour faire plaisir ?",
+          "Le confrère a-t-il été dénigré ? Rappeler la déontologie (décret 2015-1090) et la bascule sur « qui vend le mieux ».",
+          "Chiffrer le résultat : 4,7 % = 1 050 € cédés au lieu de 3 500 €, et l'exclusivité gagnée. Faire sentir la différence au groupe.",
+          "Recueillir une phrase que chacun garde pour demain."
+        ]
+      },
+      {
+        "titre": "L'objection téléphonique « vos frais »",
+        "contexte": "Appel entrant : un propriétaire à Port-de-Bouc a vu l'annonce d'un bien et demande une estimation. En fin d'appel, il lâche : « Et vous prenez combien, vous ? J'ai vu qu'on pouvait vendre sans frais sur Le Bon Coin. » Le négociateur doit cadrer sans dérouler toute la négo au téléphone.",
+        "roleA": "Le négociateur : il reste ferme et chaleureux, ne donne pas de remise au téléphone, repousse la discussion du prix après la démonstration de valeur et décroche un rendez-vous physique.",
+        "roleB": "Le propriétaire : pressé, un peu méfiant, tenté par le PAP, il veut un chiffre tout de suite et cherche à faire dire « c'est négociable ».",
+        "objectif": "Ne pas s'engager sur un pourcentage au téléphone, valoriser le résultat (net + sécurité), et obtenir un rendez-vous en face à face.",
+        "debrief": [
+          "Le négociateur a-t-il évité de brader ou de dire « c'est négociable » au téléphone ?",
+          "A-t-il su repousser la négociation après la démonstration de valeur (« on en reparle quand je vous aurai montré comment j'y arrive ») ?",
+          "Le PAP a-t-il été traité sans mépris, en recentrant sur le net final et le risque juridique ?",
+          "A-t-il obtenu le rendez-vous — le seul vrai objectif de l'appel ?"
+        ]
+      }
+    ],
+    "pointsCles": [
+      "On ne défend pas un tarif, on assume une valeur : les honoraires ne coûtent pas au client, ils lui rapportent (meilleur net + sécurité + temps gagné).",
+      "Les maths de la concession : sur 350 000 €, passer de 5 % à 4 % = 3 500 € perdus, soit 20 % de la rémunération du dossier — et surtout de votre propre paie.",
+      "Annoncer tôt, en euros et en TTC, avec aplomb, puis se taire : le silence après le chiffre est votre meilleur allié.",
+      "Technique du sandwich : valeur → prix → valeur. Bannir « petite », « seulement », « désolé », « normalement ».",
+      "Traiter l'objection avec A.C.R.E. : Accueillir, Creuser, Recadrer (sur le net, pas le pourcentage), Engager.",
+      "Jamais de concession sans contrepartie : formule « si… alors… » (exclusivité, durée ferme, juste prix, recommandation, souplesse visites), geste petit, final et écrit.",
+      "Ne jamais dénigrer un confrère (déontologie, décret 2015-1090) : on montre sa différence, on recentre sur « qui vend le mieux et le plus sûrement ».",
+      "Le cadre juridique est un atout : honoraires libres depuis l'ordonnance du 1er décembre 1986, affichés TTC (loi ALUR), dus seulement à l'acte authentique (loi Hoguet, art. 6) — vous prenez tout le risque à la place du client.",
+      "Face au discount et au PAP : moins d'honoraires = souvent moins de moyens ; l'économie est mangée par la décote du bien qui traîne.",
+      "Défendre le juste prix du bien = défendre sa crédibilité : qui tient le prix du bien inspire confiance pour tenir le sien."
+    ],
+    "planAction": [
+      "Dès demain, annoncer mes honoraires en euros et en TTC (pas en pourcentage abstrait), puis tenir le silence 3 secondes avant toute relance.",
+      "Préparer avant chaque rendez-vous de mandat mon montant en euros pour ce bien + mes 5 preuves de valeur locales (délai moyen, taux de concrétisation, ventes comparables DVF, réseau d'acquéreurs, avis clients).",
+      "Lister et garder sur moi ma grille de contreparties (exclusivité, durée ferme, juste prix, recommandation, souplesse visites) : décider à l'avance jusqu'où je peux descendre et contre quoi.",
+      "Appliquer A.C.R.E. sur la prochaine objection « c'est cher » et me forcer à poser la question « élevé par rapport à quoi ? » avant toute réponse.",
+      "Ne formaliser aucune remise sans l'écrire dans le mandat ou un avenant, avec la contrepartie obtenue et le nouveau montant.",
+      "Chasser de mon vocabulaire « petite commission », « seulement », « désolé » et toute justification bavarde pendant une semaine, et le vérifier après chaque rendez-vous."
+    ],
+    "notesFormateur": [
+      "Gérez le temps avec un minuteur visible à chaque jeu : les activités débordent vite, mieux vaut couper net un défi chrono que rogner sur le jeu de rôle final, qui est le cœur de la séance.",
+      "Faites parler ceux qui bradent le plus : repérez-les au brise-glace (gros montants lâchés) et confiez-leur le rôle du négociateur au jeu de rôle, pas celui du vendeur, pour qu'ils pratiquent la fermeté.",
+      "Ancrez par la répétition active : faites redire à voix haute les 3 mnémoniques (A.C.R.E. / valeur-prix-valeur / si… alors…) à plusieurs moments, pas une seule fois en synthèse.",
+      "Incarnez le vendeur difficile vous-même lors du premier jeu de rôle pour donner le niveau, puis laissez les binômes jouer : votre exemple vaut dix consignes.",
+      "Reliez systématiquement au terrain local (Martigues, Port-de-Bouc, Istres) et à des montants réels : le concret chiffré marque bien plus que la théorie.",
+      "Terminez sur l'engagement individuel : chaque négociateur énonce à voix haute son action du lendemain devant le groupe — l'engagement public multiplie le passage à l'acte."
+    ]
+  },
+  "transaction-notaire": {
+    "id": "transaction-notaire",
+    "sousTitre": "De l'offre acceptée à la remise des clés : devenez le chef d'orchestre de vos ventes",
+    "objectifs": [
+      "Être capable de dérouler oralement les 6 étapes d'une transaction (du mandat à l'acte) et d'annoncer un calendrier réaliste de 3 à 4 mois à ses clients.",
+      "Savoir expliquer en termes simples le rôle du notaire, ses trois super-pouvoirs (authenticité, date certaine, force exécutoire) et rassurer sur le coût identique de deux notaires.",
+      "Maîtriser les règles du séquestre et du dépôt de garantie (5 à 10 %, séquestre chez le notaire, restitution sous 21 jours) et les scénarios de sort du dépôt.",
+      "Être capable de détecter en amont les droits de préemption (commune, locataire, SAFER, indivision) et les signataires obligatoires (indivision, couples, succession, SCI, personnes protégées) avant de prendre un mandat.",
+      "Savoir décomposer et expliquer les frais d'acquisition (~7 à 8 % dans l'ancien, ~2 à 3 % dans le neuf) pour sécuriser le budget réel de l'acquéreur.",
+      "Maîtriser la préparation du jour de l'acte authentique (dossier complet, conditions purgées, fonds virés) pour éviter tout report de signature."
+    ],
+    "agenda": [
+      {
+        "titre": "Accueil et brise-glace « Vrai ou intox ? » (lancement du groupe, mise en énergie)",
+        "duree": "10 min"
+      },
+      {
+        "titre": "Apport 1 : le déroulé complet d'une transaction (les 6 étapes, les délais clés, M-V-O-A-S-A)",
+        "duree": "15 min"
+      },
+      {
+        "titre": "Jeu 1 : Quiz-battle en équipes « Les champions de la transaction »",
+        "duree": "15 min"
+      },
+      {
+        "titre": "Apport 2 : le notaire, le séquestre et le dépôt de garantie (rôle, fonds, LCB-FT)",
+        "duree": "15 min"
+      },
+      {
+        "titre": "Jeu 2 : Vrai/Faux debout « Le mur des idées reçues »",
+        "duree": "10 min"
+      },
+      {
+        "titre": "Apport 3 : qui peut vendre ? préemptions, frais d'acquisition, titre de propriété",
+        "duree": "15 min"
+      },
+      {
+        "titre": "Jeu 3 : Défi chrono « Le bon séquençage » + Jeu 4 : Étude de cas « Le dossier qui coince »",
+        "duree": "20 min"
+      },
+      {
+        "titre": "Jeu de rôle : mise en situation téléphonique / face client (rassurer, expliquer, sécuriser)",
+        "duree": "20 min"
+      },
+      {
+        "titre": "Synthèse : les points-clés à retenir et questions",
+        "duree": "10 min"
+      },
+      {
+        "titre": "Plan d'action individuel : chacun note ses 3 engagements pour le terrain",
+        "duree": "10 min"
+      }
+    ],
+    "briseGlace": {
+      "titre": "Vrai ou intox ? Le mythe des « frais de notaire »",
+      "consignes": [
+        "Projetez une seule phrase à l'écran : « Le notaire garde l'intégralité des frais de notaire. » Demandez à chacun de se positionner physiquement : à droite de la salle si « Vrai », à gauche si « Intox ».",
+        "Interrogez 2 ou 3 personnes de chaque côté : « Pourquoi vous êtes-vous placé là ? » Laissez le débat s'installer 2 minutes sans trancher.",
+        "Révélez : c'est une INTOX. Le notaire ne garde qu'une petite part (ses émoluments ≈ 1,1 % du prix) ; l'essentiel, ce sont les droits de mutation (impôts). Annoncez que la séance va justement outiller chacun pour ne plus jamais être pris au dépourvu sur ces sujets face à un client.",
+        "Enchaînez sur la promesse de la séance : « À la fin, vous saurez expliquer, chiffrer et rassurer sur tout le parcours, de l'offre acceptée à la remise des clés. »"
+      ]
+    },
+    "jeux": [
+      {
+        "titre": "Les champions de la transaction",
+        "type": "Quiz-battle en équipes",
+        "duree": "15 min",
+        "consignes": [
+          "Constituez 2 à 3 équipes de niveau mixte (mélangez juniors et confirmés). Chaque équipe choisit un nom et désigne un porte-parole.",
+          "Posez 10 questions tirées du quiz du module, à l'oral, en affichant les 4 options au PowerPoint. L'équipe se concerte 15 secondes puis le porte-parole annonce la réponse (A, B, C ou D).",
+          "1 point par bonne réponse. Bonus de 1 point si l'équipe justifie correctement sa réponse (ex : « 2 mois pour la préemption car silence = renonciation »).",
+          "Questions recommandées : rôle du notaire, attestation provisoire après vente, coût de deux notaires, délai de rétractation (10 j), indivision/unanimité, plus grosse part des frais (droits de mutation), durée moyenne (3-4 mois), 1re cause d'échec (condition de prêt), opposabilité aux tiers (publicité foncière), origine de propriété (30 ans).",
+          "Tenez le score au tableau. L'équipe gagnante est applaudie ; distribuez un petit lot symbolique (café offert, premier choix sur un prochain mandat entrant…)."
+        ],
+        "animation": [
+          "Rythmez : chrono visible, musique courte pendant la concertation pour l'énergie.",
+          "Après chaque réponse, redonnez l'explication en une phrase et reliez-la à une situation terrain concrète du secteur (Martigues, étang de Berre).",
+          "Veillez à ce que le porte-parole tourne entre les manches pour que chacun s'exprime."
+        ],
+        "corrige": [
+          "Le notaire = officier public qui authentifie les actes.",
+          "Attestation après vente = provisoire, en attendant la copie authentique.",
+          "Deux notaires = même prix (partage des émoluments).",
+          "Délai de rétractation = 10 jours calendaires.",
+          "Indivision = unanimité (art. 815-3 du Code civil).",
+          "Plus grosse part des frais = droits de mutation (DMTO).",
+          "Durée moyenne accord → clés = 3 à 4 mois.",
+          "1re cause d'échec = condition suspensive de prêt non réalisée.",
+          "Opposabilité aux tiers = publication au service de la publicité foncière.",
+          "Origine de propriété = 30 ans (prescription acquisitive)."
+        ]
+      },
+      {
+        "titre": "Le mur des idées reçues",
+        "type": "Vrai/Faux debout",
+        "duree": "10 min",
+        "consignes": [
+          "Tout le monde se lève. Annoncez : « Je lis une affirmation. Si c'est VRAI, vous restez debout ; si c'est FAUX, vous vous asseyez. »",
+          "Lisez les affirmations une à une, laissez 3 secondes, puis demandez à une personne « mal positionnée » (ou bien positionnée) de justifier avant de donner la réponse.",
+          "Affirmations à lire : (1) « On peut annoncer au vendeur que c'est vendu dès l'offre acceptée. » (2) « L'agence peut toujours encaisser le dépôt de garantie sur son compte. » (3) « Un bien loué vendu occupé déclenche un droit de préemption du locataire. » (4) « Le dépôt de garantie s'ajoute au prix de vente. » (5) « Le logement familial, bien propre d'un seul époux, peut être vendu sans l'accord du conjoint. » (6) « Les frais d'acquisition dans le neuf sont plus faibles que dans l'ancien. »",
+          "Comptez les « survivants » debout à la fin pour désigner les plus affûtés."
+        ],
+        "animation": [
+          "Le format debout/assis réveille physiquement le groupe : idéal en milieu de séance.",
+          "Jouez la surprise sur les réponses contre-intuitives (2, 3, 5) pour marquer les esprits.",
+          "Reformulez systématiquement la bonne pratique après chaque item."
+        ],
+        "corrige": [
+          "(1) FAUX : tant que rétractation et conditions ne sont pas purgées, on parle d'offre acceptée puis de compromis signé, jamais de « vendu ».",
+          "(2) FAUX : seulement avec une garantie financière couvrant le maniement de fonds et un compte séquestre dédié ; dans le doute, séquestre chez le notaire.",
+          "(3) FAUX : vendu occupé = l'acquéreur reprend le bail, pas de droit de préemption du locataire.",
+          "(4) FAUX : il s'impute sur le prix, il n'est pas « en plus ».",
+          "(5) FAUX : le logement de la famille exige le consentement des deux conjoints (art. 215 du Code civil), même si le bien est propre.",
+          "(6) VRAI : ~2 à 3 % dans le neuf/VEFA contre ~7 à 8 % dans l'ancien (droits de mutation réduits)."
+        ]
+      },
+      {
+        "titre": "Le bon séquençage",
+        "type": "Défi chrono",
+        "duree": "8 min",
+        "consignes": [
+          "Préparez 6 cartons (ou post-it géants) portant chacun une étape dans le désordre : Mandat, Mise en vente, Offre d'achat, Avant-contrat (compromis), Période suspensive (délais), Acte authentique.",
+          "Donnez un jeu de cartons à chaque équipe (2 à 3 équipes). Top chrono : la première équipe à afficher les 6 étapes dans le bon ordre au mur gagne.",
+          "L'équipe gagnante doit ensuite citer, pour chaque étape, UN délai ou point de vigilance (ex : rétractation 10 j, préemption 2 mois, condition de prêt 45-60 j).",
+          "Faites le lien avec le moyen mnémotechnique du module : M-V-O-A-S-A."
+        ],
+        "animation": [
+          "Préparez les cartons à l'avance (ou 2 jeux A4 plastifiés réutilisables).",
+          "Si une seule équipe, jouez contre le chrono (objectif < 60 secondes) et l'animateur tient le temps.",
+          "Insistez sur le message central : la vente se perd souvent entre compromis et acte, faute de suivi des jalons."
+        ],
+        "corrige": [
+          "Ordre correct : 1. Mandat → 2. Mise en vente → 3. Offre d'achat → 4. Avant-contrat (compromis) → 5. Période suspensive (rétractation 10 j, préemption 2 mois, condition de prêt 45-60 j) → 6. Acte authentique.",
+          "Mnémonique : M-V-O-A-S-A."
+        ]
+      },
+      {
+        "titre": "Le dossier qui coince",
+        "type": "Étude de cas",
+        "duree": "12 min",
+        "consignes": [
+          "Projetez ou distribuez 3 mini-situations de mandats « piégés », une par sous-groupe de 2-3 personnes. Chaque groupe dispose de 5 minutes pour répondre à : « Peut-on vendre tout de suite ? Qui doit signer ? Quelle pièce ou quel délai anticiper ? »",
+          "Cas A : « La maison de la grand-mère décédée l'an dernier, les 3 petits-enfants veulent vendre. » Cas B : « Un appartement loué vide, le propriétaire veut le vendre libre. » Cas C : « Une villa achetée par un couple marié sous la communauté ; seul le mari se présente au RDV mandat. »",
+          "Chaque groupe restitue en 1 minute. L'animateur complète et valide.",
+          "Reliez chaque cas à l'erreur fréquente correspondante du module (bien invendable, préemption non anticipée, signataire manquant)."
+        ],
+        "animation": [
+          "Circulez entre les groupes pour relancer sans donner la réponse.",
+          "Valorisez les bons réflexes « questions à poser dès la prise de mandat ».",
+          "Terminez par la règle d'or : pas de mandat complet = pas de vente possible."
+        ],
+        "corrige": [
+          "Cas A (succession) : NON, pas tant que la succession n'est pas réglée. Il faut l'acte de notoriété (qui hérite) + l'attestation immobilière publiée (dans les 6 mois du décès). Les 3 héritiers doivent tous consentir (indivision successorale). Orienter d'abord vers le notaire.",
+          "Cas B (locataire) : il faut d'abord donner congé pour vendre (6 mois avant l'échéance du bail). Le congé vaut offre de vente au locataire, prioritaire pendant 2 mois (4 mois s'il recourt à un prêt). Anticiper ce droit dès le mandat.",
+          "Cas C (couple communauté) : bien commun → accord des DEUX époux obligatoire (art. 1424). Faire signer le mandat par les deux, ou obtenir une procuration de l'épouse. Signer avec un seul = travailler pour rien."
+        ]
+      }
+    ],
+    "jeuxRole": [
+      {
+        "titre": "« Rassurez-moi sur les frais de notaire »",
+        "contexte": "Un acquéreur primo-accédant appelle (ou est en rendez-vous) pour un appartement affiché 250 000 € dans l'ancien à Martigues. Il est inquiet : « On m'a dit qu'il faut ajouter 8 % de frais de notaire, c'est énorme, c'est le notaire qui empoche tout ça ? Et mon budget max c'est 250 000 €… »",
+        "roleA": "Le négociateur, qui doit expliquer la composition des frais d'acquisition (droits de mutation ≈ 4/5, émoluments du notaire ≈ 1,1 %, débours, contribution de sécurité immobilière 0,10 %), déconstruire le mythe, chiffrer (~18 000 à 20 000 €, ~7,5 %) et recadrer le pouvoir d'achat réel (~232 000 € de prix de bien).",
+        "roleB": "L'acquéreur primo-accédant, méfiant, qui pose des questions pièges : « Le notaire garde tout ? », « Je peux l'intégrer dans mon prêt ? », « Ça baisse pas depuis 2025 ? » (occasion d'évoquer le régime primo-accédant et le relèvement départemental).",
+        "objectif": "S'entraîner à vulgariser les frais d'acquisition, à rassurer sans jargon et à sécuriser le budget total pour ne pas faire visiter hors budget.",
+        "debrief": [
+          "Le négociateur a-t-il clairement distingué les 4 blocs de frais et insisté sur la faible part réelle du notaire ?",
+          "A-t-il pensé à intégrer les frais au budget total (pouvoir d'achat réel) et mentionné qu'ils sont rarement couverts par le prêt ?",
+          "A-t-il abordé le régime primo-accédant / le relèvement départemental 2025 avec justesse, sans promettre ce qui dépend du département ?",
+          "Le ton était-il pédagogique et rassurant plutôt que technique ?"
+        ]
+      },
+      {
+        "titre": "« Deux notaires et un prêt qui tarde »",
+        "contexte": "Entre le compromis et l'acte. Le vendeur (notaire de famille à Martigues) et l'acquéreur (qui veut son notaire à Lyon) se crispent ; de plus, l'offre de prêt de l'acquéreur traîne et le vendeur s'impatiente : « Deux notaires, ça va coûter plus cher et ralentir ! Et cet acheteur est-il seulement sérieux ? »",
+        "roleA": "Le négociateur, chef d'orchestre, qui doit rassurer sur le coût identique de deux notaires (partage des émoluments), expliquer la possibilité de signer à distance (procuration/visio), et piloter le jalon de la condition suspensive de prêt (relancer le dépôt bancaire, surveiller le délai 45-60 j).",
+        "roleB": "Le vendeur stressé et pressé, qui veut une date d'acte ferme tout de suite et doute de l'acquéreur.",
+        "objectif": "S'entraîner à tenir le rôle de pilote entre compromis et acte : rassurer, cadrer les délais réalistes, et ne jamais promettre une date d'acte avant que les conditions soient purgées.",
+        "debrief": [
+          "Le négociateur a-t-il bien dit que deux notaires ne coûtent pas plus cher et évoqué la signature à distance ?",
+          "A-t-il expliqué pourquoi la condition de prêt est le jalon n°1 à surveiller, sans alarmer inutilement ?",
+          "A-t-il évité de s'engager sur une date d'acte prématurée tout en rassurant le vendeur par un suivi concret ?",
+          "A-t-il reformulé le calendrier réaliste (compromis → acte : 2,5 à 4 mois) ?"
+        ]
+      }
+    ],
+    "pointsCles": [
+      "Le négociateur est le chef d'orchestre de la vente : elle se perd rarement à l'offre, mais entre le compromis et l'acte, faute de suivi des jalons (M-V-O-A-S-A).",
+      "Compter 3 à 4 mois entre l'accord et les clés : l'annoncer d'emblée aux deux parties évite les tensions. On dit « offre acceptée », puis « compromis signé », et seulement à l'acte « vente réalisée ».",
+      "Le notaire est un officier public ministériel : il authentifie (foi jusqu'à inscription de faux), donne date certaine et force exécutoire. Deux notaires ne coûtent pas plus cher (partage des émoluments).",
+      "Dépôt de garantie : usage de 5 à 10 % du prix, imputé sur le prix, séquestré chez le notaire. L'agence ne séquestre que si elle a une garantie financière dédiée. Jamais d'espèces (LCB-FT, Tracfin).",
+      "Délais à connaître par cœur : rétractation SRU 10 jours, condition de prêt 45-60 jours, purge de préemption 2 mois, restitution du dépôt sous 21 jours en cas de rétractation.",
+      "La condition suspensive de prêt est la 1re cause d'échec des ventes : c'est le jalon à surveiller plus que tout autre.",
+      "Détecter tôt les droits de préemption (commune/DPU, locataire, SAFER, indivisaires) : ils peuvent rallonger le calendrier de 2 mois. Ne jamais promettre une date d'acte avant leur purge.",
+      "Avant de prendre un mandat, toujours se demander QUI doit signer : indivision = unanimité, couple en communauté = les deux époux, logement familial = les deux conjoints, succession = tous les héritiers (notoriété + attestation publiée), SCI = selon les statuts.",
+      "Frais d'acquisition : ~7 à 8 % dans l'ancien, ~2 à 3 % dans le neuf. La plus grosse part = les droits de mutation (impôts), pas le notaire. À intégrer dans le budget réel de l'acquéreur.",
+      "Le jour de l'acte se gagne avant : dossier complet transmis au notaire, conditions purgées, fonds virés. Un dossier incomplet = signature reportée. La publication au service de la publicité foncière rend la vente opposable aux tiers."
+    ],
+    "planAction": [
+      "Dès demain, à chaque offre acceptée, j'annonce oralement aux deux parties le calendrier réaliste de 3 à 4 mois et je bannis le mot « vendu » tant que les conditions ne sont pas purgées.",
+      "Avant toute signature de mandat, je pose systématiquement la question « qui doit signer pour vendre ? » et je vérifie la situation du bien (loué ? indivision ? succession réglée ? SCI ? couple marié ?) avant de commercialiser.",
+      "Je crée (ou mets à jour) une check-list de suivi par dossier avec les 4 jalons critiques : rétractation 10 j, purge de préemption, obtention du prêt, fonds virés — et je la relance chaque semaine.",
+      "Je prépare une explication simple et chiffrée des frais d'acquisition (les 4 blocs, la faible part du notaire, ~7,5 % dans l'ancien) pour l'utiliser dès la qualification de chaque acquéreur.",
+      "Je noue ou renforce une relation avec 2 à 3 études notariales de mon secteur et je m'engage à leur transmettre des dossiers propres et complets pour gagner des semaines.",
+      "Pour tout bien issu d'une succession, j'exige l'attestation immobilière publiée (et l'acte de notoriété) AVANT la première photo, et je vérifie le séquestre du dépôt chez le notaire plutôt qu'à l'agence."
+    ],
+    "notesFormateur": [
+      "Gérez le temps avec un chrono visible : les jeux (quiz-battle, défi chrono) sont minutés, ne laissez pas déborder l'apport théorique au détriment de la pratique, qui ancre vraiment les acquis.",
+      "Faites participer tout le monde : alternez formats assis (apports, études de cas) et debout (Vrai/Faux, défi chrono), faites tourner les porte-parole d'équipe et sollicitez nommément les plus discrets sur des questions faciles.",
+      "Ancrez chaque notion dans le terrain local (Martigues, Saint-Mitre, étang de Berre, parcelles agricoles SAFER) : les clients, les biens et les situations que vos négociateurs rencontrent réellement rendent le contenu mémorable.",
+      "Transformez chaque erreur de quiz en apprentissage : ne jugez jamais une mauvaise réponse, reformulez la bonne pratique en une phrase et reliez-la à un cas vécu par l'équipe.",
+      "Faites verbaliser les engagements : à la fin, chacun écrit 3 actions concrètes sur sa fiche et en annonce une à voix haute au groupe — l'engagement public augmente le passage à l'acte sur le terrain.",
+      "Prévoyez le matériel à l'avance : cartons plastifiés des 6 étapes pour le défi chrono, fiches des 3 études de cas, un petit lot pour l'équipe gagnante, et planifiez un point de suivi à J+30 pour vérifier l'application du plan d'action."
+    ]
+  },
+  "loi-alur": {
+    "id": "loi-alur",
+    "sousTitre": "ALUR sans jargon : l'atelier qui transforme la loi en réflexes de terrain, de la vitrine au compromis",
+    "objectifs": [
+      "Savoir situer la loi ALUR (24 mars 2014) dans la chaîne Hoguet / Macron / ELAN / Climat et distinguer ce qui relève vraiment d'ALUR de ce qui n'en relève pas (passoires thermiques = loi Climat).",
+      "Maîtriser les règles d'affichage et de publicité des honoraires : barème-plafond TTC, vitrine + accueil + site en 2 clics, et rédaction d'annonce selon que les honoraires sont charge vendeur ou charge acquéreur.",
+      "Être capable de rédiger une annonce de vente et de location 100 % conforme (prix/honoraires, mentions copropriété, les 4 mentions DPE).",
+      "Maîtriser le contenu obligatoire du mandat post-ALUR (moyens mis en œuvre + reddition de comptes) et en faire un argument pour décrocher l'exclusivité.",
+      "Être capable de constituer le dossier de copropriété L721-2 complet avant le compromis pour sécuriser le délai de rétractation de 10 jours de l'acquéreur.",
+      "Savoir calculer le plafond des honoraires de location au m² et appliquer la liste limitative des pièces exigibles du candidat locataire."
+    ],
+    "agenda": [
+      {
+        "titre": "Accueil et cadrage : « ALUR, pourquoi ça nous concerne tous »",
+        "duree": "0:00 - 0:10 (10 min)"
+      },
+      {
+        "titre": "Brise-glace : le mur des idées reçues sur ALUR",
+        "duree": "0:10 - 0:25 (15 min)"
+      },
+      {
+        "titre": "Apport 1 : repères ALUR + honoraires et affichage (barème-plafond, vitrine/site, annonce)",
+        "duree": "0:25 - 0:45 (20 min)"
+      },
+      {
+        "titre": "Jeu 1 : Vrai / Faux express « ALUR ou pas ALUR »",
+        "duree": "0:45 - 0:55 (10 min)"
+      },
+      {
+        "titre": "Jeu 2 : Défi chrono annonce conforme (atelier en binômes)",
+        "duree": "0:55 - 1:10 (15 min)"
+      },
+      {
+        "titre": "Apport 2 : mandat post-ALUR, copropriété L721-2, volet location",
+        "duree": "1:10 - 1:25 (15 min)"
+      },
+      {
+        "titre": "Jeu 3 : Quiz-battle en équipes « Les Experts ALUR »",
+        "duree": "1:25 - 1:40 (15 min)"
+      },
+      {
+        "titre": "Jeu de rôle : mise en situation téléphonique « Le vendeur qui conteste l'affichage des honoraires »",
+        "duree": "1:40 - 1:55 (15 min)"
+      },
+      {
+        "titre": "Synthèse HAMCLoF, plan d'action du lendemain et clôture",
+        "duree": "1:55 - 2:05 (10 min)"
+      }
+    ],
+    "briseGlace": {
+      "titre": "Le mur des idées reçues : « ALUR, vrai ou intox ? »",
+      "consignes": [
+        "Avant toute explication, distribuez à chaque négociateur 3 Post-it et demandez-leur d'écrire, en une phrase chacun, ce qu'ils croient savoir (ou ce qu'un client leur a dit) sur la loi ALUR : une par Post-it, sans se censurer.",
+        "Chacun vient coller ses Post-it au tableau et lit l'un d'eux à voix haute en 10 secondes (ex. « ALUR, c'est surtout pour les locations », « c'est ALUR qui interdit de louer les passoires thermiques »).",
+        "L'animateur regroupe les Post-it en 2 colonnes au feutre : VRAI et À VÉRIFIER (ne tranchez pas encore, créez le suspense).",
+        "Annoncez la règle du jeu de la séance : « À la fin de l'atelier, on revient à ce mur et chacun déplace ses propres Post-it dans la bonne colonne. Vous allez voir que la moitié des idées reçues sont fausses. »",
+        "Gardez le mur visible toute la séance : il sert de fil rouge et de mesure des acquis en clôture."
+      ]
+    },
+    "jeux": [
+      {
+        "titre": "Vrai / Faux express « ALUR ou pas ALUR »",
+        "type": "Vrai/Faux debout-assis",
+        "duree": "10 min",
+        "consignes": [
+          "Tout le monde se lève. L'animateur lit une affirmation : les négociateurs restent DEBOUT s'ils pensent VRAI, s'ASSOIENT s'ils pensent FAUX. Pas d'abstention, on tranche.",
+          "Lire une à une les 10 affirmations ci-dessous en laissant 3 secondes de décision, puis donnez la réponse et la justification en une phrase.",
+          "Affirmation 1 : « Le barème d'honoraires affiché est un prix maximum, on peut négocier à la baisse. » (VRAI)",
+          "Affirmation 2 : « C'est la loi ALUR qui interdit de louer les logements classés G. » (FAUX - c'est la loi Climat et résilience 2021.)",
+          "Affirmation 3 : « Une annonce de vente doit afficher 4 mentions liées au DPE. » (VRAI)",
+          "Affirmation 4 : « On peut faire visiter avant la signature du mandat tant qu'on le signe le jour de l'offre. » (FAUX - pas de mandat écrit préalable = aucune rémunération, art. 6 Hoguet.)",
+          "Affirmation 5 : « La carte professionnelle est valable 10 ans et délivrée par la préfecture. » (FAUX - 3 ans, délivrée par la CCI depuis 2015.)",
+          "Affirmation 6 : « En transaction, les honoraires d'agence sont plafonnés par la loi au m². » (FAUX - ils sont libres, bornés par le barème affiché ; le plafond au m² ne concerne que la LOCATION.)",
+          "Affirmation 7 : « Si le dossier de copropriété L721-2 n'est pas annexé au compromis, le délai de rétractation de 10 jours de l'acquéreur ne démarre pas. » (VRAI)",
+          "Affirmation 8 : « Le barème doit être affiché en TTC en vitrine, à l'accueil ET sur le site internet. » (VRAI)",
+          "Affirmation 9 : « Un mandat exclusif ne peut jamais être dénoncé avant son terme. » (FAUX - dénonciation possible après 3 mois, par LRAR, préavis 15 jours.)",
+          "Affirmation 10 : « ALUR a supprimé le COS et la taille minimale des terrains. » (VRAI)"
+        ],
+        "animation": [
+          "Rythmez vite : l'énergie du jeu vient du corps qui bouge, pas de la réflexion longue.",
+          "Après chaque réponse, demandez à UN négociateur qui s'est trompé « qu'est-ce qui t'a fait hésiter ? » : l'erreur verbalisée s'ancre mieux que la bonne réponse.",
+          "Insistez sur les pièges 2 et 6, qui sont les confusions les plus fréquentes et les plus coûteuses en clientèle."
+        ],
+        "corrige": [
+          "1 VRAI",
+          "2 FAUX (loi Climat 2021)",
+          "3 VRAI (classe énergie, classe climat/GES, estimation des coûts annuels, mention « consommation énergétique excessive » si F ou G)",
+          "4 FAUX",
+          "5 FAUX (3 ans, CCI)",
+          "6 FAUX (libres dans la limite du barème ; plafond au m² = location uniquement)",
+          "7 VRAI",
+          "8 VRAI",
+          "9 FAUX (dénonçable après 3 mois, LRAR, préavis 15 jours)",
+          "10 VRAI"
+        ]
+      },
+      {
+        "titre": "Défi chrono : l'annonce conforme en 5 minutes",
+        "type": "Défi chrono / atelier en binômes",
+        "duree": "15 min",
+        "consignes": [
+          "Formez des binômes. Distribuez à chaque binôme la même fiche « bien à vendre » (voir corrigé) : un T3 de 72 m² à Martigues, 280 000 € net vendeur, honoraires 4 % TTC à la charge de l'acquéreur, copropriété de 48 lots, charges ≈ 1 320 €/an, DPE D / GES D, coûts énergie 980-1 330 € (réf. 2023), pas de procédure en cours.",
+          "Objectif : rédiger en 5 minutes chrono le texte d'une annonce de vente 100 % conforme ALUR. Lancez un vrai minuteur visible de tous.",
+          "À la fin du chrono, chaque binôme lit son annonce. Les autres jouent les « contrôleurs DGCCRF » et lèvent la main dès qu'il manque une mention obligatoire.",
+          "Comptez 1 point par mention obligatoire correctement présente, -1 par mention oubliée ou erronée (prix FAI, prix hors honoraires, taux TTC, qui paie, lots de copropriété, charges moyennes, classe énergie, classe climat GES, estimation des coûts, absence de procédure).",
+          "Affichez au tableau l'annonce-corrigé et faites recalculer à voix haute le prix FAI pour verrouiller le calcul."
+        ],
+        "animation": [
+          "Circulez pendant le chrono pour repérer les binômes qui oublient la classe climat (GES) ou l'estimation des coûts : ce sont les oublis n°1 sur le terrain.",
+          "Valorisez le binôme qui a pensé à l'astuce commerciale : frais de notaire calculés sur 280 000 € (hors honoraires), pas sur le FAI — argument d'économie réelle à mettre en avant côté acquéreur.",
+          "Terminez en projetant l'exemple d'annonce conforme du support pour que chacun reparte avec un modèle réutilisable."
+        ],
+        "corrige": [
+          "Calcul : honoraires = 280 000 x 4 % = 11 200 €. Prix FAI = 291 200 €. Prix hors honoraires (net vendeur) = 280 000 €.",
+          "Annonce conforme type : « Appartement T3, Martigues, 72 m², 291 200 € honoraires inclus dont 4 % (11 200 €) à la charge de l'acquéreur, soit 280 000 € hors honoraires. Copropriété de 48 lots, charges courantes ≈ 1 320 €/an, pas de procédure en cours. DPE : classe D / GES D. Coûts annuels d'énergie estimés entre 980 € et 1 330 € (réf. 2023). »",
+          "Mentions obligatoires attendues : prix FAI + prix hors honoraires + taux/montant TTC des honoraires + qui paie ; statut copropriété ; nombre de lots (48) ; charges courantes moyennes ; absence/existence de procédure ; les 4 mentions DPE (classe énergie, classe climat GES, estimation des coûts annuels avec année de référence, mention « consommation énergétique excessive » uniquement si F ou G — ici inutile car D)."
+        ]
+      },
+      {
+        "titre": "Quiz-battle « Les Experts ALUR »",
+        "type": "Quiz-battle en équipes",
+        "duree": "15 min",
+        "consignes": [
+          "Constituez 2 ou 3 équipes et faites-leur choisir un nom (ex. « Les Barèmes », « Les Mandats d'acier »). Désignez un porte-parole par équipe pour éviter le brouhaha.",
+          "L'animateur lit une question à choix multiples ; les équipes se concertent 15 secondes puis le porte-parole annonce la réponse (ou écrit A/B/C/D sur une ardoise levée simultanément pour éviter le copiage).",
+          "10 questions, 1 point par bonne réponse. Après chaque question, l'animateur donne l'explication : c'est là que se fait l'apprentissage.",
+          "Posez les questions suivantes, tirées du quiz du module : 1) Le barème d'honoraires affiché est… (R : un prix maximum TTC, négociable à la baisse). 2) Combien de mentions DPE obligatoires dans une annonce de vente ? (R : 4). 3) Les honoraires de location à la charge du locataire sont… (R : plafonnés au m² selon la zone, 8/10/12 €). 4) Quelle formation continue pour renouveler la carte ? (R : 14 h/an soit 42 h sur 3 ans). 5) Si le dossier L721-2 n'est pas annexé à la promesse ? (R : le délai de rétractation de 10 jours ne commence pas à courir).",
+          "Suite : 6) Un mandat exclusif peut être dénoncé… (R : après 3 mois, par LRAR, préavis 15 jours). 7) Qu'a supprimé ALUR en urbanisme ? (R : le COS et la taille minimale des terrains). 8) Honoraires du syndic pour l'état daté ? (R : plafonnés à 380 € TTC). 9) Le fonds de travaux obligatoire représente au moins… (R : 5 % du budget prévisionnel). 10) Compte bancaire séparé du syndicat : dispense possible dans les copropriétés de… (R : 15 lots ou moins).",
+          "Bonus « question piège » valant 2 points pour départager en cas d'égalité : « C'est ALUR qui a créé l'obligation d'audit énergétique pour les passoires thermiques, vrai ou faux ? » (R : FAUX, c'est la loi Climat 2021)."
+        ],
+        "animation": [
+          "Tenez le score au tableau, visible : la compétition d'équipe booste l'attention de ceux qui décrochent en formation descendante.",
+          "Accordez un « droit de défi » : une équipe peut contester une réponse si elle argumente juridiquement — cela crée du débat et révèle les zones floues.",
+          "Gardez les questions 3, 8, 9 et 10 (les chiffres) pour la fin : ce sont les plus oubliées, mettez-les en avant dans la synthèse."
+        ],
+        "corrige": [
+          "1 : prix maximum TTC, négociable à la baisse.",
+          "2 : 4 mentions.",
+          "3 : plafonnées au m² (8 €/m² hors zone tendue, 10 € en zone tendue, 12 € en zone très tendue, + 3 €/m² état des lieux).",
+          "4 : 14 h/an soit 42 h sur 3 ans, dont 2 h déontologie + 2 h non-discrimination.",
+          "5 : le délai de rétractation de 10 jours de l'acquéreur ne démarre pas.",
+          "6 : après 3 mois, LRAR, préavis 15 jours.",
+          "7 : le COS et la taille minimale des terrains.",
+          "8 : 380 € TTC.",
+          "9 : 5 % du budget prévisionnel annuel.",
+          "10 : 15 lots ou moins.",
+          "Bonus : FAUX (loi Climat et résilience 2021)."
+        ]
+      },
+      {
+        "titre": "Brainstorm éclair : « Tous les moyens qu'on inscrit au mandat »",
+        "type": "Brainstorm / défi collectif",
+        "duree": "10 min",
+        "consignes": [
+          "Rappel express : depuis ALUR, le mandat doit écrire noir sur blanc les moyens mis en œuvre par l'agence ET les modalités de reddition de comptes. C'est une obligation… et un argument massue pour décrocher l'exclusivité.",
+          "Au tableau, tracez deux colonnes : « MOYENS DE COMMERCIALISATION » et « REDDITION DE COMPTES ». En mode pop-corn, chacun lance une idée concrète que l'agence peut réellement inscrire et tenir.",
+          "Objectif chrono : remplir au moins 12 moyens + 4 modalités de reporting en 5 minutes. L'animateur note tout sans filtrer.",
+          "Deuxième temps (3 min) : l'équipe surligne les 5 moyens les plus différenciants face à un concurrent, et formule LA phrase d'accroche à dire au vendeur pour vendre l'exclusivité.",
+          "Chacun repart avec la liste photographiée : elle devient l'argumentaire-mandat de l'agence."
+        ],
+        "animation": [
+          "Poussez vers du concret et du tenable : « reportage photo pro » oui, « on fait de la pub partout » non. Ce qui est écrit au mandat doit être réellement fait (reddition de comptes oblige).",
+          "Reliez systématiquement un moyen à sa preuve de reporting : ex. « diffusion portails » → « capture des statistiques de vues envoyée tous les 15 jours ».",
+          "Si le groupe sèche, amorcez avec le script du module : reportage photo, diffusion grands portails, vitrine, home-staging, visites, compte rendu après chaque visite + point tous les 15 jours."
+        ],
+        "corrige": [
+          "Moyens typiques : reportage photo professionnel, vidéo / visite virtuelle, home-staging, diffusion sur les grands portails, mise en vitrine, panneau, mailing fichier acquéreurs, journées portes ouvertes, remontée aux agences du réseau C21, publication réseaux sociaux.",
+          "Reddition de comptes : compte rendu écrit après chaque visite, point téléphonique ou mail tous les 15 jours, transmission des statistiques de diffusion, bilan mi-mandat avec recommandation (prix, supports).",
+          "Phrase d'accroche type : « Mon mandat précise noir sur blanc ce que je mets en œuvre et comment je vous rends compte. Vous ne me donnez pas un blanc-seing : vous avez un engagement écrit et vérifiable. »"
+        ]
+      },
+      {
+        "titre": "Étude de cas : l'audit « 5 minutes » des annonces de l'agence",
+        "type": "Étude de cas en sous-groupes",
+        "duree": "12 min",
+        "consignes": [
+          "Répartissez 3 ou 4 annonces (réelles et anonymisées, issues du portefeuille de l'agence, ou les cartons-exemples fournis dans le support) entre les sous-groupes.",
+          "Chaque sous-groupe passe son annonce au crible de la check-list HAMCLoF en 6 minutes : Honoraires affichés correctement ? Annonce complète (4 DPE, copropriété) ? Mandat cohérent sur qui paie ? Copropriété documentée ? Location plafonnée (si location) ? Formation/carte à jour ?",
+          "Le sous-groupe liste les non-conformités repérées et le coût potentiel en cas de contrôle (amende jusqu'à 3 000 € personne physique / 15 000 € personne morale pour affichage/annonce).",
+          "Restitution : chaque sous-groupe présente en 1 minute « ce qui cloche et comment on corrige dès cet après-midi ».",
+          "Clôturez sur le mini-cas du module : 12 annonces auditées, 3 sans classe climat (GES), 1 sans estimation des coûts, 2 sans charges de copropriété — 20 minutes de correction contre des milliers d'euros d'amende."
+        ],
+        "animation": [
+          "Faites-en un exercice utile et non punitif : l'objectif est de repartir avec des annonces corrigées, pas de pointer un coupable.",
+          "Les oublis les plus fréquents à traquer : classe climat (GES) absente alors que l'étiquette énergie est là ; estimation des coûts annuels oubliée ; charges de copropriété non indiquées ; mention « DPE non communiqué » recopiée d'un particulier (interdit depuis juillet 2021).",
+          "Notez les corrections sur un tableau partagé et assignez un responsable + une date pour chaque correction : c'est le pont direct vers le plan d'action."
+        ],
+        "corrige": [
+          "Grille de contrôle d'une annonce de vente : prix + qui paie les honoraires (si charge acquéreur : prix hors honoraires + taux/montant TTC + FAI) ; statut copropriété + nombre de lots + charges courantes moyennes + procédure éventuelle ; 4 mentions DPE (classe énergie, classe climat/GES, estimation des coûts annuels + année de réf., mention « consommation énergétique excessive » si F ou G).",
+          "Un seul oubli parmi les 4 mentions DPE rend l'annonce entière non conforme.",
+          "Le DPE vierge (« non communiqué ») est interdit depuis le 1er juillet 2021 et le DPE est désormais opposable."
+        ]
+      }
+    ],
+    "jeuxRole": [
+      {
+        "titre": "Mise en situation téléphonique : le vendeur qui conteste l'affichage des honoraires",
+        "contexte": "Un vendeur a repéré sur le site et en vitrine de CENTURY 21 Icaza Immobilier le barème d'honoraires. Il appelle, agacé : « Pourquoi vous affichez vos commissions comme ça à la vue de tous ? Les clients vont croire que c'est cher. Vous pouvez pas juste m'en parler de vive voix ? » Le négociateur doit tenir le téléphone, expliquer le cadre ALUR sans se mettre en position de faiblesse, et transformer l'obligation en argument de confiance.",
+        "roleA": "Le négociateur de l'agence : il reçoit l'appel, garde son calme, explique que l'affichage du barème (vitrine, accueil, site, en TTC) est une obligation légale ALUR et une marque de transparence, rappelle que le barème est un plafond négociable à la baisse et non un tarif imposé, et réoriente vers la valeur du service.",
+        "roleB": "Le vendeur méfiant : il pense que l'affichage dessert l'agence, soupçonne que « tout est négociable donc pourquoi payer le plein tarif », et teste la fermeté du négociateur. Il peut glisser un piège : « donc je peux exiger moitié prix ? ».",
+        "objectif": "S'entraîner à transformer une contrainte légale (l'affichage obligatoire du barème-plafond TTC) en argument commercial de transparence, sans brader ses honoraires ni mentir sur la règle. Bien distinguer « plafond opposable, négociable à la baisse » de « tarif libre à discuter sans limite ».",
+        "debrief": [
+          "Le négociateur a-t-il nommé clairement l'obligation ALUR (affichage vitrine + accueil + site, TTC) plutôt que de s'en excuser ?",
+          "A-t-il tenu la ligne « le barème est un plafond, je peux négocier à la baisse mais je ne facture jamais au-delà, et c'est le même tarif pour tous » sans promettre une remise réflexe ?",
+          "A-t-il réussi à basculer de la commission vers la valeur (moyens inscrits au mandat, reporting, sécurisation du dossier) ?",
+          "Qu'est-ce qui a convaincu / crispé le vendeur ? Faire rejouer la séquence d'ouverture par un autre binôme avec la meilleure formulation entendue."
+        ]
+      },
+      {
+        "titre": "Prise de mandat : vendre l'exclusivité par les moyens et la reddition de comptes",
+        "contexte": "Rendez-vous de prise de mandat au domicile d'un propriétaire à Martigues (un mardi). Le vendeur hésite entre un mandat simple confié à trois agences et l'exclusivité proposée par le négociateur. Il faut à la fois convaincre par le contenu ALUR du mandat (moyens + reporting) et gérer proprement le formalisme (signature hors établissement = rétractation 14 jours, bordereau à remettre).",
+        "roleA": "Le négociateur : il déroule son argumentaire-mandat (moyens de commercialisation concrets, compte rendu après chaque visite + point tous les 15 jours), explique la faculté de dénonciation après 3 mois (LRAR, préavis 15 jours) pour rassurer, et n'oublie pas de remettre le bordereau de rétractation de 14 jours puisqu'on signe au domicile.",
+        "roleB": "Le vendeur : « l'exclusivité, c'est trop risqué, je me sens prisonnier ». Il veut garder la main, craint de mal choisir et demande « et si je ne suis pas content de vous dans un mois ? ».",
+        "objectif": "Transformer les apports ALUR du mandat (moyens mis en œuvre inscrits noir sur blanc + reddition de comptes + dénonciation après 3 mois) en leviers pour lever l'objection de l'exclusivité, tout en respectant le formalisme de la signature hors établissement (rétractation 14 jours + bordereau).",
+        "debrief": [
+          "Le négociateur a-t-il utilisé l'engagement écrit (moyens + reporting) comme preuve de sérieux plutôt que comme simple obligation ?",
+          "A-t-il rassuré sur la sortie possible (dénonciation après 3 mois, LRAR, préavis 15 jours) pour désamorcer la peur d'être « prisonnier » ?",
+          "A-t-il pensé à remettre le bordereau de rétractation (14 jours) et à bien dater le point de départ, signature au domicile oblige ?",
+          "A-t-il évité le piège fatal : faire visiter ou publier avant la signature du mandat (aucune rémunération due, art. 6 Hoguet) ?"
+        ]
+      }
+    ],
+    "pointsCles": [
+      "ALUR (loi du 24 mars 2014) complète et durcit la loi Hoguet : elle vise la transparence pour le consommateur et la professionnalisation des agents. Elle touche d'abord la TRANSACTION, pas seulement la location.",
+      "Ne pas confondre ALUR et loi Climat : l'interdiction progressive de louer les passoires thermiques et l'audit énergétique viennent de la loi Climat et résilience 2021, pas d'ALUR.",
+      "Le barème d'honoraires est un PLAFOND TTC, négociable à la baisse, jamais dépassable, identique pour tous. Il s'affiche en vitrine, à l'accueil ET sur le site (en 2 clics), toujours en TTC.",
+      "Dans l'annonce, qui paie change tout : honoraires charge acquéreur = afficher prix hors honoraires + taux/montant TTC + prix FAI. En transaction les honoraires sont libres (bornés par le barème) ; en location ils sont plafonnés par la loi au m².",
+      "Toute annonce exige 4 mentions DPE : classe énergie, classe climat (GES), estimation des coûts annuels d'énergie (+ année de réf.), et la mention « consommation énergétique excessive » pour un F ou G. Un seul oubli = annonce non conforme. Le DPE vierge est interdit depuis juillet 2021.",
+      "Pas de mandat écrit préalable = aucune rémunération (art. 6 Hoguet). Le mandat post-ALUR doit inscrire les moyens mis en œuvre et la reddition de comptes : c'est une obligation ET le meilleur argument d'exclusivité.",
+      "Un mandat exclusif se dénonce après 3 mois, par LRAR, avec préavis de 15 jours ; signé hors établissement (au domicile), il ouvre 14 jours de rétractation avec bordereau à remettre.",
+      "Pour un lot de copropriété, le dossier L721-2 complet (fiche synthétique, règlement + EDD, PV d'AG des 3 ans, carnet d'entretien, charges, fonds de travaux, Carrez…) doit être annexé à la promesse : sinon le délai de rétractation de 10 jours de l'acquéreur NE COMMENCE PAS à courir. État daté du syndic plafonné à 380 € TTC.",
+      "Honoraires de location à la charge du locataire : 4 prestations seulement, plafonnées au m² (8 / 10 / 12 €/m² selon la zone + 3 €/m² pour l'état des lieux), part locataire jamais supérieure à celle du bailleur, et liste limitative des pièces exigibles (une pièce hors liste = amende).",
+      "Carte professionnelle T/G/S valable 3 ans, délivrée par la CCI, conditionnée à 42 h de formation continue sur le cycle (14 h/an) dont 2 h de déontologie et 2 h de non-discrimination. Mémo de clôture : HAMCLoF (Honoraires affichés, Annonces complètes, Mandat conforme, Copropriété documentée, Location plafonnée, Formation à jour)."
+    ],
+    "planAction": [
+      "Dès demain matin, auditer mes annonces en ligne avec la grille HAMCLoF et corriger sous 24 h toute annonce où manque une des 4 mentions DPE (en priorité la classe climat/GES souvent oubliée), les charges de copropriété ou le détail des honoraires.",
+      "Vérifier aujourd'hui que le barème de l'agence est bien accessible sur le site en 2 clics maximum et à jour en TTC, aussi sérieusement que la vitrine (c'est le point faible classique en cas de contrôle DGCCRF).",
+      "Sur mon prochain rendez-vous de prise de mandat, inscrire noir sur blanc les moyens mis en œuvre + la reddition de comptes (compte rendu après chaque visite, point tous les 15 jours) et m'en servir comme argument d'exclusivité.",
+      "Ne plus jamais faire visiter ni publier un bien avant la signature du mandat écrit, numéroté et reporté au registre ; remettre systématiquement le bordereau de rétractation quand je signe au domicile du vendeur.",
+      "Dès la prise de mandat sur un lot de copropriété, demander au syndic le dossier L721-2 complet (fiche synthétique, PV d'AG des 3 ans, carnet d'entretien, fonds de travaux, Carrez…) pour qu'il soit prêt à annexer au compromis et sécuriser les 10 jours de rétractation.",
+      "Avant toute facturation d'honoraires de location, calculer le plafond au m² (zone x surface habitable) et vérifier que je ne réclame au candidat que des pièces de la liste limitative."
+    ],
+    "notesFormateur": [
+      "Gérer le temps : la séance est dense (2 h). Affichez l'agenda minuté au mur et nommez un « gardien du temps » dans le groupe. Si vous débordez, sacrifiez le brainstorm ou l'étude de cas (jeux 4 et 5, optionnels) plutôt que les apports et le quiz-battle.",
+      "Alternez systématiquement apport descendant (max 15-20 min) et activité : l'attention d'un adulte décroche après 20 minutes de monologue. Les jeux ne sont pas de la récréation, ce sont les moments où le savoir s'ancre.",
+      "Faire participer tout le monde : utilisez le porte-parole tournant dans le quiz-battle et la règle « pop-corn » dans le brainstorm pour que les plus discrets s'expriment. Valorisez les erreurs (« bonne erreur, c'est exactement le piège du terrain ») plutôt que de les sanctionner.",
+      "Ancrer les acquis : revenez au mur des idées reçues du brise-glace en clôture et faites déplacer les Post-it. Ce bouclage visuel matérialise la progression et marque les esprits.",
+      "Rendre concret et local : chaque fois que possible, raccrochez à Martigues et au portefeuille réel de l'agence (annonces réelles anonymisées, cas vécus). Rappelez que Martigues n'est pas en zone d'encadrement du niveau des loyers mais à vérifier en zone tendue.",
+      "Conclure par l'action, pas par la théorie : réservez vraiment les 10 dernières minutes au plan d'action individuel. Faites écrire à chaque négociateur ses 2 engagements prioritaires pour le lendemain et proposez un point de suivi à J+15 pour vérifier leur mise en œuvre."
+    ]
+  },
+  "cadre-legal": {
+    "id": "cadre-legal",
+    "sousTitre": "Cadre légal & conformité : 2 heures pour transformer des contraintes juridiques en réflexes terrain qui protègent chaque négociateur et toute l'agence.",
+    "objectifs": [
+      "Savoir citer les piliers de la loi Hoguet (carte T/G/S, habilitation CCI, garantie financière, RCP) et expliquer pourquoi un négociateur engage toujours la responsabilité du titulaire de la carte.",
+      "Maîtriser le formalisme du mandat écrit préalable (mentions obligatoires, numéro au registre, bon de visite) comme condition de perception des honoraires.",
+      "Être capable d'afficher et d'annoncer des honoraires conformes (prix, montant TTC, qui paie, DPE/GES) en vitrine, en agence et sur le web.",
+      "Appliquer les trois réflexes LCB-FT (identifier le client, comprendre le bénéficiaire effectif et le risque, vérifier l'origine des fonds) et savoir quand et comment déclarer un soupçon à Tracfin via Ermes, dans la confidentialité absolue.",
+      "Être capable de prospecter dans le nouveau régime opt-in 2026 (consentement préalable, horaires, preuve 3 ans) et de recourir à la pige en conformité.",
+      "Repérer et refuser toute consigne discriminatoire, et sécuriser son devoir de conseil pour limiter les trois responsabilités (civile, pénale, disciplinaire)."
+    ],
+    "agenda": [
+      {
+        "titre": "Accueil & brise-glace « Vrai ou intox juridique »",
+        "duree": "10 min"
+      },
+      {
+        "titre": "Apport 1 — Loi Hoguet, carte pro & habilitation : qui fait quoi et sous quelle responsabilité",
+        "duree": "15 min"
+      },
+      {
+        "titre": "Jeu 1 — Quiz-battle en équipes « Les gardiens de la carte »",
+        "duree": "15 min"
+      },
+      {
+        "titre": "Apport 2 — Mandat écrit, honoraires & affichage : le nerf de la rémunération",
+        "duree": "15 min"
+      },
+      {
+        "titre": "Jeu 2 — Vrai/Faux chrono « Mandat & honoraires »",
+        "duree": "10 min"
+      },
+      {
+        "titre": "Apport 3 — LCB-FT / Tracfin & RGPD : vigilance et données",
+        "duree": "15 min"
+      },
+      {
+        "titre": "Jeu 3 — Étude de cas « Les clignotants rouges » (détection LCB-FT)",
+        "duree": "15 min"
+      },
+      {
+        "titre": "Jeu 4 — Mise en situation téléphonique « Prospection opt-in 2026 »",
+        "duree": "10 min"
+      },
+      {
+        "titre": "Jeu de rôle — « Le propriétaire qui discrimine »",
+        "duree": "15 min"
+      },
+      {
+        "titre": "Synthèse : les messages-clés & plan d'action du lendemain",
+        "duree": "15 min"
+      },
+      {
+        "titre": "Clôture & engagements individuels (tour de table)",
+        "duree": "5 min"
+      }
+    ],
+    "briseGlace": {
+      "titre": "Vrai ou intox juridique : 5 affirmations pour réveiller le groupe",
+      "consignes": [
+        "Avant tout apport, projetez 5 affirmations une par une et demandez à chacun de se lever (Vrai) ou de rester assis (Faux), sans réfléchir plus de 3 secondes.",
+        "Affirmation 1 : « La carte professionnelle est délivrée à vie. » (Faux : elle est valable 3 ans et se renouvelle auprès de la CCI.)",
+        "Affirmation 2 : « Un bon de visite signé suffit à me garantir ma commission. » (Faux : il prouve la présentation, mais c'est le mandat écrit et sa clause pénale qui ouvrent le droit aux honoraires.)",
+        "Affirmation 3 : « Depuis août 2026, je peux encore appeler un particulier tant qu'il n'est pas sur Bloctel. » (Faux : Bloctel a disparu, le régime est l'opt-in, consentement préalable obligatoire.)",
+        "Affirmation 4 : « Si un client me demande si son dossier pose problème, je peux lui dire qu'une déclaration Tracfin a été faite. » (Faux : no tipping-off, interdiction absolue d'informer le client.)",
+        "Affirmation 5 : « Un propriétaire a le droit de choisir son locataire selon son origine, c'est son bien. » (Faux : c'est un délit, et le négociateur qui relaie la consigne en est co-responsable.)",
+        "Comptez le nombre d'erreurs collectives : annoncez que la séance va précisément transformer ces intox en réflexes sûrs. Gardez le score affiché pour le comparer en fin de séance."
+      ]
+    },
+    "jeux": [
+      {
+        "titre": "Quiz-battle en équipes « Les gardiens de la carte »",
+        "type": "Quiz-battle en équipes",
+        "duree": "15 min",
+        "consignes": [
+          "Constituez 2 à 3 équipes de négociateurs, chacune se choisit un nom d'agence fictive.",
+          "Posez 8 questions à l'oral, l'équipe la plus rapide à lever la main répond ; bonne réponse = 2 points, réponse argumentée (citer le texte ou le chiffre) = 1 point bonus, erreur = la main passe à l'équipe suivante.",
+          "Q1 : Que couvrent les mentions T, G et S ? (T transaction, G gestion, S syndic.)",
+          "Q2 : Qui délivre la carte depuis la loi ALUR de 2014, et pour quelle durée ? (La CCI, 3 ans.)",
+          "Q3 : À partir de quand la garantie financière est-elle obligatoire et à quel montant minimum ? (Dès qu'on manie des fonds, 110 000 €, réduit à 30 000 € les 2 premières années.)",
+          "Q4 : Un négociateur a-t-il sa propre carte ? Avec quel document agit-il ? (Non : attestation d'habilitation délivrée par la CCI à la demande du titulaire.)",
+          "Q5 : Citez trois choses qu'un négociateur ne peut PAS faire seul. (Manier des fonds à titre personnel, donner des consultations juridiques habituelles, agir hors du périmètre de la carte du titulaire.)",
+          "Q6 : Quelle est la différence de statut entre un agent commercial et un salarié ? (Indépendant immatriculé au RSAC à la commission vs lien de subordination ; mêmes obligations de conformité pour les deux.)",
+          "Q7 : Quel registre reçoit le numéro de chaque mandat ? (Le registre des mandats, à pages numérotées, sans blanc ni rature.)",
+          "Q8 : Un agent commercial engage-t-il la responsabilité de l'agence ? (Oui, il engage la responsabilité du titulaire de la carte.)",
+          "Totalisez les points et désignez l'équipe « Gardienne de la carte »."
+        ],
+        "animation": [
+          "Préparez les questions sur des slides masquées et révélez la réponse après chaque manche pour ancrer immédiatement.",
+          "Valorisez l'argumentation (le bonus) plutôt que la seule vitesse, pour éviter que le quiz ne récompense que les plus impulsifs.",
+          "Reliez chaque réponse à un exemple Icaza (« à Martigues, concrètement, ça veut dire… ») pour éviter l'abstraction.",
+          "Si une équipe domine trop, inversez l'ordre de passage pour relancer la dynamique."
+        ],
+        "corrige": [
+          "T = transaction, G = gestion, S = syndic.",
+          "CCI depuis 2014 (avant : préfecture), carte valable 3 ans.",
+          "Garantie financière dès qu'on manie des fonds : 110 000 € minimum, 30 000 € les deux premières années ; sinon statut « non détenteur de fonds ».",
+          "Le négociateur agit via l'attestation d'habilitation CCI (ex-carte blanche), à jour, restituée au départ.",
+          "Interdits : manier des fonds en propre, consultations juridiques habituelles, agir hors périmètre de la carte.",
+          "Agent commercial = indépendant RSAC à la commission ; salarié = subordination ; mêmes obligations déontologiques.",
+          "Registre des mandats, numéroté, sans discontinuité ; registre-répertoire pour les fonds.",
+          "Oui : le négociateur engage toujours la responsabilité du titulaire de la carte."
+        ]
+      },
+      {
+        "titre": "Vrai/Faux chrono « Mandat & honoraires »",
+        "type": "Vrai/Faux défi chrono",
+        "duree": "10 min",
+        "consignes": [
+          "Distribuez à chacun deux cartons : un VRAI (vert) et un FAUX (rouge).",
+          "Énoncez 8 affirmations, chacun lève son carton en moins de 5 secondes ; comptez à voix haute « 5, 4, 3… ».",
+          "A1 : « Je peux réclamer mes honoraires dès que j'ai trouvé l'acquéreur, même sans mandat écrit. » (FAUX : pas de mandat écrit préalable conforme = pas d'honoraires, article 6 d'ordre public.)",
+          "A2 : « L'oubli du numéro de mandat au registre peut entraîner la nullité et la perte de commission. » (VRAI.)",
+          "A3 : « Un mandat exclusif peut être verrouillé 12 mois sans possibilité de sortie. » (FAUX : passé 3 mois, dénonciation possible par LRAR avec préavis de 15 jours.)",
+          "A4 : « En vente, l'annonce doit indiquer le prix, le montant TTC des honoraires et qui les paie. » (VRAI, décret 2016-173 + arrêté du 10 janvier 2017.)",
+          "A5 : « Le barème des honoraires doit être affiché en agence, en vitrine, mais pas forcément sur le site internet. » (FAUX : le web obéit aux mêmes règles.)",
+          "A6 : « En location, la part payée par le locataire peut dépasser celle du bailleur. » (FAUX : elle ne peut jamais la dépasser, et reste plafonnée 8/10/12 €/m² + 3 €/m² état des lieux.)",
+          "A7 : « Le bon de visite ouvre à lui seul un droit à commission. » (FAUX : il prouve la présentation, pas le droit à commission.)",
+          "A8 : « Les mentions DPE et GES sont obligatoires dans l'annonce de vente. » (VRAI.)",
+          "À chaque affirmation, demandez à une personne qui s'est trompée d'expliquer pourquoi la bonne réponse est la bonne : c'est l'ancrage."
+        ],
+        "animation": [
+          "Le chrono crée l'énergie : tenez le rythme et ne laissez pas le débat s'installer avant d'avoir montré la réponse.",
+          "Repérez les cartons hésitants : ce sont les points à re-expliquer en synthèse.",
+          "Ramenez chaque item au terrain : « combien de mandats avez-vous signés cette semaine sans reporter le numéro ? »"
+        ],
+        "corrige": [
+          "A1 FAUX — article 6 loi Hoguet, mandat écrit préalable d'ordre public.",
+          "A2 VRAI — numéro au registre, sinon nullité possible (jurisprudence Cour de cassation).",
+          "A3 FAUX — dénonciation possible après 3 mois, préavis 15 jours par LRAR.",
+          "A4 VRAI — prix + honoraires TTC + qui les paie.",
+          "A5 FAUX — le site internet obéit aux mêmes règles que la vitrine.",
+          "A6 FAUX — jamais plus que le bailleur, plafonds 8/10/12 €/m² + 3 €/m².",
+          "A7 FAUX — le bon de visite prouve la présentation, il ne crée pas le droit à commission.",
+          "A8 VRAI — DPE et GES obligatoires dans l'annonce."
+        ]
+      },
+      {
+        "titre": "Étude de cas « Les clignotants rouges » (détection LCB-FT)",
+        "type": "Étude de cas en sous-groupes",
+        "duree": "15 min",
+        "consignes": [
+          "Répartissez les participants en binômes ou trinômes et distribuez la fiche-dossier suivante : « Un acquéreur se présente pour un studio à Martigues à 180 000 €. Il propose de régler une partie en espèces, achète via une SCI dont il refuse de nommer l'associé majoritaire, veut conclure en urgence sous 8 jours, et se désintéresse totalement de la visite du bien. »",
+          "Consigne 1 : en 5 minutes, chaque groupe liste tous les clignotants LCB-FT qu'il repère.",
+          "Consigne 2 : le groupe classe le risque (faible / standard / élevé) et justifie.",
+          "Consigne 3 : le groupe décide de la suite : vigilance renforcée ? déclaration de soupçon ? Et par quel canal se fait-elle ?",
+          "Consigne 4 : question piège — le client demande « y a-t-il un souci avec mon dossier ? » : que répondez-vous ? (Rien sur la déclaration : no tipping-off.)",
+          "Chaque groupe restitue en 1 minute ; vous complétez avec le mnémo C.I.O. (Client identifié, Intentions comprises, Origine des fonds vérifiée)."
+        ],
+        "animation": [
+          "Laissez les groupes trouver eux-mêmes les signaux avant de donner la grille : la découverte ancre mieux que la liste magistrale.",
+          "Insistez sur le fait qu'on déclare un soupçon, pas une preuve, et que ne pas déclarer malgré des indices est un manquement sanctionnable.",
+          "Rappelez la confidentialité absolue : révéler une déclaration est une infraction en soi.",
+          "Reliez à l'outil : la fiche d'identification Tracfin (KYC) se génère depuis le dossier vendeur, mais la notation des risques reste l'appréciation du négociateur, sous sa responsabilité."
+        ],
+        "corrige": [
+          "Clignotants : paiement en espèces, SCI opaque, bénéficiaire effectif masqué (plus de 25 % non identifié), urgence anormale, désintérêt pour le bien lui-même.",
+          "Risque : élevé — plusieurs signaux atypiques concordants.",
+          "Suite : vigilance renforcée obligatoire ; selon l'analyse, déclaration de soupçon via la téléprocédure sécurisée Ermes de Tracfin (ni courrier ni téléphone).",
+          "Conservation des justificatifs : 5 ans après la fin de la relation d'affaires (art. L.561-12 CMF).",
+          "Question piège : ne rien révéler de la déclaration, répondre sur le plan administratif, poursuivre normalement — principe du no tipping-off."
+        ]
+      },
+      {
+        "titre": "Mise en situation téléphonique « Prospection opt-in 2026 »",
+        "type": "Mise en situation téléphonique",
+        "duree": "10 min",
+        "consignes": [
+          "Formez des binômes dos à dos (pour simuler le téléphone, sans contact visuel) : l'un est le négociateur, l'autre le particulier.",
+          "Scénario A : le négociateur veut rappeler un prospect dont il n'a AUCUNE trace de consentement. Objectif : le négociateur doit reconnaître qu'il ne peut pas appeler et proposer une alternative conforme (pige, ou obtenir un opt-in).",
+          "Scénario B : le négociateur appelle un particulier qui a publié lui-même son annonce (pige) — un dimanche à 18 h. Piège : le jour est interdit. Le négociateur doit identifier qu'on ne démarche pas le dimanche.",
+          "Scénario C : un prospect dit « ne me rappelez plus ». Le négociateur doit honorer l'opposition immédiatement et le noter.",
+          "Après chaque scénario, le « particulier » donne un retour de 30 secondes : me suis-je senti respecté ? La règle a-t-elle été tenue ?",
+          "Clôturez avec le mnémo C.H.O. : Consentement obtenu et prouvé, Horaires respectés, Opposition honorée immédiatement."
+        ],
+        "animation": [
+          "Faites tourner les rôles pour que chacun vive la position du prospect : c'est ce qui fait tomber les mauvaises habitudes.",
+          "Rappelez les horaires exacts : lundi-vendredi, 10 h-13 h et 14 h-20 h ; interdit samedi, dimanche, jours fériés ; 4 sollicitations/mois maximum.",
+          "Insistez : la pige (annonce publiée par le vendeur lui-même) reste parfaitement légitime et doit devenir le cœur de la prospection, aux côtés des contacts opt-in.",
+          "Rappelez la preuve du consentement à conserver au moins 3 ans et l'amende jusqu'à 375 000 € pour une personne morale."
+        ],
+        "corrige": [
+          "Scénario A : pas de consentement = pas d'appel depuis le 11 août 2026 ; alternative = pige ou recueil d'un opt-in libre, spécifique, éclairé, univoque, révocable (valable 1 an max).",
+          "Scénario B : appel interdit le dimanche, même en pige ; reporter l'appel à un créneau autorisé.",
+          "Scénario C : opposition honorée sur-le-champ, contact retiré de la campagne et tracé."
+        ]
+      }
+    ],
+    "jeuxRole": [
+      {
+        "titre": "Le propriétaire qui discrimine",
+        "contexte": "Un propriétaire bailleur de Martigues confie la mise en location de son appartement à Icaza Immobilier. En rendez-vous, il glisse au négociateur : « Je préfère un couple français sans enfants, et surtout écartez-moi les dossiers d'un certain quartier. » Le négociateur doit tenir la relation commerciale tout en refusant fermement la consigne.",
+        "roleA": "Le négociateur Icaza : il doit refuser clairement la consigne, expliquer le cadre légal (sélection sur la solvabilité et pièces autorisées uniquement), et proposer une méthode de sélection conforme sans braquer le client.",
+        "roleB": "Le propriétaire bailleur : convaincu que « c'est son bien, donc son choix », il insiste, minimise (« c'est juste une préférence »), teste la fermeté du négociateur.",
+        "objectif": "S'entraîner à dire non à une consigne discriminatoire sans perdre le mandat, en reformulant le refus comme une protection du client lui-même (co-responsabilité pénale).",
+        "debrief": [
+          "Le négociateur a-t-il nommé le cadre (articles 225-1 et 225-2 du Code pénal, jusqu'à 3 ans et 45 000 € d'amende, testing possible, saisine du Défenseur des droits) ?",
+          "A-t-il proposé une alternative concrète : sélection sur solvabilité et liste limitative de pièces (décret 2015-1437), refus des pièces hors liste ?",
+          "A-t-il rappelé que relayer la consigne ferait de lui un co-auteur du délit ?",
+          "La phrase-type « Je sélectionne sur la solvabilité, pas sur l'origine ni le lieu de résidence ; la loi me l'interdit et vous expose aussi » a-t-elle été formulée ?",
+          "A-t-il tracé par écrit son conseil et son refus, preuve du devoir de conseil respecté ?",
+          "Le mandat a-t-il pu être préservé malgré le refus ? Qu'est-ce qui, dans le ton, a aidé ou braqué ?"
+        ]
+      },
+      {
+        "titre": "Pas de mandat, pas d'honoraires",
+        "contexte": "Un vendeur de Martigues a signé un mandat exclusif avec Icaza, bon de visite signé à l'appui pour un couple visité. Quelques semaines plus tard, il appelle : « Finalement l'acheteur est un ami, on se passe de l'agence, je ne vois pas pourquoi je vous paierais. » Le négociateur doit défendre ses honoraires sans agressivité.",
+        "roleA": "Le négociateur Icaza : il s'appuie sur les écrits (mandat exclusif + clause pénale + bon de visite signé prouvant la présentation) pour expliquer calmement que les honoraires sont dus.",
+        "roleB": "Le vendeur : il tente l'esquive (« c'est un ami », « vous n'avez rien fait de plus »), espère que le négociateur lâchera.",
+        "objectif": "Montrer concrètement que l'écrit (mandat + bon de visite) fait toute la différence entre percevoir et ne rien percevoir, et s'entraîner à l'invoquer sereinement.",
+        "debrief": [
+          "Le négociateur a-t-il relié le droit aux honoraires à la présentation prouvée par le bon de visite et à la clause pénale du mandat ?",
+          "A-t-il évité l'erreur classique (faire visiter avant d'avoir le mandat signé) dans la reconstitution du dossier ?",
+          "A-t-il rappelé, sans l'opposer frontalement, que la loi protège aussi la relation de confiance ?",
+          "Quelles preuves ont été décisives, et qu'est-ce qui aurait manqué sans bon de visite signé ?"
+        ]
+      }
+    ],
+    "pointsCles": [
+      "La loi Hoguet (1970) fait de vous un professionnel de confiance : carte T/G/S délivrée par la CCI valable 3 ans, garantie financière dès qu'on manie des fonds, RCP et honorabilité.",
+      "Le négociateur n'a pas de carte : il agit via une attestation d'habilitation CCI à jour, et il engage toujours la responsabilité du titulaire de la carte.",
+      "Pas de mandat écrit préalable conforme, numéroté au registre = pas d'honoraires (article 6, d'ordre public) ; le bon de visite prouve la présentation mais ne crée pas le droit à commission.",
+      "Les honoraires sont libres mais leur affichage est encadré : prix, montant TTC, qui les paie, DPE/GES, en agence, en vitrine ET sur le site internet.",
+      "LCB-FT, les trois réflexes : identifier le client (KYC), comprendre le bénéficiaire effectif (plus de 25 %) et le risque, vérifier l'origine des fonds — mnémo C.I.O.",
+      "On déclare un soupçon, pas une preuve, via Ermes, dans la confidentialité absolue (no tipping-off) ; ne pas déclarer malgré des indices est sanctionnable ; justificatifs conservés 5 ans.",
+      "RGPD : finalité, minimisation, base légale, transparence ; prospects non convertis effacés après 3 ans ; sanctions CNIL jusqu'à 20 M€ ou 4 % du CA mondial.",
+      "Depuis le 11 août 2026, la prospection d'un particulier exige son consentement préalable (opt-in) : Bloctel a disparu, preuve conservée 3 ans, horaires lundi-vendredi 10 h-13 h / 14 h-20 h — mnémo C.H.O.",
+      "La non-discrimination est une obligation pénale (jusqu'à 3 ans et 45 000 € d'amende) : on sélectionne sur la solvabilité et des pièces autorisées, jamais sur un critère prohibé ; relayer une consigne discriminatoire fait de vous un co-auteur.",
+      "Trois responsabilités à l'esprit en permanence : civile (couverte par la RCP), pénale (exercice sans carte, discrimination, escroquerie) et disciplinaire (commission de contrôle)."
+    ],
+    "planAction": [
+      "Dès demain, ne faire visiter aucun bien sans mandat écrit signé au préalable, et reporter systématiquement le numéro du mandat au registre.",
+      "Faire signer un bon de visite à chaque visite, sans exception, et le classer au dossier comme preuve de présentation.",
+      "Vérifier l'identité de chaque client dès l'entrée en relation (pièce officielle en cours de validité) et renseigner la fiche de vigilance LCB-FT du dossier.",
+      "Auditer ses annonces en cours cette semaine : prix, montant TTC des honoraires, qui les paie, DPE et GES ; corriger toute annonce non conforme sous 48 h.",
+      "N'appeler, SMS ou e-mailer un particulier qu'avec une preuve de consentement opt-in, dans les horaires autorisés, et honorer immédiatement toute opposition ; privilégier la pige.",
+      "Reformuler et refuser par écrit toute consigne discriminatoire d'un propriétaire, en traçant son conseil, et ne sélectionner que sur la solvabilité et les pièces légalement autorisées."
+    ],
+    "notesFormateur": [
+      "Tenez le minutage avec un chrono visible : chaque jeu a un rôle précis, mieux vaut écourter un débat que sacrifier la synthèse finale qui ancre les acquis.",
+      "Faites participer tout le monde en variant les formats (équipes, binômes, cartons levés, téléphone) : le débutant juridique apprend par le faire, pas par l'écoute passive.",
+      "Ramenez chaque règle à un exemple Icaza Immobilier à Martigues : « concrètement, pour vous, lundi matin, ça veut dire… » ; le droit abstrait ne s'ancre pas.",
+      "Valorisez l'erreur comme matière première : demandez à ceux qui se trompent d'expliquer la bonne réponse, c'est le meilleur ancrage mémoriel.",
+      "Distinguez clairement l'obligatoire du recommandé (ex. DPO pas toujours obligatoire, pige toujours légitime) pour éviter la peur paralysante autant que la fausse sécurité.",
+      "Terminez par un tour de table d'engagement : chaque négociateur énonce à voix haute UN réflexe qu'il applique dès le lendemain, et comparez le score de fin avec celui du brise-glace pour mesurer le chemin parcouru."
+    ]
+  },
+  "compromis": {
+    "id": "compromis",
+    "sousTitre": "De l'offre acceptée à la remise des clés : sécuriser chaque compromis et ne plus jamais perdre une vente entre l'avant-contrat et l'acte.",
+    "objectifs": [
+      "Maîtriser la différence entre compromis de vente et promesse unilatérale (PUV), et savoir recommander la bonne forme selon le profil du dossier.",
+      "Être capable de constituer un compromis complet et bien annexé (DDT, documents loi ALUR, urbanisme) qui ne bloque pas chez le notaire.",
+      "Savoir décompter sans erreur le délai de rétractation SRU de 10 jours et sécuriser sa notification pour qu'il ne se rouvre jamais.",
+      "Rédiger et suivre des conditions suspensives précises (prêt loi Scrivener, préemption) qui tiennent juridiquement.",
+      "Être capable d'expliquer à l'acquéreur le dépôt de garantie, le séquestre, la clause pénale et les obligations LCB-FT/Tracfin.",
+      "Piloter la période compromis vers acte (2 à 3 mois) avec une checklist et un rétroplanning pour ne plus perdre de vente après signature."
+    ],
+    "agenda": [
+      {
+        "titre": "Accueil, café et brise-glace « Le mur des ventes perdues »",
+        "duree": "0:00 - 0:15 (15 min)"
+      },
+      {
+        "titre": "Apport 1 : les deux avant-contrats (compromis vs PUV) + contenu et annexes du compromis",
+        "duree": "0:15 - 0:35 (20 min)"
+      },
+      {
+        "titre": "Jeu 1 : Quiz-battle en équipes « Les 10 jours et les chiffres qui tuent »",
+        "duree": "0:35 - 0:50 (15 min)"
+      },
+      {
+        "titre": "Apport 2 : rétractation SRU, dépôt/séquestre/clause pénale, conditions suspensives et prêt Scrivener",
+        "duree": "0:50 - 1:10 (20 min)"
+      },
+      {
+        "titre": "Jeu 2 : Vrai/Faux debout « Mythes du compromis » + Jeu 3 : Défi chrono « Checklist des annexes »",
+        "duree": "1:10 - 1:30 (20 min)"
+      },
+      {
+        "titre": "Jeu de rôle : mise en situation téléphonique « L'acquéreur qui veut se rétracter » + étude de cas",
+        "duree": "1:30 - 1:55 (25 min)"
+      },
+      {
+        "titre": "Synthèse points-clés, plan d'action individuel « 3 engagements pour demain » et clôture",
+        "duree": "1:55 - 2:10 (15 min)"
+      }
+    ],
+    "briseGlace": {
+      "titre": "Le mur des ventes perdues",
+      "consignes": [
+        "Distribuer à chaque négociateur 2 post-it. Consigne : noter sur chacun une vente (réelle ou redoutée) qui a capoté ou failli capoter ENTRE le compromis et l'acte — en une phrase, avec la cause (financement, préemption, rétractation, pièce manquante, mésentente de dernière minute…).",
+        "Chacun vient coller ses post-it au tableau en disant une phrase : « Ma vente a failli tomber à cause de… ». Le formateur regroupe les post-it par famille de causes au fur et à mesure.",
+        "Faire constater à voix haute quelle famille domine (souvent le financement et les pièces manquantes). Conclure : « Tout ce qui est sur ce mur, on va apprendre aujourd'hui à l'éviter. On garde le mur affiché toute la séance, on cochera ce qu'on sait désormais neutraliser. »",
+        "Durée cible : 12-15 min. Objectif : ancrer la séance dans le vécu du terrain et créer l'enjeu émotionnel (personne n'aime perdre une vente déjà signée)."
+      ]
+    },
+    "jeux": [
+      {
+        "titre": "Quiz-battle « Les 10 jours et les chiffres qui tuent »",
+        "type": "Quiz-battle en équipes",
+        "duree": "15 min",
+        "consignes": [
+          "Constituer 2 ou 3 équipes de niveau mélangé. Chaque équipe choisit un nom et désigne un porte-parole qui seul donne la réponse finale.",
+          "Le formateur projette une question à la fois (slide). Les équipes se concertent 20 secondes à voix basse, puis lèvent un carton A/B/C/D (ou ardoise). Révélation simultanée au top : pas de réponse soufflée après le top.",
+          "1 point par bonne réponse, +1 point bonus si le porte-parole justifie correctement (article ou raison). Tenir le score au tableau.",
+          "Enchaîner 8 à 10 questions tirées du quiz du module : délai SRU (10 j calendaires), durée mini condition de prêt (1 mois), acceptation de l'offre de prêt (après 10 j de réflexion), clause pénale (10 %), taux d'effort HCSF (35 % assurance comprise), frais de notaire (7-8 % ancien / 2-3 % neuf), enregistrement PUV sous seing privé (10 j), restitution dépôt après rétractation (21 j), VEFA mise hors d'eau (70 %), DMTO 2025 (5 %).",
+          "L'équipe gagnante est applaudie ; distribuer un petit lot symbolique (viennoiserie, café offert)."
+        ],
+        "animation": [
+          "Imposez le top de révélation simultanée, sinon la première équipe qui parle donne la réponse aux autres.",
+          "Après chaque question, ne vous contentez pas de « bonne réponse » : faites reformuler le POURQUOI par l'équipe, c'est là que l'apprentissage s'ancre.",
+          "Glissez volontairement les pièges classiques du module (jours calendaires vs ouvrés, assurance comprise dans les 35 %) pour créer le débat.",
+          "Gardez un rythme vif : 60-80 secondes par question maximum."
+        ],
+        "corrige": [
+          "Rétractation SRU : 10 jours calendaires, à compter du lendemain de la 1re présentation de la notification (report au 1er jour ouvrable si le 10e tombe un samedi/dimanche/férié).",
+          "Condition suspensive de prêt : minimum légal 1 mois (loi Scrivener, art. L313-41), en pratique 45-60 jours.",
+          "Offre de prêt : acceptable au plus tôt le 11e jour (10 jours de réflexion, art. L313-34) ; offre maintenue 30 jours minimum (art. L313-24).",
+          "Clause pénale : environ 10 % du prix, joue dans les deux sens, modérable par le juge (art. 1231-5).",
+          "HCSF : taux d'effort max 35 % assurance comprise, durée ≤ 25 ans (27 ans avec différé dans le neuf), marge de flexibilité de 20 % des dossiers.",
+          "Frais de notaire : 7-8 % dans l'ancien, 2-3 % dans le neuf.",
+          "PUV sous seing privé : à enregistrer aux impôts dans les 10 jours sous peine de nullité (art. 1589-2).",
+          "Restitution du dépôt après rétractation SRU : 21 jours maximum.",
+          "VEFA : 35 % aux fondations, 70 % à la mise hors d'eau, 95 % à l'achèvement, 5 % à la livraison (art. R261-14).",
+          "DMTO 2025 : relèvement possible de la part départementale de 4,50 % à 5 % (actes du 1er avril 2025 au 31 mars 2028)."
+        ]
+      },
+      {
+        "titre": "Vrai/Faux debout « Les mythes du compromis »",
+        "type": "Vrai/Faux dynamique",
+        "duree": "10 min",
+        "consignes": [
+          "Tout le monde se lève au centre de la salle. Un côté = VRAI, l'autre côté = FAUX. À chaque affirmation, chacun se déplace physiquement du côté de sa réponse.",
+          "Le formateur lit une affirmation, laisse 5 secondes de déplacement, puis interroge une personne de chaque camp : « Pourquoi es-tu de ce côté ? » avant de donner la réponse et l'explication.",
+          "Celui qui s'est trompé revient au centre ; on continue. Pas d'élimination, l'intérêt est le débat et le mouvement.",
+          "Enchaîner 8 affirmations (voir corrigé). Terminer sur une affirmation qui fait débat pour relancer l'énergie."
+        ],
+        "animation": [
+          "Le format debout casse la torpeur de l'après-apport : utilisez-le juste après un temps théorique.",
+          "Choisissez d'interroger quelqu'un de sûr de lui qui s'est trompé : l'erreur assumée marque les esprits mieux qu'une bonne réponse.",
+          "Reliez chaque réponse au « mur des ventes perdues » du brise-glace quand c'est possible."
+        ],
+        "corrige": [
+          "« Le vendeur aussi a 10 jours pour se rétracter. » → FAUX : seul l'acquéreur non professionnel bénéficie du droit SRU ; le vendeur est engagé dès la signature.",
+          "« On peut signer le compromis même s'il manque un PV d'AG, on complétera après. » → FAUX : sans les documents de copropriété remis, le délai de rétractation ne court pas valablement et peut se rouvrir des mois plus tard.",
+          "« Le dépôt de garantie, c'est la commission de l'agence. » → FAUX : il appartient à l'acquéreur jusqu'à l'acte (ou revient au vendeur si défaillance fautive), il s'impute sur le prix.",
+          "« Un refus de prêt, quel qu'il soit, libère toujours l'acquéreur. » → FAUX : seul un refus conforme aux caractéristiques de la clause (montant, durée, taux) vaut réalisation de la condition.",
+          "« La clause pénale ne protège que le vendeur. » → FAUX : elle joue dans les deux sens, le vendeur défaillant peut la devoir à l'acquéreur.",
+          "« La plus-value sur la résidence principale est totalement exonérée. » → VRAI.",
+          "« Une PUV sous seing privé est valable sans formalité. » → FAUX : enregistrement aux impôts dans les 10 jours sous peine de nullité.",
+          "« On peut faire payer des droits de mutation sur la cuisine équipée. » → FAUX (évitable) : le mobilier chiffré à part n'est pas soumis aux droits de mutation."
+        ]
+      },
+      {
+        "titre": "Défi chrono « La checklist des annexes »",
+        "type": "Défi chrono / brainstorm",
+        "duree": "10 min",
+        "consignes": [
+          "En binômes ou petites équipes, distribuer une feuille vierge. Top chrono : 3 minutes pour lister le maximum de pièces et annexes obligatoires d'un compromis (diagnostics + documents loi ALUR + urbanisme).",
+          "Au top final, chaque équipe compte ses items. Tour de table : on additionne au tableau la liste collective, chaque équipe apporte un item que les autres n'ont pas (1 point par item valide et unique).",
+          "Le formateur complète avec les pièces oubliées et annonce le piège : les validités courtes (termites 6 mois, ERP 6 mois) qu'il faut vérifier AVANT la notification.",
+          "Variante express si le temps manque : le faire à l'oral en pop-corn, chacun lance une pièce à tour de rôle sans répéter."
+        ],
+        "animation": [
+          "Le chrono crée l'urgence et révèle vite qui connaît son DDT par cœur.",
+          "Insistez sur le lien avec la rétractation : une annexe manquante = délai SRU qui ne démarre pas = risque de vente qui tombe tardivement.",
+          "Faites de la liste collective un support à photographier : les négociateurs la ré-utiliseront sur le terrain."
+        ],
+        "corrige": [
+          "Diagnostics (DDT, art. L271-4 CCH) : DPE (10 ans), amiante (permis avant 01/07/1997), plomb/CREP (avant 1949), termites (zone arrêtée, 6 mois), gaz et électricité (installation > 15 ans, 3 ans), ERP/état des risques (6 mois, crucial en PACA : sismique, inondation, feux), loi Carrez (surface privative en copro), assainissement non collectif/SPANC (3 ans).",
+          "Copropriété (loi ALUR) : pré-état daté du syndic, règlement de copropriété + état descriptif de division, PV des 3 dernières AG, montant des charges, carnet d'entretien (et DTG le cas échéant), montant du fonds de travaux et quote-part du vendeur.",
+          "Urbanisme : note/certificat d'urbanisme, servitudes, zonage PLU, alignements.",
+          "Piège validité : termites 6 mois et ERP 6 mois à revérifier avant la signature, pas après."
+        ]
+      },
+      {
+        "titre": "Étude de cas « Le dossier à aiguiller : compromis ou PUV ? »",
+        "type": "Étude de cas en sous-groupes",
+        "duree": "12 min",
+        "consignes": [
+          "Projeter/distribuer 3 mini-dossiers (voir corrigé). Chaque sous-groupe traite les 3 : pour chacun, choisir compromis OU PUV, justifier, et citer la ou les clauses/précautions à prévoir.",
+          "Laisser 6-7 minutes de travail en groupe, puis restitution : un rapporteur différent par dossier.",
+          "Débattre des écarts entre groupes : souvent le dossier « acquéreur qui doit revendre + SCI » divise. C'est l'occasion d'ancrer la logique PUV + clause de substitution.",
+          "Le formateur tranche avec le corrigé et relie au cas pratique du module (villa de Jonquières à 320 000 €)."
+        ],
+        "animation": [
+          "Ne donnez pas la réponse trop vite : laissez le désaccord s'exprimer, c'est lui qui fait réfléchir.",
+          "Reliez systématiquement au profil réel de vos acquéreurs martégaux (primo-accédants, investisseurs en SCI, acquéreurs devant revendre).",
+          "Valorisez la justification plus que le bon choix : un compromis défendu avec de bons arguments vaut mieux qu'une PUV choisie au hasard."
+        ],
+        "corrige": [
+          "Dossier A — Couple primo-accédant, apport de 10 %, prêt à monter, achat de leur résidence principale à Martigues. → COMPROMIS classique, condition suspensive de prêt précise (montant, durée, taux max, 2 banques, délai 60 j), date butoir 3 mois. Acquéreur décidé qui veut avancer.",
+          "Dossier B — Investisseur qui achètera via une SCI familiale encore à constituer et doit d'abord revendre son appartement. → PUV de 3 mois avec indemnité d'immobilisation (~10 %) et CLAUSE DE SUBSTITUTION au profit de la SCI. Le vendeur immobilise le bien contre indemnité, l'acquéreur garde la main sur son montage.",
+          "Dossier C — Vendeur pressé, acquéreur comptant (pas de prêt) et déterminé. → COMPROMIS, renonciation à la condition de prêt possible MAIS avec mention manuscrite (art. L313-42) rappelant la perte de la protection Scrivener ; vigilance LCB-FT sur l'origine des fonds."
+        ]
+      }
+    ],
+    "jeuxRole": [
+      {
+        "titre": "L'acquéreur qui veut se rétracter (mise en situation téléphonique)",
+        "contexte": "Compromis signé en agence il y a 6 jours pour un T3 à Martigues (quartier de L'Île), prix 210 000 €, dépôt de 5 % séquestré chez le notaire, notification SRU partie par le notaire il y a 5 jours. L'acquéreur appelle, paniqué : son beau-frère lui a dit qu'il avait « trouvé mieux ailleurs » et il veut savoir s'il peut annuler et récupérer son argent.",
+        "roleA": "Le négociateur de l'agence (reçoit l'appel). Il doit rester factuel, exact juridiquement et professionnel : expliquer où en est le délai de rétractation, ce que l'acquéreur peut faire, dans quelles conditions et sous quelle forme, sans jamais donner de conseil faux ni de fausse promesse.",
+        "roleB": "L'acquéreur stressé et pressé, qui coupe la parole, confond rétractation et condition suspensive, demande si « un coup de fil suffit » pour annuler et s'il récupère tout tout de suite.",
+        "objectif": "Savoir expliquer clairement le droit de rétractation SRU (10 jours calendaires à compter du lendemain de la 1re présentation, donc encore possible ici), la nécessité d'un écrit, la restitution intégrale sous 21 jours, et distinguer rétractation et condition suspensive — tout en gardant une relation de confiance.",
+        "debrief": [
+          "Le négociateur a-t-il donné la bonne information sur le point de départ et la fin du délai (jours calendaires, report si le 10e jour tombe un week-end/férié) ?",
+          "A-t-il exigé un écrit et expliqué pourquoi (traçabilité, sécurité de la restitution) plutôt que d'accepter un simple appel ?",
+          "A-t-il bien distingué « se rétracter » (droit libre dans les 10 jours) de « faire jouer une condition suspensive » (hors délai, autre logique) ?",
+          "Le ton : a-t-il rassuré sans mentir ni sur-promettre (ne pas dire « vous récupérez tout de toute façon » sans nuance) ? Qu'aurait-on pu dire de mieux pour préserver la relation si l'acquéreur maintient la vente ?"
+        ]
+      },
+      {
+        "titre": "Le vendeur qui veut un acquéreur « sans condition de prêt »",
+        "contexte": "Rendez-vous à l'agence. Le vendeur d'une maison à 320 000 € a reçu deux offres au prix : l'une d'un acquéreur à crédit (avec condition suspensive de prêt), l'autre d'un acquéreur qui dit « acheter comptant ». Le vendeur veut absolument écarter la condition de prêt « parce que c'est trop risqué » et pousse le négociateur à retirer la clause pour tous.",
+        "roleA": "Le négociateur, qui doit expliquer au vendeur le cadre de la loi Scrivener (condition de prêt obligatoire dès que l'acquéreur recourt au crédit), ce qu'implique une renonciation (mention manuscrite, perte de protection) et pourquoi « supprimer la clause » n'est ni légal ni dans l'intérêt bien compris du vendeur.",
+        "roleB": "Le vendeur impatient, un peu méfiant, qui a entendu des histoires de ventes qui tombent à cause du financement et veut « du solide », quitte à prendre l'offre la plus basse si elle est « sûre ».",
+        "objectif": "Être capable de défendre une clause de prêt bien rédigée comme un facteur de sécurité (et non de fragilité), d'expliquer la renonciation encadrée pour l'acquéreur comptant, et d'orienter le vendeur vers le meilleur dossier réel plutôt que vers une fausse sécurité.",
+        "debrief": [
+          "Le négociateur a-t-il expliqué que la condition de prêt est obligatoire dès qu'il y a recours au crédit, et qu'on ne peut pas simplement la « retirer » ?",
+          "A-t-il valorisé une clause PRÉCISE (montant, durée, taux max, nombre de banques, délai) comme protection pour les deux parties plutôt que comme un risque ?",
+          "A-t-il abordé la qualification du financement en amont (apport, taux d'effort HCSF 35 %) pour rassurer le vendeur sur le sérieux de l'acquéreur à crédit ?",
+          "A-t-il su recadrer l'idée reçue « comptant = sûr » (origine des fonds, LCB-FT) sans braquer le vendeur ?"
+        ]
+      }
+    ],
+    "pointsCles": [
+      "Rien n'est « vendu » au compromis : la vente se gagne ou se perd dans les 2 à 3 mois qui suivent. Le suivi de l'agent fait la différence.",
+      "Compromis = engagement des deux parties (art. 1589, « la promesse de vente vaut vente ») ; PUV = seul le vendeur s'engage, l'acquéreur verse une indemnité d'immobilisation. PUV sous seing privé : enregistrement aux impôts sous 10 jours ou nullité.",
+      "Un compromis complet et bien annexé (DDT, documents loi ALUR, urbanisme) = un acte rapide. Chaque pièce manquante = un délai et un risque de blocage.",
+      "Rétractation SRU = 10 jours calendaires, à compter du lendemain de la 1re présentation de la notification ; report au 1er jour ouvrable si le 10e tombe un samedi/dimanche/férié. Elle ne démarre valablement que si TOUTES les annexes (dont copro) sont remises.",
+      "Le dépôt de garantie (5 à 10 %) doit être séquestré (notaire, ou agent avec garantie financière et compte dédié), jamais versé au vendeur. Il s'impute sur le prix.",
+      "La clause pénale (≈10 %) forfaitise les dommages, joue dans les deux sens et peut être modérée par le juge. L'expliquer en amont évite la majorité des désistements de confort.",
+      "Une condition suspensive doit être PRÉCISE et datée. Pour le prêt : montant, durée, taux maximal, nombre de banques, délai. Une clause vague fait tomber des ventes.",
+      "Condition de prêt (loi Scrivener) : obligatoire dès recours au crédit, minimum 1 mois. Seul un refus CONFORME aux caractéristiques de la clause libère l'acquéreur. L'offre s'accepte au plus tôt le 11e jour (10 j de réflexion).",
+      "Obligations LCB-FT / Tracfin : identifier le client et s'interroger sur l'origine des fonds. Un dépôt en espèces hors plafond ou versé par un tiers est un signal d'alerte.",
+      "Piloter la phase compromis vers acte avec une checklist (J+1 banque, J+10 rétractation purgée, J+21 accord de principe, J+45 offre, J+60 date d'acte) et purger les droits de préemption (DPU : 2 mois, silence = renonciation)."
+    ],
+    "planAction": [
+      "Dès demain, ouvrir un rétroplanning daté pour chaque compromis en cours (J+1 banque, J+10 rétractation, J+21 accord de principe, J+45 offre, J+60 date d'acte) et le suivre comme un tableau de bord.",
+      "Avant toute notification SRU, vérifier que TOUTES les annexes sont réunies (DDT à jour — attention termites et ERP à 6 mois — + documents loi ALUR de copropriété) et laisser le notaire notifier pour sécuriser la date de départ du délai.",
+      "Pour chaque nouvelle offre, qualifier le financement en amont (apport, taux d'effort 35 % assurance comprise, endettement) avant même de rédiger le compromis, et orienter l'acquéreur vers banque/courtier dès le lendemain de la signature.",
+      "Rédiger systématiquement des clauses de prêt complètes : montant, durée, taux maximal hors assurance, nombre de banques à solliciter, délai — et proscrire les formulations vagues type « sous réserve de financement ».",
+      "Expliquer oralement et noter au compromis les conséquences de la clause pénale et du séquestre à chaque acquéreur, pour prévenir les désistements de confort, et chiffrer le mobilier à part quand c'est pertinent.",
+      "Appliquer le réflexe LCB-FT sur chaque dossier : vérifier l'identité et s'interroger sur l'origine des fonds, et signaler toute opération atypique à son responsable."
+    ],
+    "notesFormateur": [
+      "Affichez le « mur des ventes perdues » du brise-glace pendant toute la séance et revenez-y : à chaque point maîtrisé, cochez la cause correspondante. C'est le fil rouge qui donne du sens et de la fierté en fin de séance.",
+      "Alternez strictement apport court (20 min max) et activité : le module est dense et juridique, l'attention décroche vite si vous enchaînez les slides. Le format debout (Vrai/Faux) est votre bouée après chaque temps théorique.",
+      "Pour ancrer les chiffres qui comptent (10 jours, 35 %, 21 jours, 5 %…), faites-les REFORMULER par les participants plutôt que de les énoncer vous-même ; le quiz-battle sert exactement à ça.",
+      "Ramenez chaque notion au terrain martégal (biens à 210-320 K€, risque sismique et inondation ERP en PACA, acquéreurs en SCI) : le contenu générique glisse, l'exemple local reste.",
+      "Gérez le temps avec un chrono visible et un co-animateur ou un participant « gardien du temps ». Les jeux de rôle débordent toujours : fixez 5-6 min de jeu + 4-5 min de débrief et tenez-le.",
+      "Terminez par le plan d'action individuel écrit : chacun note 3 engagements concrets qu'il applique dès demain, les lit à voix haute, et vous les reprenez en point d'étape à la prochaine réunion commerciale pour ancrer durablement."
+    ]
+  },
+  "dpe-energie": {
+    "id": "dpe-energie",
+    "sousTitre": "DPE opposable, passoires thermiques et valeur verte : transformer la contrainte énergétique en argument de vente",
+    "objectifs": [
+      "Savoir lire les deux étiquettes d'un DPE (énergie et climat) et appliquer le principe du double seuil pour annoncer la bonne classe",
+      "Maîtriser le calendrier réglementaire 2023-2034 : interdictions de louer (G-F-E = 25-28-34), gel des loyers F/G et audit énergétique de vente",
+      "Être capable de sécuriser chaque mandat en déroulant la checklist DPE (validité, numéro ADEME, cohérence, réforme petites surfaces 2024)",
+      "Savoir distinguer les trois documents énergétiques : DPE, audit réglementaire de vente et DPE collectif en copropriété",
+      "Être capable de transformer une passoire thermique en projet chiffré et aidé grâce à la valeur verte et aux dispositifs 2024-2026",
+      "Maîtriser les mentions obligatoires de l'annonce et du DDT pour éviter toute sanction de la DGCCRF"
+    ],
+    "agenda": [
+      {
+        "titre": "Accueil et brise-glace « La pire des deux lettres »",
+        "duree": "0-10 min (10 min)"
+      },
+      {
+        "titre": "Apport 1 : le DPE opposable, les deux étiquettes et le double seuil (mini-cours interactif au paperboard)",
+        "duree": "10-25 min (15 min)"
+      },
+      {
+        "titre": "Jeu 1 : Quiz-battle en équipes sur les seuils, dates et sanctions",
+        "duree": "25-45 min (20 min)"
+      },
+      {
+        "titre": "Apport 2 : calendrier des interdictions de louer, gel des loyers et audit de vente",
+        "duree": "45-55 min (10 min)"
+      },
+      {
+        "titre": "Jeu 2 : Vrai/Faux debout « Louable ou pas ? » + Jeu 3 : Défi chrono « Classe-moi ce bien »",
+        "duree": "55-75 min (20 min)"
+      },
+      {
+        "titre": "Jeu 4 : Étude de cas « Le mandat piégé » en sous-groupes",
+        "duree": "75-95 min (20 min)"
+      },
+      {
+        "titre": "Jeu de rôle : mise en situation téléphonique vendeur de passoire",
+        "duree": "95-110 min (15 min)"
+      },
+      {
+        "titre": "Synthèse : points-clés, plan d'action du lendemain et clôture",
+        "duree": "110-120 min (10 min)"
+      }
+    ],
+    "briseGlace": {
+      "titre": "« La pire des deux lettres » - sondage à main levée",
+      "consignes": [
+        "Projetez au tableau trois mini-fiches de biens (préparées sur une slide) : Bien 1 = 150 kWh énergie / 45 kg CO2 climat ; Bien 2 = 90 kWh / 8 kg CO2 ; Bien 3 = 200 kWh / 60 kg CO2 (fioul).",
+        "Pour chaque bien, demandez au groupe d'annoncer à voix haute la classe finale en levant le nombre de doigts correspondant (A=1 ... G=7), sans calculatrice, en 10 secondes chrono.",
+        "Révélez les réponses : Bien 1 = D (climat), Bien 2 = B, Bien 3 = E (climat). Insistez : on retient toujours la plus mauvaise des deux étiquettes.",
+        "Terminez par la question ouverte : « Qui, parmi vous, a déjà diffusé ou failli diffuser une annonce avec la seule étiquette énergie ? » - laissez 2-3 témoignages pour installer les enjeux concrets.",
+        "Annoncez le fil rouge de la séance : « Aujourd'hui, le DPE n'est plus une formalité, c'est un argument de vente et un risque juridique - on va apprendre à en faire un atout. »"
+      ]
+    },
+    "jeux": [
+      {
+        "titre": "Quiz-battle DPE : « Les énergivores contre les performants »",
+        "type": "Quiz-battle en équipes",
+        "duree": "20 min",
+        "consignes": [
+          "Divisez le groupe en 2 à 4 équipes de 2-4 personnes ; chaque équipe choisit un nom de classe (ex : « Les A », « Les G »).",
+          "Posez 10 questions à l'oral ou au vidéoprojecteur (voir corrigé), une par une. Chaque équipe écrit sa réponse sur une ardoise/feuille et la retourne au top.",
+          "Bonne réponse = 1 point ; bonne réponse ET justification correcte donnée par l'équipe = 2 points (le formateur désigne au hasard un membre pour justifier).",
+          "Question bonus « chrono » en fin de partie : la première équipe à citer de mémoire le calendrier G-F-E (2025-2028-2034) remporte 3 points.",
+          "Tenez le score au paperboard ; l'équipe gagnante est applaudie et peut, par exemple, choisir le prochain café offert."
+        ],
+        "animation": [
+          "Rythmez : 30 secondes par question, pas plus, pour maintenir la tension.",
+          "Reformulez systématiquement la bonne réponse avec la règle sous-jacente avant de passer à la suivante - c'est là que l'ancrage se fait, pas dans le score.",
+          "Valorisez la justification autant que la réponse : un négociateur doit savoir EXPLIQUER au client, pas seulement cocher.",
+          "Variez les membres interrogés pour éviter que le plus à l'aise réponde tout le temps."
+        ],
+        "corrige": [
+          "Q1. Validité d'un DPE méthode 2021 ? -> 10 ans (ceux d'avant juillet 2021 sont périmés depuis le 1er janvier 2025).",
+          "Q2. Classe retenue = meilleure ou pire des deux étiquettes ? -> la pire des deux (double seuil).",
+          "Q3. Depuis quand le DPE est-il opposable ? -> 1er juillet 2021.",
+          "Q4. Quelle classe est interdite à la location depuis 2025 ? -> G.",
+          "Q5. Depuis quand l'audit de vente vise-t-il aussi la classe E ? -> 1er janvier 2025 (F/G depuis le 1er avril 2023).",
+          "Q6. Qu'a corrigé la réforme du 1er juillet 2024 ? -> le calcul des logements de 40 m² ou moins (~140 000 sortis du statut de passoire).",
+          "Q7. Le seuil de 450 kWh/m²/an de 2023 est en énergie primaire ou finale ? -> finale.",
+          "Q8. Parmi MaPrimeRénov', éco-PTZ, CEE : lequel est un prêt à 0 % ? -> l'éco-PTZ.",
+          "Q9. Peut-on augmenter le loyer d'un F/G déjà loué ? -> non, gel des loyers depuis le 24 août 2022.",
+          "Q10. Seuils de la classe A ? -> au plus 70 kWh/m²/an ET au plus 6 kg CO2/m²/an."
+        ]
+      },
+      {
+        "titre": "Vrai/Faux debout : « Louable ou pas ? »",
+        "type": "Vrai/Faux dynamique (déplacement physique)",
+        "duree": "10 min",
+        "consignes": [
+          "Désignez un côté de la salle « VRAI » et l'autre « FAUX ». Tout le monde se lève au centre.",
+          "Énoncez une affirmation ; au top, chacun se déplace du côté qu'il croit juste. Ceux qui hésitent restent au milieu (ils devront argumenter).",
+          "Après chaque affirmation, interrogez une personne de chaque camp : « Pourquoi es-tu de ce côté ? » puis révélez la réponse et la règle.",
+          "Enchaînez 8 à 10 affirmations sur un rythme soutenu (voir corrigé).",
+          "Finissez par une affirmation « piège » pour rire et marquer les esprits."
+        ],
+        "animation": [
+          "Le mouvement réveille le groupe après un apport : placez ce jeu juste après un temps assis.",
+          "Ne laissez jamais passer une erreur collective sans la nommer : si la majorité se trompe, c'est le point à re-expliquer absolument.",
+          "Utilisez l'humour sur les pièges (énergie finale vs primaire) pour désamorcer la complexité."
+        ],
+        "corrige": [
+          "« Un G peut être mis en location en 2026. » -> FAUX (G interdit depuis le 1er janvier 2025).",
+          "« L'interdiction de louer casse les baux déjà en cours. » -> FAUX (elle joue au nouveau bail, renouvellement ou reconduction tacite).",
+          "« On peut augmenter le loyer d'un F après travaux s'il reste classé F. » -> FAUX (gel total tant que F/G).",
+          "« Un DPE de mars 2019 est encore valable aujourd'hui. » -> FAUX (périmé depuis le 31 décembre 2024).",
+          "« Les recommandations de travaux du DPE sont opposables. » -> FAUX (seules étiquettes et consommations le sont).",
+          "« Un studio de 28 m² classé F en 2022 peut être reclassé E grâce à la réforme 2024. » -> VRAI.",
+          "« L'audit énergétique de vente est obligatoire pour vendre un lot de copropriété classé F. » -> FAUX (c'est le DPE ; l'audit vise maisons et immeubles en mono-propriété).",
+          "« Le seuil de 450 kWh de 2023 est exprimé en énergie finale. » -> VRAI.",
+          "« Un monument historique classé est dispensé de DPE. » -> VRAI.",
+          "« Un logement neuf RE2020 ressort généralement en A ou B. » -> VRAI."
+        ]
+      },
+      {
+        "titre": "Défi chrono : « Classe-moi ce bien »",
+        "type": "Défi chrono (calcul express du double seuil)",
+        "duree": "10 min",
+        "consignes": [
+          "Projetez successivement 6 fiches de biens, chacune avec une valeur énergie (kWh/m²/an) ET une valeur climat (kg CO2/m²/an).",
+          "Individuellement ou en binôme, chacun note la classe finale sur sa feuille en moins de 20 secondes par fiche.",
+          "Rappelez au tableau l'aide-mémoire des seuils (A 70/6, B 110/11, C 180/30, D 250/50, E 330/70, F 420/100, G au-delà).",
+          "Correction immédiate après chaque fiche : on retient toujours la pire des deux étiquettes.",
+          "Celui qui a le plus de bonnes réponses sur 6 est désigné « expert étiquette » du jour."
+        ],
+        "animation": [
+          "Insistez sur le réflexe : lire les DEUX valeurs avant d'annoncer, jamais l'énergie seule.",
+          "Glissez volontairement des cas où le climat dégrade la classe (chauffage fioul/gaz) pour ancrer le double seuil.",
+          "Rappelez le contexte local : Martigues est en zone H3, hivers doux, donc souvent de meilleurs DPE côté chauffage mais vigilance sur le confort d'été."
+        ],
+        "corrige": [
+          "Fiche 1 : 100 kWh / 9 kg CO2 -> B (les deux sous les seuils B).",
+          "Fiche 2 : 160 kWh / 45 kg CO2 -> D (le climat à 45 dépasse C=30, donc D).",
+          "Fiche 3 : 200 kWh / 60 kg CO2 (fioul) -> E (climat 60 dépasse D=50).",
+          "Fiche 4 : 60 kWh / 5 kg CO2 -> A.",
+          "Fiche 5 : 300 kWh / 65 kg CO2 -> E (énergie 300 et climat 65 tous deux en E).",
+          "Fiche 6 : 240 kWh / 105 kg CO2 -> G (climat dépasse 100, bascule en G malgré une énergie en D)."
+        ]
+      },
+      {
+        "titre": "Étude de cas : « Le mandat piégé »",
+        "type": "Étude de cas en sous-groupes",
+        "duree": "20 min",
+        "consignes": [
+          "Répartissez en sous-groupes de 2-3. Distribuez la fiche du bien : studio de 32 m² à Martigues, DPE daté de février 2022 affichant F, vendeur pressé, en copropriété de 60 lots construite en 2008, bailleur qui veut relouer vite.",
+          "Mission (10 min) : chaque sous-groupe liste les réflexes à dérouler avant de rentrer le mandat et de diffuser l'annonce, et identifie les pièges.",
+          "Chaque sous-groupe restitue en 2 min ; le formateur complète au paperboard.",
+          "Validez la solution complète (voir corrigé) et faites verbaliser l'argumentaire à tenir au vendeur.",
+          "Variante express si le temps manque : traiter le cas en grand groupe à l'oral."
+        ],
+        "animation": [
+          "Laissez les sous-groupes buter sur les pièges avant de donner la réponse : l'erreur vécue s'ancre mieux.",
+          "Reliez le cas à la checklist mémo de l'agent vue en synthèse pour montrer qu'elle se déroule en 20 minutes réelles.",
+          "Faites ressortir l'enjeu commercial : un réflexe oublié = annonce non conforme + mandat fragilisé."
+        ],
+        "corrige": [
+          "Vérifier la date du DPE : février 2022 = méthode 2021, encore valable 10 ans, OK.",
+          "Piège n°1 : studio de 32 m² (40 m² ou moins) classé F AVANT le 1er juillet 2024 -> vérifier la réforme petites surfaces : rééditer l'attestation ADEME, le bien peut ressortir E et redevenir louable.",
+          "Contrôler le numéro ADEME et la cohérence de la classe avec l'état réel.",
+          "Louabilité : si le bien reste F, interdiction de louer en 2028 seulement (F), pas en 2026 ; mais gel des loyers immédiat car F/G. S'il passe E après recalcul, louable mais E interdit en 2034.",
+          "Copropriété de 60 lots (50 à 200 lots) : DPE collectif obligatoire depuis le 1er janvier 2025 - en parler avec le syndic.",
+          "Annonce : afficher les deux étiquettes + coût annuel théorique d'énergie ; mention « logement à consommation énergétique excessive » si F/G.",
+          "Argumentaire vendeur : transparence, recalcul 2024, prix net intégrant d'éventuels travaux et aides, orientation France Rénov'."
+        ]
+      }
+    ],
+    "jeuxRole": [
+      {
+        "titre": "Le coup de fil du vendeur de passoire",
+        "contexte": "Un propriétaire appelle l'agence : il veut vendre sa maison individuelle de 95 m² à Martigues, classée F au DPE. Il est persuadé que « le DPE, c'est juste indicatif » et refuse d'entendre parler de travaux ou d'audit. Il fixe un prix de 300 000 €, aligné sur une maison D voisine vendue l'an dernier.",
+        "roleA": "Le négociateur : il reçoit l'appel, doit expliquer le caractère opposable du DPE, l'obligation d'audit énergétique de vente (maison F depuis le 1er avril 2023, remis dès la première visite), la valeur verte / décote des passoires, et positionner un prix net réaliste sans braquer le vendeur. Objectif : décrocher un rendez-vous d'estimation.",
+        "roleB": "Le vendeur : méfiant, pressé, convaincu que son bien vaut autant que le D voisin, agacé à l'idée de dépenser pour un audit. Il teste la solidité du négociateur (« pourquoi je paierais un audit ? », « le DPE ça ne veut rien dire »).",
+        "objectif": "S'entraîner à transformer une objection « le DPE c'est indicatif » en argument de transparence et d'anticipation, tout en restant exact sur le droit (opposabilité depuis juillet 2021, audit obligatoire, à charge du vendeur, valable 5 ans) et en sécurisant un rendez-vous.",
+        "debrief": [
+          "Le négociateur a-t-il corrigé en douceur l'idée fausse « le DPE est indicatif » en expliquant l'opposabilité depuis le 1er juillet 2021 ?",
+          "A-t-il bien présenté l'audit comme un outil qui désamorce la peur des travaux (deux scénarios, aides, viser au moins la classe E) plutôt que comme une contrainte ?",
+          "A-t-il tenu la ligne sur le prix net (valeur verte, décote d'une passoire) sans braquer ni survaloriser ?",
+          "Quels mots ont fait baisser la tension ? Lesquels ont crispé le vendeur ?",
+          "A-t-il obtenu le rendez-vous d'estimation ? Sinon, qu'aurait-il fallu dire différemment ?"
+        ]
+      },
+      {
+        "titre": "Face à l'investisseur qui veut louer un G",
+        "contexte": "En rendez-vous, un investisseur veut acheter un appartement classé G à Martigues pour le mettre en location dès 2026. Il n'a pas en tête les interdictions de louer et croit faire une bonne affaire au prix affiché.",
+        "roleA": "Le négociateur : il doit annoncer franchement qu'un G est non louable depuis le 1er janvier 2025, puis retourner la contrainte en opportunité (décote à l'achat, aides, DPE projeté, plus-value après rénovation) et orienter vers France Rénov' sans promettre de montant d'aide précis.",
+        "roleB": "L'investisseur : rentabilité avant tout, un peu pressé, prêt à renoncer s'il pense s'être trompé. Il demande des chiffres précis sur les aides et un rendement rapide.",
+        "objectif": "Savoir délivrer une mauvaise nouvelle réglementaire (G non louable) tout en gardant le client, en reconstruisant un projet chiffré et aidé et en restant prudent sur les montants (fourchettes, renvoi au conseiller).",
+        "debrief": [
+          "Le négociateur a-t-il annoncé clairement l'interdiction de louer un G sans la minimiser ni dramatiser ?",
+          "A-t-il su transformer la contrainte en projet (prix d'entrée bas, DPE projeté, objectif classe E/D, valeur après rénovation) ?",
+          "Est-il resté prudent sur les aides (fourchettes, cumul MaPrimeRénov' / éco-PTZ / CEE, renvoi à France Rénov') sans chiffre promis à tort ?",
+          "A-t-il préservé la relation et la confiance malgré la nouvelle défavorable ?"
+        ]
+      }
+    ],
+    "pointsCles": [
+      "On retient toujours la PIRE des deux étiquettes (énergie primaire ET climat GES) : c'est le principe du double seuil.",
+      "Le DPE est OPPOSABLE depuis le 1er juillet 2021 : vendeur, bailleur et diagnostiqueur engagent leur responsabilité sur les étiquettes et les consommations (les recommandations de travaux restent indicatives).",
+      "Un DPE méthode 2021 est valable 10 ans ; tout DPE établi avant juillet 2021 est périmé depuis le 1er janvier 2025 - toujours vérifier la date et le numéro ADEME.",
+      "Calendrier des interdictions de louer, à connaître par coeur : G-F-E = 2025-2028-2034 (plus le seuil 450 kWh d'énergie FINALE depuis 2023).",
+      "Les loyers des passoires F et G sont GELÉS depuis le 24 août 2022 : pas d'IRL, pas de réévaluation, pas de hausse après travaux tant que le bien reste F/G.",
+      "Réforme du 1er juillet 2024 : les logements de 40 m² ou moins ont été recalculés (~140 000 sortis du statut de passoire) - rééditer l'attestation ADEME avant de dire « non louable ».",
+      "Audit énergétique de vente : maisons individuelles et immeubles en mono-propriété F/G (depuis le 1er avril 2023) et E (depuis le 1er janvier 2025), remis dès la première visite, à la charge du vendeur, valable 5 ans - pas pour un lot de copropriété.",
+      "Toute annonce doit afficher les DEUX étiquettes + le coût annuel théorique d'énergie, et la mention « logement à consommation énergétique excessive » pour un F ou G - sinon amende jusqu'à 3 000 € (personne physique) / 15 000 € (personne morale).",
+      "La valeur verte est un levier de négociation : une passoire se vend décotée, un A/B avec surcote - on vend au bon prix MAINTENANT, avant le prochain durcissement du calendrier.",
+      "Les aides se cumulent sous conditions (MaPrimeRénov' subvention, éco-PTZ prêt à 0 %, CEE primes privées) : on oriente vers France Rénov' et on parle en fourchettes, jamais de montant promis."
+    ],
+    "planAction": [
+      "Dès demain, avant toute nouvelle diffusion, dérouler la checklist DPE : date du diagnostic, numéro ADEME, cohérence de la classe, présence des deux étiquettes et du coût annuel d'énergie.",
+      "Reprendre les mandats en cours de petits logements (40 m² ou moins) classés F/G sur un DPE antérieur à juillet 2024 et vérifier systématiquement le recalcul réforme 2024 (réédition gratuite de l'attestation ADEME).",
+      "Pour chaque bien F, G ou E (maison ou immeuble en mono-propriété), anticiper l'audit énergétique de vente et l'avoir disponible dès la première visite.",
+      "Intégrer à chaque estimation de passoire un argumentaire « valeur verte » chiffré : décote, coût des travaux, aides mobilisables et DPE projeté après rénovation.",
+      "Mémoriser et réutiliser dans les rendez-vous le calendrier G-F-E = 25-28-34 et le gel des loyers F/G depuis le 24 août 2022 pour conseiller justement les bailleurs.",
+      "Constituer un réflexe de renvoi vers France Rénov' et des artisans RGE partenaires, en parlant toujours en fourchettes d'aides et jamais en montant promis."
+    ],
+    "notesFormateur": [
+      "Gérez le temps avec un minuteur visible : les jeux ont tendance à déborder. Prévoyez de pouvoir sacrifier le Défi chrono si le Quiz-battle s'est prolongé, pour préserver le jeu de rôle qui est le plus structurant.",
+      "Alternez systématiquement assis (apports) et debout (Vrai/Faux, Défi chrono) : le module est dense en dates et seuils, le mouvement maintient l'attention.",
+      "Faites participer les plus silencieux en les désignant pour justifier une bonne réponse d'équipe plutôt qu'en posant une question frontale - c'est moins intimidant et ça ancre mieux.",
+      "Ancrez chaque acquis par un moyen mnémotechnique répété : « la pire des deux lettres », « G-F-E = 25-28-34 », « l'audit descend l'échelle F/G puis E puis D ». Faites-les répéter à voix haute.",
+      "Rattachez en permanence le contenu au terrain de Martigues (zone H3, confort d'été, copropriétés anciennes du centre) pour que ce soit concret et non du droit abstrait.",
+      "Rappelez la posture déontologique : ne jamais arranger une classe (DPE opposable), ne jamais promettre un montant d'aide précis - renvoyer à France Rénov' et au diagnostiqueur certifié. Clôturez en faisant formuler à chacun un engagement concret du plan d'action."
+    ]
+  },
+  "mental-performance": {
+    "id": "mental-performance",
+    "sousTitre": "Le mental qui fait la différence : de l'état d'esprit gagnant aux habitudes durables du top négociateur",
+    "objectifs": [
+      "Adopter un état d'esprit de croissance et un locus de contrôle interne : se concentrer sur ce que l'on maîtrise (actions, préparation, attitude) plutôt que sur le marché ou les taux.",
+      "Dédramatiser et exploiter le refus : dissocier le « non » de soi, lui donner une valeur monétaire et appliquer la règle SW-SW-SW-N pour enchaîner sans ruminer.",
+      "Maîtriser des routines concrètes de préparation mentale et de régulation du stress (méthode CAP, cohérence cardiaque 3-6-5, méthode STOP) mobilisables avant un RDV de mandat.",
+      "Garder la main mentalement en négociation : tenir sa posture de non-besoin, utiliser le silence et l'ancrage, fixer son point de rupture avant l'entretien.",
+      "Piloter son activité plutôt que ses résultats (objectifs SMART, ratios, rituels non négociables) et installer des habitudes gagnantes durables.",
+      "Repérer les signaux de burnout et protéger son énergie pour tenir la performance dans la durée."
+    ],
+    "agenda": [
+      {
+        "titre": "Accueil & brise-glace « Simple au triple » : lancer le groupe sur l'idée que le mental sépare les meilleurs",
+        "duree": "10 min"
+      },
+      {
+        "titre": "Apport 1 — État d'esprit gagnant : 3 piliers, locus interne, mentalité de croissance (« pas encore »)",
+        "duree": "15 min"
+      },
+      {
+        "titre": "Jeu 1 — Quiz-battle en équipes sur les lois et méthodes du module",
+        "duree": "15 min"
+      },
+      {
+        "titre": "Apport 2 — Encaisser le refus et garder la main : valeur du « non », silence, ancrage, point de rupture",
+        "duree": "15 min"
+      },
+      {
+        "titre": "Jeu 2 — Vrai/Faux debout « Mental ou mythe ? » (idées reçues du métier)",
+        "duree": "10 min"
+      },
+      {
+        "titre": "Jeu de rôle — Négociation d'honoraires téléphonique / présentielle avec observateurs",
+        "duree": "20 min"
+      },
+      {
+        "titre": "Jeu 3 — Défi chrono « Ma valeur du non » + atelier ratios personnels",
+        "duree": "10 min"
+      },
+      {
+        "titre": "Apport 3 — Routines, discipline, habitudes (1 %, 66 jours, ne jamais manquer deux fois)",
+        "duree": "10 min"
+      },
+      {
+        "titre": "Synthèse — Points-clés & plan d'action individuel (engagements pour demain matin)",
+        "duree": "10 min"
+      }
+    ],
+    "briseGlace": {
+      "titre": "« Du simple au triple » — ce qui se joue dans la tête",
+      "consignes": [
+        "En ouverture, posez la situation au groupe : « Deux négociateurs de cette agence ont le même secteur, le même fichier, les mêmes outils. L'un fait trois fois le chiffre de l'autre. Où se joue la différence ? »",
+        "Faites un tour de table express (1 phrase par personne, 20 secondes max) : chacun donne LE mot ou LA qualité mentale qui, selon lui, fait la différence (confiance, régularité, encaisser le non, discipline…).",
+        "Notez tous les mots au paperboard sans commenter. Reliez-les ensuite aux grands thèmes de la séance (état d'esprit, refus, stress, négociation, habitudes) : « Tout ce que vous venez de citer, c'est exactement le programme d'aujourd'hui. »",
+        "Variante énergisante : demandez à chacun de se positionner physiquement sur une ligne imaginaire au sol entre « Ma réussite dépend surtout de moi » (locus interne) et « Elle dépend surtout du marché et des taux » (locus externe), puis questionnez 2-3 personnes sur leur place."
+      ]
+    },
+    "jeux": [
+      {
+        "titre": "Quiz-battle « Les lois du mental »",
+        "type": "Quiz-battle en équipes",
+        "duree": "15 min",
+        "consignes": [
+          "Constituez 2 ou 3 équipes et demandez à chacune de se choisir un nom de code (ex. « les Locus Internes », « SW-SW-SW-N »).",
+          "Posez les questions une à une à l'oral (issues du quiz du module). Chaque équipe écrit sa réponse sur une ardoise ou une feuille et la lève à votre « top », pour éviter que la plus rapide monopolise.",
+          "1 point par bonne réponse. Après chaque question, l'équipe qui a bon explique POURQUOI en une phrase : c'est l'explication qui ancre, pas juste le point.",
+          "Gardez les 2 dernières questions pour un « money time » à double points afin de maintenir le suspense jusqu'au bout.",
+          "Proclamez l'équipe gagnante et remettez un petit trophée symbolique (le droit de choisir la musique du prochain brief, par ex.)."
+        ],
+        "animation": [
+          "Rythmez : 20-25 secondes par question, chrono visible. L'énergie du jeu vient de la cadence.",
+          "Ne validez jamais une bonne réponse sans faire reformuler le principe par l'équipe : l'objectif est pédagogique, pas compétitif.",
+          "Piochez en priorité les questions à fort impact métier : loi de Pareto, objectifs d'activité, valeur du non, silence après l'annonce d'honoraires, 66 jours."
+        ],
+        "corrige": [
+          "Résultats en baisse → le top performer AUGMENTE son activité (la vente est un jeu de nombres).",
+          "Un « non » = une étape statistique qui rapproche du oui (règle SW-SW-SW-N), jamais un échec personnel.",
+          "On pilote les objectifs d'ACTIVITÉ (contacts, estimations), pas les objectifs de résultat qu'on ne contrôle pas.",
+          "Quadrant des top performers dans la matrice d'Eisenhower = Important mais NON urgent (à planifier : prospection, formation).",
+          "Après avoir annoncé ses honoraires : SE TAIRE et laisser l'autre réagir (celui qui parle le premier concède).",
+          "Ancrer une habitude = environ 66 jours (et non 21) ; tenir bon les deux premiers mois.",
+          "Pareto : 80 % des résultats viennent de 20 % des actions (prospection, prise de mandat, relances acquéreurs).",
+          "Parkinson : le travail s'étale jusqu'à occuper tout le temps disponible → délais courts et fermes.",
+          "SMART, le T = Temporel (daté). Mentalité de croissance = ajouter « pas encore ». Règle d'or des habitudes = ne jamais manquer deux fois de suite."
+        ]
+      },
+      {
+        "titre": "Vrai / Faux debout « Mental ou mythe ? »",
+        "type": "Vrai/Faux dynamique",
+        "duree": "10 min",
+        "consignes": [
+          "Tout le monde se lève. Désignez un côté de la salle « VRAI » et l'autre « FAUX ».",
+          "Énoncez une affirmation : les participants se déplacent physiquement du côté qu'ils pensent correct. On ne reste pas assis, on s'engage avec le corps.",
+          "Avant de donner la réponse, interrogez 1 personne de chaque camp : « Pourquoi es-tu de ce côté ? » Cela fait débattre et révèle les croyances du groupe.",
+          "Donnez la bonne réponse, l'explication, et enchaînez. 6 à 8 affirmations suffisent."
+        ],
+        "animation": [
+          "L'intérêt est de faire sortir les idées reçues du métier (« prendre un non personnellement », « travailler plus d'heures = plus de résultats »). Laissez le débat vivre 20-30 secondes avant de trancher.",
+          "Félicitez ceux qui changent d'avis en cours de route : c'est exactement la mentalité de croissance.",
+          "Reliez chaque réponse à une situation concrète de l'agence pour ancrer."
+        ],
+        "corrige": [
+          "« Un non en prospection est un échec personnel » → FAUX : on rejette une proposition à un instant, pas la personne ; c'est une étape statistique.",
+          "« Travailler 12h par jour en continu garantit plus de résultats » → FAUX : à moyen terme c'est l'inverse, cela mène au burnout.",
+          "« Il faut attendre d'être motivé pour agir » → FAUX : c'est l'action qui crée la motivation, pas l'inverse.",
+          "« Baisser le volume d'appels après une série de non est le bon réflexe » → FAUX : il faut l'augmenter.",
+          "« Le silence après l'annonce des honoraires est une faute » → FAUX : c'est un outil, celui qui parle le premier concède.",
+          "« On ancre une habitude en 21 jours » → FAUX : en moyenne 66 jours (étude Lally, 2009).",
+          "« Le trac avant un RDV est forcément nuisible » → FAUX : le stress aigu bref est sain, il mobilise ; c'est de l'énergie à rediriger.",
+          "« Un non est souvent définitif » → FAUX : beaucoup de non sont des « pas maintenant » datés, à replacer en relance."
+        ]
+      },
+      {
+        "titre": "Défi chrono « Ma valeur du non » + mes ratios",
+        "type": "Défi chrono / atelier chiffré",
+        "duree": "10 min",
+        "consignes": [
+          "Chaque négociateur prend 3 minutes, chrono lancé, pour calculer SA propre valeur du contact : honoraires moyens d'un mandat vendu ÷ nombre de contacts nécessaires pour un mandat = valeur d'un contact (donc aussi d'un « non »).",
+          "Exemple affiché au paperboard : 5 000 € d'honoraires, 1 mandat tous les 10 contacts → chaque contact (oui comme non) vaut 500 €.",
+          "Chacun écrit le chiffre obtenu en GROS sur une feuille et l'affiche. Tour de salle rapide : « Mon non vaut … € ».",
+          "Deuxième manche (3 min) : chacun note ses 3 ratios-clés (contacts → RDV, RDV → mandat, mandat → vente) à partir de son suivi d'activité, ou une estimation s'il ne les connaît pas encore.",
+          "Clôturez : « À partir de maintenant, un refus n'est plus une claque, c'est un acompte encaissé sur votre prochain mandat. »"
+        ],
+        "animation": [
+          "Ayez une calculatrice de secours et un exemple pré-rempli au tableau pour ceux qui bloquent.",
+          "Pour ceux qui ne connaissent pas leurs ratios : c'est le signal qu'il faut activer le suivi d'activité de l'application — notez-le comme action.",
+          "Insistez sur l'effet mental : chiffrer le non le transforme en donnée neutre, on arrête de le subir."
+        ],
+        "corrige": [
+          "Formule : valeur d'un contact = honoraires moyens par vente × (ventes ÷ contacts). Repère métier : autour de 400 à 600 € le contact est fréquent.",
+          "On ne juge jamais sa performance sur une matinée (résultats erratiques sur petit nombre) mais sur plusieurs centaines de contacts (loi des grands nombres).",
+          "Connaître ses ratios transforme un objectif de ventes en nombre d'appels à passer : le flou disparaît."
+        ]
+      },
+      {
+        "titre": "Photolangage « Mon mental en ce moment »",
+        "type": "Photolangage / brainstorm",
+        "duree": "10 min",
+        "consignes": [
+          "Étalez sur la table une quinzaine d'images variées imprimées (une tempête, un sommet de montagne, un marathon, un funambule, une batterie déchargée, une mer calme, un ressort, un phare…).",
+          "Chacun choisit en silence l'image qui représente le mieux son état mental actuel dans le métier.",
+          "Tour de table : chacun montre son image et explique en 30 secondes pourquoi. Aucun jugement, aucune réaction du groupe, juste de l'écoute.",
+          "Notez discrètement les thèmes qui reviennent (fatigue, pression du variable, perte de motivation, besoin de régularité…) : ils orienteront vos apports et le suivi managérial.",
+          "Reliez les états exprimés aux outils de la séance : à une « batterie déchargée » répond l'hygiène de vie et la prévention du burnout ; à une « tempête » la méthode STOP et la cohérence cardiaque."
+        ],
+        "animation": [
+          "Donnez l'exemple en premier en choisissant votre propre image : cela libère la parole et montre que le manager est aussi concerné.",
+          "Posez un cadre de confidentialité clair : ce qui se dit ici reste ici. C'est ce qui permet l'authenticité.",
+          "Ne cherchez pas à régler les problèmes pendant l'exercice : accueillez, reformulez, et renvoyez vers les outils ou vers un point individuel ultérieur."
+        ]
+      }
+    ],
+    "jeuxRole": [
+      {
+        "titre": "La négociation d'honoraires qui déstabilise",
+        "contexte": "RDV de prise de mandat à Martigues. Le vendeur annonce d'emblée : « L'agence d'à côté me prend 3 %, vous êtes à 5 %. Alignez-vous ou je signe ailleurs. » Le bien est correctement estimé et il y a des acquéreurs potentiels en fichier.",
+        "roleA": "Le négociateur : doit tenir sa posture de non-besoin, utiliser le silence après l'annonce de ses honoraires, justifier sa valeur par les faits (délai de vente, acquéreurs déjà en portefeuille, accompagnement), et ne concéder, s'il le fait, qu'en échange de quelque chose (ex. exclusivité).",
+        "roleB": "Le vendeur : joue la pression, la comparaison avec le concurrent et une légère impatience, sans être caricatural. Il cède si le négociateur reste calme, factuel et ne se justifie pas de façon défensive.",
+        "objectif": "S'entraîner à garder le contrôle émotionnel et la posture de non-besoin face à une attaque sur le prix, et à utiliser le silence et l'ancrage plutôt que de brader dans la seconde.",
+        "debrief": [
+          "Le négociateur a-t-il marqué un silence après avoir annoncé/maintenu ses honoraires, ou s'est-il justifié aussitôt ?",
+          "A-t-il ramené l'échange aux faits et à la valeur (délai, acquéreurs, résultat) plutôt qu'à une guerre de pourcentages ?",
+          "Quand il a concédé, l'a-t-il fait gratuitement ou en échange (exclusivité, exclusivité de durée) ?",
+          "Comment a-t-il vécu la pression ? Quel signal corporel l'a trahi (débit qui s'accélère, posture qui se referme) ?",
+          "Les observateurs : qu'est-ce qu'ils retiennent de transposable dès demain dans leurs propres RDV de mandat ?"
+        ]
+      },
+      {
+        "titre": "Encaisser le refus au téléphone en pige",
+        "contexte": "Séance de pige téléphonique. Le négociateur appelle un propriétaire qui vend seul. Le propriétaire est sec : « Pas d'agence, je me débrouille, au revoir. » C'est le 8e refus de la matinée.",
+        "roleA": "Le négociateur : doit appliquer la règle SW-SW-SW-N (ne pas ruminer, enchaîner), garder un ton souriant et debout, tenter de dissocier le refus de lui-même, et surtout garder la porte ouverte (« Je comprends, je vous rappelle dans deux mois pour faire le point ? ») plutôt que de rayer le contact.",
+        "roleB": "Le propriétaire : refuse fermement mais n'est pas agressif ; c'est en réalité un « pas maintenant » (il veut d'abord essayer seul). Il accepte un rappel ultérieur si le négociateur reste courtois et sans pression.",
+        "objectif": "Travailler le réflexe mental face au non : ne pas le prendre personnellement, enchaîner immédiatement, et transformer un refus en relance programmée au lieu d'une porte définitivement fermée.",
+        "debrief": [
+          "Le négociateur a-t-il pris le non personnellement (ton qui change, découragement audible) ou l'a-t-il traité comme une donnée ?",
+          "A-t-il tenté de garder la porte ouverte avec une proposition de rappel datée ?",
+          "Comment s'est-il remis dans l'énergie pour l'appel suivant ? A-t-il rappelé mentalement une phrase d'ancrage (« je contrôle mon effort, pas sa réponse ») ?",
+          "Qu'est-ce qui, dans sa voix et sa posture (debout, sourire), a changé la qualité de l'échange ?"
+        ]
+      }
+    ],
+    "pointsCles": [
+      "À compétences égales, c'est le mental qui sépare les meilleurs des moyens : la différence se joue dans la tête, pas dans le marché.",
+      "Locus interne : concentrer son énergie sur ce qu'on maîtrise (actions, préparation, attitude) et lâcher prise sur le reste (taux, conjoncture, décision du client).",
+      "Mentalité de croissance : ajouter « pas encore » à chaque limite ; l'échec est une information, pas un verdict.",
+      "Un « non » n'est ni un échec ni personnel : c'est une étape statistique qui a une valeur monétaire et rapproche du prochain oui (SW-SW-SW-N).",
+      "On pilote l'activité, pas le résultat : objectifs SMART, ratios connus, rituels non négociables (bloc prospection matinal, revue hebdo).",
+      "80/20 (Pareto) : protéger les 20 % d'actions à forte valeur (prospection, prise de mandat, relances) ; time-blocking et 3 MIT avant les mails.",
+      "La confiance se prépare : méthode CAP (Corps, Ancrage, Projection), objections répétées à l'avance, sourire et posture debout au téléphone.",
+      "Garder la main en négociation : posture de non-besoin, point de rupture fixé à froid, pouvoir du silence, ancrage, concessions échangées jamais offertes.",
+      "Réguler le stress, pas le supprimer : cohérence cardiaque 3-6-5 et méthode STOP ; ne jamais répondre à chaud à un message agressif.",
+      "La performance tient aux systèmes : 1 % mieux chaque jour, environ 66 jours pour ancrer une habitude, ne jamais manquer deux fois de suite, et protéger son énergie pour éviter le burnout."
+    ],
+    "planAction": [
+      "Dès demain 9h : instaurer un bloc prospection sacré 9h-11h, téléphone en mode avion et mails fermés, debout pour appeler.",
+      "Écrire et afficher ses 3 objectifs d'activité quotidiens (ex. 20 contacts, suivis dans le suivi d'activité de l'app) et les relire chaque matin.",
+      "Calculer et noter sa valeur du contact (« mon non vaut X € ») et la garder en vue pour encaisser les refus comme des acomptes.",
+      "Appliquer la méthode CAP (2 min de posture haute + ancrage + visualisation) avant chaque RDV de mandat, dans la voiture, au lieu de consulter ses mails.",
+      "Après l'annonce de ses honoraires : se taire et compter jusqu'à laisser l'autre réagir — tester le silence sur le prochain RDV.",
+      "Choisir UNE seule nouvelle habitude à installer (ex. empiler 10 appels après le café de 9h), cocher chaque jour et s'engager à ne jamais manquer deux fois de suite pendant 66 jours."
+    ],
+    "notesFormateur": [
+      "Alternez systématiquement apport court (10-15 min max) et activité : sur un thème « mental », le présentiel vaut par le vécu et le jeu, pas par le discours descendant.",
+      "Montrez l'exemple en vous exposant le premier (votre image au photolangage, un de vos propres « non » marquants, un ratio réel) : l'authenticité du manager autorise celle de l'équipe.",
+      "Tenez le temps avec un chrono visible et annoncez les durées : c'est cohérent avec le contenu (lois de Parkinson et Pomodoro) et crédibilise la séance.",
+      "Faites participer tout le monde : utilisez les déplacements physiques (ligne locus, Vrai/Faux debout) pour que personne ne reste spectateur, et interrogez nommément les plus discrets avec bienveillance.",
+      "Ancrez par la reformulation : après chaque jeu, faites dire au groupe « ce que je retiens pour demain » plutôt que de conclure vous-même ; une idée formulée par le participant est retenue.",
+      "Posez un cadre de confidentialité sur les parties émotionnelles (photolangage, stress, burnout) et prévoyez un point individuel de suivi pour les signaux de fatigue chronique repérés — ne traitez pas le cas personnel en groupe."
+    ]
+  },
+  "marketing-bien": {
+    "id": "marketing-bien",
+    "sousTitre": "Transformer chaque mandat en coup de cœur : home-staging, photo et diffusion qui font vendre vite, bien et au bon prix",
+    "objectifs": [
+      "Maîtriser la logique du plan marketing d'un bien (entonnoir Attirer-Séduire-Convertir, AIDA, capital nouveauté des 15 premiers jours) et savoir le présenter comme argument de prise de mandat exclusif.",
+      "Être capable de préparer un bien par le home-staging (désencombrer, dépersonnaliser, réparer, neutraliser) et de convaincre un vendeur réticent avec le bon script.",
+      "Savoir produire des visuels qui vendent : photo de couverture, lumière naturelle, cadrage, 15 à 25 photos en format paysage, et connaître les apports et limites de la vidéo, du 360° et du drone.",
+      "Rédiger une annonce qui convertit, avec un titre orienté bénéfice et une structure gagnante, dans le respect strict des mentions légales 2024-2026.",
+      "Maîtriser la conformité de la communication immobilière (loi Hoguet, honoraires TTC, DPE/GES, loi ALUR, RGPD) et identifier la ligne rouge de la pratique commerciale trompeuse.",
+      "Être capable d'orchestrer un lancement commercial (teasing, fichier, portes ouvertes) et de piloter la performance par les KPIs pour tenir un bilan vendeur argumenté."
+    ],
+    "agenda": [
+      {
+        "titre": "Accueil, cadre de la séance et objectifs - puis brise-glace \"Mon dernier coup de cœur\"",
+        "duree": "10 min"
+      },
+      {
+        "titre": "Apport 1 - Le plan marketing : entonnoir, AIDA, capital nouveauté et argument de mandat exclusif",
+        "duree": "15 min"
+      },
+      {
+        "titre": "Jeu 1 - Photolangage \"Clic ou pas clic ?\" (analyse de photos de couverture)",
+        "duree": "15 min"
+      },
+      {
+        "titre": "Apport 2 - Home-staging et photo qui vend (règles d'or, check-list avant déclenchement)",
+        "duree": "15 min"
+      },
+      {
+        "titre": "Jeu 2 - Défi chrono \"Home-staging express\" en équipes",
+        "duree": "12 min"
+      },
+      {
+        "titre": "Apport 3 - Annonce, conformité légale et diffusion",
+        "duree": "15 min"
+      },
+      {
+        "titre": "Jeu 3 - Vrai/Faux juridique \"La ligne rouge\" + Jeu 4 - Quiz-battle en équipes",
+        "duree": "18 min"
+      },
+      {
+        "titre": "Mise en situation - Jeu de rôle \"Vendre le home-staging\" / \"Teasing au fichier\"",
+        "duree": "15 min"
+      },
+      {
+        "titre": "Synthèse des points-clés, plan d'action individuel et clôture",
+        "duree": "10 min"
+      }
+    ],
+    "briseGlace": {
+      "titre": "Mon dernier coup de cœur (et pourquoi j'ai cliqué)",
+      "consignes": [
+        "Demandez à chaque participant de sortir son smartphone et d'ouvrir Leboncoin ou SeLoger sur une recherche immobilière à Martigues ou alentour (90 secondes de navigation libre).",
+        "Chacun choisit UNE annonce sur laquelle il a eu envie de cliquer, et UNE qu'il a scrollée sans s'arrêter.",
+        "Tour de table minuté (45 secondes par personne) : \"J'ai cliqué sur celle-ci à cause de..., et j'ai ignoré celle-là parce que...\"",
+        "Le formateur note au paperboard les mots qui reviennent (lumière, vue, terrasse, prix, première photo, titre).",
+        "Rebond du formateur : \"Vous venez de vivre, en tant qu'acheteurs, exactement ce que vivent VOS acquéreurs. Le clic se joue en une seconde. C'est tout l'enjeu de la séance.\""
+      ]
+    },
+    "jeux": [
+      {
+        "titre": "Photolangage \"Clic ou pas clic ?\"",
+        "type": "Photolangage / analyse visuelle en groupe",
+        "duree": "15 min",
+        "consignes": [
+          "Préparez en amont 6 à 8 photos de couverture projetées au PowerPoint : des vraies photos de biens (idéalement du secteur de l'agence, anonymisées) mêlant réussites et ratés classiques - salon sombre shooté le soir, photo penchée, format portrait recadré, reflet du photographe dans le miroir, cuvette de WC ouverte, mais aussi une belle couverture lumineuse sur une vue ou une terrasse dressée.",
+          "Pour chaque photo, affichez-la 10 secondes puis demandez au groupe de voter à main levée : \"Clic ou pas clic ?\"",
+          "Après le vote, un volontaire argumente : qu'est-ce qui marche ou ne marche pas ?",
+          "Le formateur révèle le ou les défauts techniques et rattache chacun à une règle du module (lumière naturelle, format paysage, hauteur de prise de vue 1,50 m, verticales droites, ouvrir sur l'atout fort jamais sur une pièce technique).",
+          "Terminez sur la meilleure et la pire : \"Même bien, même prix - seule la mise en image a changé.\""
+        ],
+        "animation": [
+          "Imposez le vote AVANT tout commentaire : on veut la réaction instinctive d'un acheteur sur smartphone, pas l'analyse d'un pro.",
+          "Valorisez les désaccords : ils révèlent que le ressenti visuel est subjectif, d'où l'importance des règles objectives.",
+          "Gardez le rythme : 10 secondes d'affichage maximum, comme sur un vrai fil de portail."
+        ],
+        "corrige": [
+          "Photo gagnante : lumière naturelle de jour, volets ouverts, format paysage, prise de vue à hauteur de poitrine, verticales droites, ouverture sur l'atout le plus fort (vue, terrasse, plus belle pièce).",
+          "Défauts rédhibitoires : contre-jour / photo du soir (salon sombre), format portrait (recadré et amputé par le portail), appareil penché (verticales non droites, aspect amateur), reflet du photographe, cuvette de WC ouverte / serviette qui traîne / gamelle visible, couverture posée sur une pièce technique (salle de bains, garage).",
+          "Règle à ancrer : 90 % des recherches commencent en ligne, la première photo décide du clic ; 15 à 25 photos nettes valent mieux que 50 médiocres."
+        ]
+      },
+      {
+        "titre": "Défi chrono \"Home-staging express\"",
+        "type": "Défi chrono en équipes",
+        "duree": "12 min",
+        "consignes": [
+          "Projetez la photo d'une pièce encombrée et mal présentée (séjour ou cuisine surchargée, objets personnels partout, câbles apparents, mur de couleur criarde).",
+          "Divisez le groupe en 2 ou 3 équipes. Chrono de 4 minutes : chaque équipe liste sur une feuille le MAXIMUM d'actions de home-staging concrètes à mener sur cette pièce avant le shooting.",
+          "À l'issue du chrono, chaque équipe lit sa liste à tour de rôle ; une action déjà citée par une autre équipe ne compte pas (on ne répète pas).",
+          "1 point par action pertinente et non redondante ; l'équipe avec le plus de points gagne.",
+          "Le formateur complète avec les actions oubliées et rattache aux 5 règles d'or (désencombrer/dépersonnaliser, réparer les petits défauts, nettoyer/désodoriser/éclairer, neutraliser, désaturer les volumes)."
+        ],
+        "animation": [
+          "Chronométrez visiblement (timer projeté) : la pression du temps libère les idées et dynamise.",
+          "Interdisez les téléphones pendant le chrono : on veut la connaissance du groupe, pas une recherche Google.",
+          "Si une équipe propose une action limite (effacer un défaut sur la photo), saisissez-la pour amener la ligne rouge : home-staging oui, tromperie non."
+        ],
+        "corrige": [
+          "Désencombrer 30 à 50 % des bibelots, retirer photos de famille, aimants de frigo, objets religieux ou politiques.",
+          "Réparer les petits défauts (poignée cassée, joint noirci, ampoule grillée) qui donnent une impression de négligence.",
+          "Plans de travail et tables vidés, câbles rangés, poubelle et gamelles hors champ.",
+          "Nettoyer, désodoriser (tabac, animal, friture), éclairer : toutes ampoules fonctionnelles et de même température de couleur.",
+          "Neutraliser un mur trop marqué (rouge/violet fait fuir), ambiance chaleureuse mais consensuelle.",
+          "Désaturer les volumes : un meuble sur deux dans une pièce surchargée pour dégager les circulations.",
+          "Créer un point focal dans le séjour (canapé face à la vue ou à la cheminée).",
+          "À ne JAMAIS faire : effacer un défaut permanent ou meubler virtuellement sans la mention \"image non contractuelle\"."
+        ]
+      },
+      {
+        "titre": "Vrai/Faux juridique \"La ligne rouge\"",
+        "type": "Vrai/Faux",
+        "duree": "8 min",
+        "consignes": [
+          "Distribuez à chacun deux cartons (VRAI / FAUX) ou faites lever le pouce haut/bas.",
+          "Le formateur lit une affirmation ; au top, tout le monde répond simultanément.",
+          "Après chaque vote, le formateur donne la réponse et la justification légale en une phrase.",
+          "Enchaînez les 8 affirmations à un rythme soutenu."
+        ],
+        "animation": [
+          "Imposez le vote simultané pour éviter le mimétisme ; personne ne se cache derrière le voisin.",
+          "Insistez sur les sanctions réelles (jusqu'à 2 ans de prison et 300 000 € d'amende) pour marquer les esprits sur la pratique trompeuse.",
+          "Reliez chaque point à un réflexe terrain : \"Avant de publier, je vérifie DPE, GES, honoraires, mandat.\""
+        ],
+        "corrige": [
+          "\"Je peux diffuser une annonce dès l'accord verbal du vendeur\" - FAUX : la loi Hoguet (loi n°70-9 du 2 janvier 1970) exige un mandat écrit autorisant expressément la publicité.",
+          "\"L'étiquette DPE suffit, le GES est facultatif\" - FAUX : DPE ET GES sont obligatoires, plus l'estimation des coûts annuels d'énergie (loi Climat et Résilience, depuis 2022).",
+          "\"Pour un logement classé F ou G, la mention 'consommation énergétique excessive' est obligatoire\" - VRAI.",
+          "\"Je peux éclaircir une photo trop sombre et redresser les perspectives\" - VRAI : retouche cosmétique autorisée (luminosité, perspectives, netteté, ciel).",
+          "\"Je peux effacer numériquement un pylône gênant à côté de la maison\" - FAUX : effacer un défaut permanent est une pratique commerciale trompeuse (articles L.121-2 et L.121-3 du Code de la consommation).",
+          "\"Le home-staging virtuel est interdit\" - FAUX : il est légal mais doit porter la mention \"image non contractuelle / home-staging virtuel\" et ne jamais masquer un défaut permanent.",
+          "\"Les honoraires s'affichent TTC avec l'indication de qui les paie\" - VRAI (arrêté du 10 janvier 2017).",
+          "\"Je peux donner l'adresse exacte du bien pour rassurer les acheteurs\" - FAUX : jamais d'adresse exacte (protection du vendeur, démarchage, visites sauvages, sécurité)."
+        ]
+      },
+      {
+        "titre": "Quiz-battle \"Les pros du marketing du bien\"",
+        "type": "Quiz-battle en équipes",
+        "duree": "10 min",
+        "consignes": [
+          "Formez 2 ou 3 équipes et laissez-les se trouver un nom d'agence fictive.",
+          "Posez 10 questions (adaptées du quiz du module) à l'oral ou au PowerPoint. Chaque équipe écrit sa réponse sur une ardoise ou un papier et la révèle au top, pas de réponse criée.",
+          "1 point par bonne réponse ; bonus d'1 point si l'équipe cite correctement la règle ou le texte de loi associé.",
+          "Le formateur commente chaque réponse à l'aide de l'explication, puis tient le score au paperboard.",
+          "L'équipe gagnante est désignée \"Référente marketing de la semaine\"."
+        ],
+        "animation": [
+          "Alternez questions faciles et pièges pour maintenir le suspense et laisser une chance à chaque équipe.",
+          "Utilisez les mauvaises réponses comme matière pédagogique, sans jamais stigmatiser.",
+          "Gardez de l'énergie : un quiz-battle doit être un moment de jeu, tenez un rythme vif et annoncez le score à voix haute."
+        ],
+        "corrige": [
+          "Le home-staging sert à déclencher le coup de cœur et la projection de l'acheteur (pas à masquer un vice).",
+          "La photo de couverture = la plus belle pièce ou la façade la plus flatteuse, jamais une pièce technique.",
+          "Photo réussie = lumière naturelle, volets ouverts, de jour, sans contre-jour, format paysage, hauteur 1,50 m.",
+          "Drone : exploitant enregistré sur AlphaTango (même sous 250 g avec caméra), altitude 120 m maxi, pas de survol de personnes, télépilote déclaré et assuré.",
+          "En exclusivité, on présente d'abord le bien à ses acquéreurs qualifiés du fichier (teasing / off-market).",
+          "Beaucoup de vues, peu de contacts = prix perçu trop élevé au regard des photos, ou annonce peu engageante.",
+          "Honoraires à charge acquéreur : afficher prix honoraires inclus + % ou montant TTC + prix net vendeur (arrêté du 10/01/2017).",
+          "Capital nouveauté = les 15 premiers jours ; home-staging léger = 1 à 3 % du prix ; 15 à 25 photos en format paysage.",
+          "Beaucoup de visites mais aucune offre = problème de prix réel ou d'état perçu, réajustement à documenter.",
+          "Pas de vues = problème d'emballage (titre, photo de couverture, diffusion) : on relance, boost, nouvelle accroche."
+        ]
+      },
+      {
+        "titre": "Brainstorm \"Le plan marketing d'exclu en 2 minutes\"",
+        "type": "Brainstorm / co-construction",
+        "duree": "10 min",
+        "consignes": [
+          "Annoncez le contexte : \"Vous êtes en rendez-vous de mandat pour une maison de pêcheur dans le quartier de l'Île à Martigues. Le vendeur hésite entre vous et deux confrères et trouve vos honoraires chers.\"",
+          "En plénière ou en binômes, le groupe liste au paperboard tout ce que contiendrait un plan marketing ECRIT remis au vendeur, calé sur un calendrier (J+2, J+4, J+5, J+7, J+14...).",
+          "Le formateur structure les idées sur une ligne de temps : préparation/home-staging, shooting photo et vidéo, teasing au fichier, mise en ligne multiportails, portes ouvertes, premier bilan.",
+          "Concluez : \"Ce plan écrit justifie vos honoraires et fait la différence face au confrère - il transforme une dépense en investissement sur le prix de vente.\""
+        ],
+        "animation": [
+          "Relancez par le \"pourquoi\" : pourquoi l'exclusivité permet-elle d'investir (photographe, drone, diffusion payante) ?",
+          "Faites le lien avec le capital nouveauté : on ne lance jamais tant que le bien n'est pas prêt à être photographié au meilleur niveau.",
+          "Notez tout sans filtrer d'abord, puis ordonnez : la ligne de temps donne un livrable réutilisable dès le lendemain."
+        ],
+        "corrige": [
+          "Plan type : préparation du bien en J+2, shooting en J+4, teasing au fichier en J+5, mise en ligne multiportails en J+7, premier bilan vendeur en J+14.",
+          "L'exclusivité justifie d'investir et permet un lancement maîtrisé ; la multidiffusion sauvage dévalorise le bien (prix et photos incohérents = bien jugé \"invendable\")."
+        ]
+      }
+    ],
+    "jeuxRole": [
+      {
+        "titre": "\"Vendre le home-staging à un vendeur réticent\"",
+        "contexte": "Monsieur Martin possède un T3 à Martigues, occupé, qu'il juge \"très bien comme il est\". Il est fumeur, la déco est datée, les murs jaunis, les bibelots et photos de famille partout. Il refuse de \"tout chambouler\" et redoute une dépense inutile. Le négociateur doit obtenir son accord pour préparer le bien avant le shooting.",
+        "roleA": "Le négociateur CENTURY 21 : il doit expliquer l'intérêt du home-staging, rassurer (on dé-décore, on ne juge pas les goûts), chiffrer le retour sur investissement et obtenir un engagement concret (désencombrement, grand ménage/désodorisation, peinture blanche, rangement le jour des visites).",
+        "roleB": "Monsieur Martin, vendeur attaché à son intérieur, sensible aux arguments économiques mais vexé par toute critique de ses goûts ; il lâche prise si on le respecte et si on lui parle chiffres et délais.",
+        "objectif": "S'entraîner au script de persuasion : \"L'acheteur décide en moins de 90 secondes. Pour quelques centaines d'euros et un week-end de rangement, on gagne des milliers d'euros et plusieurs semaines. On ne dépense pas, on investit sur votre prix.\" Et savoir désamorcer la résistance : \"Gardez vos meubles préférés, juste présenter le bien sous son meilleur jour le jour des photos et des visites.\"",
+        "debrief": [
+          "Le négociateur a-t-il parlé investissement (et non dépense) et chiffré le retour (1 à 3 % du prix, délais raccourcis, moins de négociation) ?",
+          "A-t-il respecté le vendeur (dé-décoration, pas de jugement des goûts) sans se laisser déstabiliser par la susceptibilité ?",
+          "A-t-il obtenu un engagement CONCRET et daté (quoi, qui, quand), ou s'est-il arrêté à l'accord de principe ?",
+          "Rappel du mini cas : peinture ~600 €, ménage/désodo ~250 €, désencombrement gratuit = 5 visites la première semaine contre 0 en deux mois, offre à -2 % au lieu de -8 %."
+        ]
+      },
+      {
+        "titre": "\"Le teasing au fichier : l'appel off-market\"",
+        "contexte": "En exclusivité sur une maison avec jardin à Martigues, le bien n'est pas encore en ligne. Le négociateur active son fichier d'acquéreurs qualifiés. Il appelle Madame Robert, acquéreuse financée qui cherche exactement ce profil, pour lui proposer le bien en avant-première avant la diffusion publique.",
+        "roleA": "Le négociateur : il doit créer le sentiment de rareté et de privilège, qualifier (financement, délai, réelle motivation), proposer une visite rapide et éventuellement l'inviter aux portes ouvertes, sans donner l'adresse exacte au téléphone.",
+        "roleB": "Madame Robert, acquéreuse sérieuse mais prudente : elle a déjà \"raté\" des biens, veut des détails, teste la disponibilité du bien et le sérieux du conseiller.",
+        "objectif": "Maîtriser l'appel de teasing / off-market : \"Madame Robert, j'ai LE bien que vous cherchiez. Il n'est pas encore en ligne, je vous le propose en avant-première.\" Montrer la puissance du fichier (rapprochement), privilégier l'appel au simple mail, et transformer l'appel en rendez-vous de visite.",
+        "debrief": [
+          "Le négociateur a-t-il appelé (et non seulement mailé) et créé l'effet de rareté / avant-première ?",
+          "A-t-il qualifié l'acquéreur (financement, projet, délai) avant de s'engager sur une visite ?",
+          "A-t-il protégé le vendeur (pas d'adresse exacte livrée brute au téléphone) et su conclure sur un créneau concret ?",
+          "Lien avec le capital nouveauté et l'exclusivité : un bien vendu avant diffusion publique prouve la puissance du fichier et valorise l'exclusivité auprès du vendeur."
+        ]
+      }
+    ],
+    "pointsCles": [
+      "Commercialiser, c'est dérouler un plan marketing pensé, daté et mesurable - pas \"mettre une annonce\". Objectif : vendre vite, bien et sécurisé.",
+      "L'entonnoir Attirer-Séduire-Convertir et le modèle AIDA : la photo de couverture et le titre captent l'Attention en une seconde (90 % des recherches commencent en ligne).",
+      "Le capital nouveauté se joue dans les 15 premiers jours et ne revient jamais : on ne lance JAMAIS un bien tant qu'il n'est pas prêt à être photographié au meilleur niveau.",
+      "Home-staging = dé-décoration : désencombrer, dépersonnaliser, réparer, nettoyer/désodoriser/éclairer, neutraliser, désaturer les volumes. Budget 1 à 3 % du prix, retour en milliers d'euros et en délai.",
+      "La photo qui vend : lumière naturelle de jour sans contre-jour, format paysage, hauteur 1,50 m, verticales droites, 15 à 25 photos nettes ; on ouvre sur l'atout fort, jamais sur une pièce technique.",
+      "Vidéo, 360° et drone différencient l'annonce : le drone est strictement réglementé (exploitant enregistré sur AlphaTango même sous 250 g avec caméra, 120 m maxi, pas de survol de personnes) - on sous-traite à un télépilote déclaré et assuré.",
+      "L'annonce qui convertit : titre orienté bénéfice, structure gagnante (accroche, parcours, atouts factuels, environnement, appel à l'action), ton court, positif, sincère, sans jamais l'adresse exacte.",
+      "Conformité obligatoire : mandat écrit autorisant la publicité (loi Hoguet), honoraires TTC avec qui les paie (arrêté 10/01/2017), DPE + GES + coûts annuels d'énergie, mentions copropriété/loi ALUR, RGPD.",
+      "La ligne rouge : la retouche cosmétique est permise, mais effacer un défaut permanent ou meubler virtuellement sans mention \"image non contractuelle\" est une pratique commerciale trompeuse (L.121-2 et s., jusqu'à 2 ans de prison et 300 000 € d'amende).",
+      "On pilote par les chiffres : pas de vues = emballage/diffusion ; vues sans contacts = prix perçu ; visites sans offres = prix réel ou état. Bilan vendeur écrit chaque semaine, ajustement argumenté à J+7 et J+21."
+    ],
+    "planAction": [
+      "Dès le prochain mandat, remettre au vendeur un plan marketing ECRIT et daté (préparation, shooting, teasing, mise en ligne, portes ouvertes, bilan) pour justifier mes honoraires et viser l'exclusivité.",
+      "Avant chaque shooting, dérouler la check-list home-staging + photo : désencombrer, volets ouverts et toutes lumières de même teinte allumées, objectif propre, appareil de niveau, format paysage, 15 à 25 photos, couverture sur l'atout fort.",
+      "Refaire une passe de conformité sur mes annonces en ligne cette semaine : mandat autorisant la publicité, honoraires TTC, étiquettes DPE et GES + coûts annuels d'énergie, mentions copropriété, aucune adresse exacte, aucune retouche trompeuse.",
+      "Sur mon prochain lancement en exclusivité, activer le fichier acquéreurs par un teasing téléphonique (off-market) avant toute diffusion publique, et programmer une demi-journée de portes ouvertes qualifiées.",
+      "Mettre en place un bilan vendeur hebdomadaire chiffré (vues, contacts, visites, offres) avec interprétation et recommandation, et planifier les points d'ajustement à J+7 et J+21.",
+      "Produire au moins une vidéo verticale sous-titrée par beau bien pour les réseaux (Reel/Marketplace), avec appel à l'action clair, et répondre à tout message privé sous l'heure."
+    ],
+    "notesFormateur": [
+      "Gérez le temps avec un timer visible : les jeux chronométrés (home-staging express, quiz-battle) tiennent le rythme, mais prévoyez un \"stop net\" pour ne pas déborder sur la synthèse, moment où les acquis s'ancrent.",
+      "Faites participer tout le monde : alternez votes simultanés (Vrai/Faux, photolangage), travail en équipes et prise de parole individuelle ; interrogez nommément les plus discrets sur des questions accessibles.",
+      "Ancrez les acquis par le concret : ramenez systématiquement chaque notion à un bien réel du secteur de Martigues et au \"dès demain je fais quoi ?\" plutôt qu'à la théorie.",
+      "Utilisez les erreurs comme matière, jamais pour stigmatiser : une mauvaise réponse au quiz ou une photo ratée du groupe est la meilleure porte d'entrée vers la bonne pratique.",
+      "Préparez votre matériel en amont : 6 à 8 photos de couverture (réussites + ratés) pour le photolangage, une photo de pièce encombrée pour le défi chrono, ardoises et cartons Vrai/Faux, paperboard pour les scores et la ligne de temps.",
+      "Sur les points juridiques (drone/AlphaTango, honoraires, DPE/GES, pratique trompeuse), restez précis et factuel : c'est là que votre crédibilité de manager se joue et que les négociateurs retiennent les réflexes qui les protègent."
+    ]
+  },
+  "investissement-locatif": {
+    "id": "investissement-locatif",
+    "sousTitre": "Parler le langage des chiffres pour transformer l'investisseur en client à vie",
+    "objectifs": [
+      "Être capable de qualifier un investisseur en identifiant sa motivation (rendement, patrimoine, défiscalisation, retraite, transmission), sa TMI et son horizon avant toute proposition de bien",
+      "Maîtriser le calcul des 3 rendements (brut, net de charges, net-net) et du cash-flow pour chiffrer un bien en moins de 30 secondes devant le client",
+      "Savoir distinguer les régimes fiscaux location nue (foncier, déficit) et meublée (LMNP/LMP, amortissement) et orienter vers le bon régime sans se substituer à l'expert-comptable",
+      "Connaître les règles de financement HCSF 2024-2026 et les dispositifs fiscaux en vigueur (Denormandie, Loc'Avantages) comme ceux supprimés (Pinel, Censi-Bouvard) pour ne jamais vendre un dispositif périmé",
+      "Être capable d'analyser un bien à l'investissement avec la grille ELECT et de détecter les pièges qui détruisent la rentabilité nette (DPE, PV d'AG, vacance)",
+      "Savoir accompagner et fidéliser l'investisseur pour générer du chiffre d'affaires récurrent (gestion, revente, recommandation) tout en restant dans le cadre légal (mandat, LCB-FT, délais)"
+    ],
+    "agenda": [
+      {
+        "titre": "Accueil & brise-glace « Mon meilleur / pire investisseur »",
+        "duree": "0h00 - 0h10 (10 min)"
+      },
+      {
+        "titre": "Séquence 1 — Comprendre et qualifier l'investisseur (apport + jeu photolangage des 5 motivations)",
+        "duree": "0h10 - 0h30 (20 min)"
+      },
+      {
+        "titre": "Séquence 2 — Les chiffres qui font vendre : les 3 rendements & le cash-flow (apport + défi chrono calculette)",
+        "duree": "0h30 - 0h55 (25 min)"
+      },
+      {
+        "titre": "Séquence 3 — Fiscalité, financement & dispositifs (apport flash + quiz-battle en équipes)",
+        "duree": "0h55 - 1h20 (25 min)"
+      },
+      {
+        "titre": "Pause active",
+        "duree": "1h20 - 1h30 (10 min)"
+      },
+      {
+        "titre": "Séquence 4 — Mise en pratique : étude de cas Martigues + jeu de rôle découverte investisseur",
+        "duree": "1h30 - 2h05 (35 min)"
+      },
+      {
+        "titre": "Synthèse ELECT, points-clés & plan d'action terrain",
+        "duree": "2h05 - 2h20 (15 min)"
+      },
+      {
+        "titre": "Clôture & engagements individuels",
+        "duree": "2h20 - 2h25 (5 min)"
+      }
+    ],
+    "briseGlace": {
+      "titre": "« Mon meilleur / mon pire dossier investisseur »",
+      "consignes": [
+        "Chaque négociateur dispose de 60 secondes pour raconter au groupe un souvenir : soit la plus belle vente faite à un investisseur, soit un dossier investisseur qui lui a filé entre les doigts (ou qu'il a loupé faute de savoir parler chiffres).",
+        "Le formateur note au paperboard deux colonnes : « Ce qui a marché » / « Ce qui a coincé ». Objectif : faire émerger que l'investisseur achète un tableur, pas un coup de cœur.",
+        "Celui qui n'a jamais vendu à un investisseur dit simplement ce qui l'intimide dans cette clientèle (le jargon, les chiffres, la fiscalité…).",
+        "Le formateur conclut en 1 minute : « Aujourd'hui, on fait de l'investisseur votre meilleur client : il achète vite, revient tous les 2-3 ans et vous recommande. Encore faut-il parler son langage. »"
+      ]
+    },
+    "jeux": [
+      {
+        "titre": "Photolangage « Qu'est-ce qui le fait acheter ? »",
+        "type": "Photolangage / Brainstorm",
+        "duree": "12 min",
+        "consignes": [
+          "Afficher au mur (ou projeter) 8 à 10 visuels variés : un tableur Excel, une plage de Martigues/vue mer, une feuille d'impôt, un couple de retraités, un arbre généalogique, une calculette, un immeuble du centre ancien, une famille avec enfants, un portefeuille d'actions, un chantier de rénovation.",
+          "Chaque négociateur choisit en silence LA photo qui représente selon lui la motivation n°1 d'un investisseur, puis l'explique en 30 secondes.",
+          "Le formateur regroupe les réponses pour reconstituer au tableau les 5 motivations : rendement/cash-flow, patrimoine/plus-value, défiscalisation, revenu de retraite, transmission.",
+          "Débat flash : « Pourquoi est-il interdit de proposer un bien avant d'avoir identifié le MOTEUR ? » → parce qu'il oriente le bien, le régime fiscal ET le montage.",
+          "Clôturer sur le script de découverte : s'autofinancer / patrimonial / réduire ses impôts."
+        ],
+        "animation": [
+          "Imprimer les visuels en A5 la veille, ou créer une slide planche-contact ; prévoir un jeu par demi-groupe si l'équipe est nombreuse.",
+          "Ne pas chercher LA bonne réponse : l'intérêt est la diversité des interprétations, qui prouve qu'un même bien parle à des motivations différentes.",
+          "Rebondir sur le cas du chef de poste de Lavéra (TMI 41 %) pour ancrer : à une motivation « défisc », on ne répond jamais par un studio à 6 % brut."
+        ],
+        "corrige": [
+          "Les 5 motivations à faire émerger : Rendement/cash-flow — Patrimoine/plus-value — Défiscalisation (TMI 30-45 %) — Revenu de retraite (horizon 15-20 ans) — Transmission (SCI, démembrement, donation de parts).",
+          "Informations à recueillir d'emblée : TMI, capacité d'endettement et apport, horizon de détention et sortie, appétence à la gestion (gère seul ou délègue)."
+        ]
+      },
+      {
+        "titre": "Défi chrono « Le bon chiffre en 3 minutes » (T2 de Martigues)",
+        "type": "Défi chrono / calcul en binômes",
+        "duree": "15 min",
+        "consignes": [
+          "Distribuer la fiche du T2 : acheté 145 000 € frais de notaire inclus, loué 640 €/mois (7 680 €/an). Charges annuelles : taxe foncière 950 €, copro non récupérable 600 €, PNO 150 €, gestion 8 % (614 €), GLI 3 % (230 €), provision vacance/travaux 400 €.",
+          "En binômes, calculette en main, 3 minutes chrono pour sortir : 1) le rendement brut, 2) le total des charges, 3) le rendement net de charges.",
+          "Deuxième manche, 2 minutes : crédit sur 20 ans à 3,8 % → mensualité ≈ 865 €. Calculer le cash-flow mensuel et dire si le bien s'autofinance.",
+          "Chaque binôme annonce ses résultats ; le formateur corrige au tableau et fait reformuler la différence brut / net / net-net.",
+          "Conclure sur le mnémonique « Le BRUT ment, le NET informe, le NET-NET décide »."
+        ],
+        "animation": [
+          "Imposer le chrono visible (téléphone au mur) : le but est de muscler le réflexe calcul rapide devant un client, pas la précision comptable absolue.",
+          "Circuler pour repérer l'erreur classique : oublier les frais d'acquisition au dénominateur → rendement surévalué.",
+          "Valoriser le binôme le plus rapide ET juste, puis insister : devant le client, on sort le brut en 30 s pour accrocher, mais on décide sur le net-net."
+        ],
+        "corrige": [
+          "Rendement brut = 7 680 ÷ 145 000 × 100 = 5,3 %.",
+          "Total charges ≈ 2 944 €/an.",
+          "Rendement net de charges = (7 680 − 2 944) ÷ 145 000 = 3,3 %.",
+          "Cash-flow mensuel = 640 € loyer − 865 € crédit − 245 € charges mensualisées = −470 €/mois → le bien NE s'autofinance PAS : c'est un investissement patrimonial, pas un placement à rendement immédiat.",
+          "Leviers pour passer en cash-flow positif : négocier le prix, passer en meublé (+15 à 25 % de loyer), allonger la durée / optimiser le taux, changer de régime fiscal (LMNP au réel)."
+        ]
+      },
+      {
+        "titre": "Quiz-battle fiscalité & financement en équipes",
+        "type": "Quiz-battle en équipes",
+        "duree": "18 min",
+        "consignes": [
+          "Constituer 2 ou 3 équipes avec un nom (ex. « Les Amortisseurs », « Team Cash-flow »). Chaque équipe désigne un porte-parole qui lève une ardoise ou un carton A/B/C/D.",
+          "Le formateur projette 12 questions tirées du quiz du module (une slide par question). 15 secondes de concertation à voix basse, puis l'ardoise se lève tous en même temps.",
+          "1 point par bonne réponse, +1 point bonus si l'équipe justifie correctement. Le formateur lit l'explication après chaque question.",
+          "Questions-pièges à inclure absolument : le Pinel supprimé depuis le 01/01/2025, le déficit foncier à 10 700 € (21 400 € rénovation énergétique), l'endettement HCSF à 35 % assurance comprise, l'abattement micro-BIC à 50 %, les 70 % de loyers retenus par la banque.",
+          "Décompter les points au tableau en direct ; l'équipe gagnante choisit… le thème de la pause café."
+        ],
+        "animation": [
+          "Rythme rapide, ambiance compétition bon enfant : le quiz-battle sert à ancrer les règles 2024-2026 sans cours magistral.",
+          "Sur chaque question ratée, faire reformuler la règle par un membre d'une autre équipe plutôt que de la donner soi-même.",
+          "Marteler les 3 pièges mortels du métier : ne JAMAIS proposer le Pinel ou le Censi-Bouvard (supprimés), ne pas confondre meublé (BIC/amortissement) et nu (foncier/déficit), ne pas laisser un investisseur avec travaux au micro-foncier."
+        ],
+        "corrige": [
+          "Rendement brut = (loyer annuel ÷ prix frais inclus) × 100. Atout réel LMNP = l'amortissement du bien (hors terrain) et du mobilier. Cash-flow positif = loyers > crédit + charges + impôts.",
+          "Déficit foncier (hors intérêts) : imputable sur le revenu global jusqu'à 10 700 €/an, porté à 21 400 € pour une sortie de passoire énergétique (dépenses 2023-2027), excédent reportable 10 ans. Les intérêts d'emprunt ne s'imputent QUE sur les revenus fonciers.",
+          "Pinel : supprimé pour tout nouvel investissement depuis le 01/01/2025. Denormandie : court jusqu'au 31/12/2027. Censi-Bouvard : supprimé fin 2022.",
+          "Micro-BIC meublé longue durée : abattement 50 %, plafond 77 700 €. Micro-foncier nu : 30 %, plafond 15 000 €. Meublé de tourisme non classé (loi Le Meur, revenus 2025) : 30 %, plafond 15 000 €.",
+          "HCSF : endettement max 35 % assurance comprise, durée max 25 ans (27 ans avec différé neuf/gros travaux), banques retenant ≈ 70 % des loyers, dérogation sur 20 % des dossiers. Loi Scrivener : délai de réflexion de 10 jours sur l'offre de prêt.",
+          "LMNP : statut par défaut tant que recettes ≤ 23 000 €/an OU inférieures aux autres revenus d'activité. Déclaration P0i sous 15 jours sur le guichet unique INPI pour le SIRET. Déficit foncier et amortissement LMNP = hors plafonnement global des niches à 10 000 €."
+        ]
+      },
+      {
+        "titre": "Étude de cas « Studio à 8 % brut : pépite ou piège ? »",
+        "type": "Étude de cas en sous-groupes",
+        "duree": "15 min",
+        "consignes": [
+          "Projeter l'annonce : studio affiché à 8 % de rendement brut, « idéal investisseur ». Distribuer à chaque sous-groupe un dossier contenant des pièges : PV d'AG mentionnant un ravalement voté à 9 000 €, DPE classé F, vacance locative élevée dans le secteur.",
+          "Chaque sous-groupe applique la grille ELECT (Emplacement, Loyer de marché, État et travaux, Charges et copropriété, Tension locative) et liste les points au rouge.",
+          "Chaque sous-groupe rend un verdict : on propose, on négocie, ou on écarte ? Et avec quel argumentaire face au client ?",
+          "Restitution croisée : un rapporteur par sous-groupe, 2 minutes. Le formateur révèle que le net réel tombe sous 3 % : le brut mentait.",
+          "Faire verbaliser l'usage du DPE F/G comme levier de négociation sur le prix et rappeler le calendrier d'interdiction (G interdit depuis 2025, F en 2028, E en 2034)."
+        ],
+        "animation": [
+          "Préparer un vrai faux dossier (1 page de PV d'AG, une étiquette DPE, un relevé de charges) pour rendre l'exercice concret et crédible.",
+          "Accepter plusieurs verdicts valables : l'essentiel est que la décision soit justifiée par ELECT, pas par l'intuition.",
+          "Ancrer le message : l'analyse protège la crédibilité du négociateur ET le portefeuille du client ; un rendement sur le papier n'est jamais un rendement net réel."
+        ],
+        "corrige": [
+          "Grille ELECT appliquée : E = emplacement/demande à vérifier (proximité transports, emploi, zones industrielles Lavéra) ; L = loyer de marché à confronter au prix au m² ; É = ravalement 9 000 € à provisionner + DPE F (gel du loyer depuis 2022, travaux avant 2028) ; C = fonds travaux ALUR, impayés de copro à vérifier dans les PV ; T = vacance élevée = au moins 1 mois/an à provisionner.",
+          "Verdict attendu : net réel sous 3 %, loin des 8 % affichés → écarter OU négocier fortement le prix en s'appuyant sur le DPE F et le ravalement voté. « Le brut ment ».",
+          "Opposabilité du DPE depuis 2021 : erreur = recours possible du locataire contre le bailleur."
+        ]
+      }
+    ],
+    "jeuxRole": [
+      {
+        "titre": "Découverte investisseur : le chef de poste de Lavéra",
+        "contexte": "Un cadre de la pétrochimie de Lavéra, TMI 41 %, déjà propriétaire de sa résidence principale, pousse la porte de l'agence et lance d'emblée : « Je veux défiscaliser, vous avez quoi ? ». Il a de l'apport et un bon dossier bancaire, mais confond tout (il a entendu parler de Pinel par un collègue).",
+        "roleA": "Le négociateur : il doit résister à la tentation de sortir un bien tout de suite, mener la découverte avec le script (motivation réelle, apport et effort d'épargne mensuel, meublé ou nu, biens déjà détenus et régime), recueillir la TMI et l'horizon, puis orienter sans survendre ni se substituer au fiscaliste.",
+        "roleB": "L'investisseur « chef de poste » : pressé, sûr de lui, parle de Pinel, veut du concret vite, teste le négociateur avec des questions chiffres. Il décroche si on lui parle déco ou coup de cœur.",
+        "objectif": "S'entraîner à qualifier avant de proposer : identifier le vrai moteur derrière le mot « défiscaliser », récupérer les infos clés (TMI, apport, horizon, appétence gestion) et orienter vers la bonne piste (nu au réel avec travaux / déficit foncier, LMNP au réel, ou Denormandie dans l'ancien du centre) en annonçant le renvoi vers l'expert-comptable.",
+        "debrief": [
+          "Le négociateur a-t-il recueilli les 4 infos clés (TMI, capacité d'endettement/apport, horizon et sortie, appétence à la gestion) AVANT de parler d'un bien ?",
+          "A-t-il évité le piège mortel de proposer du Pinel (supprimé depuis le 01/01/2025) ? A-t-il reformulé la motivation réelle plutôt que de prendre « défiscaliser » au pied de la lettre ?",
+          "A-t-il parlé le langage chiffres (rendement, net-net, déficit foncier, amortissement) sans jargon excessif, et bien marqué la frontière conseil immobilier / conseil fiscal (renvoi expert-comptable) ?",
+          "Qu'est-ce qui a fait décrocher ou au contraire embarquer l'investisseur ? Noter 2 bonnes pratiques à réutiliser sur le terrain."
+        ]
+      },
+      {
+        "titre": "Pitch du bien « boudé » à l'investisseur du vivier",
+        "contexte": "Une pépite vient de rentrer : un T2 vendu loué, à petits travaux, délaissé par les primo-accédants, vendeur pressé, prix négociable. Le négociateur appelle un investisseur aguerri de son vivier pour le placer en 48 h, avant diffusion.",
+        "roleA": "Le négociateur : il doit pitcher le bien en langage investisseur (couple prix/loyer, rendement, bail en cours et décote éventuelle, potentiel meublé), expliquer le double argument du bien vendu loué (rendement immédiat mais loyer parfois sous le marché) et créer l'urgence sans forcer.",
+        "roleB": "L'investisseur aguerri : connaît ses ratios, ne veut pas perdre de temps, demande tout de suite les chiffres, les PV d'AG et le bail en cours. Il décide seul et vite si le dossier tient.",
+        "objectif": "S'entraîner à sourcer et placer un bien auprès d'un investisseur qualifié, pitcher en 2 minutes avec les bons chiffres, et manier l'argument du bien déjà loué dans les deux sens (atout rendement immédiat / limite loyer plafonné par le bail).",
+        "debrief": [
+          "Le pitch allait-il droit aux chiffres (rendement, prix/loyer, décote) sans perdre l'aguerri avec de la pédagogie inutile ?",
+          "Le négociateur a-t-il su expliquer honnêtement les deux faces du bien vendu loué (sécurité du rendement vs loyer en cours sous le marché, bail qui s'impose à l'acquéreur) ?",
+          "L'urgence créée était-elle crédible (vendeur pressé, pépite rare) sans mensonge ni pression déloyale ?",
+          "Le réflexe fidélisation a-t-il été posé (proposition de gestion locative, point patrimonial, demande de recommandation) ?"
+        ]
+      }
+    ],
+    "pointsCles": [
+      "L'investisseur est le meilleur client de l'agence : rationnel, rapide, récurrent (rachat tous les 2-3 ans), prescripteur et solvable. On parle chiffres, jamais déco ni coup de cœur.",
+      "Qualifier AVANT de proposer : identifier la motivation (rendement, patrimoine, défisc, retraite, transmission), la TMI, l'apport, l'horizon et l'appétence à la gestion. Le moteur oriente le bien, le régime et le montage.",
+      "« Le BRUT ment, le NET informe, le NET-NET décide. » Trois rendements + le cash-flow : ne jamais laisser décider sur le seul brut, toujours inclure les frais d'acquisition au dénominateur.",
+      "L'effet de levier est le cœur de la performance : on investit avec l'argent de la banque et on rembourse avec les loyers. Règles HCSF 2024-2026 : endettement 35 % assurance comprise, 25 ans (27 avec différé), 70 % des loyers retenus, dérogation sur 20 % des dossiers.",
+      "Deux mondes fiscaux à ne jamais confondre : location NUE = revenus fonciers (micro 30 % ou réel + déficit foncier jusqu'à 10 700 €, 21 400 € en rénovation énergétique) ; location MEUBLÉE = BIC (micro 50 % ou réel LMNP avec amortissement, impôt souvent proche de zéro).",
+      "Nouveautés 2025 à maîtriser : Pinel supprimé (ne JAMAIS le proposer), amortissements LMNP réintégrés dans la plus-value de revente (sauf résidences services gérées), loi Le Meur durcissant le meublé de tourisme (30 %/15 000 € non classé).",
+      "Un dispositif ne rend jamais bon un mauvais bien : l'investissement doit tenir debout SANS l'avantage fiscal. L'emplacement et le rendement priment toujours sur la carotte fiscale.",
+      "La grille ELECT (Emplacement, Loyer de marché, État/travaux, Charges/copropriété, Tension locative) et le DPE (G interdit depuis 2025, F en 2028, E en 2034) filtrent les pièges qui détruisent la rentabilité nette.",
+      "Le montage répond à un objectif : nom propre (simple, LMNP facile), SCI à l'IR (gérer/transmettre, pas de meublé), SCI à l'IS (capitaliser, lourd à revendre), démembrement (transmission, IFI). Ne jamais créer une SCI par réflexe.",
+      "La vente n'est que le début : accompagner (gestion locative, courtier, notaire, expert-comptable) et fidéliser (point annuel, recommandation) fait de l'investisseur une rente. On oriente, chiffre et alerte, mais on ne se substitue jamais au conseil fiscal (ce qui protège sa responsabilité)."
+    ],
+    "planAction": [
+      "Dès demain, ouvrir ou enrichir un VIVIER INVESTISSEURS qualifié (nom, budget, apport, TMI estimée, régime visé, secteurs ciblés) pour placer toute pépite en 48 h.",
+      "Intégrer systématiquement le SCRIPT DE DÉCOUVERTE investisseur à chaque contact acheteur : motivation réelle, apport/effort d'épargne, meublé ou nu, biens déjà détenus et régime fiscal, AVANT de montrer un bien.",
+      "Préparer une FICHE RENDEMENT type (brut, net de charges, cash-flow) et la remplir pour au moins un bien du portefeuille cette semaine, pour s'entraîner à chiffrer en 30 secondes devant le client.",
+      "Sur chaque mandat à l'entrée, réflexe DPE + PV d'AG + fonds travaux : repérer les biens « boudés par l'occupant mais parfaits pour l'investisseur » et les passoires F/G comme leviers de négociation.",
+      "Se constituer un RÉSEAU DE PARTENAIRES à citer (courtier, expert-comptable, notaire) pour orienter sans se substituer au conseil fiscal, et renvoyer tout montage (SCI, démembrement, LMNP au réel) vers le bon spécialiste.",
+      "Mettre en place une RELANCE ANNUELLE de chaque investisseur du portefeuille (point patrimonial, évolution du marché de Martigues, seconde acquisition, demande de recommandation) pour déclencher le rachat tous les 2-3 ans."
+    ],
+    "notesFormateur": [
+      "Gérer le temps avec le chrono visible : les séquences 2 (calcul) et 3 (quiz) sont les plus riches en savoir — tenir le minutage pour préserver la mise en pratique de la séquence 4, qui ancre réellement les acquis.",
+      "Faire parler avant d'exposer : sur chaque notion (motivations, rendements, pièges), lancer d'abord le jeu ou une question au groupe, puis apporter la règle. On retient ce qu'on a cherché, pas ce qu'on a subi.",
+      "Ancrer par les mnémoniques et les cas de Martigues : répéter « le BRUT ment, le NET informe, le NET-NET décide » et la grille ELECT à chaque occasion, et toujours ramener au terrain local (Lavéra, centre ancien, étang) pour que ce soit concret.",
+      "Verrouiller les 3 pièges mortels du métier avant de se quitter : ne JAMAIS proposer un dispositif supprimé (Pinel, Censi-Bouvard), ne pas confondre nu et meublé, ne jamais faire visiter sans avoir dégrossi la capacité de financement.",
+      "Faire participer les timides via les binômes et sous-groupes (défi chrono, étude de cas) : le petit groupe libère la parole mieux que le grand. Équilibrer primo et aguerris en mélangeant les niveaux dans chaque équipe.",
+      "Clôturer par un engagement individuel écrit : chaque négociateur annonce à voix haute UNE action du plan qu'il applique dès le lendemain, à reprendre en point d'équipe la semaine suivante pour transformer la formation en résultats."
+    ]
+  },
+  "vefa-neuf": {
+    "id": "vefa-neuf",
+    "sousTitre": "VEFA & neuf : devenir l'expert qui sécurise l'achat sur plan, du contrat de réservation à la remise des clés",
+    "objectifs": [
+      "Maîtriser le mécanisme de la VEFA et ses deux contrats (réservation puis acte authentique) pour l'expliquer clairement à un acquéreur",
+      "Savoir citer et appliquer les trois barèmes chiffrés du neuf : dépôt de garantie « 5-2-0 », appels de fonds « 35-70-95-5 » et garanties « 1-2-10 »",
+      "Être capable de sécuriser le parcours client sur les délais clés (rétractation SRU 10 jours, réflexion Scrivener 10 jours, projet d'acte à J-1 mois)",
+      "Maîtriser les arguments fiscaux du neuf (frais de notaire réduits, TVA 20 %/5,5 %, exonération de taxe foncière 2 ans, PTZ 2025) et savoir les chiffrer",
+      "Être capable de conseiller juste sur les dispositifs 2025-2026 (fin du Pinel, LMNP, PSLA, BRS) sans jouer au fiscaliste",
+      "Savoir transformer la vigilance (intérêts intercalaires, réserves à la livraison, retards) en service à forte valeur qui fidélise et génère de la recommandation"
+    ],
+    "agenda": [
+      {
+        "titre": "Accueil & brise-glace « Neuf ou ancien ? » : lancer le groupe et sonder les représentations",
+        "duree": "0-10 min (10 min)"
+      },
+      {
+        "titre": "Apport 1 — La VEFA et ses deux contrats : propriété progressive, prix ferme/révisable, points de vigilance",
+        "duree": "10-25 min (15 min)"
+      },
+      {
+        "titre": "Jeu 1 — Quiz-battle en équipes « Les chiffres du neuf » (barèmes 5-2-0, 35-70-95-5, 1-2-10)",
+        "duree": "25-40 min (15 min)"
+      },
+      {
+        "titre": "Apport 2 — Contrat de réservation, délais SRU/Scrivener, financement et appels de fonds",
+        "duree": "40-52 min (12 min)"
+      },
+      {
+        "titre": "Jeu 2 — Vrai/Faux debout « Les pièges du neuf » (idées reçues et erreurs à éviter)",
+        "duree": "52-62 min (10 min)"
+      },
+      {
+        "titre": "Apport 3 — Garanties, fiscalité et dispositifs 2025-2026 (TVA, taxe foncière, PTZ, BRS, fin du Pinel)",
+        "duree": "62-74 min (12 min)"
+      },
+      {
+        "titre": "Jeu 3 — Défi chrono « Chiffre le projet T3 Martigues » (frais, appels de fonds, économies fiscales)",
+        "duree": "74-86 min (12 min)"
+      },
+      {
+        "titre": "Jeu de rôle — Mise en situation téléphonique « Direct promoteur vs agence » + débrief",
+        "duree": "86-108 min (22 min)"
+      },
+      {
+        "titre": "Synthèse — Points-clés, plan d'action individuel et clôture",
+        "duree": "108-120 min (12 min)"
+      }
+    ],
+    "briseGlace": {
+      "titre": "« Neuf ou ancien ? » — le baromètre des idées reçues",
+      "consignes": [
+        "Tracez une ligne imaginaire au sol d'un bout à l'autre de la salle : à gauche « plutôt l'ancien », à droite « plutôt le neuf ». Annoncez que vous allez lire des affirmations et que chacun se positionne physiquement sur la ligne.",
+        "Lisez 4 affirmations rythmées : « Dans le neuf, l'acheteur paie moins de frais de notaire » / « Acheter sur plan, c'est risqué » / « Le neuf est toujours plus cher au m² » / « Avec la fin du Pinel, le neuf ne se vend plus ».",
+        "Après chaque affirmation, interrogez 2 personnes aux positions opposées : « Pourquoi là ? » Notez au paperboard les mots qui reviennent, sans corriger pour l'instant.",
+        "Concluez en 1 minute : « Ces représentations, ce sont exactement celles de vos clients. À la fin de la séance, vous saurez les démonter avec des chiffres et du droit. » Annoncez le programme et l'objectif : devenir l'expert du neuf de l'agence."
+      ]
+    },
+    "jeux": [
+      {
+        "titre": "Quiz-battle « Les chiffres du neuf »",
+        "type": "Quiz-battle en équipes",
+        "duree": "15 min",
+        "consignes": [
+          "Constituez 2 à 3 équipes de niveau mélangé. Chaque équipe choisit un nom et un porte-parole qui donnera la réponse finale.",
+          "Expliquez la règle : vous posez une question, les équipes ont 30 secondes pour se concerter à voix basse, puis le porte-parole annonce la réponse. Bonne réponse = 1 point ; bonne réponse + justification juste (article de loi ou mnémonique) = 2 points.",
+          "Posez les 8 questions dans l'ordre (voir corrigé). Après chaque réponse, faites reformuler la justification par une autre équipe pour ancrer.",
+          "Tenez le score au paperboard. En cas d'égalité, posez la question bonus « Que signifie le mnémonique 5-2-0 ? » en mort subite.",
+          "Félicitez l'équipe gagnante et distribuez un petit symbole (stylo agence, café offert)."
+        ],
+        "animation": [
+          "Imposez le chuchotement pendant la concertation : sinon les équipes rapides soufflent la réponse.",
+          "Valorisez systématiquement la citation d'un article (L271-1, R261-28, R261-14) : c'est ce qui fera la différence en clientèle.",
+          "Si une équipe bloque, donnez l'indice mnémonique (« pensez 5-2-0 », « pensez 35-70-95-5 ») plutôt que la réponse.",
+          "Gardez le rythme : 1 minute maximum par question, sinon l'énergie retombe."
+        ],
+        "corrige": [
+          "Dépôt de garantie si acte signé dans moins d'un an : 5 % maximum (barème 5-2-0, art. R261-28 CCH).",
+          "Délai de rétractation après le contrat de réservation : 10 jours sans motif ni pénalité (loi SRU, art. L271-1 CCH), dès le lendemain de la première présentation de la notification.",
+          "Pourcentage cumulé des appels de fonds à la mise hors d'eau : 70 % (barème 35-70-95-5, art. R261-14 CCH).",
+          "Durée de la garantie biennale de bon fonctionnement (volets, robinetterie, VMC) : 2 ans (art. 1792-3 du Code civil).",
+          "Durée de la garantie décennale (solidité de l'ouvrage) : 10 ans (art. 1792 du Code civil).",
+          "Frais de notaire dans le neuf : 2 à 3 % (taxe de publicité foncière 0,715 %), contre 7-8 % dans l'ancien.",
+          "Durée de l'exonération de taxe foncière d'une construction neuve : 2 ans (art. 1383 CGI), à condition de déclarer l'achèvement dans les 90 jours.",
+          "À partir de quand accepter l'offre de prêt (loi Scrivener) : le 11e jour, après un délai de réflexion incompressible de 10 jours (art. L313-34 Code conso)."
+        ]
+      },
+      {
+        "titre": "Vrai/Faux debout « Les pièges du neuf »",
+        "type": "Vrai/Faux",
+        "duree": "10 min",
+        "consignes": [
+          "Demandez à tout le monde de se lever. Règle du corps : « Vrai » = bras croisés sur la poitrine, « Faux » = bras en X au-dessus de la tête. Personne ne reste neutre.",
+          "Lisez les 8 affirmations une à une (voir corrigé). À chaque fois, tout le monde se positionne en même temps, au top.",
+          "Interrogez d'abord une personne qui s'est trompée : « Qu'est-ce qui t'a fait penser ça ? », puis une personne qui a bon pour la correction. Validez avec l'article ou le chiffre exact.",
+          "Ces affirmations sont les erreurs à éviter du métier : insistez sur le réflexe commercial correct à chaque fois."
+        ],
+        "animation": [
+          "Le format debout réveille le groupe après un apport : utilisez-le juste après un temps assis.",
+          "Ne corrigez jamais vous-même en premier : faites produire la bonne réponse par le groupe, c'est ce qui ancre.",
+          "Dramatisez les pièges à conséquence juridique (encaissement hors séquestre, acceptation du prêt avant le 11e jour) : ce sont des fautes graves."
+        ],
+        "corrige": [
+          "« La réservation, c'est déjà l'achat du logement. » → FAUX : c'est un contrat préliminaire ; l'achat définitif est l'acte authentique chez le notaire.",
+          "« On peut encaisser le dépôt de garantie directement pour le promoteur. » → FAUX : le dépôt est séquestré et bloqué (notaire ou banque), l'encaissement hors séquestre est strictement interdit.",
+          "« Un volet qui casse 18 mois après la livraison, c'est la décennale. » → FAUX : c'est la biennale (2 ans), la décennale couvre la solidité de l'ouvrage.",
+          "« Le Pinel est toujours un bon argument pour vendre un investissement neuf. » → FAUX : le Pinel a pris fin le 31 décembre 2024, aucun nouvel investissement n'est possible.",
+          "« Dans le neuf, les frais de notaire sont réduits à 2-3 %. » → VRAI : la vente est soumise à TVA, les droits se limitent à la taxe de publicité foncière de 0,715 %.",
+          "« On peut annoncer une date de livraison ferme au jour près. » → FAUX : on parle toujours par trimestre, les délais sont indicatifs et peuvent glisser.",
+          "« L'acquéreur peut accepter son offre de prêt dès qu'il la reçoit. » → FAUX : délai Scrivener de 10 jours, acceptation possible seulement à partir du 11e jour, sinon acceptation nulle.",
+          "« En cas de réserves à la livraison, l'acquéreur peut consigner les 5 % de solde. » → VRAI : c'est un levier de pression légitime jusqu'à la levée des réserves."
+        ]
+      },
+      {
+        "titre": "Défi chrono « Chiffre le projet T3 Martigues »",
+        "type": "Défi chrono",
+        "duree": "12 min",
+        "consignes": [
+          "Distribuez à chaque binôme une fiche avec le cas : programme « Les Terrasses de Ferrières » à Martigues, T3 de 63 m² à 265 000 € TTC, livraison T3 2026, acte prévu dans moins d'un an.",
+          "Lancez le chrono : 6 minutes pour répondre par écrit aux 5 calculs (voir corrigé). Annoncez que le premier binôme juste sur les 5 gagne.",
+          "Au top final, échangez les fiches entre binômes pour une correction croisée pendant que vous donnez les réponses au paperboard.",
+          "Faites réagir : « Lequel de ces chiffres marque le plus un acquéreur ? » Le but est qu'ils retiennent les ordres de grandeur pour les ressortir en rendez-vous."
+        ],
+        "animation": [
+          "Autorisez la calculatrice du téléphone : l'objectif est la méthode et l'ordre de grandeur, pas le calcul mental.",
+          "Circulez entre les binômes et relancez ceux qui confondent appel « par tranche » et appel « cumulé » : c'est le piège classique.",
+          "Reliez chaque chiffre à une phrase client : « 13 000 € d'économie sur les frais, c'est la cuisine équipée financée. »",
+          "S'il reste du temps, demandez de verbaliser la double charge (loyer + intérêts intercalaires) pendant le chantier."
+        ],
+        "corrige": [
+          "Dépôt de garantie (acte dans moins d'un an, 5 %) : 13 250 € — bloqué sur compte séquestre chez le notaire.",
+          "Appels de fonds par tranche : fondations 35 % = 92 750 € ; mise hors d'eau (cumul 70 %) = +92 750 € ; achèvement (cumul 95 %) = +66 250 € ; solde livraison 5 % = 13 250 €.",
+          "Frais de notaire dans le neuf (~2,5 %) : environ 6 600 €, contre ~19 900 € dans l'ancien (~7,5 %), soit environ 13 000 € d'économie.",
+          "Économie si TVA à 5,5 % au lieu de 20 % (résidence principale en zone éligible / BRS / PSLA) : environ 32 000 €.",
+          "Avantage taxe foncière : exonération pendant 2 ans (art. 1383 CGI), à condition de déclarer l'achèvement dans les 90 jours."
+        ]
+      },
+      {
+        "titre": "Brainstorm « 10 arguments pour vendre le neuf en 2026 »",
+        "type": "Brainstorm",
+        "duree": "8 min",
+        "consignes": [
+          "Posez la question au groupe : « Face à un client qui hésite entre neuf et ancien en 2026, quels sont tous les arguments du neuf ? » Objectif affiché : atteindre 10 arguments.",
+          "Chacun note ses idées 1 minute en silence sur un post-it (un argument par post-it), puis vient les coller au paperboard en les annonçant à voix haute.",
+          "Regroupez en direct par familles : fiscalité/financement, confort/qualité, sécurité juridique, personnalisation.",
+          "Complétez les manques à partir de la liste (voir corrigé) et surlignez les 3 arguments les plus différenciants face au « direct promoteur »."
+        ],
+        "animation": [
+          "Interdisez la critique pendant la phase de production : toute idée est bonne, on trie après.",
+          "Le silence initial d'écriture évite que les plus bavards monopolisent et fait participer les introvertis.",
+          "Gardez le paperboard visible jusqu'à la fin de la séance : il sert de support au jeu de rôle qui suit."
+        ],
+        "corrige": [
+          "Frais de notaire réduits (2-3 %).",
+          "Exonération de taxe foncière pendant 2 ans.",
+          "TVA parfois réduite à 5,5 % (zone éligible, BRS, PSLA) et PTZ élargi depuis le 1er avril 2025.",
+          "Zéro travaux, logement jamais habité.",
+          "Normes RE2020 : factures d'énergie basses, confort d'été, pas de passoire thermique.",
+          "Garanties longues et protectrices : parfait achèvement 1 an, biennale 2 ans, décennale 10 ans, dommages-ouvrage.",
+          "Personnalisation via les TMA (cloisons, carrelage, prises).",
+          "GFA : l'immeuble sera achevé même si le promoteur fait faillite.",
+          "Accompagnement agence qui sécurise tout le parcours (vs direct promoteur).",
+          "Pour l'investisseur : LMNP au réel (en rappelant la réintégration des amortissements en plus-value depuis la LF 2025)."
+        ]
+      }
+    ],
+    "jeuxRole": [
+      {
+        "titre": "« Direct promoteur ou agence ? » — l'appel du prospect hésitant",
+        "contexte": "Un prospect a visité le bureau de vente du programme « Les Terrasses de Ferrières » à Martigues et hésite à acheter en direct auprès du promoteur pour « économiser les honoraires ». Il appelle l'agence CENTURY 21 Icaza Immobilier pour comprendre ce que l'agence apporte de plus. L'échange se fait au téléphone, en binôme, assis dos à dos pour travailler la voix.",
+        "roleA": "Le négociateur de l'agence : il reçoit l'appel, découvre le besoin, puis démontre la valeur de l'accompagnement (sécurisation du parcours, vérification des garanties GFA/DO, chiffrage fiscal, présence à la livraison, levier des réserves) sans dénigrer le promoteur. Il doit rassurer sur le fait que la réservation n'est pas l'achat, rappeler les 10 jours de rétractation et le dépôt bloqué en séquestre.",
+        "roleB": "Le prospect primo-accédant : sympathique mais méfiant, budget serré, persuadé qu'en direct il paiera moins cher. Il objecte « le promoteur me fait déjà un bon prix », « à quoi sert l'agence si le programme est le même ? », « j'ai peur d'acheter sur plan ».",
+        "objectif": "S'entraîner à verbaliser la valeur ajoutée de l'agence sur le neuf et à transformer l'objection prix en argument de sécurité, en mobilisant des chiffres et des garanties concrètes plutôt que des généralités.",
+        "debrief": [
+          "Le négociateur a-t-il distingué clairement réservation et acte définitif, et rassuré sur les 10 jours + le séquestre ?",
+          "A-t-il sorti au moins 3 chiffres concrets (frais réduits ~13 000 €, barème 5-2-0, économie TVA, taxe foncière 2 ans) pour crédibiliser ?",
+          "A-t-il valorisé la présence à la livraison et le levier des réserves (consignation des 5 %), service que le client ne trouve pas en direct ?",
+          "A-t-il évité de dénigrer le promoteur et gardé une posture d'expert-partenaire ?",
+          "Quelle formulation a le mieux « fait mouche » sur le prospect ? À réutiliser et à partager au groupe."
+        ]
+      },
+      {
+        "titre": "Le rendez-vous de signature du contrat de réservation",
+        "contexte": "Un couple vient à l'agence signer le contrat de réservation du T3 à 265 000 €. Avant la signature, le négociateur doit expliquer ce qu'ils signent, le dépôt de garantie, les délais et vérifier que le prêt et les conditions suspensives sont bien au contrat. Mise en situation en face-à-face, autour d'une table, avec un contrat fictif ou une notice descriptive comme accessoire.",
+        "roleA": "Le négociateur : il déroule pédagogiquement le contrat de réservation (dépôt 5 % = 13 250 € sur séquestre, délai de rétractation 10 jours, prix prévisionnel ferme/révisable, délai Scrivener à venir sur le prêt, conditions suspensives). Il vérifie que le prêt souhaité est bien inscrit.",
+        "roleB": "Le couple acquéreur : l'un est enthousiaste et pressé de signer, l'autre est inquiet (« et si on change d'avis ? », « et si la banque refuse ? », « et si la surface n'est pas la bonne ? »). Ils posent des questions concrètes et parfois contradictoires.",
+        "objectif": "Travailler la pédagogie du contrat de réservation et la réassurance, en s'assurant que le client comprend ses protections (rétractation, condition suspensive de prêt, tolérance de surface 5 %) avant de signer sereinement.",
+        "debrief": [
+          "Le négociateur a-t-il bien fait comprendre que le dépôt est bloqué et restituable (rétractation, prêt refusé, prix +5 %, livraison dégradée) ?",
+          "A-t-il pensé à faire inscrire le prêt au contrat pour activer la condition suspensive de financement ?",
+          "A-t-il géré les deux tempéraments du couple (rassurer l'inquiet sans freiner l'enthousiaste) ?",
+          "A-t-il annoncé la suite du parcours (offre de prêt, délai Scrivener, appels de fonds, livraison) pour projeter le couple ?",
+          "Y a-t-il eu une information oubliée ou mal formulée à corriger collectivement ?"
+        ]
+      }
+    ],
+    "pointsCles": [
+      "La VEFA, c'est l'achat sur plan avec propriété progressive : deux contrats, réservation préliminaire puis acte authentique chez le notaire ; notre rôle est de sécuriser le parcours, pas seulement de « vendre un plan ».",
+      "Trois barèmes à savoir par cœur : dépôt de garantie « 5-2-0 » (moins d'1 an / 1 à 2 ans / plus de 2 ans), appels de fonds « 35-70-95-5 » (fondations, hors d'eau, achèvement, livraison), garanties « 1-2-10 » (parfait achèvement, biennale, décennale).",
+      "Deux délais de 10 jours à ne jamais confondre : la rétractation SRU (art. L271-1 CCH) après le contrat de réservation, et la réflexion Scrivener sur l'offre de prêt, acceptable seulement à partir du 11e jour.",
+      "Le dépôt de garantie est toujours bloqué sur compte séquestre (notaire ou banque) : l'encaisser hors séquestre est strictement interdit ; il est restituable en cas de rétractation, de prêt refusé, de prix +5 % ou de livraison dégradée.",
+      "Le neuf est l'achat le mieux protégé : GFA extrinsèque (achèvement garanti même en cas de faillite du promoteur, depuis 2015) et assurance dommages-ouvrage (préfinancement des réparations décennales sans procès, transmissible 10 ans).",
+      "La fiscalité du neuf est un argument chiffrable : frais de notaire 2-3 % au lieu de 7-8 %, TVA 20 % ou 5,5 % en zone éligible, exonération de taxe foncière 2 ans (déclaration sous 90 jours), PTZ élargi partout depuis le 1er avril 2025.",
+      "Toujours anticiper la double charge pendant le chantier : loyer actuel + intérêts intercalaires (calculés sur les seules sommes débloquées), la mensualité pleine ne démarrant qu'à la livraison.",
+      "À la livraison, on note tout dans le procès-verbal (réserves) et on peut consigner les 5 % de solde jusqu'à leur levée : être présent ce jour-là est un service à forte valeur qui génère la recommandation.",
+      "Parler juste sur les dispositifs 2025-2026 : le Pinel est fermé depuis le 31/12/2024, le LMNP au réel reste pertinent (mais amortissements réintégrés en plus-value), PSLA et BRS (TVA 5,5 %, -30 à -40 % sur le BRS) sont des leviers forts pour les primo-accédants en secteur tendu.",
+      "On ne joue jamais au fiscaliste ni au notaire : on pose les chiffres et les repères, et on oriente vers l'expert-comptable ou le notaire pour les situations personnelles complexes."
+    ],
+    "planAction": [
+      "Mémoriser et réciter les trois mnémoniques (5-2-0, 35-70-95-5, 1-2-10) jusqu'à les sortir sans hésiter en rendez-vous dès cette semaine.",
+      "Créer un tableau de bord des échéances par client VEFA (J0 réservation, J+10 rétractation, obtention prêt, projet d'acte à J-1 mois, appels de fonds, livraison) et le tenir à jour pour chaque dossier neuf.",
+      "Préparer une fiche de chiffrage type « avantage neuf » réutilisable (frais de notaire, économie TVA, taxe foncière, PTZ, intérêts intercalaires) à présenter noir sur blanc à chaque prospect.",
+      "Systématiser, à chaque réservation, le script de réassurance : « réservation ≠ achat, 10 jours pour changer d'avis, dépôt bloqué en séquestre » et vérifier que le prêt est bien inscrit au contrat.",
+      "Proposer et bloquer sa présence à la livraison de chaque client (tour pièce par pièce, réserves, consignation des 5 %) pour en faire un rendez-vous de recommandation.",
+      "Mettre à jour son discours sur les dispositifs : retirer définitivement le Pinel des arguments et identifier dans le portefeuille local (Martigues, Istres, Port-de-Bouc) les programmes éligibles BRS, PSLA, TVA 5,5 % et PTZ."
+    ],
+    "notesFormateur": [
+      "Alternez systématiquement apport court (10-15 min) et activité : le module est dense en chiffres, un format uniquement descendant perd le groupe. Gardez le rythme annoncé à l'agenda et affichez le minutage.",
+      "Pour ancrer les trois barèmes, revenez-y dans chaque activité (quiz, vrai/faux, défi chrono) : la répétition espacée est ce qui fait retenir les chiffres durablement.",
+      "Faites toujours produire la bonne réponse par les participants avant de la valider vous-même, et faites reformuler par une autre personne : on retient ce qu'on dit, pas ce qu'on entend.",
+      "Reliez chaque notion au terrain local (programme fictif « Les Terrasses de Ferrières » à Martigues, T3 à 265 000 €) : un chiffre incarné sur un vrai type de bien marque plus qu'une règle abstraite.",
+      "Gérez les niveaux : mélangez les équipes pour que les plus expérimentés tirent les juniors, et sollicitez nommément les plus silencieux pendant les vrai/faux et brainstorms.",
+      "Terminez impérativement par le plan d'action individuel écrit : demandez à chacun de verbaliser à voix haute UN engagement concret pour le lendemain ; c'est le transfert sur le terrain qui justifie la séance."
+    ]
+  },
+  "plus-value": {
+    "id": "plus-value",
+    "sousTitre": "Détecter, alerter, sécuriser : faire de la plus-value immobilière un argument de confiance, pas une bombe à retardement le jour de l'acte.",
+    "objectifs": [
+      "Être capable de détecter dès la découverte (R1) un bien à risque de plus-value grâce aux cinq questions-clés : nature du bien, date et mode d'acquisition, mode de détention, factures de travaux.",
+      "Maîtriser la logique du calcul : plus-value brute = prix de cession corrigé − prix d'acquisition corrigé, avec les forfaits 7,5 % (frais) et 15 % (travaux).",
+      "Savoir expliquer à un vendeur la règle « 22 / 30 » : exonération d'impôt sur le revenu à 22 ans, exonération totale (prélèvements sociaux inclus) à 30 ans.",
+      "Savoir repérer les principales exonérations (résidence principale, petites cessions ≤ 15 000 €, première cession hors RP avec remploi) et les pièges (surtaxe > 50 000 €, SCI à l'IS, LMNP depuis 2025).",
+      "Être capable de raisonner en « net vendeur réel » et de l'estimer avant de fixer le prix de mise en vente.",
+      "Savoir alerter sans jamais calculer : tenir le triptyque détecter / chiffrer avec le notaire / sécuriser, et transmettre au notaire les bons justificatifs dès le compromis."
+    ],
+    "agenda": [
+      {
+        "titre": "Accueil, cadrage des objectifs et brise-glace « la facture surprise »",
+        "duree": "0:00 – 0:15 (15 min)"
+      },
+      {
+        "titre": "Apport 1 — Champ, acteurs et calcul : qui paie, qui prélève, prix corrigés et forfaits (7,5 % / 15 %)",
+        "duree": "0:15 – 0:35 (20 min)"
+      },
+      {
+        "titre": "Jeu 1 — Quiz-battle en équipes « Les fondamentaux de la plus-value »",
+        "duree": "0:35 – 0:50 (15 min)"
+      },
+      {
+        "titre": "Apport 2 — Abattements « 22 / 30 », taux 36,2 % et surtaxe au-delà de 50 000 €",
+        "duree": "0:50 – 1:05 (15 min)"
+      },
+      {
+        "titre": "Jeu 2 — Vrai/Faux chrono « Démontez les idées reçues » + Jeu 3 — Défi chrono « Exonéré ou pas ? »",
+        "duree": "1:05 – 1:25 (20 min)"
+      },
+      {
+        "titre": "Apport 3 — Exonérations, cas experts (SCI, LMNP 2025, donation-cession) et net vendeur réel",
+        "duree": "1:25 – 1:40 (15 min)"
+      },
+      {
+        "titre": "Jeu 4 — Étude de cas chiffrée en sous-groupes « Le dossier Mme Roux »",
+        "duree": "1:40 – 1:55 (15 min)"
+      },
+      {
+        "titre": "Jeu de rôle — Mise en situation téléphonique « L'alerte au vendeur »",
+        "duree": "1:55 – 2:10 (15 min)"
+      },
+      {
+        "titre": "Synthèse, points-clés, plan d'action et engagements individuels",
+        "duree": "2:10 – 2:20 (10 min)"
+      }
+    ],
+    "briseGlace": {
+      "titre": "La facture surprise",
+      "consignes": [
+        "Projetez un seul chiffre au tableau : « 77 000 € ». Laissez le silence s'installer 10 secondes, puis demandez au groupe : « À votre avis, qu'est-ce que c'est que ce chiffre ? »",
+        "Révélez : c'est l'impôt de plus-value réellement prélevé par le notaire sur une résidence secondaire de Martigues achetée 200 000 € et revendue 500 000 € (le mini-cas du module). Le vendeur ne l'avait pas anticipé.",
+        "Faites circuler la parole : chacun raconte en une phrase une fois où un vendeur a découvert une mauvaise surprise fiscale ou financière le jour de l'acte (ou en a eu peur). Notez les mots qui reviennent au paperboard (furieux, bloqué, vente annulée…).",
+        "Concluez en reliant au fil rouge de la séance : « Aujourd'hui, on apprend à faire en sorte que ce chiffre ne soit JAMAIS une surprise. Notre métier : détecter, alerter, sécuriser — pas calculer. »"
+      ]
+    },
+    "jeux": [
+      {
+        "titre": "Quiz-battle « Les fondamentaux de la plus-value »",
+        "type": "Quiz-battle en équipes",
+        "duree": "15 min",
+        "consignes": [
+          "Constituez 2 ou 3 équipes et faites-leur choisir un nom d'agence fictif. Chaque équipe désigne un porte-parole.",
+          "Posez 8 questions à l'oral (une diapo par question, 4 options A/B/C/D). Chaque équipe écrit sa réponse sur une ardoise/feuille et la lève simultanément au top, pour éviter le copiage.",
+          "Bonne réponse = 1 point ; bonne réponse AVEC justification correcte donnée par le porte-parole = 2 points (c'est la justification qui ancre l'apprentissage).",
+          "Questions à poser dans l'ordre : (1) La vente de la résidence principale est… ? (2) L'exonération TOTALE est atteinte après combien d'années ? (3) Taux global quand la PV est pleinement taxée ? (4) La surtaxe s'applique au-delà de quel montant de PV imposable ? (5) Qui calcule et prélève la plus-value ? (6) Forfait frais d'acquisition sans justificatif ? (7) Pour un bien hérité, la durée court à partir de quand ? (8) Depuis 2025, les amortissements LMNP… ?",
+          "Tenez le score au tableau. L'équipe gagnante est félicitée ; prévoyez un petit lot symbolique (café offert, premier choix du prochain mandat tournant…)."
+        ],
+        "animation": [
+          "Ne validez jamais une réponse sans faire reformuler la règle : c'est le moment pédagogique. Rebondissez sur chaque erreur avec le « pourquoi ».",
+          "Gardez un rythme vif : 1 min max par question. Si une équipe sèche, passez la main à une autre pour un point bonus.",
+          "Valorisez autant la bonne attitude (« je ne sais pas, je renvoie au notaire ») que la bonne réponse technique."
+        ],
+        "corrige": [
+          "Q1 : Exonérée totalement, sans condition de durée (art. 150 U CGI).",
+          "Q2 : 30 ans (à 22 ans seul l'impôt sur le revenu disparaît).",
+          "Q3 : 36,2 % (19 % IR + 17,2 % prélèvements sociaux).",
+          "Q4 : 50 000 € de plus-value imposable, par vendeur.",
+          "Q5 : Le notaire, le jour de la vente, via le formulaire 2048-IMM (prélèvement libératoire).",
+          "Q6 : 7,5 % du prix d'achat (titre onéreux uniquement).",
+          "Q7 : La date du décès / de la donation, pas l'achat initial par le défunt.",
+          "Q8 : Sont réintégrés : ils diminuent le prix d'acquisition et augmentent la plus-value imposable (cessions après le 15/02/2025)."
+        ]
+      },
+      {
+        "titre": "Vrai/Faux chrono « Démontez les idées reçues »",
+        "type": "Vrai/Faux",
+        "duree": "10 min",
+        "consignes": [
+          "Tout le monde debout. Désignez un côté de la salle « VRAI » et l'autre « FAUX ». À chaque affirmation, les participants se déplacent physiquement du côté qu'ils choisissent (5 secondes pour trancher).",
+          "Lisez 8 affirmations. Après chaque déplacement, interrogez une personne de chaque camp : « Pourquoi es-tu là ? » avant de donner la réponse.",
+          "Affirmations : (1) « À 22 ans de détention, tout est exonéré. » (2) « La commission d'agence à la charge du vendeur réduit le prix de cession. » (3) « Les travaux que j'ai faits moi-même comptent dans le prix d'acquisition. » (4) « La résidence secondaire peut être exonérée si on l'occupe souvent. » (5) « Une vente à 14 000 € est exonérée de plus-value. » (6) « En SCI à l'IS, on bénéficie des abattements 22/30 ans. » (7) « Le négociateur peut calculer la plus-value pour rassurer le vendeur. » (8) « Un bien loué jusqu'à la veille de la vente peut être vendu comme résidence principale. »",
+          "Celui qui se trompe explique ensuite la bonne réponse avec ses mots : l'erreur devient apprentissage."
+        ],
+        "animation": [
+          "Le mouvement physique réveille le groupe après l'apport théorique : jouez sur l'énergie, mettez un minuteur visible.",
+          "Insistez sur les pièges 1 et 6 : ce sont les plus coûteux en vrai sur le terrain.",
+          "Si tout le groupe se trompe sur une question, prenez 2 minutes pour re-expliquer au tableau : c'est un signal d'alerte pédagogique."
+        ],
+        "corrige": [
+          "(1) FAUX — à 22 ans seul l'impôt sur le revenu est exonéré, les prélèvements sociaux courent jusqu'à 30 ans.",
+          "(2) VRAI — si le mandat met la commission à la charge du vendeur, elle vient en diminution du prix de cession.",
+          "(3) FAUX — seuls les travaux facturés par une entreprise comptent ; le « fait soi-même » et le matériel seul sont exclus.",
+          "(4) FAUX — la résidence secondaire n'est jamais exonérée au titre de la RP, quelle que soit la fréquence d'occupation.",
+          "(5) VRAI — prix de cession ≤ 15 000 €, apprécié par bien et par vendeur = exonération.",
+          "(6) FAUX — SCI à l'IS = régime des plus-values professionnelles : pas d'abattement pour durée, amortissements réintégrés.",
+          "(7) FAUX — le négociateur détecte et alerte, il ne calcule jamais officiellement : c'est le notaire.",
+          "(8) FAUX — un bien loué n'est pas une résidence principale ; la requalification coûte cher."
+        ]
+      },
+      {
+        "titre": "Défi chrono « Exonéré ou pas ? »",
+        "type": "Défi chrono",
+        "duree": "10 min",
+        "consignes": [
+          "Projetez 6 situations une par une. Le groupe doit, en 30 secondes max par carte, classer la situation en trois catégories affichées : EXONÉRÉ / TAXÉ / ÇA DÉPEND (à faire chiffrer par le notaire).",
+          "Les participants répondent à main levée ou à l'ardoise, en équipes ou individuellement selon l'effectif.",
+          "Situations : (A) M. et Mme vendent la maison où ils vivent depuis 8 ans. (B) Studio locatif détenu 12 ans à Martigues. (C) Garage vendu seul 9 000 €. (D) Résidence secondaire vendue avec 300 000 € de plus-value. (E) Appartement en LMNP très amorti, vendu en 2026. (F) Ancienne résidence principale, déménagée il y a 6 mois, pas louée, mandat déjà signé.",
+          "Chronométrez à voix haute (« 10… 5… stop ! ») pour créer la pression positive. On corrige immédiatement après chaque carte."
+        ],
+        "animation": [
+          "Le but n'est pas la réponse chiffrée mais le bon réflexe de tri : féliciter un « ça dépend, je fais chiffrer » est aussi juste qu'un « exonéré ».",
+          "Reliez chaque carte à une question de découverte R1 : « Quelle question aurait révélé ce cas ? »",
+          "Enchaînez vite : l'adrénaline du chrono fixe la mémoire."
+        ],
+        "corrige": [
+          "(A) EXONÉRÉ — résidence principale au jour de la vente (art. 150 U CGI).",
+          "(B) TAXÉ — bien locatif détenu 12 ans : abattements partiels seulement, plus-value à payer.",
+          "(C) EXONÉRÉ — petite cession ≤ 15 000 €, appréciée par bien et par vendeur.",
+          "(D) TAXÉ + SURTAXE — résidence secondaire, PV > 50 000 € donc surtaxe progressive 2 % à 6 %.",
+          "(E) TAXÉ, base alourdie — réforme LMNP 2025 : amortissements réintégrés, plus-value supérieure à ce que le vendeur imagine, à faire chiffrer.",
+          "(F) EXONÉRÉ sous conditions (ÇA DÉPEND) — délai normal de vente (environ 1 an), bien non loué, démarches entreprises sans tarder : à valider par le notaire."
+        ]
+      },
+      {
+        "titre": "Étude de cas chiffrée « Le dossier Mme Roux »",
+        "type": "Étude de cas",
+        "duree": "15 min",
+        "consignes": [
+          "Distribuez une fiche par sous-groupe (3-4 personnes) avec les données : studio locatif à Martigues, acheté 150 000 € il y a 18 ans, mis en vente 250 000 €. Diagnostics + mainlevée : 1 300 €. Pas de factures de travaux retrouvées.",
+          "Mission 1 (5 min) : reconstituer la plus-value brute en appliquant les corrections. Donnez les forfaits comme indices : 7,5 % sur le prix d'achat (frais) et 15 % (travaux, bien détenu > 5 ans).",
+          "Mission 2 (5 min) : expliquer, sans calcul précis, pourquoi le vendeur ne touchera PAS 250 000 € net, et formuler la phrase d'alerte qu'ils diraient à Mme Roux.",
+          "Mise en commun (5 min) : un rapporteur par groupe présente son chiffrage et sa phrase d'alerte. Comparez avec le corrigé."
+        ],
+        "animation": [
+          "Circulez entre les groupes, ne donnez pas la réponse : posez des questions (« avez-vous majoré le prix d'achat ? »).",
+          "L'objectif n'est pas d'être notaire mais de comprendre la MÉCANIQUE et de savoir l'expliquer simplement. Valorisez la clarté de l'alerte autant que l'exactitude du chiffre.",
+          "Rappelez que sur le terrain, c'est le notaire qui produit le chiffre officiel : ici on s'entraîne à anticiper l'ordre de grandeur."
+        ],
+        "corrige": [
+          "Prix de cession corrigé : 250 000 − 1 300 = 248 700 €.",
+          "Prix d'acquisition corrigé : 150 000 + 7,5 % (11 250 €) + 15 % travaux (22 500 €) = 183 750 €.",
+          "Plus-value brute : 248 700 − 183 750 = 64 950 €.",
+          "Après 18 ans (13 années d'abattement) : impôt sur le revenu ≈ 2 715 € et prélèvements sociaux ≈ 8 775 €, soit environ 11 490 € prélevés par le notaire.",
+          "Phrase d'alerte attendue : « Sur ce studio locatif détenu 18 ans, il restera de la plus-value à régler chez le notaire, de l'ordre de 11 000 €. Faisons chiffrer votre net réel avant de fixer le prix. »"
+        ]
+      },
+      {
+        "titre": "Brainstorm « La carte des 5 questions de découverte »",
+        "type": "Brainstorm",
+        "duree": "8 min",
+        "consignes": [
+          "Au paperboard, posez la question centrale : « Quelles questions poser en R1 pour détecter un risque de plus-value ? » Chaque participant note ses idées sur des post-it (1 idée par post-it), en silence, pendant 2 minutes.",
+          "Chacun vient coller ses post-it au tableau et les lit à voix haute ; regroupez les doublons.",
+          "Ensemble, réduisez le mur de post-it aux 5 questions essentielles à intégrer dans la trame de découverte de l'agence.",
+          "Photographiez le résultat et engagez le groupe à ajouter ces 5 questions dans leur fiche découverte dès demain."
+        ],
+        "animation": [
+          "Laissez le silence du temps d'écriture individuelle : il garantit que chacun contribue, pas seulement les plus bavards.",
+          "Guidez vers les 5 questions du module si elles n'émergent pas spontanément, sans les imposer d'emblée.",
+          "Terminez par un vote à main levée sur « la question qu'on oublie le plus souvent » : souvent le mode d'acquisition (donation/succession) ou le mode de détention (SCI)."
+        ],
+        "corrige": [
+          "Nature du bien : résidence principale, secondaire ou bien loué ?",
+          "Depuis quelle année êtes-vous propriétaire ?",
+          "Bien acheté, ou reçu par donation / succession ?",
+          "Détention en direct, en indivision ou via une SCI ?",
+          "Avez-vous conservé les factures de travaux réalisés par des entreprises ?"
+        ]
+      }
+    ],
+    "jeuxRole": [
+      {
+        "titre": "L'alerte au vendeur (mise en situation téléphonique)",
+        "contexte": "Appel entrant à l'agence Icaza Immobilier. M. Bernardi veut mettre en vente « vite » un appartement à Martigues qu'il loue depuis 16 ans, acheté 140 000 €, espéré à 260 000 €. Il annonce d'emblée : « Je compte sur ce prix net pour racheter une maison, c'est bouclé avec ma banque. » Il ne sait rien de la plus-value.",
+        "roleA": "Le négociateur Icaza Immobilier : il mène la découverte au téléphone, détecte le risque de plus-value (bien locatif, 16 ans), alerte avec tact sans calculer, et propose de faire chiffrer le net réel par le notaire AVANT de fixer le prix.",
+        "roleB": "M. Bernardi, vendeur pressé et sûr de lui, un peu agacé qu'on « complique les choses ». Il résiste : « Mais je l'ai depuis 16 ans, c'est exonéré non ? » et « Je ne veux pas payer un notaire pour rien. »",
+        "objectif": "S'entraîner à détecter et alerter sans affoler ni promettre, à corriger l'idée reçue des 22 ans, et à transformer l'alerte en argument de confiance plutôt qu'en frein à la signature du mandat.",
+        "debrief": [
+          "Le négociateur a-t-il posé les bonnes questions de découverte (date, mode d'acquisition, nature du bien, détention) ?",
+          "A-t-il résisté à la tentation de donner un chiffre ou de promettre une exonération ? A-t-il bien renvoyé au notaire ?",
+          "A-t-il corrigé l'idée reçue « 16 ans donc exonéré » en expliquant la règle 22/30 simplement, sans jargon ?",
+          "La posture : l'alerte a-t-elle rassuré (« je protège votre projet de rachat ») ou inquiété le vendeur ?",
+          "Que retenir pour le prochain appel réel : quelle phrase a le mieux fonctionné ?"
+        ]
+      },
+      {
+        "titre": "Le vendeur en SCI qui croit tout savoir",
+        "contexte": "En rendez-vous d'estimation, un couple de Martigues détient un petit immeuble de rapport via une SCI. Ils affirment : « Pas d'inquiétude, on a la SCI depuis 25 ans, donc avec les abattements on est quasiment exonérés. » Le négociateur ignore encore si la SCI est à l'IR ou à l'IS.",
+        "roleA": "Le négociateur : il doit faire préciser le régime fiscal de la SCI (IR ou IS) sans se faire passer pour un fiscaliste, expliquer que l'enjeu change tout, et orienter vers l'expert-comptable / le notaire avant de fixer le prix.",
+        "roleB": "Le couple d'associés, confiants et persuadés de maîtriser leur dossier. L'un des deux finit par lâcher : « De toute façon la SCI est à l'IS, c'est mon comptable qui gère. »",
+        "objectif": "Savoir repérer le piège SCI à l'IS (pas d'abattement pour durée, amortissements réintégrés) et poser la bonne question révélatrice, tout en restant dans son rôle de détection.",
+        "debrief": [
+          "Le négociateur a-t-il identifié la question décisive (IR ou IS) et su pourquoi elle est décisive ?",
+          "A-t-il évité d'affirmer un résultat fiscal à la place de l'expert-comptable ?",
+          "Comment a-t-il annoncé la mauvaise nouvelle potentielle sans braquer des clients sûrs d'eux ?",
+          "Quel réflexe retenir : faire chiffrer le net réel avec l'expert-comptable AVANT la mise en vente."
+        ]
+      }
+    ],
+    "pointsCles": [
+      "Le négociateur ne calcule JAMAIS la plus-value : il la détecte, alerte et renvoie au notaire. C'est ce triptyque qui crédibilise son conseil et sécurise la vente.",
+      "Résidence principale effective au jour de la vente = exonération totale, sans condition de durée ni de montant (art. 150 U CGI). C'est l'exonération reine.",
+      "Règle « 22 / 30 » : exonération d'impôt sur le revenu (19 %) à 22 ans, exonération TOTALE (prélèvements sociaux 17,2 % inclus) seulement à 30 ans. Le piège classique est de croire qu'à 22 ans tout est fini.",
+      "Taux plein = 36,2 % (19 % + 17,2 %) ; les 5 premières années ne donnent aucun abattement. Au-delà, impôt et prélèvements sociaux s'abattent à des rythmes différents.",
+      "Plus-value brute = prix de cession corrigé − prix d'acquisition corrigé. On majore le prix d'achat : forfait frais 7,5 % et forfait travaux 15 % (bien bâti détenu > 5 ans), ou le réel sur factures d'entreprise — toujours le plus avantageux.",
+      "Surtaxe progressive de 2 % à 6 % au-delà de 50 000 € de plus-value imposable par vendeur ; résidence principale et terrains à bâtir en sont exclus. L'indivision et le couple peuvent diviser le seuil.",
+      "Exonérations à repérer : petite cession ≤ 15 000 € (par bien et par vendeur), première cession hors RP avec remploi sous 24 mois, retraités/invalides modestes, non-résidents UE/EEE sous plafond.",
+      "Réforme LMNP depuis le 15/02/2025 : les amortissements déduits sont réintégrés (ils baissent le prix d'acquisition), donc la plus-value grimpe. Un vendeur en meublé ayant beaucoup amorti doit faire chiffrer impérativement.",
+      "Attention aux pièges experts : SCI à l'IS = plus-values professionnelles (pas d'abattement durée, amortissements réintégrés) ; bien hérité = durée comptée depuis le décès, pas l'achat initial.",
+      "Raisonner en net vendeur réel (prix − honoraires − capital restant dû − plus-value estimée) AVANT de fixer le prix : c'est ce qui protège le projet de rachat et évite le blocage le jour de l'acte."
+    ],
+    "planAction": [
+      "Intégrer dès demain les 5 questions de détection dans ma trame de découverte R1 : nature du bien, date d'acquisition, mode (achat/donation/succession), mode de détention (direct/indivision/SCI), factures de travaux d'entreprise.",
+      "Sur tout bien qui n'est pas une résidence principale (locatif, résidence secondaire, LMNP, SCI), déclencher systématiquement l'alerte plus-value et proposer un chiffrage du net réel par le notaire AVANT de fixer le prix de mise en vente.",
+      "Adopter et utiliser le script d'alerte type : « Je ne suis pas fiscaliste, je préfère qu'on fasse chiffrer précisément par votre notaire, pour fixer votre prix sur votre net réel, sans mauvaise surprise le jour de la signature. »",
+      "Transmettre au notaire, dès le compromis, le trio de justificatifs : année et mode d'acquisition, valeur d'origine, factures de travaux d'entreprise — et pour une résidence principale, les preuves d'occupation.",
+      "Vérifier la date d'anniversaire d'acquisition sur les biens proches d'un palier (6, 22 ou 30 ans) et, si le projet le permet, en parler au vendeur et au notaire pour décaler utilement la signature.",
+      "Ne jamais promettre d'exonération ni annoncer de chiffre définitif : signaler la piste, renvoyer au notaire (ou à l'expert-comptable pour les SCI/LMNP) qui valide et sécurise."
+    ],
+    "notesFormateur": [
+      "Gérez le temps avec un minuteur visible pendant les jeux chronométrés : l'énergie du chrono est pédagogique, mais ne laissez aucun jeu déborder au détriment du jeu de rôle, cœur du transfert terrain.",
+      "Alternez systématiquement apport court (15-20 min max) et activité : le niveau Expert ne veut pas un cours magistral mais des cas concrets et du débat. Coupez tout monologue de plus de 20 minutes.",
+      "Faites participer les silencieux en nommant les porte-parole par rotation et en utilisant le mouvement physique (Vrai/Faux debout) : personne ne doit rester spectateur pendant 2 heures.",
+      "Ancrez chaque acquis en faisant TOUJOURS reformuler la règle par un participant plutôt qu'en la donnant vous-même : la justification orale fixe mieux que la bonne case cochée.",
+      "Ramenez chaque notion à Martigues et à des biens réels du portefeuille de l'agence : plus l'exemple est local et incarné, plus l'alerte deviendra un réflexe sur le terrain.",
+      "Rappelez sans cesse la ligne rouge déontologique : on détecte et on alerte, on ne calcule ni ne promet jamais. Terminez par le tour de table des engagements individuels du plan d'action pour verrouiller le passage à l'action dès le lendemain."
+    ]
+  },
+  "location-baux": {
+    "id": "location-baux",
+    "sousTitre": "Louer juste, louer vite, louer sans contentieux : maîtriser le bail d'habitation de A à Z",
+    "objectifs": [
+      "Maîtriser le cadre d'ordre public de la loi du 6 juillet 1989 et choisir le bon bail (vide 3/6 ans, meublé 1 an, étudiant 9 mois, bail mobilité, colocation) selon le bien et la cible locative",
+      "Être capable de constituer un dossier locataire 100 % conforme (pièces autorisées / interdites, règle anti-discrimination, taux d'effort 33 %) et de proposer la garantie adaptée (caution solidaire, GLI, Visale)",
+      "Savoir fixer, réviser via l'IRL et encadrer un loyer en zone tendue, distinguer loyer et charges, et appliquer le gel des loyers des passoires F et G",
+      "Maîtriser l'état des lieux contradictoire et la restitution du dépôt de garantie dans les plafonds (1 mois vide / 2 mois meublé) et les délais légaux",
+      "Être capable de délivrer un congé valide (préavis, motifs, protection du locataire âgé) et de réagir à un impayé dans les règles, sans jamais se faire justice soi-même",
+      "Savoir vérifier la décence et la décence énergétique (calendrier DPE : G interdit depuis 2025, F en 2028, E en 2034) avant toute mise en location"
+    ],
+    "agenda": [
+      {
+        "titre": "Accueil café + brise-glace « Le bail le plus douloureux »",
+        "duree": "0h00 - 0h15 (15 min)"
+      },
+      {
+        "titre": "Cadrage : objectifs de la séance et règle du jeu (points d'équipe à gagner)",
+        "duree": "0h15 - 0h20 (5 min)"
+      },
+      {
+        "titre": "Apport flash 1 : baux, durées, mentions et annexes obligatoires (loi 89)",
+        "duree": "0h20 - 0h35 (15 min)"
+      },
+      {
+        "titre": "Jeu 1 : Vrai / Faux « clauses & durées » à main levée",
+        "duree": "0h35 - 0h47 (12 min)"
+      },
+      {
+        "titre": "Jeu 2 : Quiz-battle en équipes (dossier, garanties, encadrement, DPE)",
+        "duree": "0h47 - 1h05 (18 min)"
+      },
+      {
+        "titre": "Apport flash 2 : loyer / charges / IRL / encadrement + décence énergétique",
+        "duree": "1h05 - 1h17 (12 min)"
+      },
+      {
+        "titre": "Jeu 3 : Défi chrono « calculs du négociateur » (honoraires, IRL, dépôt, pénalité)",
+        "duree": "1h17 - 1h30 (13 min)"
+      },
+      {
+        "titre": "Jeu 4 : Étude de cas en binômes « le mandat piégé »",
+        "duree": "1h30 - 1h42 (12 min)"
+      },
+      {
+        "titre": "Jeu de rôle : mise en situation téléphonique (passoire G / candidat au-dessus du taux d'effort)",
+        "duree": "1h42 - 2h02 (20 min)"
+      },
+      {
+        "titre": "Synthèse : points-clés, plan d'action du lendemain et clôture",
+        "duree": "2h02 - 2h15 (13 min)"
+      }
+    ],
+    "briseGlace": {
+      "titre": "Le bail le plus douloureux",
+      "consignes": [
+        "Formez un cercle. Chacun raconte en 45 secondes maximum le litige locatif le plus pénible qu'il a vécu ou entendu à l'agence (dépôt non rendu, DPE oublié, congé contesté, impayé qui traîne...).",
+        "Enzo note au paperboard un mot-clé par témoignage (ex. « DPE », « état des lieux », « caution »). On obtient en 5 minutes la carte des vrais points de douleur du groupe.",
+        "Enzo clôt en annonçant : « Tous ces litiges, on va les désamorcer aujourd'hui. À la fin de la séance, repérez lequel de ces cas vous sauriez régler les yeux fermés. »",
+        "Objectif caché : rendre visible que le contentieux locatif naît presque toujours d'une négligence de forme évitable, et créer l'envie d'y remédier."
+      ]
+    },
+    "jeux": [
+      {
+        "titre": "Vrai / Faux « clauses & durées » à main levée",
+        "type": "Vrai/Faux",
+        "duree": "12 min",
+        "consignes": [
+          "Enzo projette une affirmation sur une slide. Les négociateurs lèvent un carton VERT (vrai) ou ROUGE (faux) en même temps, au top.",
+          "Pour chaque item, Enzo interroge un négociateur ayant la bonne réponse pour qu'il justifie, puis corrige et ancre la règle.",
+          "Enchaînez les 10 affirmations ci-dessous à bon rythme (une par minute environ).",
+          "Affirmation 1 : « Un bail vide signé par un propriétaire particulier dure 6 ans. » / A2 : « Le bail meublé étudiant de 9 mois se reconduit tacitement. » / A3 : « Une clause interdisant au locataire d'avoir un chat est réputée non écrite. » / A4 : « On peut exiger du candidat un relevé de compte bancaire. » / A5 : « Le dépôt de garantie en meublé est plafonné à 2 mois de loyer hors charges. » / A6 : « Le bail mobilité autorise un dépôt d'un mois. » / A7 : « La surface qui fait foi dans un bail est la surface Carrez. » / A8 : « Le DPE doit être annexé au bail. » / A9 : « En zone tendue, le préavis du locataire en logement vide est de 1 mois. » / A10 : « On peut imposer le prélèvement automatique comme seul mode de paiement. »"
+        ],
+        "animation": [
+          "Imposez le « top » simultané : cela évite que les lents copient les rapides et révèle les vraies croyances du groupe.",
+          "Valorisez la justification plus que la bonne réponse : « Pourquoi c'est faux ? » ancre mieux que « Bravo ».",
+          "Gardez un rythme vif ; si un débat s'installe sur une question, tranchez avec le texte et notez le point pour le reprendre à la synthèse."
+        ],
+        "corrige": [
+          "A1 : FAUX - 3 ans pour un bailleur personne physique ou SCI familiale ; 6 ans réservé aux personnes morales.",
+          "A2 : FAUX - le bail étudiant de 9 mois est non reconductible tacitement ; il faut signer un nouveau bail.",
+          "A3 : VRAI - interdire un animal familier est une clause réputée non écrite (sauf chien de 1re catégorie).",
+          "A4 : FAUX - le relevé de compte est une pièce interdite (décret du 5 novembre 2015) ; amende jusqu'à 3 000 € / 15 000 €.",
+          "A5 : VRAI - 2 mois hors charges en meublé, contre 1 mois en vide.",
+          "A6 : FAUX - en bail mobilité, aucun dépôt de garantie n'est autorisé ; on sécurise via Visale.",
+          "A7 : FAUX - en location c'est la surface habitable (loi Boutin) qui fait foi, pas la surface Carrez (réservée à la vente en copropriété).",
+          "A8 : VRAI - le DPE fait partie du dossier de diagnostics techniques annexé ; l'oublier rend le bail contestable.",
+          "A9 : VRAI - préavis réduit à 1 mois en zone tendue, en meublé, ou pour motif légal.",
+          "A10 : FAUX - imposer le prélèvement comme seul mode de paiement est une clause réputée non écrite."
+        ]
+      },
+      {
+        "titre": "Quiz-battle en équipes",
+        "type": "Quiz-battle",
+        "duree": "18 min",
+        "consignes": [
+          "Constituez 2 ou 3 équipes de négociateurs, chacune avec un nom (ex. « Les Baux de Martigues », « Team Loi 89 »). Chaque équipe nomme un porte-parole.",
+          "Enzo pose une question à choix multiple (banque ci-dessous). Les équipes disposent de 30 secondes de concertation à voix basse, puis le porte-parole annonce la lettre choisie.",
+          "Bonne réponse = 2 points ; bonne réponse ARGUMENTÉE (l'équipe cite la règle ou le texte) = 3 points. Le formateur arbitre.",
+          "Question 1 : Dépôt de garantie max en vide ? (a) 1 mois HC (b) 2 mois HC (c) 3 mois HC. / Q2 : GLI et caution se cumulent ? (a) jamais (b) toujours (c) non, sauf étudiant ou apprenti. / Q3 : Honoraires locataire en zone tendue ? (a) 8 €/m² (b) 10 €/m² + 3 €/m² état des lieux (c) 1 mois de loyer. / Q4 : Classe DPE interdite à la location depuis le 1er janvier 2025 ? (a) F (b) G (c) E. / Q5 : Taux d'effort prudent exigé par les GLI ? (a) 33 % (b) 50 % (c) 25 %. / Q6 : Après commandement de payer (loi du 27 juillet 2023), délai pour régulariser ? (a) 2 mois (b) 6 semaines (c) 3 mois. / Q7 : Trêve hivernale ? (a) 1er nov - 31 mars (b) 1er déc - 1er mars (c) 15 oct - 15 avril. / Q8 : Congé du bailleur en location vide, préavis ? (a) 3 mois (b) 6 mois (c) 1 mois.",
+          "Le porte-parole tourne à chaque question pour que tout le monde s'exprime. L'équipe gagnante remporte un gage positif (choisit l'ordre des pauses, un café offert...)."
+        ],
+        "animation": [
+          "Tenez le score visible au paperboard : la compétition dope l'attention bien plus qu'un QCM individuel.",
+          "La prime à l'argumentation est votre meilleur levier pédagogique : elle force les équipes à verbaliser la règle, ce qui l'ancre durablement.",
+          "En cas d'égalité, posez une question subsidiaire de calcul (ex. honoraires d'un T3 de 65 m² en zone tendue : réponse 845 €) pour départager."
+        ],
+        "corrige": [
+          "Q1 : a (1 mois HC en vide). / Q2 : c (pas de cumul, sauf étudiant ou apprenti). / Q3 : b (10 €/m² + 3 €/m² état des lieux en zone tendue ; 12 €/m² en très tendue, 8 €/m² ailleurs). / Q4 : b (classe G interdite depuis le 1er janvier 2025).",
+          "Q5 : a (33 % des revenus nets). / Q6 : b (6 semaines depuis la loi du 27 juillet 2023). / Q7 : a (1er novembre au 31 mars). / Q8 : b (6 mois en vide, 3 mois en meublé, à l'échéance uniquement)."
+        ]
+      },
+      {
+        "titre": "Défi chrono « les calculs du négociateur »",
+        "type": "Défi chrono",
+        "duree": "13 min",
+        "consignes": [
+          "Chaque négociateur reçoit une feuille avec 4 mini-calculs. Enzo lance un chrono de 6 minutes projeté à l'écran. Calculatrice du téléphone autorisée.",
+          "Calcul 1 (Honoraires) : un T3 de 65 m² en zone tendue. Quels honoraires locataire (hors état des lieux) puis avec état des lieux ?",
+          "Calcul 2 (Révision IRL) : loyer actuel 700 €, l'IRL passe de 140,00 à 143,50. Quel nouveau loyer ?",
+          "Calcul 3 (Dépôt) : studio meublé loué 600 € HC + 50 € de charges. Dépôt de garantie maximum ?",
+          "Calcul 4 (Restitution) : loyer 800 € HC, retenue justifiée de 250 € (devis peinture), mais le bailleur rend le dépôt avec 2 mois de retard injustifié. Que doit-il verser au total au locataire ?",
+          "À la fin du chrono, correction collective : Enzo interroge pour chaque calcul un négociateur différent qui explique sa démarche au tableau."
+        ],
+        "animation": [
+          "Le chrono crée une saine pression : annoncez « plus que 2 minutes » pour relancer l'énergie.",
+          "Insistez sur la MÉTHODE, pas seulement le résultat : un négociateur qui sait poser le calcul devant un propriétaire inspire confiance et évite les trop-perçus.",
+          "Rappelez que le piège classique est de calculer le dépôt meublé sur le loyer charges comprises : c'est toujours sur le loyer HORS charges."
+        ],
+        "corrige": [
+          "Calcul 1 : 65 × 10 = 650 € d'honoraires + 65 × 3 = 195 € pour l'état des lieux, soit 845 € au total (sans jamais dépasser la part payée par le bailleur).",
+          "Calcul 2 : 700 × 143,50 / 140,00 = 717,50 € (hausse de +2,5 %).",
+          "Calcul 3 : dépôt meublé = 2 mois de loyer HORS charges = 2 × 600 = 1 200 € (les 50 € de charges ne comptent pas).",
+          "Calcul 4 : 800 − 250 = 550 € de dépôt résiduel, + pénalité de retard de 10 % du loyer mensuel HC par mois entamé = 2 × 80 = 160 €, soit 710 € dus au locataire."
+        ]
+      },
+      {
+        "titre": "Étude de cas en binômes « le mandat piégé »",
+        "type": "Étude de cas",
+        "duree": "12 min",
+        "consignes": [
+          "Enzo distribue (ou projette) le cas suivant aux binômes : « Mme R. confie à l'agence un T2 de 38 m² à Martigues, classé G au DPE. Elle veut le relouer meublé début 2025, à un loyer identique au précédent locataire parti il y a 8 mois. Elle propose un candidat : son neveu, étudiant, qu'elle voudrait voir loger sans trop de paperasse. »",
+          "Chaque binôme a 6 minutes pour lister par écrit tous les problèmes juridiques du dossier et les solutions concrètes à proposer à Mme R.",
+          "Restitution : chaque binôme donne UN problème repéré, sans répéter ceux déjà cités. Enzo complète et structure au tableau.",
+          "Objectif : montrer qu'un seul mandat peut cumuler plusieurs pièges (DPE, encadrement de l'évolution, meublé, dossier) et qu'on doit tout vérifier AVANT de signer."
+        ],
+        "animation": [
+          "Laissez les binômes chercher sans souffler : l'inconfort initial est pédagogique, les solutions trouvées par eux s'ancrent mieux.",
+          "Faites tourner la parole pour que chaque binôme apporte un élément : cela valorise tout le monde et évite qu'une seule personne réponde.",
+          "Reliez le cas au terrain de Martigues : « Combien de mandats classés F ou G avez-vous en portefeuille ? » pour rendre l'enjeu concret."
+        ],
+        "corrige": [
+          "Passoire G : interdiction de signer un nouveau bail depuis le 1er janvier 2025. Vérifier d'abord si le bien (< 40 m²) bénéficie du nouveau calcul du DPE (arrêté du 25 mars 2024, attestation ADEME) ; sinon orienter vers des travaux pour atteindre E/D.",
+          "Loyer gelé : logement F/G, loyer gelé depuis le 24 août 2022 (ni révision IRL, ni réévaluation à la relocation) tant que le bien reste F ou G.",
+          "Meublé : vérifier que le logement comporte les 11 éléments obligatoires (décret du 31 juillet 2015), sinon risque de requalification en vide.",
+          "Dossier du neveu : pas de passe-droit familial. Constituer un dossier conforme (pièces autorisées uniquement), vérifier solvabilité / taux d'effort ; pour un étudiant, caution solidaire ou Visale possible (cumul GLI + caution autorisé pour un étudiant).",
+          "Conclusion à présenter à Mme R. : tant que le bien reste G, il est non relouable et le loyer est gelé ; la bonne stratégie est rénovation d'abord, relocation ensuite."
+        ]
+      }
+    ],
+    "jeuxRole": [
+      {
+        "titre": "« Je veux relouer ma passoire » - téléphone avec un propriétaire pressé",
+        "contexte": "M. B., propriétaire d'un T3 classé G à Martigues, appelle l'agence en février 2025. Son locataire est parti, il veut relouer vite, au même loyer, et s'agace des 'nouvelles contraintes'. Le négociateur doit lui expliquer l'interdiction de location et le gel du loyer sans le braquer, tout en sécurisant le mandat (travaux, relocation future).",
+        "roleA": "Le propriétaire M. B. : pressé, veut du revenu locatif tout de suite, pense que 'ces histoires de DPE, c'est bon pour les autres', menace à demi-mot de confier le bien à une autre agence.",
+        "roleB": "Le négociateur : doit annoncer une mauvaise nouvelle (bien non relouable + loyer gelé), rester factuel et pédagogue, transformer la contrainte en opportunité (valorisation du bien après travaux, pérennité locative) pour garder le mandat.",
+        "objectif": "S'entraîner à annoncer une contrainte légale bloquante à un client mécontent, en restant ferme sur le droit et constructif sur la solution, sans perdre la relation commerciale.",
+        "debrief": [
+          "Le négociateur a-t-il été clair et exact sur l'interdiction (classe G depuis le 1er janvier 2025) et le gel du loyer (depuis le 24 août 2022) ?",
+          "A-t-il pensé à vérifier le nouveau calcul DPE pour les < 40 m² (attestation ADEME) avant d'envoyer le propriétaire en travaux ?",
+          "Comment a-t-il transformé une mauvaise nouvelle en proposition de valeur (rénovation = déblocage du loyer + bien louable + valorisation) ?",
+          "Le ton : a-t-il tenu la ligne juridique sans agressivité ni excuse de faiblesse ? Qu'aurait-on pu dire autrement pour sécuriser le mandat ?"
+        ]
+      },
+      {
+        "titre": "« Mon dossier est un peu juste » - visite et candidature au-dessus du taux d'effort",
+        "contexte": "En fin de visite d'un appartement, une candidate très motivée gagne 2 000 € net pour un loyer CC de 780 € (taux d'effort de 39 %, au-delà du seuil GLI). Elle insiste pour déposer son dossier et propose spontanément 'd'apporter son relevé de compte et une attestation de non-crédit pour rassurer'. Le négociateur doit gérer sans discriminer, sans réclamer de pièce interdite, et proposer une garantie adaptée.",
+        "roleA": "La candidate : sympathique et insistante, veut absolument le logement, propose d'elle-même des pièces interdites, se dit prête 'à tout' pour prouver sa bonne foi.",
+        "roleB": "Le négociateur : doit refuser poliment les pièces interdites, expliquer qu'on ne juge que la solvabilité (jamais l'origine, la situation de famille...), et proposer une solution de garantie (caution solidaire d'un parent, ou Visale si < 31 ans).",
+        "objectif": "Savoir sécuriser un dossier limite sans commettre d'infraction (pièce interdite, discrimination) et orienter vers la bonne garantie plutôt que de 'bricoler' le dossier.",
+        "debrief": [
+          "Le négociateur a-t-il refusé les pièces interdites (relevé bancaire, attestation de non-crédit) en expliquant le cadre, sans vexer la candidate ?",
+          "A-t-il correctement calculé et nommé le taux d'effort (780 / 2000 = 39 %) et expliqué pourquoi la GLI ne suivra pas en l'état ?",
+          "A-t-il proposé une solution concrète et légale (caution solidaire justifiant de revenus suffisants, ou Visale si moins de 31 ans) ?",
+          "A-t-il évité tout propos pouvant ressembler à une sélection sur un critère prohibé ? Comment a-t-il gardé la candidate en confiance tout en protégeant le bailleur ?"
+        ]
+      }
+    ],
+    "pointsCles": [
+      "La loi du 6 juillet 1989 est d'ordre public : toute clause défavorable au locataire qui y déroge est réputée non écrite. Un bail au modèle type, complet et bien annexé, c'est 90 % du contentieux évité.",
+      "Les durées : vide 3 ans (personne physique / SCI familiale) ou 6 ans (personne morale), meublé 1 an, étudiant 9 mois non reconductible, bail mobilité 1 à 10 mois sans dépôt.",
+      "Dossier locataire : liste limitative de pièces autorisées (décret du 5 novembre 2015), zéro pièce interdite, sélection sur la seule solvabilité (taux d'effort ~33 %), jamais sur un critère discriminatoire. Amende jusqu'à 3 000 € / 15 000 €.",
+      "Garanties : caution simple ou solidaire, GLI (2,5 à 4 % du loyer CC), Visale (gratuite, 18-30 ans). GLI et caution ne se cumulent pas, sauf étudiant ou apprenti.",
+      "Honoraires locataire plafonnés au m² de surface habitable : 12 €/m² (très tendue), 10 €/m² (tendue), 8 €/m² (reste), + 3 €/m² pour l'état des lieux, sans dépasser la part du bailleur.",
+      "Révision du loyer : uniquement s'il existe une clause, une fois par an, via l'IRL, non rétroactive. En zone tendue, encadrement de l'évolution ; dans certaines villes, encadrement du niveau (loyer de référence majoré).",
+      "Décence énergétique : loyers F/G gelés depuis le 24 août 2022 ; interdiction de louer les G depuis le 1er janvier 2025, les F en 2028, les E en 2034. On vérifie le DPE AVANT de prendre le mandat.",
+      "État des lieux contradictoire précis (photos, compteurs, clés) = la meilleure assurance de fin de bail. Pas de retenue sur la vétusté, uniquement sur les dégradations justifiées par devis ou factures.",
+      "Dépôt de garantie : 1 mois HC en vide, 2 mois HC en meublé, interdit en bail mobilité. Restitution sous 1 mois (ou 2 avec retenues), pénalité de 10 % du loyer mensuel HC par mois de retard.",
+      "Congé du bailleur : à l'échéance uniquement, préavis 6 mois (vide) / 3 mois (meublé), pour vente, reprise (bénéficiaire nommé) ou motif légitime et sérieux. Impayé : on agit dès le 1er retard, on respecte la procédure et on ne se fait JAMAIS justice soi-même (expulsion sauvage = délit)."
+    ],
+    "planAction": [
+      "Dès demain, créer et utiliser systématiquement une CHECK-LIST d'annexes au bail (DDT avec DPE, notice d'information, état des lieux, extraits du règlement de copropriété, inventaire si meublé), cosignée à la signature.",
+      "Avant de prendre tout nouveau mandat de gestion, vérifier la classe DPE : si F ou G, alerter le propriétaire sur le gel du loyer et le calendrier d'interdiction, et vérifier l'éligibilité au nouveau calcul pour les logements de moins de 40 m².",
+      "Remettre à plat la grille de constitution des dossiers : ne réclamer QUE les pièces autorisées, afficher la règle anti-discrimination, et calculer le taux d'effort (objectif ≤ 33 %) pour chaque candidat.",
+      "Systématiser l'état des lieux d'entrée rigoureux : photos datées, relevés de compteurs, nombre et état des clés, et proposer une grille de vétusté annexée au bail.",
+      "Mettre en place une alerte de suivi des loyers : appliquer la révision IRL chaque année à la date du bail (si clause présente) pour ne jamais 'perdre' une révision, et réagir dès le premier jour de retard de paiement.",
+      "Pour chaque bien, proposer au propriétaire la garantie la plus adaptée (GLI, caution solidaire ou Visale) et vérifier le respect des plafonds d'honoraires et de dépôt de garantie avant la signature."
+    ],
+    "notesFormateur": [
+      "Tenez le minutage : chaque jeu a une durée affichée, utilisez un chrono projeté. Si un échange déborde, notez le point sur un 'parking' au paperboard et reprenez-le à la synthèse plutôt que de sacrifier un jeu.",
+      "Faites participer tout le monde : imposez la rotation des porte-parole au quiz-battle et interrogez nommément les plus discrets sur les corrections, en valorisant toujours la tentative.",
+      "Ancrez par le concret de Martigues : ramenez chaque règle à un bien réel du portefeuille (le studio près de Lavéra, le T2 classé G...) ; les acquis abstraits ne tiennent pas, les cas vécus oui.",
+      "Privilégiez la verbalisation de la règle : demandez 'pourquoi ?' plus souvent que 'quelle est la réponse ?'. C'est la justification qui fixe la connaissance en mémoire.",
+      "Reliez le plan d'action à la séance suivante : annoncez qu'au prochain point d'équipe, chacun partagera un cas où il a appliqué la check-list d'annexes ou refusé une pièce interdite. L'engagement public augmente le passage à l'acte.",
+      "Gérez l'émotion sur les sujets sensibles (impayés, expulsion, discrimination) : rappelez que la rigueur juridique protège AUSSI le négociateur et l'agence, pas seulement le locataire ou le bailleur."
+    ]
   }
 };
