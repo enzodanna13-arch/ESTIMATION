@@ -248,98 +248,101 @@ export const ANIMATIONS_DATA: Record<string, AnimationModule> = {
       "Préparer le matériel en amont : pancartes A/B/C/D, paperboard et feutres, chrono/minuteur, fiches-annonces fictives du secteur, fiche mémo « conformité 2026 », et un petit lot pour le quiz-battle."
     ],
     "materiel": [
-      "Paperboard + feutres : tracer en direct le « tunnel » prospection (contacts > RDV estimation > mandats) et faire calculer à la salle leur propre ratio.",
-      "Chronomètre ou minuteur de telephone : pour les jeux de role d'appel de pige limites a 2-3 minutes et pour imposer le rythme (on decroche un RDV, on ne vend pas au telephone).",
-      "Jeu de cartes VRAI/FAUX (format A5) sur le cadre legal : Bloctel, horaires de demarchage, RGPD, demarchage physique.",
-      "Fiches « script d'appel de pige » plastifiees, une par binome, avec la trame AIDA et 5 objections pre-imprimees au dos.",
-      "Videoprojecteur pour afficher une annonce de pige reelle (Leboncoin / PAP secteur Martigues) et la decortiquer ensemble en live.",
-      "Un tableau d'objectifs hebdo vierge (contacts/jour, plages de phoning, secteurs de boitage) a remplir et emporter en fin de seance."
+      "Un fichier de pige à jour (SeLoger, Leboncoin, Bien'ici, PAP) et un tableur ou CRM pour tracer chaque bien pigé avec date de parution, prix et coordonnées.",
+      "Un script d'appel de pige imprimé, plus une trame de relance : objectif unique écrit en haut de la feuille, « décrocher le rendez-vous ».",
+      "Le calendrier légal du démarchage affiché au mur : jours et horaires autorisés, échéance de l'opt-in au 11 août 2026, plafond de sollicitations.",
+      "Un plan sectorisé de Martigues (Jonquières, Ferrières, L'Île, La Couronne, Carro, Lavéra, Croix-Sainte) pour découper la zone de prospection terrain.",
+      "Des cartes de visite, des flyers « estimation offerte » et un carnet pour la prospection physique et le porte-à-porte.",
+      "Un chronomètre ou un bloc horaire bloqué dans l'agenda (9 h-11 h) sanctuarisé pour la prospection pure."
     ],
     "messagesCles": [
-      "La prospection n'est pas une corvee entre deux visites : c'est LE metier. Pas de prospection, pas de mandats, pas de salaire.",
-      "Au telephone on ne vend pas le bien ni l'estimation : on vend UNE SEULE chose, le rendez-vous.",
-      "La regularite bat l'intensite : 1h de phoning tous les matins ecrase 7h une fois par mois.",
-      "Un « non » n'est pas un echec, c'est une statistique : il vous rapproche du prochain « oui ».",
-      "Le fichier, c'est votre fonds de commerce : un contact non rappele est un mandat offert au confrere."
+      "On n'est pas payé pour vendre des biens, on est payé pour rentrer des mandats : la prospection est l'activité numéro un.",
+      "La prospection paie en différé : un contact d'aujourd'hui signe dans 3 à 9 mois, donc on prospecte tous les jours, même quand le stock est plein.",
+      "C'est un jeu de ratios, pas de chance : pour avoir plus de mandats, soyez d'abord plus nombreux en haut du tunnel.",
+      "La réactivité bat le talent : le vendeur retient le premier professionnel qui l'appelle sérieusement dans les 24 à 48 h.",
+      "Ne confondez pas activité et agitation : répondre à ses mails et classer ses dossiers n'est pas prospecter."
     ],
-    "scriptOuverture": "Aujourd'hui, on va parler de la seule activite qui fait vraiment vivre un negociateur : la prospection. Je vais vous poser une question simple et un peu brutale : si demain vous arretiez de prospecter, combien de temps avant que votre pipe soit vide ? Deux mois ? Trois ? La verite, c'est que tout le reste - les visites, les offres, les signatures - n'existe que parce qu'un jour vous avez decroche un telephone ou frappe a une porte. Ce matin, on va demystifier la pige, muscler votre script d'appel, securiser le cadre legal, et surtout vous faire repartir avec un plan d'action que vous appliquez des lundi sur votre secteur. Prevenez-moi tout de suite : qui ici a passe au moins un appel de pige cette semaine ?",
+    "scriptOuverture": "Aujourd'hui, on va parler de la seule chose qui remplit votre compte en banque : rentrer des mandats. Je vais vous montrer que la prospection n'est pas une question de chance ni de talent, mais un jeu de chiffres que vous pouvez piloter. On va décortiquer la pige, le phoning, le terrain, et le nouveau cadre légal qui change la donne en 2026. À la fin de la séance, chacun repartira avec un objectif quotidien chiffré et un créneau bloqué dans son agenda. Et je vous préviens tout de suite : celui qui attend d'avoir « le temps » pour prospecter ne l'aura jamais.",
     "questionsPublic": [
-      "Pour vous, c'est quoi la mission numero 1 d'un negociateur ? On fait le tour de la salle.",
-      "Combien de contacts estimez-vous devoir prendre pour decrocher un mandat ? D'ou sort ce chiffre ?",
-      "Qu'est-ce qui vous bloque concretement avant de lancer une session de phoning : le script, la peur du non, le manque de temps ?",
-      "Quand vous appelez une annonce de particulier, quel est l'objectif exact de l'appel ? En une phrase.",
-      "Quelles sont les trois premieres secondes d'un appel de pige ? Qu'est-ce qu'on dit, qu'est-ce qu'on ne dit pas ?",
-      "Un proprietaire vous dit 'je suis deja avec plusieurs agences' : vous raccrochez ou vous rebondissez, et comment ?",
-      "Sur votre secteur, ou se trouvent vos meilleurs gisements de pige : quels quartiers, quels types de biens ?",
-      "Qui a deja utilise le levier 'j'ai un acquereur pour votre quartier' ? Ca a donne quoi ?",
-      "Combien de fois relancez-vous un vendeur avant de le classer 'perdu' ?",
-      "Qu'est-ce que vous faites de vos anciens clients et de votre entourage : vous les sollicitez, ou ils dorment dans votre telephone ?"
+      "Combien de nouveaux contacts vendeurs avez-vous créés hier, précisément ?",
+      "Qu'est-ce qui vous empêche concrètement de bloquer deux heures de prospection par jour ?",
+      "Quand votre stock de mandats remonte, qu'est-ce que vous faites de votre temps de pige ?",
+      "Entre un bien pigé il y a dix jours et un bien paru ce matin, lequel appelez-vous en premier et pourquoi ?",
+      "Quel est, selon vous, l'objectif réel d'un appel de pige ?",
+      "Comment réagissez-vous quand un vendeur vous dit « je suis déjà en agence » ?",
+      "Savez-vous quels jours et à quelles heures vous avez le droit d'appeler un particulier aujourd'hui ?",
+      "Que va changer pour vous l'obligation de consentement préalable au 11 août 2026 ?",
+      "Sur votre secteur de Martigues, où allez-vous physiquement prospecter cette semaine ?",
+      "Combien de vos mandats de l'an dernier venaient de la recommandation d'un ancien client ?"
     ],
     "exemplesTerrain": [
       {
-        "titre": "La pige du matin a Jonquieres",
-        "texte": "Un negociateur de l'agence bloque sa plage de pige chaque matin de 9h30 a 10h30. Sur 20 annonces de particuliers passees en revue sur Martigues (Jonquieres, L'Ile, Ferrieres), il joint en moyenne 6 proprietaires, obtient 1 a 2 rendez-vous d'estimation, et transforme environ 1 mandat toutes les 3 semaines. Multiplie par 11 mois actifs, c'est a lui seul une quinzaine de mandats piges par an."
+        "titre": "Le négociateur au stock vide à Icaza Immobilier",
+        "texte": "Un négociateur de l'agence se plaignait de n'avoir aucun mandat sur le mois. En remontant son tunnel, on a vu qu'il avait pigé 12 biens en 30 jours, là où il en fallait près de 80. On lui a fixé 5 biens pigés et 10 appels par jour, de 9 h à 11 h. Les deux premiers mandats sont tombés 70 jours plus tard : c'est tout le principe du différé."
       },
       {
-        "titre": "Le T3 de Croix-Sainte parti en 15 jours",
-        "texte": "Un proprietaire pige sur Leboncoin affichait son T3 a 198 000 euros en direct depuis 2 mois sans visite serieuse. Rappele en pige, il accepte un RDV d'estimation. Le bien est repositionne a 182 000 euros avec photos pro et home-staging leger : compromis signe en 15 jours. L'argument qui a fait mouche : 'votre annonce tourne depuis 60 jours, chaque semaine de plus vous coute en credibilite aupres des acheteurs du secteur'."
+        "titre": "Le même bien, deux réactivités à Jonquières",
+        "texte": "Un appartement T3 est paru un mardi matin sur Leboncoin à Jonquières. Un confrère a appelé le propriétaire à 18 h le soir même, nous avons rappelé le jeudi. Le vendeur avait déjà donné son accord verbal pour un rendez-vous au premier appelant. Piger dans les 24 à 48 h n'est pas un détail, c'est souvent toute la différence."
       },
       {
-        "titre": "Le boitage cible autour de la Couronne",
-        "texte": "Sur le littoral (La Couronne, Carro, Sausset a proximite), ou les maisons vue mer se vendent vite, un negociateur distribue 300 flyers 'recherche maison pour acquereur reel' sur un micro-secteur. Resultat typique : 3 a 4 appels entrants, 1 estimation, parfois un mandat exclusif sur un bien jamais mis en vente. Le boitage ne paie pas tout de suite, mais le secteur travaille pour vous pendant des mois."
+        "titre": "La loi des grands nombres sur le secteur de Ferrières",
+        "texte": "Sur un mois travaillé à Ferrières, 100 biens pigés ont donné 28 vendeurs réellement joignables, 9 rendez-vous d'estimation et 3 mandats signés. La négociatrice ne piquait pas mieux qu'avant : elle avait simplement doublé le volume d'entrée. La qualité des appels a suivi avec l'entraînement, pas l'inverse."
       },
       {
-        "titre": "L'ancien client qui rapporte deux fois",
-        "texte": "Une cliente a qui l'agence a vendu un appartement a Ferrieres il y a 3 ans est rappelee dans le cadre d'un phoning 'prise de nouvelles'. Elle n'a pas de projet, mais sa soeur cherche a vendre une maison a Saint-Julien : recommandation, RDV, mandat. Le cout d'acquisition de ce mandat : un appel de 4 minutes a un contact deja dans le fichier."
+        "titre": "Le PAP qui change d'avis à La Couronne",
+        "texte": "Un propriétaire en vente de particulier à particulier à La Couronne refusait toute agence. Relancé poliment une fois par mois pendant quatre mois, il a fini par appeler l'agence le jour où son acquéreur s'est désisté au compromis. L'assiduité de la relance a transformé un « non » de départ en mandat exclusif."
       }
     ],
     "objectionsStagiaires": [
       {
-        "question": "La pige, c'est deja fait par les autres agences, a quoi bon rappeler un vendeur deja sollicite ?",
-        "reponse": "Justement : la plupart des negociateurs abandonnent apres le premier 'non'. Le vendeur qui a dit non il y a 15 jours n'a souvent toujours pas vendu. Votre valeur n'est pas d'etre le premier, mais le plus regulier et le plus pertinent. Relancez avec un angle neuf (un acquereur, une vente comparable dans sa rue) et vous passez devant ceux qui ont lache."
+        "question": "Je déteste le téléphone, est-ce que je peux faire sans phoning ?",
+        "reponse": "On peut compenser une partie par le terrain, le digital et la recommandation, mais pas supprimer le contact direct. Le téléphone reste le canal le plus rapide pour décrocher un rendez-vous. On va travailler un script simple pour que l'appel devienne un réflexe et non une épreuve : le malaise disparaît vers le trentième appel."
       },
       {
-        "question": "J'ai peur de deranger, de me faire raccrocher au nez, c'est violent le phoning.",
-        "reponse": "Le rejet n'est pas dirige contre vous, il est dirige contre une interruption. On le dedramatise avec le chiffre : si 1 appel sur 10 donne un RDV, chaque 'non' vous rapproche mecaniquement du 'oui' et a donc une valeur. Un script solide et un objectif clair (le RDV, pas la vente) divisent la pression par deux. Et on s'entraine ici, en salle, avant le terrain."
+        "question": "Les gens me raccrochent au nez, à quoi bon insister ?",
+        "reponse": "Un raccrochage n'est pas un échec, c'est une statistique attendue dans un jeu de ratios. Sur 100 biens pigés, on vise une trentaine de vrais échanges : le reste fait partie du tri. L'objectif n'est jamais de convaincre tout le monde, mais d'obtenir assez de rendez-vous pour nourrir le tunnel."
       },
       {
-        "question": "Le demarchage telephonique, ce n'est pas interdit maintenant ?",
-        "reponse": "Non, mais c'est strictement encadre. On ne peut pas appeler un particulier inscrit sur Bloctel sans relation contractuelle preexistante, uniquement dans les plages autorisees (lundi-vendredi 10h-13h et 14h-20h, jamais le week-end ni les jours feries), et au maximum 4 sollicitations par mois. Attention : la loi du 22 avril 2024 bascule vers le consentement prealable (opt-in) a compter du 11 aout 2026 - a partir de la, il faudra l'accord du prospect avant d'appeler. La pige d'une annonce ou le proprietaire sollicite publiquement le marche reste, elle, une demarche differente a securiser au cas par cas."
+        "question": "Avec l'opt-in de 2026, est-ce que le démarchage téléphonique est fini ?",
+        "reponse": "Non, mais il change de forme. À partir du 11 août 2026, il faut un consentement préalable du particulier avant de l'appeler à des fins commerciales. On s'y prépare dès maintenant en bâtissant notre propre base de contacts consentants : formulaires, estimations en ligne, réseau, recommandation. Ceux qui auront anticipé seront les seuls à pouvoir encore appeler sereinement."
       },
       {
-        "question": "Je n'ai pas le temps de prospecter, je suis deja debor de par les visites et l'administratif.",
-        "reponse": "C'est l'inverse qu'il faut voir : vous etes deborde aujourd'hui grace a la prospection d'hier. Si vous arretez, dans 2 mois vous aurez tout le temps du monde... et plus de mandats. La solution n'est pas d'avoir plus de temps, c'est de sanctuariser une plage non negociable chaque matin, telephone en mode avion coupe pour le reste."
+        "question": "Je prospecte, mais rien ne signe, je perds mon temps ?",
+        "reponse": "C'est le différé qui vous joue des tours : ce que vous semez aujourd'hui lève dans 3 à 9 mois. Si vous arrêtez dès que ça ne signe pas tout de suite, vous creusez un trou de chiffre d'affaires quatre mois plus tard. Tenez le rythme sans regarder le résultat du jour, regardez la courbe sur le trimestre."
       },
       {
-        "question": "Le porte-a-porte, ca ne se fait plus, les gens n'ouvrent pas.",
-        "reponse": "Le porte-a-porte 'a froid' marche moins, c'est vrai. Mais la pige physique (aller voir une maison affichee en vente par un particulier) et le boitage cible fonctionnent toujours tres bien sur un secteur comme Martigues ou le bouche-a-oreille compte. L'objectif du terrain n'est pas de vendre sur le pas de la porte, c'est de vous faire connaitre et de recolter du renseignement de quartier que personne d'autre n'a."
+        "question": "Je n'ai pas le temps de prospecter, j'ai déjà trop de dossiers à suivre.",
+        "reponse": "Le temps de prospection ne se trouve pas, il se bloque. La règle des trois tiers répartit votre semaine : un tiers prospection, un tiers découverte et estimations, un tiers vente et suivi. Si l'administratif mange la prospection, c'est le stock qui s'effondre et, dans quelques mois, c'est vous qui n'aurez plus de dossiers à suivre."
       },
       {
-        "question": "Les leads internet, c'est plus moderne, pourquoi s'embeter avec le telephone ?",
-        "reponse": "Le digital et le personal branding alimentent le haut du tunnel, c'est excellent, mais un lead qui n'est pas rappele dans l'heure est souvent perdu. Le digital et le phoning ne s'opposent pas : le digital genere le contact, le telephone le transforme en RDV. Celui qui ne sait faire que l'un des deux laisse la moitie de ses mandats au concurrent."
+        "question": "Comment prospecter un secteur où trois agences sont déjà installées ?",
+        "reponse": "La concurrence prouve qu'il y a du volume de ventes à capter. On gagne par la régularité et la réactivité, pas par la présence. Sectorisez finement un quartier de Martigues, devenez le visage connu des commerçants et des gardiens, et pigez plus vite que les autres : la part de marché se prend contact par contact."
       },
       {
-        "question": "Mes anciens clients ne vont pas revendre avant des annees, les rappeler ne sert a rien.",
-        "reponse": "Vous ne les rappelez pas pour qu'ils revendent, vous les rappelez pour la recommandation. Un client satisfait connait en moyenne plusieurs personnes avec un projet immobilier dans les 24 mois. Votre sphere d'influence est votre gisement le moins cher et le plus chaud : encore faut-il l'entretenir au lieu de la laisser dormir."
+        "question": "Faut-il noter tous les contacts, même ceux qui disent non ?",
+        "reponse": "Surtout ceux-là. Un vendeur non tracé est un vendeur perdu, et un « non » d'aujourd'hui est souvent un « oui » dans six mois. Le CRM transforme un refus ponctuel en opportunité datée : vous rappelez au bon moment, quand le projet mûrit."
       }
     ],
     "erreursFrequentes": [
-      "Erreur : vouloir 'vendre l'estimation' des le premier appel -> Correction : ne viser qu'une seule chose au telephone, decrocher le rendez-vous ; on garde les arguments de fond pour le face-a-face.",
-      "Erreur : prospecter par a-coups, une grosse session puis trois semaines de rien -> Correction : installer une plage quotidienne fixe et courte, la regularite prime sur l'intensite.",
-      "Erreur : ne jamais relancer un vendeur qui a dit non -> Correction : planifier systematiquement 3 a 5 relances espacees avec un angle nouveau a chaque fois.",
-      "Erreur : improviser son appel sans trame -> Correction : utiliser un script structure (accroche, raison de l'appel, question d'engagement, prise de RDV) et le personnaliser.",
-      "Erreur : parler 80 % du temps et 'reciter' -> Correction : poser une question ouverte tot et ecouter, l'appel de pige est un dialogue, pas un monologue.",
-      "Erreur : negliger ou mal tenir son fichier de contacts -> Correction : noter chaque echange, dater la prochaine relance, traiter le CRM comme son fonds de commerce.",
-      "Erreur : ignorer le cadre legal (Bloctel, horaires, RGPD) -> Correction : verifier les regles de demarchage et la base de consentement avant d'appeler, surtout avec l'opt-in de 2026.",
-      "Erreur : abandonner apres une journee sans resultat -> Correction : raisonner en ratios sur la semaine et le mois, pas sur l'emotion d'une mauvaise matinee."
+      "Attendre d'avoir le temps de prospecter → bloquer un créneau fixe dans l'agenda, par exemple 9 h-11 h, non négociable.",
+      "Confondre activité et agitation → mesurer sa journée au seul nombre de nouveaux contacts vendeurs créés, pas aux mails traités.",
+      "Arrêter de prospecter dès que le stock remonte → maintenir le rythme quotidien pour lisser les creux dus au différé de 3 à 9 mois.",
+      "Vouloir vendre le mandat au téléphone → se fixer un seul objectif d'appel, décrocher le rendez-vous en face-à-face.",
+      "Donner le prix d'estimation au téléphone → réserver l'avis de valeur à la rencontre physique, où l'on vend aussi ses services.",
+      "Ne pas tracer les contacts dans un CRM → noter chaque échange avec date et relance programmée, y compris les refus.",
+      "Piger un bien plusieurs jours après sa parution → appeler dans les 24 à 48 h pour être le premier professionnel sérieux.",
+      "Ignorer le cadre légal du démarchage → respecter les horaires autorisés et préparer l'opt-in du 11 août 2026 dès aujourd'hui."
     ],
     "chiffresCles": [
-      "Demarchage telephonique : plages autorisees lundi-vendredi 10h-13h et 14h-20h, interdit le week-end et les jours feries ; maximum 4 sollicitations par mois par professionnel (decret du 13 octobre 2022).",
-      "Bloctel : interdiction d'appeler un particulier inscrit sans relation contractuelle preexistante.",
-      "Loi du 22 avril 2024 : passage au consentement prealable (opt-in) du prospect a compter du 11 aout 2026.",
-      "RGPD : prospection par email et SMS vers les particuliers soumise a l'opt-in ; droit d'opposition a tout moment.",
-      "Ratio de pilotage a faire calculer : nombre de contacts -> RDV estimation -> mandats, propre a chaque negociateur, a suivre chaque semaine.",
-      "Regle de reactivite : un lead entrant rappele dans l'heure se transforme bien mieux qu'un lead rappele le lendemain."
+      "Règle des 3 tiers du temps : 1/3 prospection, 1/3 découverte et estimations, 1/3 vente et suivi.",
+      "Au moins 2 heures de prospection pure par jour pour ne pas subir de trous de stock.",
+      "Délai entre premier contact et signature du mandat : 3 à 9 mois (le différé de la prospection).",
+      "Tunnel type : 100 biens pigés donnent environ 30 vendeurs qualifiés, 10 rendez-vous d'estimation, 3 à 4 mandats, 2 à 3 ventes.",
+      "Réactivité de pige : contacter le bien dans les 24 à 48 h suivant sa parution.",
+      "Démarchage téléphonique (décret n° 2022-1313 du 13 octobre 2022, en vigueur depuis le 1er mars 2023) : lundi au vendredi, 10 h-13 h et 14 h-20 h ; samedi, dimanche et jours fériés interdits.",
+      "Plafond de 4 sollicitations téléphoniques par mois pour un même consommateur.",
+      "11 août 2026 : passage au consentement préalable (opt-in) obligatoire avant tout appel commercial vers un particulier.",
+      "Objectif de démarrage conseillé : 5 biens pigés et 10 appels par jour."
     ],
     "glossaire": [
       {
@@ -681,98 +684,100 @@ export const ANIMATIONS_DATA: Record<string, AnimationModule> = {
       "Clôturer sur l'action : revenez au mur de post-it du brise-glace et faites écrire à chacun ses 2 ou 3 engagements du lendemain — le plan d'action est le vrai livrable de la séance."
     ],
     "materiel": [
-      "Fiche de qualification vierge (type BANT immobilier) imprimee en nombre : support du RDV R1 et fil rouge de la seance.",
-      "Paperboard pour afficher la regle 70/30 et la grille des questions ouvertes/fermees/ricochet.",
-      "Cartons SONCAS(E) (7 cartes : Securite, Orgueil, Nouveaute, Confort, Argent, Sympathie, Ecologie) a distribuer pour les jeux de role.",
-      "Chronometre pour imposer les jeux de role en binome (un joue le vendeur, un la decouverte) sur 7-8 minutes.",
-      "Grille d'auto-evaluation 'temps de parole' : l'observateur coche chaque fois que le negociateur coupe ou parle plus de 20 secondes d'affilee.",
-      "Videoprojecteur pour diffuser un extrait d'entretien de decouverte (bon et mauvais) a commenter en groupe."
+      "Une trame de découverte vendeur et une trame acquéreur imprimées, structurées en entonnoir du large vers le précis.",
+      "La grille SONCAS affichée (Sécurité, Orgueil, Nouveauté, Confort, Argent, Sympathie) pour repérer les motivations en direct.",
+      "Un bloc-notes et un stylo pour prendre des notes devant le client, avec son accord, et valoriser sa parole.",
+      "Une fiche de qualification financière acquéreur : apport, revenus, prêt en cours, simulation de taux d'endettement.",
+      "Une liste des cinq familles de questions (ouvertes, fermées, alternatives, ricochet, miroir) comme aide-mémoire.",
+      "Un chronomètre mental ou un rappel visuel de la règle 70/30 pour s'obliger à écouter plus qu'on ne parle."
     ],
     "messagesCles": [
-      "Celui qui pose les questions mene l'entretien ; celui qui parle croit mener, mais il subit.",
-      "On vise 70 % d'ecoute, 30 % de parole : vos deux oreilles valent mieux que votre bouche.",
-      "On ne qualifie pas pour cocher des cases, on qualifie pour comprendre la VRAIE motivation derriere le projet.",
-      "Un acquereur sans financement valide n'est pas un acquereur, c'est un visiteur.",
-      "La synthese finale ('si je resume, vous voulez...') est le moment qui transforme la decouverte en mandat ou en offre."
+      "On ne convainc jamais sans avoir d'abord compris : la découverte précède toujours l'argumentation.",
+      "Écoutez 70 %, parlez 30 % : celui qui pose les questions dirige l'entretien, celui qui parle se livre.",
+      "Le silence est un outil : après une question clé, taisez-vous, le client comble le vide avec l'information essentielle.",
+      "Un acquéreur finançable vaut dix curieux : on qualifie le budget et le financement avant de faire visiter.",
+      "Reformulez pour prouver que vous écoutez, corriger les malentendus et faire dire oui."
     ],
-    "scriptOuverture": "Aujourd'hui, on ne va pas parler de technique de vente - on va parler de quelque chose de plus puissant : savoir se taire et ecouter. Je vais vous dire une chose qui va peut-etre vous surprendre : les meilleurs negociateurs que je connais ne sont pas les plus beaux parleurs, ce sont les meilleurs questionneurs. Un rendez-vous de decouverte rate, c'est un mandat signe trop cher ou une offre qui capote trois semaines plus tard parce qu'on n'a pas compris le vrai besoin. Ce matin, on va travailler votre questionnement, votre ecoute active, et des methodes concretes - MDPP, SONCAS, la fiche de qualification - pour ressortir de chaque RDV avec LA bonne information. Premiere question pour vous : dans un RDV de decouverte, qui doit parler le plus, vous ou le client ?",
+    "scriptOuverture": "Aujourd'hui, on va travailler la phase que tout le monde bâcle et qui fait pourtant la différence : la découverte. Je vais vous prouver qu'un négociateur qui argumente avant d'avoir questionné parle dans le vide. On va apprendre à faire parler le client plus des deux tiers du temps, à poser les bonnes questions dans le bon ordre, et à qualifier vraiment un vendeur, un acquéreur et un bien. On s'entraînera aussi à tenir le silence, parce que c'est souvent là que se livre la vraie motivation. À la fin, vous saurez diriger un entretien sans jamais donner l'impression d'un interrogatoire.",
     "questionsPublic": [
-      "Dans un entretien de decouverte, quelle repartition de parole visez-vous entre vous et le client ?",
-      "Quelle est la difference concrete entre une question ouverte, une question fermee et une question ricochet ? Donnez-moi un exemple de chaque.",
-      "Comment faites-vous quand un vendeur reste evasif sur sa vraie motivation de vente ?",
-      "Chez un acquereur, quel est le tout premier critere a qualifier, avant meme le type de bien ?",
-      "Qu'est-ce que le 'A' de SONCAS, et comment le detectez-vous dans le discours du client ?",
-      "Comment reperez-vous qui, dans un couple, est le vrai decideur ?",
-      "Quels sont les signes qu'un vendeur n'est pas 'chaud', qu'il teste juste le marche ?",
-      "Comment verifiez-vous la capacite de financement d'un acquereur sans le braquer ?",
-      "Quel piege vous fait le plus perdre en decouverte : parler trop, projeter vos propres gouts, ou ne pas oser les questions qui derangent ?",
-      "Comment cloturez-vous un RDV de decouverte pour verrouiller la suite ?"
+      "Quand vous rencontrez un vendeur, qui parle le plus pendant la première demi-heure, lui ou vous ?",
+      "Quelle est, selon vous, la vraie motivation derrière une mise en vente ?",
+      "Comment faites-vous aujourd'hui pour vérifier qu'un acquéreur peut réellement acheter ?",
+      "Quelle est la différence entre une question ouverte et une question fermée, et quand utiliser chacune ?",
+      "Que se passe-t-il dans votre tête quand un silence s'installe après une question ?",
+      "Comment repérez-vous si un client est motivé par l'Argent ou par le Confort au sens de SONCAS ?",
+      "Quand un vendeur dit « je ne suis pas pressé », qu'est-ce que vous en faites ?",
+      "Comment amenez-vous la question du budget sans braquer l'acquéreur ?",
+      "Quels sont les éléments que vous devez absolument qualifier sur le bien lui-même ?",
+      "À quel moment arrêtez-vous de questionner pour commencer à argumenter ?"
     ],
     "exemplesTerrain": [
       {
-        "titre": "La vraie motivation cachee a Saint-Pierre",
-        "texte": "Un couple vend sa maison a Saint-Pierre 'parce qu'elle est trop grande'. En creusant avec des questions ricochet, le negociateur comprend qu'il y a en realite une mutation professionnelle vers Lyon dans 4 mois : delai court, motivation forte. Resultat : prix fixe de maniere realiste pour vendre vite, mandat exclusif accepte, bien vendu en 5 semaines. Sans la vraie motivation, il aurait signe 20 000 euros trop cher et perdu le mandat au bout de 3 mois."
+        "titre": "La vraie motivation cachée à Jonquières",
+        "texte": "Un vendeur à Jonquières affirmait vouloir vendre « pour avoir plus grand ». En creusant par des questions ouvertes et un silence bien placé, on a compris qu'il divorçait et devait solder le crédit avant l'été. Le vrai moteur n'était pas la surface mais le délai : l'estimation et l'argumentaire ont alors porté sur la rapidité de vente, et le mandat a été signé le soir même."
       },
       {
-        "titre": "L'acquereur sans financement a Lavera",
-        "texte": "Un negociateur fait visiter 4 biens a Martigues et Lavera a un 'acheteur' tres enthousiaste. Au bout du 4e, il qualifie enfin le financement : apport insuffisant, taux d'endettement a 42 %, aucun accord de principe bancaire. Trois demi-journees perdues. La lecon martelee : le financement se qualifie AVANT la premiere visite, pas apres la quatrieme."
+        "titre": "Le curieux contre l'acheteur à Ferrières",
+        "texte": "Deux candidats pour une villa à Ferrières à 395 000 €. Le premier, très enthousiaste, n'avait pas d'apport ni d'accord de principe. Le second, plus discret, avait un financement validé et 35 % de taux d'endettement respecté. On a priorisé le second pour la visite et l'offre : il a signé le compromis en dix jours. Un acquéreur finançable vaut dix curieux."
       },
       {
-        "titre": "SONCAS applique a un T2 vue Etang de Berre",
-        "texte": "Deux acquereurs sur le meme T2 a Ferrieres. L'un est 'Securite' : il faut parler copropriete saine, travaux provisionnes, quartier calme. L'autre est 'Orgueil/Nouveaute' : il faut parler vue sur l'Etang, standing, bien rare. Meme bien, deux argumentaires radicalement differents. Celui qui recite le meme discours aux deux en perd un sur deux."
+        "titre": "La projection qui déclenche la décision à Sausset",
+        "texte": "Une vendeuse hésitait à mettre son bien de Martigues en vente pour acheter à Sausset-les-Pins. En lui demandant d'imaginer sa vie dans son futur logement vue mer dans trois mois, on a vu son envie se cristalliser. La projection a fait naître la décision bien plus vite que n'importe quel argument sur le marché."
       },
       {
-        "titre": "Le decideur qu'on avait oublie",
-        "texte": "Lors d'un RDV estimation a Croix-Sainte, le negociateur deroule tout son argumentaire a l'epouse presente, puis apprend que c'est le mari, absent et tres attache a un prix haut, qui tranchera. Il doit tout recommencer. Depuis, la question 'qui participe a la decision ?' est posee des la prise de RDV, pas en fin d'entretien."
+        "titre": "L'enveloppe totale oubliée à La Couronne",
+        "texte": "Un couple visait un bien affiché 300 000 € à La Couronne, en pensant que c'était leur plafond. En raisonnant en enveloppe totale, prix plus frais de notaire à 7-8 % plus honoraires, on arrivait à près de 324 000 €, hors de leur capacité. On a recentré la recherche à 275 000 € affiché, et évité trois visites inutiles et une déception."
       }
     ],
     "objectionsStagiaires": [
       {
-        "question": "Si j'ecoute 70 % du temps, le client va avoir l'impression que je ne maitrise rien, non ?",
-        "reponse": "C'est l'inverse. Un client qui parle beaucoup est un client qui se sent compris, donc en confiance. Votre maitrise se voit a la qualite de vos questions et a votre synthese finale, pas au volume de votre discours. Celui qui monopolise la parole rassure son propre stress, pas le client."
+        "question": "Si j'écoute 70 % du temps, comment je montre mon expertise ?",
+        "reponse": "Justement en posant les bonnes questions : la qualité de vos questions prouve votre expertise bien mieux qu'un monologue. Le client qui parle se sent compris et vous donne, minute après minute, les arguments que vous ressortirez au bon moment. Vous brillerez en argumentant juste, pas en argumentant longtemps."
       },
       {
-        "question": "Comment je demande le budget ou la situation financiere sans passer pour un controleur des impots ?",
-        "reponse": "On ne demande pas 'combien gagnez-vous', on contextualise : 'pour ne vous faire visiter que des biens que vous pourrez reellement acheter, on fait le point rapidement sur votre financement, d'accord ?'. Le client comprend que c'est dans son interet. On peut aussi passer par le reflexe du rendez-vous avec le courtier : ca qualifie sans interroger frontalement."
+        "question": "Comment poser la question du budget sans mettre le client mal à l'aise ?",
+        "reponse": "On n'attaque jamais par le budget. On part de questions ouvertes sur le projet et la motivation, puis on resserre en entonnoir vers les faits. Et on justifie la question : « pour vous proposer uniquement des biens réalistes et ne pas vous faire perdre de temps, puis-je faire le point sur votre financement ? »"
       },
       {
-        "question": "Les methodes genre SONCAS ou MDPP, c'est scolaire, sur le terrain on n'a pas le temps d'y penser.",
-        "reponse": "Au debut c'est un effort conscient, oui. Mais c'est comme le code de la route : au bout de quelques dizaines de RDV, vous ne 'pensez' plus a SONCAS, vous l'entendez automatiquement dans les mots du client. La methode n'est pas une recitation, c'est une grille de lecture qui finit par devenir un reflexe."
+        "question": "Le silence après une question, ça me met trop mal à l'aise.",
+        "reponse": "Il met tout le monde mal à l'aise, et c'est précisément pour ça qu'il fonctionne : le client comble le vide, souvent en livrant l'information clé. L'erreur du débutant, c'est de reposer aussitôt une deuxième question ou de répondre à sa place. On va s'entraîner à compter trois secondes dans sa tête après chaque question importante."
       },
       {
-        "question": "Le vendeur ne veut pas me dire pourquoi il vend, il dit juste 'pour changer'. Je force ?",
-        "reponse": "On ne force pas, on creuse en douceur avec des ricochets et de l'empathie : 'changer, c'est-a-dire ? qu'est-ce qui vous manque aujourd'hui ?'. Souvent le vrai motif (divorce, succession, mutation, difficulte financiere) sort apres la 3e question, quand la confiance est la. Si ca ne sort vraiment pas, c'est un signal : ce vendeur n'est peut-etre pas encore decide a vendre."
+        "question": "Comment éviter que la découverte ressemble à un interrogatoire ?",
+        "reponse": "On alterne les questions avec des moments de respiration, de reformulation et d'écoute active. On évite les rafales de questions fermées qui font formulaire administratif. Et on justifie ses questions : « pour mieux vous conseiller, puis-je vous demander… ». Le client doit avoir le sentiment d'une conversation, pas d'un questionnaire."
       },
       {
-        "question": "A quoi bon qualifier a fond si de toute facon le client peut changer d'avis ?",
-        "reponse": "Qualifier ne verrouille pas l'avenir, ca vous evite de perdre des journees entieres sur de faux projets. Un client peut evoluer, mais un projet sans motivation reelle, sans delai et sans financement ne se concretisera pas - autant le savoir au RDV 1 plutot qu'apres 6 visites."
+        "question": "Un acquéreur me dit qu'il a le financement, est-ce que je le crois sur parole ?",
+        "reponse": "On fait confiance mais on vérifie. Un financement validé se matérialise par un accord de principe bancaire ou une simulation sérieuse : apport, revenus, prêts en cours, taux d'endettement sous 35 % assurance comprise. Qualifier ne vexe personne si on l'explique : c'est protéger le vendeur comme l'acquéreur d'un compromis qui capoterait au prêt."
       },
       {
-        "question": "En decouverte vendeur, je dois annoncer mon estimation tout de suite s'il me la demande ?",
-        "reponse": "Non. Si vous lachez un prix avant d'avoir fini de qualifier le bien et la motivation, vous vous enfermez. On reporte avec cadre : 'je prefere voir le bien et verifier les references du secteur avant de vous donner un chiffre serieux, sinon je vous raconte des histoires'. Ca vous repositionne en professionnel, pas en distributeur de prix."
+        "question": "À quel moment je passe de la découverte à l'argumentation ?",
+        "reponse": "Quand vous avez le besoin réel et la motivation profonde, pas avant. Tant que vous n'avez pas ces éléments, vous vendez à l'aveugle. Le signal, c'est que vous êtes capable de reformuler le projet du client et qu'il vous répond « oui, c'est exactement ça » : là, l'argumentation devient ciblée et efficace."
       },
       {
-        "question": "Comment je fais si le client ne repond pas a mes questions et prend le controle de l'entretien ?",
-        "reponse": "On reprend la main poliment par une question : 'tres bonne remarque, j'y reviens dans deux minutes, mais d'abord dites-moi...'. Celui qui pose la question suivante reprend le volant. Prevoyez votre trame de questions a l'avance pour ne jamais vous retrouver sans la question d'apres."
+        "question": "Le SONCAS, est-ce que ce n'est pas un peu daté comme méthode ?",
+        "reponse": "Les mots changent, pas les ressorts humains. Sécurité, Orgueil, Nouveauté, Confort, Argent, Sympathie restent les grandes familles de motivation d'achat. L'intérêt n'est pas de réciter la grille mais de repérer quel levier parle à votre client pour lui présenter le bien sous le bon angle."
       }
     ],
     "erreursFrequentes": [
-      "Erreur : parler plus que le client -> Correction : viser 70 % d'ecoute / 30 % de parole, et poser une question ouverte des les premieres minutes.",
-      "Erreur : enchainer des questions fermees qui donnent du oui/non -> Correction : privilegier les questions ouvertes et les ricochets pour faire parler et creuser.",
-      "Erreur : projeter ses propres gouts ('moi je n'aimerais pas cette cuisine') -> Correction : rester neutre, c'est le besoin du client qui compte, pas le votre.",
-      "Erreur : faire visiter avant d'avoir qualifie le financement de l'acquereur -> Correction : valider budget, apport et endettement AVANT la premiere visite.",
-      "Erreur : oublier d'identifier le vrai decideur -> Correction : demander des la prise de RDV qui participe a la decision et s'assurer de sa presence.",
-      "Erreur : annoncer un prix ou un argumentaire standard sans avoir lu la motivation (SONCAS) -> Correction : adapter le discours au ressort dominant de chaque interlocuteur.",
-      "Erreur : terminer sans synthese ni etape suivante -> Correction : reformuler le besoin ('si je resume...') et verrouiller la prochaine action.",
-      "Erreur : ne rien noter et se fier a sa memoire -> Correction : remplir la fiche de qualification pendant ou juste apres le RDV."
+      "Argumenter avant d'avoir questionné → poser d'abord les questions ouvertes, l'argumentation vient une fois le besoin identifié.",
+      "Parler plus que le client → viser 70 % d'écoute et 30 % de parole, le client doit occuper les deux tiers du temps.",
+      "Enchaîner les questions fermées en rafale → alterner ouvertes, ricochet et reformulations pour éviter l'effet interrogatoire.",
+      "Répondre à la place du client ou finir ses phrases → tenir le silence après une question importante.",
+      "Faire visiter avant d'avoir qualifié le financement → vérifier apport, revenus et taux d'endettement sous 35 % en amont.",
+      "Raisonner en prix affiché seul → calculer l'enveloppe totale : prix + frais de notaire + honoraires.",
+      "Oublier de reformuler → reformuler régulièrement pour prouver l'écoute, corriger les malentendus et faire dire oui.",
+      "Prendre les faits sans chercher la motivation profonde → faire projeter le client pour révéler l'envie réelle."
     ],
     "chiffresCles": [
-      "Regle d'or du temps de parole : viser 70 % d'ecoute pour 30 % de parole.",
-      "SONCAS(E) : Securite, Orgueil, Nouveaute, Confort, Argent, Sympathie, Ecologie - le ressort d'achat dominant.",
-      "BANT immobilier : Budget, Autorite (decideur), Besoin, Timing (delai).",
-      "Priorite acquereur : le financement (capacite d'emprunt, apport, taux d'endettement) se qualifie en premier.",
-      "Taux d'endettement de reference generalement retenu par les banques : autour de 35 % des revenus, assurance comprise.",
-      "Trois questions a ne jamais oublier cote vendeur : la vraie motivation, le delai, et qui decide."
+      "Règle d'or de la découverte : écouter 70 %, parler 30 %.",
+      "Les 5 familles de questions : ouvertes, fermées, alternatives, ricochet/relais, miroir.",
+      "Technique de l'entonnoir : du large (ouvertes) vers le précis (fermées).",
+      "SONCAS : Sécurité, Orgueil, Nouveauté, Confort, Argent, Sympathie.",
+      "Taux d'endettement maximal HCSF : 35 % des revenus nets, assurance comprise, règle contraignante depuis 2022.",
+      "Durée d'emprunt généralement plafonnée à 25 ans (jusqu'à 27 ans dans le neuf ou avec travaux).",
+      "Qualification du budget acquéreur en enveloppe totale : prix + frais de notaire (7 à 8 % dans l'ancien) + honoraires.",
+      "Silence utile après une question clé : marquer environ 3 secondes avant de relancer."
     ],
     "glossaire": [
       {
@@ -1091,99 +1096,102 @@ export const ANIMATIONS_DATA: Record<string, AnimationModule> = {
       "Clôturez en faisant écrire à chacun ses propres engagements du plan d'action sur sa fiche, et prévoyez un point de suivi à la prochaine réunion commerciale : un acquis non réactivé sous 15 jours s'oublie."
     ],
     "materiel": [
-      "Videoprojecteur + acces a DVF (app.dvf.etalab.gouv.fr) pour montrer en direct des ventes reelles sur Martigues et comparer avec les prix affiches.",
-      "Fiches 'avis de valeur' type de l'agence a remplir sur un cas concret pendant la seance.",
-      "Cartons VRAI/FAUX sur le vocabulaire et le droit : avis de valeur vs expertise, loi Carrez vs loi Boutin, seuils DPE.",
-      "Un metre laser ou un metre ruban pour une demonstration rapide de prise de cotes et du calcul de surface.",
-      "Paperboard pour construire a la main la fourchette de valeur (reference -> ajustements +/- -> prix net).",
-      "Impression d'un DPE reel et d'une annonce avec etiquette energie pour travailler la valeur verte et l'audit obligatoire."
+      "Un accès à la base DVF (Demandes de Valeurs Foncières) ouverte ou via l'outil interne, pour sortir les ventes comparables du secteur.",
+      "Un lecteur de DPE et la grille des classes A à G, avec les repères de valeur verte et les échéances d'interdiction de location.",
+      "Un mètre laser ou télémètre et la fiche de mesurage loi Carrez pour vérifier ou recalculer la surface privative.",
+      "Une trame d'avis de valeur professionnelle : valeur vénale, prix de présentation FAI, prix net vendeur, honoraires affichés TTC.",
+      "Les derniers chiffres de marché local (prix au m² par quartier de Martigues, délais de vente moyens) et les annonces concurrentes.",
+      "Une calculette ou un tableur pour convertir net vendeur, FAI et honoraires devant le client, sans hésitation."
     ],
     "messagesCles": [
-      "Un avis de valeur n'est pas une expertise : l'agent donne un avis motive, pas une valeur certifiee opposable.",
-      "On n'estime pas avec son instinct ni pour faire plaisir : on estime avec des references de ventes reelles (DVF), pas des prix affiches.",
-      "Le prix se construit : on part d'une reference comparable, puis on ajuste point par point jusqu'au bien du client.",
-      "La surevaluation est un poison lent : le bien se grille, se vend plus bas et plus tard que s'il etait au bon prix des le depart.",
-      "Le DPE n'est plus un detail : une passoire energetique se decote et peut etre invendable sans travaux ou audit."
+      "L'estimation est le socle de toute la transaction : un prix juste au départ conditionne le délai, le prix final et la confiance.",
+      "La valeur vénale n'est ni le prix rêvé, ni le prix de 2021, ni le prix du voisin qui ne vend pas : c'est le prix réellement payé pour des biens comparables récents.",
+      "Un avis de valeur n'est pas une expertise : ne vendez jamais l'un pour l'autre, le mot est juridiquement faux.",
+      "Annoncez toujours au vendeur son net vendeur, pas seulement le prix FAI affiché.",
+      "Une estimation honnête et documentée est aussi le meilleur outil de prospection : elle fait de vous le professionnel de référence."
     ],
-    "scriptOuverture": "Aujourd'hui, on va parler de l'acte le plus strategique de notre metier : l'estimation. Parce qu'un bien bien estime se vend ; un bien surestime pour 'faire plaisir' au vendeur et decrocher le mandat, lui, ne se vend pas - il pourrit en vitrine, on finit par le brader, et on perd le client et sa confiance. Je vais vous montrer comment passer de l'estimation 'au feeling' a l'avis de valeur argumente, sourcé, defendable face a un vendeur qui veut 20 000 euros de plus. On va voir les methodes, les vraies sources de donnees comme DVF, les pieges de la surface et du DPE. Premiere question : selon vous, quelle est la difference entre un avis de valeur et une expertise ?",
+    "scriptOuverture": "Aujourd'hui, on va poser le socle de toute la transaction : l'estimation. Je vais vous montrer qu'un prix juste dès le départ fait gagner du temps, de l'argent et de la crédibilité, et qu'un prix faux vous condamne à courir derrière le marché pendant des mois. On va apprendre à ne jamais confondre avis de valeur, expertise et évaluation fiscale, à utiliser la donnée DVF plutôt que le doigt mouillé, et à présenter un net vendeur clair. On travaillera aussi le mesurage Carrez, la valeur verte du DPE et les cas particuliers. À la fin, vous saurez défendre un prix avec des preuves, pas avec des promesses.",
     "questionsPublic": [
-      "Quelle est la difference entre un avis de valeur, une estimation et une expertise ? Qui a le droit de faire quoi ?",
-      "Sur quelles sources vous appuyez-vous aujourd'hui pour estimer, et lesquelles sont vraiment fiables ?",
-      "Pourquoi ne faut-il pas estimer a partir des prix affiches sur les portails ?",
-      "C'est quoi concretement la base DVF, et quelles sont ses limites ?",
-      "En loi Carrez, que se passe-t-il si la surface reelle est inferieure de plus de 5 % a celle annoncee ?",
-      "Quelle difference entre surface Carrez et surface habitable loi Boutin ?",
-      "De combien peut varier le prix d'un meme bien entre une etiquette DPE C et une etiquette F ? Qu'en pensez-vous ?",
-      "Quels sont les criteres qui justifient un ajustement a la hausse ou a la baisse par rapport a une reference ?",
-      "Pourquoi la surevaluation est-elle plus dangereuse qu'une legere sous-evaluation ?",
-      "Comment annoncez-vous un prix inferieur a ce que le vendeur esperait sans le braquer ni perdre le mandat ?"
+      "Quelle est la différence juridique entre un avis de valeur, une expertise et une évaluation fiscale ?",
+      "Qu'est-ce que la valeur vénale, concrètement, et ce qu'elle n'est pas ?",
+      "Sur quelles sources vous appuyez-vous aujourd'hui pour fixer un prix ?",
+      "Que répondez-vous à un vendeur qui dit « mais je l'ai payé plus cher en 2021 » ?",
+      "Quelle différence faites-vous entre prix de présentation FAI et prix net vendeur ?",
+      "Qui paie les frais de notaire, et combien représentent-ils dans l'ancien et dans le neuf ?",
+      "Que se passe-t-il si la surface Carrez réelle est inférieure de plus de 5 % à celle annoncée ?",
+      "Comment un DPE classé F ou G pèse-t-il sur la valeur et la vente d'un bien ?",
+      "À quel moment l'intérêt des acquéreurs pour un bien mis en vente est-il à son maximum ?",
+      "Pourquoi une estimation offerte peut-elle rapporter un mandat des mois plus tard ?"
     ],
     "exemplesTerrain": [
       {
-        "titre": "DVF contre le prix 'du voisin' a Jonquieres",
-        "texte": "Un vendeur a Jonquieres est convaincu que son T4 vaut 290 000 euros 'parce que le voisin l'a affiche a ce prix'. En sortant DVF devant lui, le negociateur montre 4 ventes reelles de T4 comparables dans le quartier entre 238 000 et 255 000 euros sur 12 mois. Le voisin, lui, est toujours en vente depuis 8 mois. L'avis de valeur argumente a 249 000 euros est accepte, mandat signe."
+        "titre": "Le prix de 2021 contre le marché à Martigues",
+        "texte": "Un vendeur à Ferrières voulait afficher 290 000 €, le prix payé au plus haut de 2021. La donnée DVF montrait des T4 comparables vendus entre 255 000 et 265 000 € sur les douze derniers mois. Présenté à 289 000 €, le bien est resté huit mois sans offre ; réaligné à 262 000 €, il a trouvé preneur en trois semaines. Le marché ne se discute pas, il se constate."
       },
       {
-        "titre": "La passoire de Port-de-Bouc et l'audit obligatoire",
-        "texte": "Une maison classee F en limite de Port-de-Bouc est estimee initialement 'au prix du quartier'. Mais l'audit energetique obligatoire (en vigueur pour les F et G depuis avril 2023, etendu aux E depuis janvier 2025) chiffre 45 000 euros de travaux. La decote valeur verte et la peur de l'acquereur imposent un prix revu a la baisse de l'ordre de 10 a 15 %. Mieux vaut l'annoncer des l'estimation que le decouvrir au compromis."
+        "titre": "Le net vendeur bien expliqué à Jonquières",
+        "texte": "Une vendeuse voulait toucher 250 000 € net sur son appartement de Jonquières. Avec des honoraires de 12 000 € TTC à la charge de l'acquéreur, on a affiché un prix FAI de 262 000 €. En lui montrant que les frais de notaire de l'acquéreur se calculaient sur le net, elle a compris l'intérêt du montage et signé le mandat, rassurée de connaître son net dès le départ."
       },
       {
-        "titre": "Les 6 m2 manquants loi Carrez",
-        "texte": "Un appartement a Ferrieres annonce 72 m2 Carrez est remesure : 66 m2 reels, soit plus de 5 % d'ecart. Sans correction, l'acquereur aurait pu, dans l'annee suivant l'acte authentique, exiger une reduction de prix proportionnelle. Le negociateur reprend les cotes au metre laser, corrige la surface et securise le dossier avant meme la mise en vente."
+        "titre": "L'erreur de Carrez à La Couronne",
+        "texte": "Un appartement en copropriété à La Couronne était annoncé à 68 m² Carrez. Un remesurage au télémètre a donné 63 m², soit plus de 7 % d'écart en moins. En l'état, l'acquéreur aurait pu demander une réduction de prix proportionnelle dans l'année de l'acte. On a corrigé la surface et le prix avant la mise en vente, évitant un contentieux et une perte de crédibilité."
       },
       {
-        "titre": "La vue Etang qui justifie l'ajustement a la hausse",
-        "texte": "Deux T3 quasi identiques a Ferrieres : l'un sans vue, l'autre avec vue degagee sur l'Etang de Berre et une terrasse. A partir d'une meme reference DVF, le negociateur construit l'ajustement devant le vendeur : +X pour la vue, +X pour la terrasse, -X pour l'etage sans ascenseur. Le prix final n'est plus une opinion, c'est un calcul que le vendeur peut suivre ligne par ligne."
+        "titre": "La valeur verte sur une passoire à Lavéra",
+        "texte": "Une maison à Lavéra classée G au DPE séduisait sur le papier mais effrayait au moment de l'offre, entre travaux et calendrier d'interdiction de location. On a chiffré le coût de rénovation et ajusté le prix en conséquence, environ 12 % sous un bien équivalent classé D. Afficher la décote plutôt que la masquer a permis une vente nette et rapide."
       }
     ],
     "objectionsStagiaires": [
       {
-        "question": "Si j'annonce un prix bas, je perds le mandat au profit de l'agence qui promet plus cher. Alors autant surestimer un peu, non ?",
-        "reponse": "C'est le piege numero 1. Le confrere qui surestime signe le mandat... et le bien ne se vend pas : au bout de 3 mois le vendeur est decu, baisse le prix, et le bien 'grille'. Vous, vous signez au bon prix, vous vendez, vous avez un client satisfait qui vous recommande. On ne gagne pas le mandat, on gagne la VENTE. Et un avis de valeur argumente avec DVF se defend bien mieux qu'un chiffre gonfle."
+        "question": "Le vendeur insiste pour afficher plus cher « on verra bien », je fais quoi ?",
+        "reponse": "On explique que surcoter tue la vente : l'intérêt des acquéreurs est maximal dans les premières semaines de mise en marché, et un bien trop cher grille ce pic. Au bout de quelques mois, il devient le bien que personne ne veut, et finit par se vendre sous sa vraie valeur. Mieux vaut un prix juste tout de suite, preuves DVF à l'appui."
       },
       {
-        "question": "Les estimateurs en ligne donnent deja un prix en 30 secondes, a quoi je sers ?",
-        "reponse": "Les estimateurs en ligne travaillent sur des moyennes de quartier sans jamais voir le bien : ils ignorent l'etat, l'etage, la vue, les travaux, le DPE, l'exposition. Ils donnent un ordre de grandeur, pas un prix de vente. Votre valeur ajoutee, c'est precisement l'ajustement terrain que la machine ne peut pas faire, plus la connaissance fine du secteur."
+        "question": "Puis-je présenter mon avis de valeur comme une expertise pour faire sérieux ?",
+        "reponse": "Non, c'est juridiquement faux et ça vous expose. L'avis de valeur est une opinion motivée sans valeur probante devant un tribunal ; l'expertise suit une charte et engage la responsabilité de l'expert. Vous êtes tout aussi crédible avec un avis de valeur documenté et honnête, à condition de nommer les choses correctement."
       },
       {
-        "question": "Pourquoi s'embeter avec DVF, c'est long a consulter et les donnees ont 6 mois de retard ?",
-        "reponse": "DVF, ce sont les VRAIES ventes signees chez le notaire, pas des prix de reve affiches sur les portails. Oui il y a un decalage temporel et il faut interpreter (on ne connait pas l'etat du bien vendu), mais c'est la source la plus solide pour construire un avis defendable. On la croise avec sa connaissance du marche et les references de l'agence pour corriger le decalage."
+        "question": "Le vendeur me sort le prix affiché par le voisin, comment je réponds ?",
+        "reponse": "Un prix affiché n'est pas un prix de vente : le voisin qui affiche 300 000 € depuis huit mois ne prouve rien, sinon que son prix est hors marché. La seule référence solide, ce sont les ventes réellement enregistrées dans DVF sur des biens comparables récents. On compare du vendu avec du vendu, jamais du vendu avec de l'affiché."
       },
       {
-        "question": "Le DPE, ca concerne surtout la location, pour une vente le vendeur s'en fiche un peu non ?",
-        "reponse": "Plus du tout. Le DPE est opposable depuis 2021, l'etiquette figure dans l'annonce, et un bien F ou G necessite un audit energetique obligatoire a la vente. Les acquereurs integrent desormais le cout des travaux dans leur offre : une passoire se decote nettement. Ignorer le DPE a l'estimation, c'est se prendre une renegociation ou un refus de pret en pleine figure au compromis."
+        "question": "Comment je parle des frais de notaire sans faire fuir l'acquéreur ?",
+        "reponse": "On les présente comme un fait du marché, pas comme une mauvaise surprise : de l'ordre de 7 à 8 % dans l'ancien, 2 à 3 % dans le neuf. Et on valorise le montage honoraires à la charge de l'acquéreur, qui fait calculer ces frais sur le net vendeur et les allège un peu. Expliqué en amont, c'est un argument, pas un obstacle."
       },
       {
-        "question": "Surface Carrez, surface habitable, surface Boutin... c'est la meme chose pour le client, pourquoi se compliquer ?",
-        "reponse": "Non, et l'erreur coute cher. La loi Carrez s'applique a la vente des lots de copropriete (surface privative, hors elements sous 1,80 m de hauteur) ; la loi Boutin s'applique a la location (surface habitable). Une erreur Carrez de plus de 5 % ouvre a l'acquereur un droit a reduction de prix dans l'annee suivant l'acte. On mesure serieusement, on ne recopie pas l'ancien acte les yeux fermes."
+        "question": "DVF, est-ce fiable partout et à jour ?",
+        "reponse": "C'est de l'open data DGFiP qui recense les mutations réelles des cinq dernières années, mis à jour deux fois par an, en avril et en octobre. Attention, la base ne couvre ni l'Alsace-Moselle ni Mayotte. C'est notre meilleure source objective, mais on la croise toujours avec la connaissance terrain du secteur et l'état réel du bien."
       },
       {
-        "question": "Le vendeur me sort un prix affectif ('on y a mis toutes nos economies'), comment je lui dis non sans le vexer ?",
-        "reponse": "On ne dit jamais 'votre bien ne vaut pas ca', on dit 'le marche aujourd'hui valorise un bien comme le votre a tel niveau, voici les ventes qui le prouvent'. On separe la personne de l'objet et on parle references, pas opinions. L'empathie d'abord ('je comprends, c'est votre maison'), les chiffres ensuite. Le vendeur ne se bat pas contre vous, il se bat contre le marche - et le marche, c'est DVF."
+        "question": "Un DPE en G, est-ce que ça vaut encore le coup de prendre le mandat ?",
+        "reponse": "Oui, à condition d'intégrer la valeur verte dans l'estimation. Une passoire énergétique se décote selon le coût des travaux et le calendrier des interdictions de location. On chiffre honnêtement cette décote et on la présente au vendeur : afficher le prix juste d'une passoire vend plus vite que masquer le problème."
       },
       {
-        "question": "Pour un bien atypique ou un viager, je n'ai pas de comparable, je fais comment ?",
-        "reponse": "Les cas particuliers (atypique, loue, viager, indivision) demandent une methode adaptee : on combine la comparaison avec d'autres approches (capitalisation du loyer pour un bien loue, calcul du bouquet et de la rente pour un viager, decote pour occupation). Quand c'est vraiment complexe ou a enjeu, on sait aussi passer la main a un expert immobilier : donner un avis faux sur un viager peut couter tres cher."
+        "question": "Pourquoi offrir une estimation si le vendeur ne signe pas aujourd'hui ?",
+        "reponse": "Parce qu'une estimation sérieuse et gratuite est un acte de prospection. Même sans mandat immédiat, vous devenez le professionnel de référence que le vendeur rappellera le jour venu. Le rendez-vous d'estimation est souvent votre première rencontre : c'est là que se joue la confiance pour les mois à venir."
       }
     ],
     "erreursFrequentes": [
-      "Erreur : surestimer pour decrocher le mandat -> Correction : estimer au juste prix avec DVF, car on ne gagne pas sur le mandat signe mais sur le bien vendu.",
-      "Erreur : estimer a partir des prix affiches sur les portails -> Correction : s'appuyer sur les ventes reellement signees (DVF/Patrim) et les references de l'agence.",
-      "Erreur : confondre avis de valeur et expertise, et promettre une 'valeur certifiee' -> Correction : annoncer clairement un avis de valeur motive, non opposable.",
-      "Erreur : recopier la surface de l'ancien acte sans verifier -> Correction : remesurer et distinguer Carrez (vente copro) et Boutin (location), un ecart Carrez >5 % ouvre droit a reduction de prix.",
-      "Erreur : negliger le DPE et l'audit energetique -> Correction : integrer l'etiquette, la valeur verte et le cout des travaux des l'estimation.",
-      "Erreur : donner un prix 'rond au feeling' sans construire la fourchette -> Correction : partir d'une reference puis ajuster critere par critere devant le vendeur.",
-      "Erreur : annoncer le prix brutalement et braquer le vendeur -> Correction : empathie d'abord, references ensuite, parler marche et non opinion.",
-      "Erreur : traiter un bien atypique/viager/loue comme un bien classique -> Correction : utiliser la methode adaptee et passer la main a un expert si l'enjeu l'exige."
+      "Estimer au doigt mouillé ou pour flatter le vendeur → s'appuyer sur la donnée DVF et des comparables vendus récents.",
+      "Présenter un avis de valeur comme une expertise → nommer correctement, l'avis de valeur est une opinion motivée sans valeur probante.",
+      "Annoncer seulement le prix FAI → toujours communiquer au vendeur son prix net vendeur.",
+      "Accepter de surcoter « pour voir » → expliquer que le pic d'intérêt est dans les premières semaines et qu'un prix trop haut grille la vente.",
+      "Reprendre la surface annoncée sans la vérifier → remesurer en loi Carrez, un écart de plus de 5 % en moins ouvre une réduction de prix.",
+      "Ignorer le DPE dans le prix → intégrer la valeur verte et la décote des passoires classées F ou G.",
+      "Comparer un prix affiché à un prix affiché → ne comparer que des ventes réellement enregistrées, du vendu avec du vendu.",
+      "Oublier d'afficher les honoraires TTC → respecter l'arrêté du 10 janvier 2017, affichage TTC lisible en vitrine, sur le site et dans chaque annonce."
     ],
     "chiffresCles": [
-      "Loi Carrez : s'applique a la vente de lots de copropriete ; surfaces sous 1,80 m de hauteur exclues ; un ecart reel de plus de 5 % en moins ouvre a l'acquereur un droit a reduction de prix dans l'annee suivant l'acte authentique.",
-      "Loi Boutin : surface habitable mentionnee dans le bail de location (notion distincte du Carrez).",
-      "DPE : opposable depuis le 1er juillet 2021 ; etiquette de A a G obligatoire dans l'annonce.",
-      "Audit energetique obligatoire a la vente : F et G depuis avril 2023, E depuis le 1er janvier 2025, D a partir du 1er janvier 2034.",
-      "Interdiction de location des passoires : G depuis le 1er janvier 2025, F a partir de 2028, E a partir de 2034 (calendrier loi Climat et resilience).",
-      "Sources de reference : DVF (app.dvf.etalab.gouv.fr, ventes signees, delai de publication ~6 mois) et Patrim via impots.gouv.fr.",
-      "Methodes d'evaluation principales : comparaison (la plus utilisee en residentiel), capitalisation du revenu (bien loue), et cout de remplacement pour certains cas."
+      "Avis de valeur : opinion motivée d'un professionnel, sans valeur juridique probante, à distinguer de l'expertise et de l'évaluation fiscale.",
+      "Trois prix à ne jamais confondre : valeur vénale, prix de présentation FAI (frais d'agence inclus), prix net vendeur.",
+      "Exemple de conversion : 250 000 € net + 12 000 € TTC d'honoraires = 262 000 € FAI affiché.",
+      "Honoraires d'agence : librement fixés, aucun barème légal, mais affichage TTC obligatoire (arrêté du 10 janvier 2017).",
+      "Frais de notaire payés par l'acquéreur : environ 7 à 8 % dans l'ancien, 2 à 3 % dans le neuf.",
+      "Depuis avril 2025, plus de 70 départements ont relevé les droits de mutation (+0,5 point, plafond 5 %), sauf pour les primo-accédants.",
+      "Base DVF (open data DGFiP) : ventes réellement enregistrées sur 5 ans, mise à jour deux fois par an (avril et octobre), hors Alsace-Moselle et Mayotte.",
+      "Loi Carrez : au-delà de 5 % d'erreur en moins, réduction de prix proportionnelle, action dans l'année suivant l'acte authentique.",
+      "DPE : classes A à G, la valeur verte et le calendrier d'interdiction de location pèsent sur le prix des passoires (F et G).",
+      "Pic d'intérêt des acquéreurs : maximal dans les toutes premières semaines de mise en marché."
     ],
     "glossaire": [
       {
