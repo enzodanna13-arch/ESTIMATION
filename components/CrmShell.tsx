@@ -25,6 +25,7 @@ const GROUPES: Groupe[] = [
   { label: "Pilotage", items: [
     { v: "dashboard", t: "Tableau de bord", i: "📊" },
     { v: "negociateurs", t: "Suivi des négociateurs", i: "👔" },
+    { v: "organisation", t: "Mon organisation", i: "🗓️" },
     { v: "espace", t: "Mon espace", i: "👤" },
   ] },
   { label: "Prospection", items: [
