@@ -20,7 +20,17 @@ const OR = rgb(0.706, 0.592, 0.357);
 const NOIR = rgb(0, 0, 0);
 const GRIS = rgb(0.85, 0.85, 0.85);
 const H = 842, W = 595;
-const milliers = (v: number) => new Intl.NumberFormat("fr-FR", { maximumFractionDigits: 0 }).format(v);
+// La police standard (WinAnsi) ne sait pas encoder certains caractères Unicode
+// (espaces fines/insécables U+202F/U+00A0 produites par le formatage FR, etc.).
+// On remplace ces caractères par des équivalents sûrs avant tout dessin.
+const nettoyer = (s: string) => (s ?? "")
+  .replace(/[    ⁠﻿]/g, " ")
+  .replace(/[–—]/g, "-")
+  .replace(/[‘’]/g, "'")
+  .replace(/[“”]/g, '"')
+  // dernier filet : tout caractère hors Latin-1 imprimable (€ toléré) devient "?"
+  .replace(/[^\x09\x0A\x0D\x20-\xFF€]/g, "?");
+const milliers = (v: number) => nettoyer(new Intl.NumberFormat("fr-FR", { maximumFractionDigits: 0 }).format(v));
 
 const MENTIONS = [
   "ICAZA Immobilier - SAS au capital de 25 000 € - 32 avenue de la Paix 13500 Martigues - SIREN 830 042 354 RCS Aix en Provence.",
@@ -36,7 +46,8 @@ export async function genererFactureAgencePdf(d: DonneesFactureAgence): Promise<
   const font = await pdf.embedFont(StandardFonts.Helvetica);
   const bold = await pdf.embedFont(StandardFonts.HelveticaBold);
 
-  const T = (txt: string, x: number, yTop: number, o: { size?: number; f?: PDFFont; align?: "left" | "center" | "right"; color?: ReturnType<typeof rgb> } = {}) => {
+  const T = (txtBrut: string, x: number, yTop: number, o: { size?: number; f?: PDFFont; align?: "left" | "center" | "right"; color?: ReturnType<typeof rgb> } = {}) => {
+    const txt = nettoyer(txtBrut);
     const size = o.size ?? 10.5; const f = o.f ?? font; const color = o.color ?? NOIR;
     const w = f.widthOfTextAtSize(txt, size);
     const x2 = o.align === "center" ? x - w / 2 : o.align === "right" ? x - w : x;
@@ -118,7 +129,7 @@ export async function genererFactureAgencePdf(d: DonneesFactureAgence): Promise<
 
   // Mentions légales (bas de page)
   let my = H - 70;
-  for (const m of MENTIONS) { page.drawText(m, { x: 40, y: my, size: 6.8, font, color: NOIR, maxWidth: W - 80 }); my += 10; }
+  for (const m of MENTIONS) { page.drawText(nettoyer(m), { x: 40, y: my, size: 6.8, font, color: NOIR, maxWidth: W - 80 }); my += 10; }
 
   return pdf.save();
 }
