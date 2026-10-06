@@ -73,6 +73,7 @@ export async function telechargerSupportPptx(module: ModuleFormation, animation:
 
   const puces = (items: string[], o: { color?: string; size?: number } = {}) =>
     items.filter(Boolean).map((t) => ({ text: nettoie(t), options: { bullet: { code: "2022", indent: 18 }, color: o.color ?? DARK, fontSize: o.size ?? 15, paraSpaceAfter: 8, breakLine: true, fontFace: FONT } }));
+  // autoFit: le texte se réduit pour tenir dans le cadre (pas de débordement en PPT).
 
   // slide de contenu avec en-tête (surtitre + titre + filet cuivre)
   const slideContenu = (surtitre: string, titre: string) => {
@@ -102,7 +103,7 @@ export async function telechargerSupportPptx(module: ModuleFormation, animation:
   // ---------- 2. Objectifs ----------
   {
     const s = slideContenu("Formation", "Objectifs de la séance");
-    s.addText(puces(animation.objectifs, { size: 17 }), { x: 0.7, y: 1.8, w: 11.9, h: 5, valign: "top" });
+    s.addText(puces(animation.objectifs, { size: 17 }), { x: 0.7, y: 1.8, w: 11.9, h: 5, valign: "top", autoFit: true });
     s.addNotes("Annoncez les objectifs : ce que chacun saura FAIRE à la fin. Reliez-les au terrain.");
   }
 
@@ -125,7 +126,7 @@ export async function telechargerSupportPptx(module: ModuleFormation, animation:
     const s = slideContenu("On démarre", `Brise-glace — ${animation.briseGlace.titre}`);
     s.addShape(ROUND, { x: 0.7, y: 1.8, w: 11.9, h: 4.8, fill: { color: LIGHT }, line: { color: COPPER, width: 1 }, rectRadius: 0.1 });
     s.addText("🎯 Consignes", { x: 1.0, y: 2.05, w: 11, h: 0.4, fontSize: 14, color: COPPER, bold: true, fontFace: FONT });
-    s.addText(puces(animation.briseGlace.consignes), { x: 1.0, y: 2.5, w: 11.3, h: 3.9, valign: "top" });
+    s.addText(puces(animation.briseGlace.consignes), { x: 1.0, y: 2.5, w: 11.3, h: 3.9, valign: "top", autoFit: true });
     s.addNotes("Objectif : détendre, impliquer, révéler le niveau du groupe. Gardez un rythme vif.");
   }
 
@@ -141,7 +142,7 @@ export async function telechargerSupportPptx(module: ModuleFormation, animation:
   // ---------- 6. Apports : une diapo par leçon ----------
   module.lecons.forEach((lec, i) => {
     const s = slideContenu(`Apport ${i + 1}/${module.lecons.length}`, lec.titre);
-    s.addText(puces(pointsLecon(lec), { size: 16 }), { x: 0.7, y: 1.8, w: 11.9, h: 5, valign: "top" });
+    s.addText(puces(pointsLecon(lec), { size: 16 }), { x: 0.7, y: 1.8, w: 11.9, h: 5, valign: "top", autoFit: true });
     s.addNotes("Développez chaque point à l'oral (le détail est dans le module texte). Illustrez par un exemple local, puis questionnez la salle.");
   });
 
@@ -150,7 +151,7 @@ export async function telechargerSupportPptx(module: ModuleFormation, animation:
     const s = slideContenu(`Jeu ${i + 1} · ${j.type} · ${j.duree}`, `🎲 ${j.titre}`);
     s.addShape(ROUND, { x: 0.7, y: 1.8, w: 11.9, h: 4.9, fill: { color: COPPER_SOFT }, rectRadius: 0.1 });
     s.addText("Règle du jeu", { x: 1.0, y: 2.0, w: 11, h: 0.4, fontSize: 14, color: COPPER, bold: true, fontFace: FONT });
-    s.addText(puces(j.consignes, { size: 15 }), { x: 1.0, y: 2.45, w: 11.3, h: 4.0, valign: "top" });
+    s.addText(puces(j.consignes, { size: 15 }), { x: 1.0, y: 2.45, w: 11.3, h: 4.0, valign: "top", autoFit: true });
     const notes = ["ANIMATION :", ...j.animation.map((a) => "• " + a)];
     if (j.corrige && j.corrige.length) notes.push("", "CORRIGÉ :", ...j.corrige.map((c) => "• " + c));
     s.addNotes(notes.join("\n"));
@@ -162,10 +163,10 @@ export async function telechargerSupportPptx(module: ModuleFormation, animation:
     s.addText([{ text: "Contexte : ", options: { bold: true, color: NAVY } }, { text: jr.contexte, options: { color: DARK } }], { x: 0.7, y: 1.75, w: 11.9, h: 0.9, fontSize: 14, valign: "top", fontFace: FONT });
     s.addShape(ROUND, { x: 0.7, y: 2.8, w: 5.8, h: 2.6, fill: { color: LIGHT }, line: { color: NAVY, width: 1 }, rectRadius: 0.1 });
     s.addText("RÔLE A", { x: 0.9, y: 2.95, w: 5.4, h: 0.35, fontSize: 12, color: NAVY, bold: true, fontFace: FONT });
-    s.addText(jr.roleA, { x: 0.9, y: 3.3, w: 5.4, h: 2.0, fontSize: 13, color: DARK, valign: "top", fontFace: FONT });
+    s.addText(jr.roleA, { x: 0.9, y: 3.3, w: 5.4, h: 2.0, fontSize: 13, color: DARK, valign: "top", autoFit: true, fontFace: FONT });
     s.addShape(ROUND, { x: 6.8, y: 2.8, w: 5.8, h: 2.6, fill: { color: COPPER_SOFT }, line: { color: COPPER, width: 1 }, rectRadius: 0.1 });
     s.addText("RÔLE B", { x: 7.0, y: 2.95, w: 5.4, h: 0.35, fontSize: 12, color: COPPER, bold: true, fontFace: FONT });
-    s.addText(jr.roleB, { x: 7.0, y: 3.3, w: 5.4, h: 2.0, fontSize: 13, color: DARK, valign: "top", fontFace: FONT });
+    s.addText(jr.roleB, { x: 7.0, y: 3.3, w: 5.4, h: 2.0, fontSize: 13, color: DARK, valign: "top", autoFit: true, fontFace: FONT });
     s.addText([{ text: "Objectif : ", options: { bold: true, color: COPPER } }, { text: jr.objectif, options: { color: DARK } }], { x: 0.7, y: 5.6, w: 11.9, h: 0.8, fontSize: 14, valign: "top", fontFace: FONT });
     s.addNotes(["DÉBRIEF :", ...jr.debrief.map((d) => "• " + d)].join("\n"));
   });
@@ -182,14 +183,14 @@ export async function telechargerSupportPptx(module: ModuleFormation, animation:
   quizLive.forEach((q, i) => {
     const s = slideContenu(`Quiz ${i + 1}/${quizLive.length}`, q.question);
     const opts = q.options.map((o, oi) => `${lettre(oi)}.  ${o}`);
-    s.addText(puces(opts, { size: 17 }).map((p) => ({ ...p, options: { ...p.options, bullet: false, paraSpaceAfter: 12 } })), { x: 0.9, y: 2.0, w: 11.5, h: 4.4, valign: "top" });
+    s.addText(puces(opts, { size: 17 }).map((p) => ({ ...p, options: { ...p.options, bullet: false, paraSpaceAfter: 12 } })), { x: 0.9, y: 2.0, w: 11.5, h: 4.4, valign: "top", autoFit: true });
     s.addNotes(`Bonne réponse : ${lettre(q.correct)}. ${q.options[q.correct]}\n${q.explication}`);
   });
 
   // ---------- 10. Points clés ----------
   {
     const s = slideContenu("Synthèse", "Les points clés à retenir");
-    s.addText(puces(animation.pointsCles, { size: 16 }), { x: 0.7, y: 1.8, w: 11.9, h: 5, valign: "top" });
+    s.addText(puces(animation.pointsCles, { size: 16 }), { x: 0.7, y: 1.8, w: 11.9, h: 5, valign: "top", autoFit: true });
     s.addNotes("Faites reformuler par les participants avant d'afficher. Ancrage = mémorisation.");
   }
 
