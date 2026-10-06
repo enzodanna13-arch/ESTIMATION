@@ -18,18 +18,35 @@ export interface Lecon {
   contenu: string[]; // paragraphes (markdown léger)
 }
 
+export type NiveauFormation = "Débutant" | "Confirmé" | "Expert";
+
 export interface ModuleFormation {
   id: string;
   titre: string;
   icone: string;
   categorie: "Commercial" | "Transaction" | "Juridique";
+  niveau: NiveauFormation; // assigné automatiquement (voir NIVEAUX)
   resume: string;
   duree: string; // durée de lecture estimée
   lecons: Lecon[];
   quiz: QuizItem[];
 }
 
-export const MODULES_FORMATION: ModuleFormation[] = [
+// Niveau pédagogique par module (clé = id). Les fondamentaux du métier et le
+// socle juridique sont « Débutant » ; les techniques avancées de vente/closing
+// et l'ingénierie (investissement, VEFA, fiscalité) sont « Expert ».
+const NIVEAUX: Record<string, NiveauFormation> = {
+  prospection: "Débutant", decouverte: "Débutant", estimation: "Débutant",
+  "transaction-notaire": "Débutant", "loi-alur": "Débutant", "cadre-legal": "Débutant",
+  mandat: "Confirmé", negociation: "Confirmé", "mots-vente": "Confirmé",
+  "defendre-prix": "Confirmé", compromis: "Confirmé", "dpe-energie": "Confirmé",
+  "marketing-bien": "Confirmé", "location-baux": "Confirmé",
+  "vente-elite": "Expert", objections: "Expert", closing: "Expert",
+  "mental-performance": "Expert", "investissement-locatif": "Expert",
+  "vefa-neuf": "Expert", "plus-value": "Expert",
+};
+
+const MODULES_BRUTS: Omit<ModuleFormation, "niveau">[] = [
   // ======================================================================
   {
     id: "prospection",
@@ -1122,4 +1139,336 @@ export const MODULES_FORMATION: ModuleFormation[] = [
       { question: "L'audit énergétique de vente concerne depuis 2025 les classes…", options: ["A et B", "F et G seulement", "E (en plus de F et G)", "Toutes"], correct: 2, explication: "F/G depuis avril 2023, E depuis janvier 2025, D à partir de 2034." },
     ],
   },
+
+  {
+    id: "mental-performance",
+    titre: "Mental & performance du négociateur",
+    icone: "🧠",
+    categorie: "Commercial",
+    resume: "Discipline, gestion du refus et état d'esprit gagnant : le mental qui fait la différence.",
+    duree: "16 min",
+    lecons: [
+      {
+        titre: "L'état d'esprit des top performers",
+        contenu: [
+          "À compétences égales, c'est le **mental** qui sépare les meilleurs des moyens.",
+          "- **Responsabilité** : le top performer ne cherche pas d'excuses (marché, prix, conjoncture). Il se demande « que puis-je faire, moi ? ».",
+          "- **Optimisme réaliste** : il croit au résultat tout en agissant sur les faits.",
+          "- **Orientation action** : il préfère un appel imparfait à une préparation parfaite jamais lancée.",
+          "## L'activité crée le résultat",
+          "La vente est un **jeu de nombres** : plus de contacts → plus de RDV → plus de mandats. Quand le résultat baisse, on augmente **l'activité**, on ne la réduit pas.",
+        ],
+      },
+      {
+        titre: "Gérer le refus et la pression",
+        contenu: [
+          "Le refus fait partie du métier : un « non » n'est pas un échec, c'est une **étape statistique**.",
+          "- **Dissocier** : on rejette votre proposition, pas votre personne.",
+          "- **Le ratio** : si 1 mandat se signe tous les 10 contacts, chaque « non » vous **rapproche** du prochain « oui » — et a donc une valeur.",
+          "- **Apprendre de chaque non** : qu'est-ce qui a manqué ? découverte ? preuve ? closing ?",
+          "## Gérer le stress",
+          "Préparation + routine + respiration avant un R2 difficile. La confiance vient de la **compétence préparée**, pas de l'improvisation.",
+        ],
+      },
+      {
+        titre: "Objectifs, discipline & routines",
+        contenu: [
+          "- **Objectifs SMART** : spécifiques, mesurables, datés (ex. « 20 contacts/jour », « 2 mandats/mois »).",
+          "- **Objectifs d'activité > objectifs de résultat** : vous ne contrôlez pas un mandat, mais vous contrôlez vos 20 appels. Pilotez l'amont.",
+          "- **Les rituels** : bloc prospection non négociable chaque matin, revue hebdomadaire des chiffres, relances programmées.",
+          "- **L'effet cumulé** : de petites actions répétées chaque jour battent les coups d'éclat irréguliers.",
+          "Dans l'application, le **Suivi des négociateurs** mesure votre activité (contacts, RDV, mandats, chasses, tournées) : servez-vous-en pour piloter votre discipline.",
+        ],
+      },
+    ],
+    quiz: [
+      { question: "Quand les résultats baissent, le top performer…", options: ["Réduit son activité", "Augmente son activité", "Attend que ça passe", "Baisse ses prix"], correct: 1, explication: "La vente est un jeu de nombres : on agit sur l'amont (le volume d'activité)." },
+      { question: "Un « non » en prospection, c'est…", options: ["Un échec personnel", "Une étape statistique qui rapproche du oui", "Une raison d'arrêter", "Un signe de mauvais marché"], correct: 1, explication: "On dissocie le refus de soi ; chaque non rapproche du prochain oui." },
+      { question: "Le plus efficace à piloter, ce sont les objectifs…", options: ["De résultat uniquement", "D'activité (ce qu'on contrôle)", "Des autres", "Du marché"], correct: 1, explication: "On ne contrôle pas un mandat, mais on contrôle ses contacts : on pilote l'amont." },
+    ],
+  },
+
+  {
+    id: "marketing-bien",
+    titre: "Marketing du bien : home-staging, photo & diffusion",
+    icone: "📸",
+    categorie: "Commercial",
+    resume: "Valoriser un bien, le photographier et le diffuser pour vendre plus vite et plus cher.",
+    duree: "16 min",
+    lecons: [
+      {
+        titre: "Home-staging : préparer le bien",
+        contenu: [
+          "Un bien **préparé** se vend plus vite et plus cher : l'acquéreur achète un **coup de cœur**, pas des murs.",
+          "- **Désencombrer & dépersonnaliser** : moins d'objets, moins de photos personnelles → l'acheteur se projette.",
+          "- **Réparer les petits défauts** : une poignée cassée, un joint noirci créent une impression de négligence.",
+          "- **Nettoyer, désodoriser, éclairer** : propreté et lumière sont décisives.",
+          "- **Neutraliser** : couleurs sobres, ambiance chaleureuse mais neutre.",
+          "## Le retour sur investissement",
+          "Quelques centaines d'euros de home-staging rapportent souvent plusieurs milliers d'euros sur le prix et des semaines de délai gagnées.",
+        ],
+      },
+      {
+        titre: "La photo qui vend",
+        contenu: [
+          "90 % des recherches commencent en ligne : la **première photo décide** du clic.",
+          "- **Lumière naturelle** : volets ouverts, en journée, jamais à contre-jour.",
+          "- **Rangé & cadré** : grand angle (sans déformer), à hauteur de poitrine, lignes droites.",
+          "- **Ordre des photos** : commencer par la plus belle pièce / la façade la plus flatteuse.",
+          "- **Quantité & qualité** : 15-25 photos nettes valent mieux que 50 médiocres ; ajoutez un **plan** et, si possible, une **visite 360°**.",
+          "Dans l'application, le module **Montage vidéo & 360°** aide à produire des visites immersives.",
+        ],
+      },
+      {
+        titre: "Annonce & diffusion",
+        contenu: [
+          "## Rédiger une annonce qui convertit",
+          "- **Titre accrocheur** orienté bénéfice, pas uniquement technique.",
+          "- **Storytelling** (voir module Les mots qui font vendre) + informations clés (surface, pièces, DPE, charges).",
+          "- **Mentions légales** obligatoires (honoraires, DPE, copropriété) — voir module Loi ALUR.",
+          "## Diffuser largement",
+          "- Portails (SeLoger, Leboncoin, Bien'ici…), site agence, **vitrine**, **réseaux sociaux**.",
+          "- **Fichier acquéreurs** : en exclusivité, présentez d'abord à vos acquéreurs qualifiés (le rapprochement automatique de l'app vous les sort).",
+          "- **Teasing** : « bientôt disponible » crée de l'attente avant la mise en ligne.",
+        ],
+      },
+    ],
+    quiz: [
+      { question: "Le home-staging sert surtout à…", options: ["Augmenter la surface", "Déclencher le coup de cœur et la projection", "Masquer des vices cachés", "Gagner du temps au notaire"], correct: 1, explication: "Désencombrer, neutraliser et soigner l'ambiance aide l'acheteur à se projeter." },
+      { question: "La première photo d'une annonce doit être…", options: ["La salle de bain", "La plus belle / la plus flatteuse", "Un plan cadastral", "Le local poubelles"], correct: 1, explication: "Elle décide du clic : on commence par la pièce ou la façade la plus séduisante." },
+      { question: "En exclusivité, à qui présenter le bien en priorité ?", options: ["À personne", "À ses acquéreurs qualifiés du fichier", "Aux agences concurrentes", "Au voisinage uniquement"], correct: 1, explication: "On active d'abord son fichier d'acquéreurs qualifiés (rapprochement automatique dans l'app)." },
+    ],
+  },
+
+  {
+    id: "investissement-locatif",
+    titre: "Investissement locatif & rentabilité",
+    icone: "📈",
+    categorie: "Transaction",
+    resume: "Conseiller l'investisseur : rendement, cash-flow et régimes fiscaux (LMNP, foncier).",
+    duree: "18 min",
+    lecons: [
+      {
+        titre: "Calculer la rentabilité",
+        contenu: [
+          "Savoir chiffrer un investissement, c'est parler le langage de l'investisseur et **gagner sa confiance**.",
+          "## Les trois niveaux de rendement",
+          "- **Rendement brut** = (loyer annuel ÷ prix d'achat) × 100. Ex. 8 400 €/an sur 140 000 € = **6 %**.",
+          "- **Rendement net de charges** : on déduit taxe foncière, charges non récupérables, assurance, gestion, vacance.",
+          "- **Rendement net-net (après impôt)** : on intègre la **fiscalité** (régime choisi).",
+          "## Le cash-flow",
+          "Cash-flow = loyers − (mensualité de crédit + charges + impôts). Un cash-flow **positif** signifie que le bien s'autofinance ; négatif, l'investisseur **complète** chaque mois. C'est souvent le vrai critère de décision.",
+        ],
+      },
+      {
+        titre: "Les régimes fiscaux clés",
+        contenu: [
+          "## Location nue → revenus fonciers",
+          "- **Micro-foncier** : abattement forfaitaire de 30 % (si revenus fonciers ≤ 15 000 €/an).",
+          "- **Régime réel** : déduction des charges réelles (intérêts d'emprunt, travaux, taxe foncière…) et **déficit foncier** imputable sur le revenu (plafonné).",
+          "## Location meublée → LMNP (BIC)",
+          "- **Micro-BIC** : abattement forfaitaire (50 % en meublé classique).",
+          "- **Réel LMNP** : déduction des charges + **amortissement** du bien et du mobilier → souvent **peu ou pas d'impôt** sur les loyers pendant des années. Régime très prisé des investisseurs.",
+          "## Rôle du négociateur",
+          "Vous n'êtes pas conseiller fiscal, mais savoir **orienter** (micro vs réel, nu vs meublé, LMNP) et renvoyer vers un expert-comptable fait de vous un interlocuteur crédible.",
+        ],
+      },
+      {
+        titre: "Analyser un bien pour investir",
+        contenu: [
+          "- **Emplacement & demande locative** : tension locative, proximité transports/emploi/écoles, type de locataires visés.",
+          "- **Prix au m² vs loyers** : certains secteurs offrent un meilleur **couple prix/loyer** (rendement) que d'autres plus patrimoniaux (plus-value).",
+          "- **Charges & copropriété** : des charges élevées ou des travaux votés plombent la rentabilité nette.",
+          "- **DPE** : un bien F/G est **interdit à la location** (G depuis 2025, F en 2028) → travaux à budgéter, mais **levier de négociation** (voir module DPE).",
+          "- **Stratégie** : rendement (cash-flow) vs patrimoine (plus-value) vs défiscalisation — clarifiez l'objectif de l'investisseur avant de proposer.",
+        ],
+      },
+    ],
+    quiz: [
+      { question: "Le rendement brut se calcule…", options: ["Loyer mensuel ÷ prix", "(Loyer annuel ÷ prix d'achat) × 100", "Prix ÷ loyer", "Loyer − charges"], correct: 1, explication: "Rendement brut = loyer annuel rapporté au prix d'achat, en %." },
+      { question: "L'atout fiscal majeur du réel en LMNP est…", options: ["L'abattement de 30 %", "L'amortissement du bien et du mobilier", "L'exonération totale", "La TVA"], correct: 1, explication: "L'amortissement réduit fortement, voire annule, l'impôt sur les loyers pendant des années." },
+      { question: "Un cash-flow positif signifie que…", options: ["Le bien coûte chaque mois", "Le bien s'autofinance", "Il n'y a pas d'impôt", "Le loyer est trop bas"], correct: 1, explication: "Loyers supérieurs à (crédit + charges + impôts) : l'investissement se finance seul." },
+    ],
+  },
+
+  {
+    id: "vefa-neuf",
+    titre: "Le neuf & la VEFA",
+    icone: "🏗️",
+    categorie: "Transaction",
+    resume: "Vendre sur plan : contrat VEFA, garanties, échéancier des appels de fonds et frais réduits.",
+    duree: "16 min",
+    lecons: [
+      {
+        titre: "La VEFA : vendre sur plan",
+        contenu: [
+          "La **VEFA (Vente en l'État Futur d'Achèvement)** est l'achat d'un bien **neuf sur plan** : l'acquéreur devient propriétaire au fur et à mesure de la construction.",
+          "- **Contrat de réservation** d'abord (dépôt de garantie plafonné, ~2-5 % selon le délai de livraison).",
+          "- Puis **acte authentique de vente** chez le notaire, qui transfère la propriété du sol et de l'existant, puis des ouvrages à mesure de leur réalisation.",
+          "- **Prix définitif** encadré, parfois révisable selon index BT01 dans les limites du contrat.",
+          "## Avantages pour l'acquéreur",
+          "Bien aux dernières normes (RE2020), **frais de notaire réduits**, garanties fortes, personnalisation (TMA — travaux modificatifs acquéreur), parfois TVA réduite en zones éligibles.",
+        ],
+      },
+      {
+        titre: "Les garanties du neuf",
+        contenu: [
+          "Le neuf est très protecteur. À connaître pour rassurer l'acquéreur :",
+          "- **Garantie Financière d'Achèvement (GFA)** : garantit que l'immeuble sera **achevé** même si le promoteur défaille.",
+          "- **Garantie de parfait achèvement (1 an)** : le promoteur répare tous les désordres signalés la 1re année.",
+          "- **Garantie biennale (2 ans)** : bon fonctionnement des **équipements** dissociables (volets, robinetterie…).",
+          "- **Garantie décennale (10 ans)** : dommages compromettant la **solidité** de l'ouvrage ou le rendant impropre à sa destination.",
+          "- **Garantie des vices apparents** : réserves à la livraison, levées par le promoteur.",
+        ],
+      },
+      {
+        titre: "Échéancier & frais",
+        contenu: [
+          "## L'échéancier des appels de fonds (plafonds légaux)",
+          "Le paiement suit l'avancement, dans ces limites maximales :",
+          "- **35 %** à l'achèvement des **fondations**,",
+          "- **70 %** à la **mise hors d'eau** (toiture posée),",
+          "- **95 %** à l'**achevement** des travaux,",
+          "- **5 %** (solde) à la **livraison** (consignable en cas de réserves).",
+          "## Frais réduits",
+          "Les **frais de notaire** en VEFA sont de l'ordre de **2 à 3 %** (contre 7-8 % dans l'ancien). La **TVA à 20 %** est incluse dans le prix (réduite à 5,5 % dans certaines zones ANRU/PSLA).",
+          "## Rôle du négociateur",
+          "Expliquer clairement garanties, échéancier et délais de livraison **rassure** et différencie du simple « vendeur de plans ».",
+        ],
+      },
+    ],
+    quiz: [
+      { question: "La GFA en VEFA garantit…", options: ["Le prix le plus bas", "L'achèvement de l'immeuble si le promoteur défaille", "La rentabilité", "Les frais de notaire"], correct: 1, explication: "La Garantie Financière d'Achèvement assure la finition de l'ouvrage malgré une défaillance." },
+      { question: "La garantie décennale couvre…", options: ["Les volets 2 ans", "Les désordres compromettant la solidité, pendant 10 ans", "Le parfait achèvement 1 an", "La peinture"], correct: 1, explication: "Décennale = dommages affectant la solidité ou rendant l'ouvrage impropre, 10 ans." },
+      { question: "Les frais de notaire dans le neuf (VEFA) sont d'environ…", options: ["7-8 %", "2-3 %", "10 %", "0 %"], correct: 1, explication: "Frais réduits de 2 à 3 % du prix, contre 7-8 % dans l'ancien." },
+    ],
+  },
+
+  {
+    id: "plus-value",
+    titre: "Fiscalité : la plus-value immobilière",
+    icone: "🧾",
+    categorie: "Juridique",
+    resume: "Calcul, abattements pour durée, exonérations et surtaxe de la plus-value des particuliers.",
+    duree: "16 min",
+    lecons: [
+      {
+        titre: "Principe et calcul",
+        contenu: [
+          "La **plus-value immobilière** est le gain réalisé entre le **prix d'achat** et le **prix de vente** d'un bien par un particulier. Elle peut être **imposée**… ou **exonérée**.",
+          "## La plus-value brute",
+          "Plus-value = **prix de cession** (diminué des frais de vente, diagnostics, mainlevée…) − **prix d'acquisition** (majoré des frais d'acquisition et de certains travaux).",
+          "- **Forfait frais d'acquisition** : +7,5 % si justificatifs absents.",
+          "- **Forfait travaux** : +15 % du prix d'achat si le bien est détenu depuis plus de 5 ans (sans justificatifs).",
+          "## Le taux d'imposition",
+          "La plus-value imposable est taxée à **19 % d'impôt sur le revenu** + **17,2 % de prélèvements sociaux** = **36,2 %** avant abattements.",
+        ],
+      },
+      {
+        titre: "Abattements pour durée de détention",
+        contenu: [
+          "Plus on détient longtemps, moins on est taxé — jusqu'à l'exonération totale.",
+          "## Impôt sur le revenu (19 %)",
+          "- Abattement de **6 % par an** de la **6e à la 21e année**, puis **4 % la 22e année**.",
+          "- → **Exonération totale d'IR à partir de 22 ans** de détention.",
+          "## Prélèvements sociaux (17,2 %)",
+          "- Abattement plus lent : faible jusqu'à la 21e année, puis accéléré.",
+          "- → **Exonération totale des prélèvements sociaux à 30 ans** de détention.",
+          "## À retenir",
+          "Un bien détenu **22 ans** n'a plus d'IR mais encore des prélèvements sociaux ; il faut **30 ans** pour être totalement exonéré.",
+        ],
+      },
+      {
+        titre: "Exonérations & surtaxe",
+        contenu: [
+          "## Les exonérations",
+          "- **Résidence principale** : exonération **totale**, sans condition de durée (c'est le cas le plus fréquent).",
+          "- **Première cession d'un logement autre que la RP**, sous conditions (remploi dans l'achat d'une RP dans les 24 mois, ne pas avoir été propriétaire de sa RP les 4 années précédentes).",
+          "- **Petites cessions** ≤ 15 000 €, certains retraités/invalides sous conditions de ressources, biens détenus > 22/30 ans, expropriations…",
+          "## La surtaxe",
+          "Sur une plus-value **imposable supérieure à 50 000 €**, une **taxe additionnelle** de **2 % à 6 %** s'applique (progressivement selon le montant).",
+          "## Rôle du négociateur",
+          "Vous n'êtes pas fiscaliste, mais **alerter** le vendeur (bien secondaire, locatif) sur la plus-value et le renvoyer vers son **notaire** (qui la calcule et la prélève) évite de mauvaises surprises et crédibilise votre conseil.",
+        ],
+      },
+    ],
+    quiz: [
+      { question: "La vente de la résidence principale est…", options: ["Taxée à 36,2 %", "Exonérée totalement", "Taxée après 22 ans", "Soumise à surtaxe"], correct: 1, explication: "La résidence principale est exonérée de plus-value, sans condition de durée." },
+      { question: "L'exonération totale d'impôt sur le revenu est atteinte après…", options: ["5 ans", "22 ans", "30 ans", "Jamais"], correct: 1, explication: "Exonération d'IR à 22 ans ; les prélèvements sociaux, eux, à 30 ans." },
+      { question: "Le taux global de la plus-value (avant abattement) est de…", options: ["19 %", "17,2 %", "36,2 %", "50 %"], correct: 2, explication: "19 % d'IR + 17,2 % de prélèvements sociaux = 36,2 %." },
+      { question: "La surtaxe s'applique quand la plus-value imposable dépasse…", options: ["10 000 €", "50 000 €", "100 000 €", "Elle n'existe pas"], correct: 1, explication: "Au-delà de 50 000 € de plus-value imposable, surtaxe de 2 à 6 %." },
+    ],
+  },
+
+  {
+    id: "location-baux",
+    titre: "Location & baux d'habitation",
+    icone: "🔑",
+    categorie: "Juridique",
+    resume: "Bail loi 89, état des lieux, dépôt de garantie, préavis, encadrement et DPE en location.",
+    duree: "18 min",
+    lecons: [
+      {
+        titre: "Le bail d'habitation (loi du 6 juillet 1989)",
+        contenu: [
+          "La location d'une résidence principale est régie par la **loi du 6 juillet 1989** (bail type, mentions obligatoires).",
+          "## Durées",
+          "- **Vide** : bail de **3 ans** (bailleur personne physique), 6 ans (personne morale), reconduit tacitement.",
+          "- **Meublé** : bail de **1 an** (ou 9 mois pour un étudiant, non reconductible tacitement).",
+          "## Préavis",
+          "- **Locataire** : 3 mois (vide), réduit à **1 mois** en zone tendue, meublé ou motifs légaux (mutation, perte d'emploi, santé…).",
+          "- **Bailleur** : 6 mois avant l'échéance (vide), 3 mois (meublé), et **uniquement** pour vente, reprise ou motif légitime et sérieux.",
+          "## Pièces jointes",
+          "DDT (dont **DPE**), notice d'information, règlement de copropriété (extraits), état des lieux.",
+        ],
+      },
+      {
+        titre: "État des lieux & dépôt de garantie",
+        contenu: [
+          "## État des lieux",
+          "Établi **contradictoirement** à l'entrée et à la sortie, annexé au bail. C'est la **pièce maîtresse** en cas de litige : il faut être précis (pièce par pièce, photos datées).",
+          "## Dépôt de garantie",
+          "- **Vide** : **1 mois** de loyer hors charges maximum.",
+          "- **Meublé** : **2 mois** de loyer hors charges maximum.",
+          "- **Restitution** : 1 mois après remise des clés si l'état des lieux de sortie est conforme, **2 mois** sinon (retenues justifiées).",
+          "## Loyers impayés",
+          "Prévention : solvabilité du locataire (garant, caution, assurance loyers impayés — GLI). Les retenues doivent toujours être **justifiées** (devis, factures).",
+        ],
+      },
+      {
+        titre: "Encadrement, DPE & location interdite",
+        contenu: [
+          "## Encadrement des loyers",
+          "Dans certaines zones tendues (Paris, Lille, Lyon, Montpellier, Bordeaux… selon arrêtés), le loyer est **plafonné** (loyer de référence majoré) ; un **complément de loyer** n'est possible que pour des caractéristiques exceptionnelles.",
+          "## DPE en location (loi Climat)",
+          "- **Gel des loyers** des passoires **F/G** depuis août 2022 (interdiction d'augmenter).",
+          "- **Interdiction de louer** : **classe G depuis 2025**, **F en 2028**, **E en 2034** (critère de décence énergétique).",
+          "- Le DPE est **opposable** et obligatoire dans l'annonce (4 mentions, voir module Loi ALUR).",
+          "## Rôle du négociateur / gestionnaire",
+          "Vérifier la **décence** (dont énergétique), respecter l'**encadrement**, soigner le **bail et l'état des lieux** : la rigueur évite les contentieux coûteux.",
+        ],
+      },
+    ],
+    quiz: [
+      { question: "La durée d'un bail vide (bailleur personne physique) est de…", options: ["1 an", "3 ans", "6 ans", "9 ans"], correct: 1, explication: "3 ans en vide (6 ans pour une personne morale) ; 1 an en meublé." },
+      { question: "Le dépôt de garantie maximum en meublé est de…", options: ["1 mois", "2 mois", "3 mois", "Aucun"], correct: 1, explication: "2 mois de loyer hors charges en meublé (1 mois en location vide)." },
+      { question: "Depuis 2025, la classe DPE interdite à la location est…", options: ["E", "F", "G", "D"], correct: 2, explication: "G interdite depuis 2025, F en 2028, E en 2034 (décence énergétique)." },
+      { question: "L'état des lieux doit être établi…", options: ["Par le seul bailleur", "Contradictoirement (entrée et sortie)", "Facultativement", "Par le notaire"], correct: 1, explication: "Contradictoire, à l'entrée et à la sortie : pièce maîtresse en cas de litige." },
+    ],
+  },
 ];
+
+// Liste finale : le niveau est injecté depuis la table NIVEAUX.
+export const MODULES_FORMATION: ModuleFormation[] = MODULES_BRUTS.map((m) => ({
+  ...m,
+  niveau: NIVEAUX[m.id] ?? "Confirmé",
+}));
+
+export const NIVEAUX_FORMATION: NiveauFormation[] = ["Débutant", "Confirmé", "Expert"];
+
+// Durée d'un module convertie en minutes (ex. "20 min" → 20). Sert au calcul
+// des heures validées (attestation ALUR).
+export function minutesModule(m: ModuleFormation): number {
+  const n = parseInt((m.duree.match(/\d+/) ?? ["0"])[0], 10);
+  return Number.isFinite(n) ? n : 0;
+}
