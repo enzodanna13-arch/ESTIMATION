@@ -340,6 +340,88 @@ export const ANIMATIONS_DATA: Record<string, AnimationModule> = {
       "RGPD : prospection par email et SMS vers les particuliers soumise a l'opt-in ; droit d'opposition a tout moment.",
       "Ratio de pilotage a faire calculer : nombre de contacts -> RDV estimation -> mandats, propre a chaque negociateur, a suivre chaque semaine.",
       "Regle de reactivite : un lead entrant rappele dans l'heure se transforme bien mieux qu'un lead rappele le lendemain."
+    ],
+    "glossaire": [
+      {
+        "terme": "Pige",
+        "definition": "La pige consiste à repérer puis à contacter les propriétaires dont le bien est déjà en vente (sur les portails, sur le terrain, chez des confrères) pour leur proposer ses services. C'est la principale source de mandats, car elle est prévisible : il suffit d'être régulier et d'appeler vite. Exemple : voir une annonce de particulier parue le matin et téléphoner au vendeur l'après-midi."
+      },
+      {
+        "terme": "Mandat de vente",
+        "definition": "Le mandat est le contrat écrit par lequel un propriétaire autorise l'agent immobilier à vendre son bien et fixe sa rémunération. Sans mandat signé, l'agent n'a légalement pas le droit de commercialiser le bien ni de toucher d'honoraires. « Rentrer un mandat », c'est donc faire signer ce contrat : c'est le but premier de la prospection."
+      },
+      {
+        "terme": "Mandat simple",
+        "definition": "Avec un mandat simple, le vendeur confie son bien à plusieurs agences en même temps et peut aussi le vendre lui-même. L'agent n'est donc pas le seul sur le coup. Intérêt pour le prospecteur : même si une autre agence a déjà le bien en simple, il peut proposer ses propres acquéreurs « en plus », sans engager davantage le vendeur."
+      },
+      {
+        "terme": "Mandat exclusif",
+        "definition": "Avec un mandat exclusif, le vendeur confie son bien à une seule agence pour une durée donnée ; lui-même ne peut généralement plus le vendre directement. Ce mandat est plus engageant pour le vendeur mais beaucoup plus confortable et rentable pour l'agent, qui est le seul à travailler le bien. C'est l'objectif idéal d'une prise de mandat."
+      },
+      {
+        "terme": "Mandat échu (ou retiré)",
+        "definition": "Un mandat échu est un mandat arrivé à son terme sans que le bien ait été vendu ; un bien « retiré » a disparu des annonces sans vente. Dans les deux cas, on a affaire à un vendeur souvent déçu de son agence et encore motivé : c'est une cible de prospection facile à reconquérir."
+      },
+      {
+        "terme": "PAP (Particulier À Particulier)",
+        "definition": "Un PAP est un propriétaire qui vend son logement seul, sans agence, pour économiser la commission. C'est la cible numéro un de la pige : il n'est généralement pas « anti-agence », il cherche simplement à maximiser ce qu'il touche. Le rôle de l'agent est de lui démontrer qu'il lui rapportera plus, plus vite et plus sûrement que la vente en solo."
+      },
+      {
+        "terme": "Net vendeur",
+        "definition": "Le net vendeur est la somme que le propriétaire touche réellement une fois la vente conclue, c'est-à-dire le prix affiché moins les honoraires d'agence (et, au-delà, le remboursement éventuel de son crédit et les impôts). On oppose souvent au PAP son « prix affiché » alors que seul compte le net « dans sa poche ». C'est l'argument central pour convaincre un vendeur qui trouve les agences trop chères."
+      },
+      {
+        "terme": "Honoraires (commission)",
+        "definition": "Les honoraires sont la rémunération de l'agence, due uniquement si la vente aboutit. On parle aussi de commission. En France ils sont librement fixés (pas de barème imposé) mais doivent être affichés toutes taxes comprises. L'agent a intérêt à ne pas défendre « sa commission » mais à montrer le service rendu et le net final obtenu pour le vendeur."
+      },
+      {
+        "terme": "Opt-in / consentement préalable",
+        "definition": "L'opt-in est le principe selon lequel on ne peut contacter commercialement un particulier qu'après avoir recueilli son accord préalable. Depuis la loi du 30 juin 2025, applicable au 11 août 2026, le démarchage téléphonique d'un particulier sans ce consentement est interdit en France. Le consentement doit être libre, spécifique, éclairé, univoque et révocable, valable un an au maximum, et c'est au professionnel d'en prouver l'existence."
+      },
+      {
+        "terme": "Opt-out",
+        "definition": "L'opt-out était l'ancien système inverse de l'opt-in : on pouvait démarcher tout le monde, sauf les personnes qui s'y étaient opposées en s'inscrivant sur une liste. Ce régime d'opposition a été abandonné en France au profit du consentement préalable (opt-in) depuis le 11 août 2026. Il faut donc oublier l'ancien réflexe « je peux appeler tant qu'on ne m'a pas dit non »."
+      },
+      {
+        "terme": "Bloctel",
+        "definition": "Bloctel était la liste nationale sur laquelle un particulier pouvait s'inscrire pour ne plus être démarché par téléphone (ancien système d'opposition). Ce dispositif a été supprimé le 11 août 2026 avec le passage à l'opt-in. Vérifier Bloctel n'a donc plus aucun sens aujourd'hui : il faut un consentement préalable, pas une simple absence d'opposition."
+      },
+      {
+        "terme": "RGPD / CNIL",
+        "definition": "Le RGPD est le règlement européen qui protège les données personnelles (nom, téléphone, e-mail...) ; la CNIL est l'autorité française qui en contrôle le respect. Concrètement, un agent doit informer les personnes de l'usage de leurs données, ne garder que l'utile et respecter leur droit d'opposition. Les données de prospection se conservent au maximum trois ans après le dernier contact."
+      },
+      {
+        "terme": "Carte T (loi Hoguet)",
+        "definition": "La carte T, ou carte professionnelle « Transactions », est l'autorisation obligatoire pour exercer l'activité d'agent immobilier, instaurée par la loi Hoguet de 1970. Sans elle, impossible de prendre un mandat ni de toucher des honoraires. Un négociateur salarié ou indépendant travaille sous la carte de son agence grâce à une « attestation de collaborateur »."
+      },
+      {
+        "terme": "Attestation de collaborateur",
+        "definition": "C'est le document qui permet à un négociateur de travailler légalement sous la carte T du titulaire de l'agence, sans détenir lui-même la carte professionnelle. Il peut ainsi prospecter, estimer et faire signer des mandats dans ce cadre. Sans cette attestation, le négociateur n'a pas le droit d'exercer."
+      },
+      {
+        "terme": "Méthode CROC",
+        "definition": "CROC est un plan d'appel téléphonique en quatre étapes pour décrocher un rendez-vous : Contact (saluer, se présenter), Raison (dire pourquoi on appelle, par exemple son annonce), Objectif (obtenir le rendez-vous) et Conclusion (verrouiller la date et remercier). Le « O » rappelle que le but de l'appel n'est pas de vendre ni de donner un prix, mais d'obtenir le rendez-vous."
+      },
+      {
+        "terme": "Tunnel de prospection (loi des grands nombres)",
+        "definition": "Le tunnel représente les étapes successives de la prospection, de plus en plus resserrées : contacts, puis rendez-vous, puis mandats, puis ventes. À chaque étape, seule une partie passe à la suivante (par exemple 100 biens pigés donnent environ 3 à 4 mandats). La leçon : pour avoir plus de mandats, il faut d'abord augmenter le volume en haut du tunnel ; c'est un jeu de ratios, pas de chance."
+      },
+      {
+        "terme": "Lead (lead entrant)",
+        "definition": "Un lead est un contact commercial, c'est-à-dire une personne susceptible de devenir cliente ; un lead entrant est un prospect qui vient de lui-même (demande d'estimation en ligne, formulaire, message). Ces contacts sont précieux car ils ont « levé la main » et consenti au contact. La règle des 5 minutes recommande de rappeler un lead web très vite, car il a souvent déjà contacté d'autres agences."
+      },
+      {
+        "terme": "Phoning",
+        "definition": "Le phoning désigne la prospection par téléphone, menée par blocs d'appels (une à deux heures d'affilée, sans interruption). Il vise aussi bien les biens pigés que les anciens clients, les recommandations et les mandats échus. L'efficacité vient du rythme et de la régularité, et il doit respecter les horaires légaux (du lundi au vendredi, 10 h-13 h et 14 h-20 h)."
+      },
+      {
+        "terme": "Boîtage et pilonnage",
+        "definition": "Le boîtage consiste à distribuer des prospectus (flyers) dans les boîtes aux lettres d'un secteur. Le pilonnage, c'est le fait de repasser régulièrement sur le même secteur : la répétition crée la mémorisation et fait qu'on retient l'agent qu'on voit plusieurs fois. Cette prospection terrain paie lentement mais installe une vraie notoriété locale."
+      },
+      {
+        "terme": "Sphère d'influence",
+        "definition": "La sphère d'influence est l'ensemble des personnes de l'entourage et du réseau local (anciens clients, commerçants, gardiens, notaires, artisans) qui peuvent signaler un projet de vente ou recommander l'agent. En l'entretenant, l'agent devient « le réflexe immobilier » de son quartier. La recommandation (parrainage) issue de ce réseau est le canal qui se transforme le mieux, bien mieux qu'un appel à froid."
+      }
     ]
   },
   "decouverte": {
@@ -691,6 +773,88 @@ export const ANIMATIONS_DATA: Record<string, AnimationModule> = {
       "Priorite acquereur : le financement (capacite d'emprunt, apport, taux d'endettement) se qualifie en premier.",
       "Taux d'endettement de reference generalement retenu par les banques : autour de 35 % des revenus, assurance comprise.",
       "Trois questions a ne jamais oublier cote vendeur : la vraie motivation, le delai, et qui decide."
+    ],
+    "glossaire": [
+      {
+        "terme": "Découverte",
+        "definition": "La découverte est la phase où l'on questionne et écoute le client pour comprendre son projet, sa motivation, son délai et ses moyens, avant de proposer quoi que ce soit. C'est la phase la plus négligée et pourtant la plus décisive : argumenter avant d'avoir compris, c'est vendre à l'aveugle. Règle d'or : laisser le client parler environ 70 % du temps."
+      },
+      {
+        "terme": "Écoute active",
+        "definition": "L'écoute active consiste à montrer au client qu'on l'écoute vraiment et à vérifier qu'on a bien compris. Elle passe par l'accusé de réception (« je comprends », hochements), la reformulation, la prise de notes et la synchronisation (adopter son rythme et ses mots). Elle prouve l'écoute, corrige les malentendus et fait dire « oui » au client."
+      },
+      {
+        "terme": "Technique de l'entonnoir",
+        "definition": "L'entonnoir consiste à structurer ses questions du plus large au plus précis : on commence par des questions ouvertes sur le projet et la motivation, pour finir par des questions fermées qui valident les faits (prix, délai, financement). On ne démarre jamais par « quel est votre budget ? », on y arrive progressivement. Cela met le client en confiance et évite l'effet interrogatoire."
+      },
+      {
+        "terme": "Questions ouvertes / fermées / alternatives / ricochet / miroir",
+        "definition": "Ce sont les cinq familles de questions de la découverte. Les ouvertes (« pourquoi... », « parlez-moi de... ») font parler et révèlent la motivation ; les fermées valident un fait précis (oui/non) ; les alternatives proposent deux choix pour orienter une décision (« jeudi 18 h ou samedi 10 h ? ») ; les ricochet relancent sans orienter (« c'est-à-dire ? ») ; les miroir reprennent le dernier mot du client sur un ton interrogatif (« trop cher ? ») pour le faire préciser."
+      },
+      {
+        "terme": "R1 et R2",
+        "definition": "On vend souvent un service en deux rendez-vous. Le R1 est le premier rendez-vous : découverte du projet et visite du bien ; son but n'est pas de signer mais de comprendre, créer la confiance et obtenir le rendez-vous suivant. Le R2 est le second rendez-vous : présentation de l'avis de valeur (le prix, preuves à l'appui) et prise de mandat. On ne donne jamais de prix « à la louche » dès le R1."
+      },
+      {
+        "terme": "Contrat de début d'entretien",
+        "definition": "C'est le fait d'annoncer au client, dès le départ, le déroulé du rendez-vous : « d'abord vous me parlez de votre projet, ensuite vous me faites visiter, et je vous explique comment je travaille, ça vous va ? ». Cela sécurise le client, autorise les questions à venir et permet à l'agent de garder la main. C'est la différence entre un entretien dirigé et une discussion qui part dans tous les sens."
+      },
+      {
+        "terme": "Méthode M.D.P.P.",
+        "definition": "M.D.P.P. est une grille pour qualifier un vendeur et mesurer la valeur réelle d'un mandat : Motivation (pourquoi vend-il vraiment ?), Délai (y a-t-il une échéance réelle ?), Prix (quel prix a-t-il en tête et comment l'a-t-il fixé ?) et Pouvoir (qui décide et qui devra signer ?). Un mandat avec motivation forte, délai réel, prix réaliste et décideurs alignés est à privilégier."
+      },
+      {
+        "terme": "SONCAS / SONCASE",
+        "definition": "SONCAS est une grille des grandes motivations d'achat ; on y ajoute parfois un E pour SONCASE : Sécurité, Orgueil, Nouveauté, Confort, Argent, Sympathie, Écologie. Chaque client a généralement un ou deux leviers dominants que l'on repère dans ses mots (« est-ce un quartier sûr ? » = Sécurité ; « il y a de la marge ? » = Argent). On adapte alors son discours au levier dominant plutôt que de déballer tous les arguments."
+      },
+      {
+        "terme": "BANT immobilier",
+        "definition": "BANT est une méthode rapide pour noter un contact : Budget (la capacité d'achat est-elle validée ?), Authority / pouvoir (parle-t-on bien au décideur ?), Need / besoin (la motivation est-elle réelle ?) et Timing / délai (y a-t-il une échéance ?). Quatre « oui » signalent un contact chaud et prioritaire ; zéro « oui », un contact à garder au chaud sans trop investir."
+      },
+      {
+        "terme": "C.R.A.N.",
+        "definition": "C.R.A.N. est un pense-bête qui vérifie que la découverte est complète avant de passer à l'argumentation : Compris (la motivation réelle), Reformulé (la synthèse validée par le client), Aligné (sur les décideurs, le prix et le délai) et Noté (fiche à jour). Le principe : « pas de CRAN, pas d'argumentation »."
+      },
+      {
+        "terme": "Loi Carrez",
+        "definition": "La loi Carrez impose d'indiquer la surface privative des lots vendus en copropriété (appartements), en excluant notamment les parties dont la hauteur sous plafond est inférieure à 1,80 m. Cette surface doit figurer dans le mandat et le compromis. Si la surface réelle est inférieure de plus de 5 % à celle annoncée, l'acquéreur peut demander une réduction de prix. Une maison individuelle n'y est pas soumise."
+      },
+      {
+        "terme": "Surface habitable (loi Boutin)",
+        "definition": "La surface habitable « loi Boutin » est la surface utilisée pour les locations (baux d'habitation) ; elle exclut caves, garages, balcons, terrasses et combles non aménagés. Il ne faut pas la confondre avec la surface Carrez, qui sert à la vente en copropriété : la Boutin est souvent inférieure. Confondre les deux fausse le prix au mètre carré."
+      },
+      {
+        "terme": "DDT (dossier de diagnostic technique)",
+        "definition": "Le DDT regroupe l'ensemble des diagnostics obligatoires du logement, annexé au compromis de vente. Selon le bien, il peut contenir le DPE, l'amiante, le plomb (CREP), l'état des installations gaz et électricité de plus de 15 ans, l'état des risques (ERP), les termites et l'assainissement. Des diagnostics à jour accélèrent la vente et rassurent l'acquéreur."
+      },
+      {
+        "terme": "DPE et décence énergétique",
+        "definition": "Le DPE (diagnostic de performance énergétique) classe un logement de A (très économe) à G (très énergivore) ; il est opposable depuis juillet 2021 et valable 10 ans. La « décence énergétique » interdit progressivement de louer les logements les plus mauvais : G interdit à la location depuis 2025, F à partir de 2028, E à partir de 2034, et les loyers des logements F et G sont gelés depuis août 2022. Un bien F ou G, appelé « passoire thermique », se négocie donc plus difficilement."
+      },
+      {
+        "terme": "Indivision / indivisaires",
+        "definition": "L'indivision est la situation où plusieurs personnes (par exemple des héritiers après un décès) sont propriétaires ensemble d'un même bien ; chacune est un indivisaire. La vente exige l'accord de TOUS les indivisaires : le mandat doit être signé par chacun (ou son représentant). Identifier tous les indivisaires dès le premier rendez-vous évite de se retrouver bloqué au moment de signer, par exemple si un frère vit à l'étranger."
+      },
+      {
+        "terme": "SCI",
+        "definition": "Une SCI (société civile immobilière) est une société qui détient un bien immobilier à la place des personnes physiques. Quand le vendeur est une SCI, il faut vérifier qui a le pouvoir d'engager la société : le gérant seul, ou l'accord des associés selon les statuts. On ne prend pas le mandat sans s'être assuré que le signataire a bien ce pouvoir."
+      },
+      {
+        "terme": "HCSF (taux d'endettement, reste à vivre, saut de charge)",
+        "definition": "Le HCSF (Haut Conseil de stabilité financière) fixe les règles d'octroi des crédits immobiliers aux banques depuis 2022 : taux d'endettement maximal de 35 % des revenus nets assurance comprise, et durée maximale de 25 ans (jusqu'à 27 ans dans le neuf ou avec gros travaux). Les banques gardent 20 % de flexibilité, surtout pour la résidence principale et les primo-accédants. Elles regardent aussi le « reste à vivre » (ce qui reste après les charges) et le « saut de charge » (écart entre loyer actuel et future mensualité)."
+      },
+      {
+        "terme": "Frais de notaire (droits de mutation)",
+        "definition": "Les « frais de notaire », payés par l'acquéreur, regroupent surtout des taxes (les droits de mutation reversés à l'État et aux collectivités) et la rémunération du notaire. Ils représentent environ 7 à 8 % du prix dans l'ancien et seulement 2 à 3 % dans le neuf. Depuis le 1er avril 2025, les départements peuvent les relever de 0,5 point, avec une exonération possible pour les primo-accédants. L'acquéreur doit les financer EN PLUS du prix du bien."
+      },
+      {
+        "terme": "PTZ (prêt à taux zéro)",
+        "definition": "Le PTZ est un prêt sans intérêts, accordé par l'État aux primo-accédants (ceux qui achètent leur première résidence principale) sous conditions de ressources, pour compléter leur financement. Depuis le 1er avril 2025, il est de nouveau ouvert au neuf sur tout le territoire. La part finançable (quotité) dépend du bien et des revenus ; dans l'ancien il reste surtout possible en zones détendues avec travaux."
+      },
+      {
+        "terme": "LCB-FT / Tracfin",
+        "definition": "La LCB-FT est la lutte contre le blanchiment de capitaux et le financement du terrorisme ; l'agent immobilier y est légalement assujetti. Il doit identifier son client (pièce d'identité), comprendre l'opération et l'origine des fonds, et rester attentif aux incohérences. Tout soupçon doit être déclaré à Tracfin, le service de renseignement financier de l'État. Ce n'est pas de la méfiance mais une obligation qui protège l'agence."
+      }
     ]
   },
   "estimation": {
@@ -1020,6 +1184,88 @@ export const ANIMATIONS_DATA: Record<string, AnimationModule> = {
       "Interdiction de location des passoires : G depuis le 1er janvier 2025, F a partir de 2028, E a partir de 2034 (calendrier loi Climat et resilience).",
       "Sources de reference : DVF (app.dvf.etalab.gouv.fr, ventes signees, delai de publication ~6 mois) et Patrim via impots.gouv.fr.",
       "Methodes d'evaluation principales : comparaison (la plus utilisee en residentiel), capitalisation du revenu (bien loue), et cout de remplacement pour certains cas."
+    ],
+    "glossaire": [
+      {
+        "terme": "Avis de valeur",
+        "definition": "L'avis de valeur, souvent appelé « estimation », est l'opinion motivée d'un professionnel de la transaction sur le prix de marché d'un bien. C'est ce que réalise l'agent immobilier au quotidien. Il n'a pas de valeur juridique probante : on ne peut pas le produire comme une expertise devant un tribunal, et il ne faut jamais le vendre sous le nom d'« expertise »."
+      },
+      {
+        "terme": "Expertise immobilière",
+        "definition": "L'expertise immobilière est un rapport normalisé, réalisé par un expert selon la Charte de l'expertise en évaluation immobilière, et qui engage sa responsabilité. Contrairement à l'avis de valeur de l'agent, elle a une valeur juridique probante. Elle est requise dans les cas sérieux : contentieux, partage judiciaire, garantie bancaire importante."
+      },
+      {
+        "terme": "Valeur vénale",
+        "definition": "La valeur vénale est le prix auquel un bien pourrait raisonnablement se vendre dans des conditions normales de marché : un vendeur et un acquéreur de bonne foi, ni pressés ni contraints, un bien correctement présenté sur un délai raisonnable. Ce n'est ni le prix rêvé du vendeur, ni le prix payé au plus haut du marché, ni le prix affiché par un voisin qui ne vend pas. C'est ce que le marché a réellement payé pour des biens comparables récemment."
+      },
+      {
+        "terme": "Prix de présentation (FAI)",
+        "definition": "Le prix de présentation est le prix affiché dans l'annonce ; « FAI » veut dire Frais d'Agence Inclus : il comprend donc les honoraires de l'agence. On y conserve une légère marge de négociation, sans sortir du marché. Il faut toujours le distinguer du net vendeur, qui est ce que le propriétaire touche réellement."
+      },
+      {
+        "terme": "Net vendeur",
+        "definition": "Le net vendeur est la somme que le propriétaire touche réellement, soit le prix FAI (affiché) moins les honoraires d'agence. Exemple : pour 250 000 € de net voulu et 12 000 € d'honoraires à la charge de l'acquéreur, le prix FAI affiché est de 262 000 €. Il faut toujours annoncer son net au vendeur, pas seulement le prix affiché. Attention : ce net n'inclut pas encore le remboursement d'un crédit ou l'impôt sur la plus-value."
+      },
+      {
+        "terme": "Honoraires d'agence",
+        "definition": "Les honoraires d'agence sont la rémunération de l'agence sur une vente. En France ils sont librement fixés (aucun barème légal imposé), mais ils doivent être affichés toutes taxes comprises et de façon lisible (arrêté du 10 janvier 2017) : en vitrine, sur le site et dans chaque annonce. Lorsqu'ils sont à la charge de l'acquéreur, les frais de notaire se calculent sur le net vendeur, ce qui les allège légèrement."
+      },
+      {
+        "terme": "Frais de notaire (droits de mutation)",
+        "definition": "Les frais de notaire sont payés par l'acquéreur et constitués surtout de taxes (droits de mutation) reversées à l'État et aux collectivités. Ils représentent environ 7 à 8 % du prix dans l'ancien et 2 à 3 % dans le neuf. Depuis avril 2025, de nombreux départements ont relevé ces droits de 0,5 point, sauf pour les primo-accédants."
+      },
+      {
+        "terme": "Méthode par comparaison",
+        "definition": "C'est la méthode d'évaluation reine pour un logement d'habitation (appartement ou maison). On compare le bien à 3 à 6 biens similaires RÉELLEMENT vendus (et non simplement affichés) sur le secteur, on les ramène à un prix au mètre carré, puis on ajuste selon les différences (étage, état, extérieur, DPE). On en déduit une fourchette de valeur, que l'on sait démontrer preuves à l'appui."
+      },
+      {
+        "terme": "Capitalisation du revenu (rendement)",
+        "definition": "Cette méthode sert pour un bien destiné à la location ou déjà loué : la valeur se déduit du revenu qu'il génère. Formule : valeur = loyer annuel ÷ taux de rendement attendu sur le secteur. Exemple : un studio loué 600 €/mois (7 200 €/an) à 6 % de rendement vaut environ 120 000 €. À retenir : rendement et prix évoluent en sens inverse ; plus le rendement exigé est élevé, plus la valeur baisse."
+      },
+      {
+        "terme": "Méthode du coût de remplacement",
+        "definition": "Cette méthode estime un bien par : valeur du terrain + coût de reconstruction à neuf − vétusté (l'usure et l'obsolescence). Elle est utile pour les biens atypiques sans comparable, le neuf, ou pour chiffrer la part « bâti » d'une maison. Attention : le coût de reconstruction n'est pas le prix de marché ; un bien peut coûter cher à reconstruire et valoir peu s'il est mal situé."
+      },
+      {
+        "terme": "Surface pondérée",
+        "definition": "La surface pondérée est une surface « commerciale » reconstituée pour estimer : on multiplie chaque espace par un coefficient selon sa valeur d'usage avant de lui appliquer un prix au mètre carré. Exemple : habitable 1 ; terrasse ou balcon 0,3 à 0,5 ; cave 0,1 à 0,3 ; un garage souvent valorisé au forfait. Oublier de pondérer un bel extérieur, très prisé en PACA, revient à sous-évaluer le bien."
+      },
+      {
+        "terme": "DVF (Demandes de Valeurs Foncières)",
+        "definition": "DVF est la base de données publique et gratuite, publiée en open data par l'administration fiscale (DGFiP), qui recense les ventes immobilières réellement enregistrées (prix et surface). Elle couvre les cinq dernières années, est mise à jour deux fois par an (avril et octobre) et exclut l'Alsace-Moselle et Mayotte. C'est la source objective du prix de marché, bien plus fiable que les prix affichés des concurrents."
+      },
+      {
+        "terme": "Patrim",
+        "definition": "Patrim (« Rechercher des transactions immobilières ») est un service accessible aux particuliers depuis leur espace sur impots.gouv.fr. Il donne accès aux transactions immobilières pour un besoin déclaré (vente, succession, donation, IFI, expropriation), avec des données plus détaillées que DVF. Son usage est encadré par la loi : il faut un motif légitime."
+      },
+      {
+        "terme": "Bases notariales (BIEN, PERVAL) et indices Notaires-INSEE",
+        "definition": "Ce sont des sources alimentées par les notaires : BIEN pour l'Île-de-France, PERVAL pour la province. Les indices Notaires-INSEE et les observatoires locaux renseignent sur la tendance du marché (hausse ou baisse, délais de vente). Croiser ces sources avec DVF évite de se tromper sur un marché qui bouge vite."
+      },
+      {
+        "terme": "Estimateurs en ligne (AVM)",
+        "definition": "Les AVM sont des outils automatiques (modèles statistiques) qui estiment un bien en ligne ; ils donnent un ordre de grandeur mais raisonnent sur des moyennes. Ils ignorent l'essentiel : état réel, exposition, vis-à-vis, nuisances, qualité de la copropriété, DPE précis. La valeur ajoutée de l'agent est justement de corriger la machine par sa connaissance fine du terrain."
+      },
+      {
+        "terme": "Valeur verte (décote énergétique)",
+        "definition": "La « valeur verte » désigne l'effet de la performance énergétique sur le prix d'un bien. À bien comparable, une passoire thermique (classe F ou G) se vend avec une décote qui va de quelques pour cent à plus de 15 % selon les régions ; en PACA, marché tendu, elle est généralement plus modérée mais réelle. À l'inverse, une étiquette A ou B devient une plus-value et un argument de vente."
+      },
+      {
+        "terme": "Audit énergétique",
+        "definition": "L'audit énergétique est un document plus complet que le DPE, obligatoire à la vente d'une maison individuelle ou d'un immeuble en monopropriété selon un calendrier : classes F et G depuis avril 2023, E depuis janvier 2025, D à partir de janvier 2034. Il propose des scénarios de travaux chiffrés. En estimation, il « objective » le coût de rénovation, et donc la marge de négociation de l'acquéreur."
+      },
+      {
+        "terme": "Décote d'occupation (bien vendu loué)",
+        "definition": "Un logement vendu alors qu'il est encore loué vaut moins qu'un logement libre, car l'acquéreur hérite du locataire et ne peut pas l'occuper immédiatement. Cette décote d'occupation est couramment de l'ordre de 10 à 20 %, selon la durée de bail restante, le niveau du loyer et le profil du locataire. Un loyer en place élevé réduit la décote (le bien séduit un investisseur) ; un loyer faible et bloqué l'accentue."
+      },
+      {
+        "terme": "Viager (bouquet, rente, crédirentier, DUH)",
+        "definition": "En viager occupé, la valeur vénale du bien est transformée en un bouquet (somme versée à la signature) plus une rente viagère versée au vendeur, après une décote d'occupation car le vendeur conserve l'usage du logement. Ce vendeur est appelé le crédirentier et garde un droit d'usage et d'habitation (DUH). Le viager est un domaine spécialisé : on établit l'avis de valeur du bien libre, puis on fait valider le montage par un spécialiste ou le notaire."
+      },
+      {
+        "terme": "Surévaluation et courbe d'intérêt",
+        "definition": "Surévaluer, c'est accepter un mandat à un prix trop élevé « pour faire plaisir » ou pour rentrer le mandat : c'est l'erreur la plus coûteuse du métier. L'intérêt pour un bien neuf sur le marché est maximal dans les 3 à 4 premières semaines (la courbe d'intérêt) ; un prix trop haut gâche cette fenêtre, le bien « se grille », subit des baisses successives et finit par se vendre plus lentement ET moins cher qu'au juste prix. Sous-évaluer est l'autre faute, car cela fait perdre de l'argent au vendeur."
+      }
     ]
   },
   "negociation": {
@@ -1386,6 +1632,80 @@ export const ANIMATIONS_DATA: Record<string, AnimationModule> = {
       "audit énergétique obligatoire à la vente pour les logements F et G",
       "gel des loyers puis interdiction progressive de location des passoires (G en 2025, F en 2028, E en 2034) — leviers factuels majeurs de négociation.",
       "ZOPA = zone d'accord possible entre plancher vendeur et plafond acquéreur."
+    ],
+    "glossaire": [
+      {
+        "terme": "ZOPA (zone d'accord possible)",
+        "definition": "Espace de prix dans lequel un accord est possible entre les deux parties : il se situe entre le prix plancher du vendeur (le plus bas qu'il accepte) et le plafond de l'acquéreur (le plus haut qu'il peut payer). Si ces deux limites se recouvrent, un accord existe ; sinon, aucune technique ne le créera. Exemple : vendeur prêt à descendre à 305 000 € et acheteur prêt à monter à 315 000 € donnent une ZOPA de 305 000 à 315 000 €."
+      },
+      {
+        "terme": "MESORE / BATNA",
+        "definition": "La MESORE (« meilleure solution de rechange », BATNA en anglais) est ce que chaque partie fera si la négociation échoue. Un vendeur qui a d'autres acheteurs en réserve, ou un acquéreur qui a repéré un autre bien, a une MESORE forte et négocie en position de force. Évaluer la MESORE de chacun aide à savoir qui a vraiment le pouvoir dans la discussion."
+      },
+      {
+        "terme": "Effet d'ancrage",
+        "definition": "Phénomène psychologique où le premier chiffre énoncé (l'« ancre ») fixe le cadre de toute la discussion qui suit. Une offre très basse tire la négociation vers le bas ; un prix d'affichage crédible tire l'acheteur vers le haut. Face à une offre très basse, le réflexe gagnant est de « ré-ancrer » aussitôt sur les ventes réelles comparables pour repartir du marché."
+      },
+      {
+        "terme": "Marge de négociation",
+        "definition": "Écart entre le prix affiché au départ et le prix finalement signé. Longtemps autour de 5 %, elle s'est élargie avec la baisse des prix et le crédit plus difficile : en 2025, les baromètres la situent autour de 8 à 10 % au niveau national, souvent plus sur les maisons. Elle dépend surtout de la tension du secteur, du type de bien et de la justesse du prix de départ."
+      },
+      {
+        "terme": "Effet de dotation",
+        "definition": "Biais qui pousse un propriétaire à surévaluer son bien simplement parce qu'il lui appartient : il y projette ses souvenirs, ses travaux, son vécu. D'où l'écart fréquent entre le « prix affectif » et le prix du marché. On ne le combat pas en s'opposant à l'émotion, mais en recentrant doucement sur les faits (comparables, retours de visites)."
+      },
+      {
+        "terme": "Concession et contrepartie",
+        "definition": "Une concession est un geste que l'on fait vers l'autre (par exemple baisser le prix) ; une contrepartie est ce que l'on obtient en échange (signature rapide, libération immédiate, moins de conditions). Règle d'or : jamais de concession sans contrepartie, sinon le geste donne l'impression que le prix était gonflé et appelle la demande suivante. On lâche aussi par paliers décroissants (6 000 €, puis 2 500 €, puis 1 000 €) pour signaler qu'on approche de la limite."
+      },
+      {
+        "terme": "Négociation distributive et intégrative",
+        "definition": "La négociation distributive est un bras de fer sur le seul prix : tout ce que l'un gagne, l'autre le perd (« le gâteau est fixe »). La négociation intégrative ajoute d'autres variables (délai, meubles, date de libération, travaux) pour « agrandir le gâteau » et créer de la valeur des deux côtés. C'est là que le professionnel fait la différence, en débloquant un accord que le prix seul figeait."
+      },
+      {
+        "terme": "Méthode de Harvard",
+        "definition": "Méthode de négociation raisonnée issue de l'ouvrage de Roger Fisher et William Ury. Elle repose sur quatre principes : séparer les personnes du problème, raisonner en intérêts plutôt qu'en positions affichées, imaginer plusieurs options gagnantes pour les deux, et s'appuyer sur des critères objectifs (faits incontestables). Elle vise un accord solide, pas un vainqueur et un perdant."
+      },
+      {
+        "terme": "Position et intérêt",
+        "definition": "La position est ce que la personne affiche (« je ne descends pas sous 320 000 € ») ; l'intérêt est le vrai besoin caché derrière (« il me faut 300 000 € net pour mon prochain achat »). Négocier l'intérêt, et non la position, ouvre des solutions invisibles au premier abord. Exemple : jouer sur les honoraires à charge acquéreur peut donner au vendeur son net sans toucher au chiffre affiché."
+      },
+      {
+        "terme": "DVF (Demandes de Valeurs Foncières)",
+        "definition": "Base de données publique des ventes immobilières réellement signées chez le notaire. Les comparables DVF sont le point d'ancrage factuel du négociateur : ils disent ce que des biens équivalents se sont vraiment vendus, et non ce que les concurrents affichent. C'est une preuve objective, à opposer aux opinions et aux prix d'affichage."
+      },
+      {
+        "terme": "Offre d'achat",
+        "definition": "Proposition par laquelle l'acquéreur s'engage à acheter à un prix donné. Elle doit être écrite (une offre orale n'a aucune valeur) et préciser le prix (en distinguant net vendeur et prix FAI), le bien, l'identité de l'acheteur, la durée de validité (5 à 10 jours) et les conditions, notamment le financement. L'agent doit transmettre au vendeur toutes les offres écrites reçues, même celles qu'il juge trop basses."
+      },
+      {
+        "terme": "Condition suspensive de prêt (loi Scrivener)",
+        "definition": "Clause qui protège l'acquéreur achetant à crédit : si sa banque refuse le prêt dans les règles, la vente est annulée et il récupère son dépôt de garantie. Prévue par la loi Scrivener (article L313-41 du Code de la consommation), sa durée minimale légale est d'un mois (en pratique 45 à 60 jours). Un acheteur qui paie comptant doit écrire une mention manuscrite pour y renoncer."
+      },
+      {
+        "terme": "Dépôt de garantie (séquestre)",
+        "definition": "Somme versée par l'acquéreur à la signature du compromis pour montrer son engagement, généralement de 5 à 10 % du prix. Elle n'est jamais versée au stade de l'offre d'achat, et doit être détenue par le notaire (ou par un professionnel disposant d'une garantie financière). Si l'acheteur se rétracte dans les règles, elle lui est restituée."
+      },
+      {
+        "terme": "Délai de rétractation SRU (10 jours)",
+        "definition": "Délai de 10 jours pendant lequel l'acquéreur non professionnel peut renoncer à la vente sans motif ni pénalité, après la signature du compromis (article L271-1 du Code de la construction et de l'habitation). Il court à partir du lendemain de la première présentation de la notification. Attention : seul l'acheteur en bénéficie, pas le vendeur ; et il ne faut pas le confondre avec les 14 jours de rétractation du mandat."
+      },
+      {
+        "terme": "Objection",
+        "definition": "Remarque ou résistance exprimée par le client (« c'est trop cher », « il y a des travaux », « je vais réfléchir »). En négociation, ce n'est pas un refus mais un signal d'intérêt et une demande de réassurance : un client indifférent ne négocie pas. La bonne trame est d'écouter, reformuler pour isoler le vrai frein, répondre par la preuve, puis vérifier que le point est réglé."
+      },
+      {
+        "terme": "FOMO et aversion à la perte",
+        "definition": "L'aversion à la perte est le fait qu'on souffre plus de perdre quelque chose que l'on ne se réjouit de le gagner. La FOMO (« Fear Of Missing Out », la peur de rater) en découle : sur un bien qui plaît, rappeler sa rareté réelle pousse l'acheteur à agir. Mais la rareté doit être vraie : une urgence inventée se retourne contre l'agent dès qu'elle est découverte."
+      },
+      {
+        "terme": "Plus-value des particuliers",
+        "definition": "Impôt dû par le vendeur sur le gain réalisé entre l'achat et la vente, sauf s'il s'agit de sa résidence principale (totalement exonérée). Pour une résidence secondaire ou un investissement, elle est taxée à 19 % d'impôt sur le revenu plus 17,2 % de prélèvements sociaux, avec des abattements selon la durée de détention (exonération totale à 30 ans). La connaître aide à comprendre le vrai « prix plancher net » du vendeur."
+      },
+      {
+        "terme": "Offres multiples et surenchère",
+        "definition": "Situation où plusieurs acquéreurs font une offre en même temps sur un bien recherché. L'agent doit rester loyal (transmettre toutes les offres écrites, ne jamais inventer de faux acheteur) et comparer sur plus que le prix : solidité du financement, conditions, délais. Attention à la fausse bonne affaire : une offre poussée trop haut peut buter sur l'estimation de la banque et faire tomber la vente."
+      }
     ]
   },
   "mandat": {
@@ -1743,6 +2063,84 @@ export const ANIMATIONS_DATA: Record<string, AnimationModule> = {
       "LCB-FT / Tracfin : obligation de vigilance et déclaration de soupçon.",
       "Logement de famille : accord des deux époux (art.",
       "215 Code civil)."
+    ],
+    "glossaire": [
+      {
+        "terme": "Mandat",
+        "definition": "Contrat écrit par lequel le propriétaire d'un bien donne à une agence le pouvoir de le commercialiser (chercher un acheteur, négocier, faire visiter). C'est l'acte fondateur de la mission : sans mandat écrit signé, l'agent n'a aucun droit à être payé, même s'il trouve l'acheteur. Il fixe aussi le prix, la rémunération et la durée de la mission."
+      },
+      {
+        "terme": "Mandant",
+        "definition": "Personne qui signe le mandat et donne pouvoir à l'agence, c'est-à-dire le vendeur. L'agent doit toujours vérifier que le mandant a bien le droit de vendre le bien (qu'il en est propriétaire et qu'il peut signer seul). Exemple : pour un couple marié, les deux époux sont souvent mandants."
+      },
+      {
+        "terme": "Mandat simple",
+        "definition": "Mandat où le vendeur confie son bien à plusieurs agences en même temps et garde le droit de vendre lui-même. Il semble avantageux (plus d'agences), mais en réalité aucune agence n'investit vraiment et le bien, vu partout à des prix différents, paraît suspect. C'est le type de mandat le moins engageant pour l'agent."
+      },
+      {
+        "terme": "Mandat exclusif",
+        "definition": "Mandat confié à une seule agence pour une durée déterminée ; pendant cette période, le vendeur ne peut pas passer par une autre agence (ni, selon la clause, vendre lui-même). En échange, l'agent engage tous ses moyens (photos pro, home-staging, diffusion premium) car il est sûr d'être rémunéré. Statistiquement, un bien en exclusivité se vend plus vite et plus près du prix affiché."
+      },
+      {
+        "terme": "Mandat semi-exclusif",
+        "definition": "Formule intermédiaire : le vendeur s'engage avec une seule agence (exclusivité vis-à-vis des autres agences) mais garde le droit de vendre lui-même, par ses propres moyens. S'il trouve seul son acheteur, il ne paie pas (ou paie des honoraires réduits). C'est utile pour rassurer un vendeur qui n'ose pas tout confier."
+      },
+      {
+        "terme": "Bon de visite",
+        "definition": "Document que l'acquéreur signe pour prouver que c'est bien cette agence qui lui a fait visiter le bien. Attention : il ne donne aucun droit à commission et ne remplace jamais le mandat. Seul le mandat écrit signé par le vendeur fonde la rémunération de l'agent."
+      },
+      {
+        "terme": "Loi Hoguet",
+        "definition": "Loi du 2 janvier 1970 qui encadre toute l'activité des agents immobiliers en France. Elle impose notamment la carte professionnelle, un mandat écrit préalable et une assurance, et pose la règle d'or : pas de mandat écrit signé avant d'agir = aucune rémunération possible, même si la vente se fait grâce à vous. L'exercer sans respecter ces règles expose à des sanctions pénales."
+      },
+      {
+        "terme": "Loi ALUR",
+        "definition": "Loi du 24 mars 2014 pour l'accès au logement, qui a renforcé les obligations des agents immobiliers. Elle impose par exemple la formation continue (14 heures par an ou 42 heures sur 3 ans) et, pour les mandats exclusifs, l'obligation de rendre régulièrement des comptes au vendeur sur les actions menées."
+      },
+      {
+        "terme": "Carte T (carte professionnelle)",
+        "definition": "Carte « Transactions sur immeubles et fonds de commerce » que l'agence doit obligatoirement détenir pour vendre des biens. Elle est délivrée par la Chambre de commerce et d'industrie (CCI), valable 3 ans et renouvelable sous condition de formation. Le négociateur salarié travaille sous une attestation d'habilitation rattachée au titulaire de cette carte."
+      },
+      {
+        "terme": "AMEPI (fichier commun)",
+        "definition": "Fichier commun qui réunit les mandats exclusifs de plusieurs agences adhérentes, qu'elles partagent entre elles (et partagent aussi les honoraires en cas de vente). Argument fort pour le vendeur : il garde l'exclusivité (un seul interlocuteur, un seul prix) tout en profitant de la force de frappe de plusieurs agences."
+      },
+      {
+        "terme": "Prix net vendeur, honoraires et prix FAI",
+        "definition": "Le prix net vendeur est ce que le vendeur touche réellement. Les honoraires sont la rémunération de l'agence (soumise à la TVA de 20 %). Le prix FAI (Frais d'Agence Inclus) est la somme des deux, c'est le prix affiché à l'acheteur. Exemple : net vendeur 330 000 € + honoraires 16 500 € = prix FAI 346 500 €."
+      },
+      {
+        "terme": "Registre des mandats",
+        "definition": "Registre (papier ou électronique) où l'agence inscrit tous ses mandats, numérotés dans l'ordre chronologique et sans trou dans la numérotation. Le numéro attribué doit figurer sur l'exemplaire remis au vendeur. Un mandat non inscrit ou non numéroté est irrégulier et peut faire perdre la commission."
+      },
+      {
+        "terme": "Droit de rétractation du mandat",
+        "definition": "Quand un particulier signe un mandat ailleurs qu'en agence (chez lui, sur le lieu du bien), il bénéficie de 14 jours pour revenir sur sa décision sans justification. L'agent doit lui remettre un formulaire (bordereau) et l'informer de ce droit, sinon le délai passe à 12 mois. Un mandat signé dans l'agence, lui, n'ouvre pas ce droit de 14 jours."
+      },
+      {
+        "terme": "Reddition de comptes et bilan de commercialisation",
+        "definition": "Obligation (loi ALUR, pour l'exclusif) de rendre régulièrement des comptes au vendeur sur ce qui a été fait : compte rendu après chaque visite, point hebdomadaire ou bimensuel. Le bilan de commercialisation est le document chiffré qui résume ces actions (nombre de contacts, visites, retours). Un bon reporting fidélise le vendeur et prépare en douceur une éventuelle baisse de prix."
+      },
+      {
+        "terme": "Avenant",
+        "definition": "Document écrit et signé qui modifie officiellement un mandat déjà en cours, par exemple pour changer le prix de vente ou les honoraires. Toute modification doit passer par un avenant : jamais un simple accord oral. Exemple : passer le prix de 228 000 € à 219 000 € nécessite un avenant signé par le vendeur."
+      },
+      {
+        "terme": "DDT et diagnostics",
+        "definition": "Le Dossier de Diagnostic Technique (DDT) regroupe les contrôles obligatoires à fournir pour vendre : DPE (performance énergétique), amiante, plomb, électricité, gaz, état des risques, termites, loi Carrez en copropriété, etc. Chaque diagnostic a sa propre durée de validité (par exemple le DPE est valable 10 ans). Un dossier incomplet bloque la vente chez le notaire."
+      },
+      {
+        "terme": "LCB-FT, Tracfin et KYC",
+        "definition": "L'agent immobilier doit lutter contre le blanchiment d'argent et le financement du terrorisme (LCB-FT). Concrètement, il doit identifier et vérifier son client dès le départ (le KYC, « Know Your Customer », c'est-à-dire « connaître son client »), évaluer le risque et, en cas de doute sérieux, faire une déclaration de soupçon à Tracfin, le service de renseignement financier de l'État. Les documents de vérification se conservent 5 ans."
+      },
+      {
+        "terme": "Indivision",
+        "definition": "Situation où un bien appartient à plusieurs personnes en même temps (par exemple des héritiers après un décès, ou un couple non marié qui a acheté ensemble). Pour vendre, il faut en principe l'accord de TOUS les indivisaires : chacun doit signer le mandat, ou donner une procuration. Un mandat signé par un seul indivisaire « qui se fait fort » des autres est fragile."
+      },
+      {
+        "terme": "Déontologie et CNTGI",
+        "definition": "Les professionnels de l'immobilier suivent un code de déontologie (décret du 28 août 2015) qui impose compétence, transparence, confidentialité et respect des intérêts du client. Le respect de ces règles est surveillé par une commission de contrôle rattachée au CNTGI (Conseil national de la transaction et de la gestion immobilières), qui peut prononcer des sanctions. S'ajoute un devoir de conseil : alerter le vendeur quand son prix est hors marché, preuves à l'appui."
+      }
     ]
   },
   "vente-elite": {
@@ -2076,6 +2474,84 @@ export const ANIMATIONS_DATA: Record<string, AnimationModule> = {
       "dol et vice caché engagent la responsabilité civile du vendeur et de l'agent (Code civil)",
       "obligation d'afficher le DPE et données exactes (surface loi Carrez pour les lots de copropriété, tolérance 5 %).",
       "Règle d'or : si le client connaissait tout ce que vous savez, il devrait rester content d'avoir acheté."
+    ],
+    "glossaire": [
+      {
+        "terme": "Méthode CAP (Caractéristique-Avantage-Preuve)",
+        "definition": "Structure d'un argument qui porte. On énonce la Caractéristique (le fait objectif : « isolation refaite en 2021 »), puis l'Avantage pour CE client (« vous économisez sur le chauffage »), puis la Preuve qui rend l'avantage crédible (DPE, factures, comparable). Une caractéristique seule n'a aucune valeur commerciale : c'est l'avantage prouvé qui déclenche l'adhésion, souvent introduit par une liaison du type « ce qui veut dire pour vous que… »."
+      },
+      {
+        "terme": "SONCAS / SONCASE",
+        "definition": "Moyen mnémotechnique listant les grandes motivations d'achat, pour brancher l'argument sur le bon levier : Sécurité, Orgueil, Nouveauté, Confort, Argent, Sympathie, et, dans la version récente, Écologie. On repère le levier dominant en écoutant les mots que le client répète (« tranquille » = Sécurité, « charges » = Argent ou Écologie), puis on adapte son discours. Le même bien se vend différemment selon le moteur dominant du client."
+      },
+      {
+        "terme": "Principes de Cialdini",
+        "definition": "Six (puis sept) leviers universels de persuasion identifiés par le psychologue Robert Cialdini, qui déclenchent le « oui » : la réciprocité, l'engagement et la cohérence, la preuve sociale, l'autorité, la sympathie, la rareté, et plus récemment l'unité. Les vendeurs d'élite les activent avec éthique : on guide le client vers une bonne décision, on ne le manipule pas vers une mauvaise."
+      },
+      {
+        "terme": "Réciprocité",
+        "definition": "Principe de Cialdini : on se sent redevable envers celui qui nous a donné quelque chose. En pratique, l'agent offre d'abord (une estimation documentée, des conseils, de la disponibilité) avant de demander le mandat. Exemple : « Je vous ai préparé une étude complète de votre rue, elle est à vous quoi qu'il arrive » incite naturellement le vendeur à confier son projet."
+      },
+      {
+        "terme": "Preuve sociale",
+        "definition": "Principe selon lequel on se fie à ce que font les autres, surtout nos semblables. L'agent la mobilise avec des références locales (« j'ai vendu trois biens dans cette rue cette année »), des avis Google, des panneaux « Vendu » et des chiffres précis. Elle est d'autant plus forte qu'elle est datée, locale, chiffrée et vraie : une file d'attente inventée détruit la confiance."
+      },
+      {
+        "terme": "Autorité",
+        "definition": "Principe de Cialdini : on suit l'avis de l'expert crédible. L'agent affiche son expertise sans arrogance : connaissance fine du secteur, chiffres précis, carte professionnelle, enseigne reconnue. Exemple : « Sur Martigues, nous suivons chaque semaine l'évolution des prix quartier par quartier » rassure et fait autorité."
+      },
+      {
+        "terme": "Rareté",
+        "definition": "Principe de Cialdini : ce qui est rare a plus de valeur, et la peur de perdre est plus forte que l'envie de gagner. L'agent souligne ce qui rend le bien unique (vue, emplacement, absence d'équivalent). Impératif : la rareté doit être réelle, car une fausse pénurie détruit la confiance et peut constituer une pratique commerciale trompeuse sanctionnée par la loi."
+      },
+      {
+        "terme": "Sympathie",
+        "definition": "Principe de Cialdini : on dit oui plus facilement à quelqu'un qu'on apprécie. L'agent crée un lien sincère par l'écoute, les points communs, le sourire et le respect de ses engagements. Elle ne se feint pas : elle naît d'un intérêt réel pour le projet du client."
+      },
+      {
+        "terme": "Engagement et cohérence",
+        "definition": "Principe de Cialdini : nous aimons rester cohérents avec ce que nous avons dit ou fait. L'agent fait verbaliser de petits accords (« vous êtes d'accord qu'un bien bien présenté se vend mieux ? »), car un client qui a dit « oui » à un principe aura du mal à dire « non » à sa conséquence logique. Ces petits « oui » successifs préparent le grand oui final."
+      },
+      {
+        "terme": "Unité",
+        "definition": "Septième principe ajouté par Cialdini : le sentiment d'appartenir au même groupe que l'autre (« nous, gens du coin », « nous, parents »). Le « nous » crée une alliance qui désarme la méfiance. Exemple : « entre Martégaux, on se comprend » rapproche instantanément l'agent et le client."
+      },
+      {
+        "terme": "Storytelling",
+        "definition": "Art de raconter une histoire plutôt que d'aligner des arguments, parce que le cerveau retient un récit et oublie une fiche technique. Une bonne histoire crée des images mentales et de l'émotion, fait baisser la garde et devient mémorable. Le héros n'est jamais l'agent, c'est le client (ou un client qui lui ressemble), et l'histoire doit toujours être vraie."
+      },
+      {
+        "terme": "Congruence",
+        "definition": "Accord parfait entre le fond (les mots), la voix et le corps : tous disent la même chose. C'est elle qui rend un message crédible ; un excellent argument dit d'une voix hésitante et les yeux fuyants ne persuade personne. On ne peut être congruent que sur ce que l'on croit vraiment, d'où l'importance de la conviction sincère."
+      },
+      {
+        "terme": "Paraverbal et non-verbal (Mehrabian)",
+        "definition": "Les trois canaux de la communication : le verbal (les mots), le vocal ou paraverbal (ton, débit, volume, pauses) et le visuel ou non-verbal (posture, regard, sourire, gestes). Les travaux d'Albert Mehrabian montrent que, quand le verbal et le non-verbal se contredisent dans l'expression d'une émotion, l'interlocuteur se fie surtout à la voix et au corps. En pratique : soigner son ton et sa posture autant que ses arguments."
+      },
+      {
+        "terme": "Mirroring (synchronisation)",
+        "definition": "Technique consistant à s'adapter discrètement au rythme et au vocabulaire du client. Un client posé n'aime pas un vendeur en survitesse ; on ralentit donc pour se mettre à son diapason. On reprend aussi ses propres mots : s'il dit « tranquille », on parle de « tranquillité » plutôt que de « calme »."
+      },
+      {
+        "terme": "Effet de primauté et de récence",
+        "definition": "Deux effets de mémoire utiles pour ordonner ses arguments : on retient mieux ce qui est dit en premier (primauté) et ce qui est dit en dernier (récence). D'où la règle : ouvrir sur un argument fort, placer les arguments secondaires au milieu, et terminer par le plus fort. Et ne jamais tout déballer d'un coup : garder une « cartouche » en réserve pour relancer."
+      },
+      {
+        "terme": "Devoir d'information et de conseil",
+        "definition": "Obligation légale de l'agent (loi Hoguet) de donner à ses clients une information loyale, exacte et complète sur le bien, le marché et le prix. Taire ou déformer une information déterminante (servitude, procédure, sinistre, défaut majeur) engage sa responsabilité. Persuader ne dispense jamais de dire la vérité : un argument doit être à la fois vrai ET prouvé."
+      },
+      {
+        "terme": "Pratique commerciale trompeuse",
+        "definition": "Pratique interdite par le Code de la consommation : fausse rareté (« j'ai déjà deux acheteurs » quand c'est faux), faux comparables, chiffre inventé, caractéristique mensongère. Elle est sanctionnée (amende, voire peine) et ruine la réputation de l'agent. C'est la limite légale de la persuasion : la preuve sociale et la rareté ne sont permises que si elles sont réelles."
+      },
+      {
+        "terme": "Dol et réticence dolosive",
+        "definition": "Le dol consiste à tromper volontairement l'autre partie pour obtenir sa signature ; la réticence dolosive, c'est taire sciemment un défaut déterminant que l'on connaît. Dans les deux cas, la vente peut être annulée et des dommages-intérêts prononcés. Mieux vaut traiter honnêtement un défaut et l'argumenter que le cacher et tout perdre ensuite."
+      },
+      {
+        "terme": "DPE opposable",
+        "definition": "Le Diagnostic de Performance Énergétique classe le logement de A (très économe) à G (très énergivore). Depuis le 1er juillet 2021, il est « opposable » : l'acheteur ou le locataire peut se retourner contre le vendeur ou le bailleur si la performance réelle ne correspond pas à l'annonce. C'est devenu un vrai levier de prix, d'autant que les logements classés G sont interdits à la location depuis le 1er janvier 2025 (puis F en 2028 et E en 2034)."
+      }
     ]
   },
   "objections": {
@@ -2424,6 +2900,88 @@ export const ANIMATIONS_DATA: Record<string, AnimationModule> = {
       "Condition suspensive de prêt (loi Scrivener) : en général 45 à 60 jours.",
       "Délai de réflexion sur l'offre de prêt : 10 jours minimum.",
       "Question-test du prétexte : 'si je règle ce point, on signe ?' Repère local : toujours préparer 3 à 4 ventes comparables DVF du secteur (Martigues et alentours) avant chaque visite pour traiter l'objection prix."
+    ],
+    "glossaire": [
+      {
+        "terme": "Objection",
+        "definition": "Une objection est une remarque, une question ou une réserve exprimée par le client pendant la vente. Ce n'est pas un refus : c'est une demande d'information ou de besoin d'être rassuré, et souvent le signe que la personne s'intéresse vraiment. Exemple : « c'est petit pour le prix » n'est pas un non, c'est une porte encore ouverte."
+      },
+      {
+        "terme": "Objection fondée (sincère)",
+        "definition": "C'est un frein réel et justifié : un budget trop juste, un vrai défaut du bien, un financement incertain. Elle se traite par la preuve (chiffres, documents, démonstration). Exemple : un acheteur dont la banque limite le montant a une objection sincère de financement."
+      },
+      {
+        "terme": "Objection non fondée",
+        "definition": "C'est une objection qui repose sur un malentendu ou une information manquante, pas sur un fait réel. Elle se lève par la démonstration et le document. Exemple : le client dit « c'est humide » alors qu'aucun désordre n'existe ; un rapport ou une vérification sur place suffit à le rassurer."
+      },
+      {
+        "terme": "Prétexte (la « fausse barbe »)",
+        "definition": "C'est une objection de façade qui en cache une autre, la vraie. Des phrases vagues comme « je vais réfléchir » ou « c'est trop loin » en sont typiques. On ne la traite pas directement : on la fait préciser pour découvrir le frein réel caché derrière."
+      },
+      {
+        "terme": "Objection tactique",
+        "definition": "Le client objecte non pas parce qu'il doute, mais pour négocier (le prix, les honoraires) alors qu'il est déjà décidé. Elle se traite avec fermeté et en demandant des contreparties. Exemple : « c'est un peu cher » lancé par quelqu'un qui veut surtout obtenir une remise."
+      },
+      {
+        "terme": "Objection muette",
+        "definition": "C'est un frein que le client ne dit pas, mais qui se voit dans son attitude : recul, silence, regard vers le conjoint. Il faut la faire sortir par une question ouverte. Exemple : « je vous sens hésitant, qu'est-ce qui vous retient ? »."
+      },
+      {
+        "terme": "Signal d'achat",
+        "definition": "C'est un indice, verbal ou physique, montrant que le client est prêt à acheter : il se projette dans le bien, pose des questions sur la date d'entrée, les charges, l'« après ». À l'inverse, une objection muette trahit un frein. Repérer le signal dit quand cesser d'argumenter et conclure."
+      },
+      {
+        "terme": "Méthode CRAC (ou ACRAC)",
+        "definition": "C'est la trame de base pour traiter n'importe quelle objection, en quatre temps : Creuser, Reformuler, Argumenter, Contrôler. On y ajoute souvent un temps zéro, Accueillir, d'où ACRAC. Suivie dans l'ordre, elle évite de répondre trop vite et à côté."
+      },
+      {
+        "terme": "Accueillir (technique de l'édredon)",
+        "definition": "Avant de répondre, on amortit l'objection sans la contredire, pour rester l'allié du client : « je comprends », « c'est une bonne question ». Comme un édredon qui amortit un choc, cette étape fait baisser la garde et désamorce la tension avant d'argumenter."
+      },
+      {
+        "terme": "Creuser",
+        "definition": "C'est faire préciser l'objection pour trouver le vrai frein, au lieu de traiter l'objection apparente. On pose des questions ouvertes : « c'est-à-dire ? », « par rapport à quoi ? », « qu'est-ce qui vous fait dire cela ? ». On ne répond jamais à une objection qu'on n'a pas comprise."
+      },
+      {
+        "terme": "Reformuler et isoler",
+        "definition": "Reformuler, c'est répéter l'objection avec ses propres mots pour vérifier qu'on a bien compris. Isoler, c'est poser la question-clé « À part ce point, tout le reste vous convient ? ». Si le client dit oui, il ne reste plus qu'un seul obstacle à lever, ce qui évite les objections sans fin."
+      },
+      {
+        "terme": "Argumenter (avec une preuve)",
+        "definition": "C'est répondre avec un fait, pas une opinion : chiffres, comparables de ventes réelles, document, démonstration, témoignage. Règle d'or : un argument fort vaut mieux que dix faibles. On structure souvent en CAP : Caractéristique, Avantage pour le client, Preuve."
+      },
+      {
+        "terme": "Contrôler et verrouiller",
+        "definition": "Après avoir argumenté, on vérifie que l'objection est bien levée (« ce point est clair pour vous ? ») puis on avance d'un pas concret (« donc on peut avancer ? »). Verrouiller empêche le client de repartir avec son doute et transforme l'objection levée en progrès vers la signature."
+      },
+      {
+        "terme": "Le silence",
+        "definition": "Après avoir argumenté et posé sa question de contrôle, le négociateur se tait. Le silence oblige le client à répondre et à décider. Celui qui parle le premier « rouvre » la discussion et affaiblit sa position : supporter le blanc travaille en votre faveur."
+      },
+      {
+        "terme": "Boomerang (retournement)",
+        "definition": "C'est une technique qui transforme l'objection en raison d'acheter. Exemple : à « il y a trop de travaux », on répond « c'est justement pour ça que le prix est déjà attractif et que vous aménagez à votre goût ». On retourne le frein comme un boomerang."
+      },
+      {
+        "terme": "Division",
+        "definition": "C'est fractionner un écart de prix pour le dédramatiser, en le ramenant à une petite échelle. Exemple : « 6 000 € de plus sur un prêt de 20 ans, c'est environ 30 € par mois, le prix d'un abonnement ». Le montant global paraît soudain bien plus supportable."
+      },
+      {
+        "terme": "DVF (Demandes de valeurs foncières)",
+        "definition": "C'est la base de données publique des prix réellement payés lors des ventes immobilières, consultable par tous. Elle sert à prouver qu'un prix est « dans le marché » à partir de ventes signées, et non de prix affichés. Exemple : montrer trois T4 vendus récemment dans le quartier à un prix comparable."
+      },
+      {
+        "terme": "Frais d'acquisition (« frais de notaire »)",
+        "definition": "Ce sont les frais payés par l'acheteur en plus du prix du bien (taxes, émoluments du notaire). Ils représentent environ 7 à 8 % du prix dans l'ancien et 2 à 3 % dans le neuf (VEFA). Les annoncer tôt évite une mauvaise surprise et rend l'offre réaliste."
+      },
+      {
+        "terme": "Délai de rétractation (10 jours, loi SRU)",
+        "definition": "L'acheteur non-professionnel d'un logement dispose de 10 jours pour renoncer, sans motif ni pénalité, après la notification du compromis signé (article L271-1 du Code de la construction et de l'habitation). Il récupère alors son dépôt. C'est un argument puissant pour rassurer un client qui a peur de s'engager."
+      },
+      {
+        "terme": "Condition suspensive de prêt (loi Scrivener)",
+        "definition": "Quand l'acheteur finance par un emprunt, le compromis inclut obligatoirement cette clause, d'au moins un mois. Si la banque refuse le prêt, la vente est annulée et le dépôt de garantie est restitué. Elle protège l'acheteur : « vous ne perdez pas votre argent si la banque dit non »."
+      }
     ]
   },
   "mots-vente": {
@@ -2793,6 +3351,88 @@ export const ANIMATIONS_DATA: Record<string, AnimationModule> = {
       "Après l'annonce d'un prix : silence.",
       "Mentions obligatoires annonce : honoraires et qui les paie, DPE et GES.",
       "Règle éthique : les mots doivent tenir à la visite (sinon pratique commerciale trompeuse)."
+    ],
+    "glossaire": [
+      {
+        "terme": "Mots noirs",
+        "definition": "Ce sont les mots qui activent, souvent inconsciemment, la peur, la méfiance ou le doute chez le client. Les bons vendeurs les repèrent et les remplacent. Exemples : « problème », « cher », « commission », « paperasse ». Ils laissent une trace négative que le client attribuera au bien ou au vendeur."
+      },
+      {
+        "terme": "Négation (principe neurolinguistique)",
+        "definition": "Le cerveau traite mal la négation : « ne vous inquiétez pas » fait d'abord entendre le mot « inquiétude ». On formule donc au positif. Au lieu de « ne vous inquiétez pas », on dit « vous êtes serein, car... ». Choisir ses mots oriente ce que le client ressent."
+      },
+      {
+        "terme": "Honoraires (plutôt que commission)",
+        "definition": "Les honoraires sont la rémunération de l'agent immobilier. On préfère ce mot à « commission », qui évoque le démarchage, alors qu'« honoraires » renvoie à un professionnel réglementé. Astuce de langage : « mes honoraires ne vous coûtent pas, ils vous rapportent »."
+      },
+      {
+        "terme": "Tics de langage",
+        "definition": "Ce sont de petites expressions qui détruisent la crédibilité sans qu'on s'en rende compte. « Honnêtement, franchement » sous-entend que le reste ne l'était pas ; « je ne vais pas vous mentir » installe l'idée du mensonge ; « normalement, en principe » jettent le doute là où le client attend une certitude."
+      },
+      {
+        "terme": "Mots-force (power words)",
+        "definition": "Ce sont les mots qui déclenchent l'adhésion : « vous / votre » (parlez du client, pas de vous), « imaginez », « exclusif », « garanti », « maintenant ». Employés au bon moment, ils rassurent, projettent ou créent l'envie d'agir sans attendre."
+      },
+      {
+        "terme": "« Parce que »",
+        "definition": "Donner une raison, même simple, augmente fortement l'acceptation d'une demande. Le mot « parce que » lève la résistance du client. Exemple : « signons maintenant parce que ce taux est garanti jusqu'à vendredi »."
+      },
+      {
+        "terme": "Vocabulaire sensoriel",
+        "definition": "C'est parler aux cinq sens pour faire « voir » le bien avant même la visite. Exemples : « la lumière qui inonde le séjour en fin d'après-midi » (vue), « le silence d'une impasse » (ouïe). On transforme une donnée en expérience vécue."
+      },
+      {
+        "terme": "VAKOG (canal dominant)",
+        "definition": "VAKOG désigne les cinq canaux sensoriels : Visuel, Auditif, Kinesthésique (le toucher, le ressenti), Olfactif, Gustatif. Chaque client en a un dominant, repérable dans ses mots. On reprend son canal : à un visuel « vous voyez le potentiel », à un kinesthésique « vous allez vous sentir bien ici »."
+      },
+      {
+        "terme": "Bénéfice vs caractéristique",
+        "definition": "Une caractéristique décrit le bien (« double vitrage ») ; un bénéfice décrit la vie du client (« des factures de chauffage allégées et le calme »). On vend des bénéfices, pas des caractéristiques, car c'est le bénéfice qui donne envie. La formule-pont « ce qui veut dire pour vous » relie l'un à l'autre : « double vitrage, ce qui veut dire pour vous des factures allégées et le calme »."
+      },
+      {
+        "terme": "Storytelling immobilier",
+        "definition": "C'est l'art de raconter une histoire plutôt que d'énumérer des m². Le cerveau mémorise les récits et décide d'abord avec l'émotion. Une bonne histoire de bien réunit trois ingrédients : le lieu (le décor), la vie possible (la projection) et le détail qui ancre (un élément unique et vrai). L'histoire doit toujours être vraie."
+      },
+      {
+        "terme": "Présupposé positif",
+        "definition": "C'est parler de l'après comme s'il était déjà acquis, ce qui installe la projection. Exemple : « quand vous serez installés... » au lieu de « si vous achetez... ». On saute l'étape du doute et le client se projette naturellement."
+      },
+      {
+        "terme": "Cadrage (framing)",
+        "definition": "Un même chiffre peut sembler énorme ou dérisoire selon les mots qui l'entourent. Le cadrage, c'est choisir ces mots pour donner du sens à un montant vrai. Exemple : dire « seulement 299 000 € » ou « un budget de » plutôt qu'« un prix de ». Le cadrage éclaire un chiffre vrai, il n'en fabrique pas un faux."
+      },
+      {
+        "terme": "Ancrage",
+        "definition": "Le premier chiffre énoncé devient la référence à laquelle tout le reste se compare. On annonce d'abord une valeur haute et vraie, puis on positionne le prix en dessous. Exemple : « des biens comme celui-ci se négocient autour de 320 000 € ; ici, à 299 000 €, vous êtes très bien placé »."
+      },
+      {
+        "terme": "Fractionnement",
+        "definition": "C'est rendre un gros montant acceptable en le ramenant à une petite échelle. Exemple : « 15 000 € de travaux, lissés sur 20 ans de prêt, représentent quelques dizaines d'euros par mois ». On ne dissimule jamais le montant, on le rend concret et supportable."
+      },
+      {
+        "terme": "Aversion à la perte",
+        "definition": "Les gens détestent perdre plus qu'ils n'aiment gagner. On formule donc l'enjeu en perte évitée plutôt qu'en gain. Exemple : « chaque mois de retard, c'est un crédit relais qui court et un bien qui fatigue sur le marché ». Le risque de perdre pousse à décider."
+      },
+      {
+        "terme": "Para-verbal (la voix)",
+        "definition": "C'est tout ce qui accompagne les mots : le ton, le débit, le volume, le silence. Il pèse souvent plus que les mots eux-mêmes. On termine les phrases importantes sur un ton descendant (autorité), on ralentit sur les mots-clés, et au téléphone on sourit physiquement car « le sourire s'entend »."
+      },
+      {
+        "terme": "AIDA",
+        "definition": "C'est la structure d'un bon texte de vente (annonce, email) : Attention (l'accroche), Intérêt (les atouts en bénéfices), Désir (la projection), Action (le pas à faire maintenant, appeler ou visiter). On capte, on intéresse, on fait rêver, puis on déclenche l'action."
+      },
+      {
+        "terme": "Mentions obligatoires de l'annonce",
+        "definition": "Une annonce doit légalement comporter certaines informations : le prix et qui paie les honoraires (avec le taux si à la charge de l'acheteur), la classe DPE et GES, et depuis 2022 une estimation des dépenses annuelles d'énergie. Une annonce sans DPE ni mention d'honoraires est hors-la-loi et sanctionnable."
+      },
+      {
+        "terme": "Pratique commerciale trompeuse",
+        "definition": "C'est le fait d'affirmer du faux ou d'induire en erreur sur les caractéristiques, le prix ou la disponibilité d'un bien. Ce n'est pas une technique, c'est un délit (articles L121-2 à L121-4 du Code de la consommation), puni jusqu'à 2 ans de prison et 300 000 € d'amende, et contrôlé par la DGCCRF."
+      },
+      {
+        "terme": "Devoir de conseil et dol",
+        "definition": "L'agent (loi Hoguet) doit une information loyale au client. Taire sciemment une information déterminante (servitude, nuisance connue, procédure) engage sa responsabilité et peut faire annuler la vente pour dol, c'est-à-dire pour tromperie (article 1137 du Code civil). Mieux vaut dire un défaut que de le cacher."
+      }
     ]
   },
   "closing": {
@@ -3132,6 +3772,88 @@ export const ANIMATIONS_DATA: Record<string, AnimationModule> = {
       "Relances après un refus : 2 à 3 max, chacune avec un élément nouveau.",
       "Une offre AU PRIX du mandat engage fortement le vendeur.",
       "Toute offre écrite doit être transmise au vendeur."
+    ],
+    "glossaire": [
+      {
+        "terme": "Closing (conclusion)",
+        "definition": "C'est le moment où tout le travail de vente se transforme (ou non) en signature. Conclure, ce n'est pas forcer : c'est aider le client à prendre la décision qu'il a déjà envie de prendre. Le closing se prépare dès le premier contact, chaque étape préparant la suivante."
+      },
+      {
+        "terme": "Peur du non",
+        "definition": "C'est l'ennemi numéro un du closing : par crainte d'entendre « non », on n'ose pas poser la question de conclusion et on continue d'argumenter. Résultat, on laisse filer le bon moment. Règle : le pire closing est celui qu'on ne tente pas, car une vente non demandée est perdue d'avance."
+      },
+      {
+        "terme": "Signal d'achat",
+        "definition": "C'est un indice que le client est prêt. Signal verbal : il se projette (« les enfants seraient dans quelle école ? »), demande la date d'entrée ou ce qui se passe « après ». Signal non verbal : il relit les documents, se détend, interroge son conjoint du regard. Dès qu'il apparaît, on arrête d'argumenter et on conclut."
+      },
+      {
+        "terme": "Point de maturité",
+        "definition": "C'est le moment précis où le client est « mûr » pour décider. Conclure avant, c'est trop tôt (on provoque un non) ; conclure après, c'est trop tard (l'émotion retombe, le doute revient). Le bon closeur repère ce point et saisit l'instant."
+      },
+      {
+        "terme": "Conclusion d'essai (trial close)",
+        "definition": "C'est une question qui teste le niveau d'engagement du client sans encore demander la décision finale. Elle est sans risque : une réponse positive fait avancer, une réponse négative révèle un frein à traiter. Exemple : « sur une échelle de 1 à 10, où situez-vous ce bien ? »."
+      },
+      {
+        "terme": "Pré-closing",
+        "definition": "C'est l'idée que le closing ne commence pas à la fin, mais se prépare tout au long du parcours par une série de petits verrouillages. Quand arrive la question finale, la décision est déjà largement prise. Il regroupe les conclusions d'essai, les petits oui et le pré-cadrage."
+      },
+      {
+        "terme": "Technique des petits oui (escalier d'engagement)",
+        "definition": "On enchaîne des questions dont la réponse est « oui » pour installer une dynamique d'accord. Elle s'appuie sur le principe de cohérence : il est difficile de dire non après une série de oui. Exemple : « l'emplacement vous convient ? Le budget est bon ? Alors on prépare l'offre ? »."
+      },
+      {
+        "terme": "Technique de l'alternative (choix dirigé)",
+        "definition": "On propose un choix entre deux « oui », jamais entre oui et non. Quelle que soit la réponse, le client a dit oui au principe. Exemple : « vous préférez signer mardi matin ou jeudi en fin de journée ? ». Le piège à éviter : proposer « oui ou non » comme alternative."
+      },
+      {
+        "terme": "Le bilan (balance de Benjamin Franklin)",
+        "definition": "C'est récapituler une longue liste d'avantages, idéalement listés par le client lui-même, face à de courtes réserves, pour faire pencher la décision. Exemple : « emplacement idéal, lumineux, sans travaux, dans votre budget... en face, il reste juste la question du parking »."
+      },
+      {
+        "terme": "La dernière objection (conclusion conditionnelle)",
+        "definition": "C'est transformer le dernier frein du client en condition de signature. Exemple : « si je règle la question du parking, on y va ? ». S'il dit oui, l'obstacle n'est plus qu'un détail à traiter et la vente est faite. C'est la jonction entre le traitement d'objection et le closing."
+      },
+      {
+        "terme": "La présomption (l'affaire conclue)",
+        "definition": "C'est agir comme si la décision était déjà prise, en douceur et sans arrogance. Exemple : « je prépare l'offre ; vous me confirmez l'orthographe de vos noms pour le compromis ? ». À réserver aux signaux d'achat clairs, sinon elle est perçue comme de la pression."
+      },
+      {
+        "terme": "Question de conclusion",
+        "definition": "C'est la question fermée, claire et engageante qui appelle une décision : « on signe le mandat maintenant ? », « je rédige l'offre ? ». On la pose une seule fois, avec calme et assurance. On évite les formulations molles (« vous voulez réfléchir ? ») qui invitent au report."
+      },
+      {
+        "terme": "Le pouvoir du silence",
+        "definition": "Après la question de conclusion, le premier qui parle « perd ». Le silence met le client en situation de décider. On tient 5 à 15 secondes sans le combler par un nouvel argument (cela rouvrirait la discussion) ni baisser le prix par malaise (l'erreur qui coûte des milliers d'euros)."
+      },
+      {
+        "terme": "La survente",
+        "definition": "C'est continuer à argumenter alors que le client a déjà donné des signaux d'achat. Trop d'arguments réveillent des objections et font douter un client déjà convaincu. Règle : quand c'est gagné, on arrête de vendre."
+      },
+      {
+        "terme": "Remords de l'acheteur (buyer's remorse)",
+        "definition": "C'est le doute qui saisit le client après une grosse décision (la dissonance post-décision). Il est dangereux car le délai de rétractation SRU de 10 jours permet de revenir en arrière sans frais. On le prévient en félicitant le client, en restant présent et en rappelant ses raisons d'achat."
+      },
+      {
+        "terme": "Loi Hoguet et mandat écrit",
+        "definition": "La loi Hoguet (loi n° 70-9 du 2 janvier 1970) impose un mandat écrit et signé avant toute négociation. Règle : pas de mandat, pas de closing. Les honoraires ne sont dus que si un mandat valable existe et désigne qui les paie ; un closing brillant sur un mandat irrégulier ne rapporte rien."
+      },
+      {
+        "terme": "Article 1589-1 du Code civil",
+        "definition": "Il interdit (sous peine de nullité) d'exiger une somme de l'acheteur au stade de l'offre d'achat : ni chèque, ni acompte, ni dépôt. L'offre écrite suffit à réserver la priorité. Le dépôt de garantie (souvent 5 à 10 %), lui, n'intervient qu'au compromis et est séquestré chez le notaire ou l'agent garanti."
+      },
+      {
+        "terme": "Vente parfaite (article 1583 du Code civil)",
+        "definition": "Selon cet article, la vente est juridiquement « parfaite » dès qu'il y a accord sur la chose et sur le prix. Concrètement, une offre au prix du mandat, acceptée par le vendeur, engage. L'agent a par ailleurs l'obligation de transmettre au vendeur toute offre écrite reçue, sans jamais la filtrer."
+      },
+      {
+        "terme": "Loi Scrivener (délais de financement)",
+        "definition": "Elle protège l'acheteur qui emprunte : le compromis comporte une condition suspensive d'obtention de prêt (au moins un mois), et l'offre de prêt de la banque ne peut être acceptée qu'après un délai de réflexion de 10 jours. Annoncer ces délais rassure le client et sécurise la vente."
+      },
+      {
+        "terme": "LCB-FT / Tracfin",
+        "definition": "Ce sont les obligations de lutte contre le blanchiment de capitaux et le financement du terrorisme. L'agent immobilier y est soumis : au moment de concrétiser, il vérifie l'identité des parties, s'interroge sur l'origine des fonds et déclare à Tracfin (le service de l'État dédié) toute opération suspecte."
+      }
     ]
   },
   "defendre-prix": {
@@ -3450,6 +4172,76 @@ export const ANIMATIONS_DATA: Record<string, AnimationModule> = {
       "Déontologie : décret n°2015-1090 du 28 août 2015 (interdiction de dénigrer).",
       "Mnémoniques : A.C.R.E. (Accueillir, Creuser, Recadrer, Engager) et Valeur-Prix-Valeur.",
       "5 contreparties : exclusivité, durée ferme, juste prix, recommandation/avis, souplesse visites et mise en valeur."
+    ],
+    "glossaire": [
+      {
+        "terme": "Honoraires d'agence",
+        "definition": "C'est la rémunération de l'agent immobilier pour avoir vendu un bien. En France ils sont libres depuis l'ordonnance du 1er décembre 1986 : chaque agence fixe son propre barème, l'État n'impose aucun tarif. Ils ne sont dus que si la vente aboutit (exemple : 17 500 € pour une maison à 350 000 € au taux de 5 % TTC)."
+      },
+      {
+        "terme": "Barème d'honoraires",
+        "definition": "Grille de tarifs que l'agence affiche, indiquant le pourcentage ou le montant des honoraires selon le prix du bien. C'est un plafond : on peut négocier à la baisse, jamais facturer au-dessus. Il est souvent dégressif (le pourcentage diminue quand le prix monte) et s'exprime toujours en TTC."
+      },
+      {
+        "terme": "TTC et TVA à 20 %",
+        "definition": "TTC signifie « toutes taxes comprises ». Les honoraires d'agence supportent la TVA au taux de 20 %, donc un barème annoncé « 5 % » est 5 % TTC et l'agence n'encaisse réellement qu'environ 4,17 % hors taxe. On annonce toujours un montant TTC, sinon le client découvre la taxe ensuite et se sent trompé."
+      },
+      {
+        "terme": "Prix net vendeur",
+        "definition": "La somme que le vendeur touche vraiment une fois la vente faite, hors honoraires d'agence. Exemple : pour un bien affiché 190 000 € avec 10 000 € d'honoraires, le net vendeur est de 180 000 €. C'est ce chiffre, le « net dans la poche », qui intéresse le vendeur, bien plus que le pourcentage de commission."
+      },
+      {
+        "terme": "Prix FAI (Frais d'Agence Inclus)",
+        "definition": "C'est le prix affiché dans l'annonce : il additionne le prix net vendeur et les honoraires de l'agence. Exemple : 180 000 € net + 10 000 € d'honoraires = 190 000 € FAI. C'est le montant total que paie l'acquéreur."
+      },
+      {
+        "terme": "Honoraires à la charge du vendeur ou de l'acquéreur",
+        "definition": "Le mandat précise qui paie les honoraires : le vendeur ou l'acheteur. Quand ils sont « à la charge de l'acquéreur » et mentionnés à part, les droits de mutation (les « frais de notaire ») se calculent sur le prix hors honoraires, ce qui fait un peu économiser l'acheteur : environ 6 % du montant des honoraires, soit près de 900 € sur 15 000 € d'honoraires."
+      },
+      {
+        "terme": "Loi Hoguet",
+        "definition": "Loi du 2 janvier 1970 qui encadre le métier d'agent immobilier (carte professionnelle, mandat écrit, garantie financière). Son article 6 pose une règle clé : aucune commission n'est due tant que la vente n'est pas effectivement conclue par écrit. L'agent est donc payé le jour de l'acte authentique, jamais avant : il avance tout à ses risques."
+      },
+      {
+        "terme": "Effet d'ancrage",
+        "definition": "Phénomène psychologique : le premier chiffre annoncé sert de point de repère à toute la négociation. Si l'agent annonce ses honoraires de façon ferme et argumentée, le client négocie autour de ce point. S'il les présente comme flous (« dans les 5 %, on verra »), il installe lui-même le doute et invite la baisse."
+      },
+      {
+        "terme": "Vente PAP (de Particulier À Particulier)",
+        "definition": "Vente réalisée directement entre vendeur et acheteur, sans agence. Elle affiche zéro honoraire mais comporte un vrai risque juridique et un prix souvent mal calibré (bien surestimé qui traîne, ou bradé par méconnaissance). L'argument de l'agent est de démontrer que son accompagnement rapporte plus qu'il ne coûte."
+      },
+      {
+        "terme": "Mandataire (réseau de mandataires)",
+        "definition": "Agent immobilier indépendant travaillant pour un réseau, souvent sans vitrine physique, avec des honoraires plus bas (par exemple 3 %). Il se distingue de l'agence traditionnelle qui a pignon sur rue. Face à lui, on ne se bat pas sur le pourcentage mais sur les moyens déployés, la présence locale et le résultat."
+      },
+      {
+        "terme": "Mandat exclusif",
+        "definition": "Contrat par lequel le vendeur confie son bien à une seule agence. C'est une contrepartie forte que l'agent peut demander en échange d'un petit geste sur ses honoraires, car il lui permet de concentrer tous ses moyens. Exemple : passer de 5 % à 4,7 % uniquement si le vendeur signe en exclusivité et au juste prix."
+      },
+      {
+        "terme": "Concession et contrepartie",
+        "definition": "Une remise d'honoraires ne se donne jamais, elle s'échange. La concession (par exemple descendre de 5 % à 4,7 %) s'obtient toujours contre un avantage : exclusivité, durée ferme du mandat, juste prix de mise en vente, recommandation. On raisonne en formule conditionnelle « si… alors… » et toute concession acceptée se formalise par écrit."
+      },
+      {
+        "terme": "Méthode A.C.R.E.",
+        "definition": "Technique en quatre temps pour traiter une objection sur le prix. A : Accueillir l'objection sans se crisper. C : Creuser pour comprendre la vraie objection (« élevé par rapport à quoi ? »). R : Recadrer en ramenant à la valeur et au résultat, pas au pourcentage. E : Engager, c'est-à-dire reconclure la discussion."
+      },
+      {
+        "terme": "Technique du sandwich (Valeur – Prix – Valeur)",
+        "definition": "Façon d'annoncer ses honoraires en encadrant le chiffre par de la valeur : on rappelle d'abord ce qu'on apporte, on annonce ensuite le prix, puis on rappelle le résultat obtenu. Cela évite que le prix apparaisse « tout nu ». Après avoir annoncé le chiffre, on se tait : le silence oblige l'autre à réagir."
+      },
+      {
+        "terme": "Marge et résultat net",
+        "definition": "Les honoraires n'ont presque pas de coût variable : chaque euro de remise est un euro de bénéfice en moins, pas un euro récupérable sur le volume. Baisser d'un point, de 5 % à 4 % sur une maison à 350 000 €, fait perdre 3 500 €, soit 20 % de la rémunération du dossier en une seule phrase. Et le négociateur ne touche souvent qu'une fraction de la commission d'agence."
+      },
+      {
+        "terme": "Base DVF (Demandes de Valeurs Foncières)",
+        "definition": "Base de données publique qui recense les prix réels des ventes immobilières enregistrées par l'administration fiscale. L'agent s'en sert comme preuve objective pour appuyer une estimation et présenter des ventes comparables récentes dans le secteur, plutôt que de rester sur des « impressions » de prix."
+      },
+      {
+        "terme": "Déontologie (non-dénigrement)",
+        "definition": "Ensemble des règles de conduite de la profession, fixées par le décret n° 2015-1090 du 28 août 2015. Elles interdisent notamment de dénigrer un confrère. Face à un concurrent moins cher, on ne critique donc jamais : on montre sa propre différence et sa valeur, car dénigrer est contraire à la déontologie et rabaisse celui qui le fait."
+      }
     ]
   },
   "transaction-notaire": {
@@ -3771,6 +4563,88 @@ export const ANIMATIONS_DATA: Record<string, AnimationModule> = {
       "815-3), vente judiciaire possible dès 2/3 des droits depuis la loi du 12 mai 2009.",
       "Attestation immobilière en succession : publiée dans les 6 mois du décès.",
       "Plus-value immobilière : 19% (IR) + 17,2% (prélèvements sociaux) = 36,2%, exonération résidence principale."
+    ],
+    "glossaire": [
+      {
+        "terme": "Notaire (officier public ministériel)",
+        "definition": "Professionnel nommé par l'État (le garde des Sceaux) qui exerce en libéral mais détient une délégation de puissance publique : quand il appose son sceau, il engage l'État. Dans une vente, il vérifie la situation juridique du bien, rédige et reçoit l'acte, séquestre et répartit les fonds, publie la vente et collecte les impôts. Il a un devoir de conseil envers toutes les parties."
+      },
+      {
+        "terme": "Acte authentique de vente",
+        "definition": "Le contrat définitif signé chez le notaire qui transfère la propriété et constate le paiement du prix. C'est l'aboutissement de la vente : lecture de l'acte, signature (de plus en plus électronique), versement du prix et remise des clés. C'est ce jour-là que l'agent est payé et que le bien doit être assuré par l'acquéreur."
+      },
+      {
+        "terme": "Authenticité, date certaine, force exécutoire",
+        "definition": "Les trois pouvoirs de l'acte notarié. L'authenticité : l'acte fait foi jusqu'à « inscription de faux » (procédure exceptionnelle), ce qui y est écrit est réputé vrai. La date certaine : la date de l'acte est incontestable et opposable à tous. La force exécutoire : l'acte vaut jugement et permet d'agir (recouvrer, saisir) sans passer par un tribunal."
+      },
+      {
+        "terme": "Compromis de vente (promesse synallagmatique)",
+        "definition": "Avant-contrat qui engage les deux parties : le vendeur s'oblige à vendre et l'acquéreur à acheter. C'est la forme la plus courante. C'est le véritable engagement juridique : une vente se perd rarement à l'offre, mais souvent entre le compromis et l'acte, faute de suivi. L'acquéreur non professionnel garde un délai de rétractation de 10 jours."
+      },
+      {
+        "terme": "Promesse unilatérale de vente",
+        "definition": "Autre forme d'avant-contrat qui n'engage d'abord que le vendeur : il réserve le bien à l'acquéreur pendant un délai d'option. En échange, l'acquéreur verse une indemnité d'immobilisation et « lève l'option » s'il confirme son achat. S'il renonce sans motif valable, il perd en principe cette indemnité."
+      },
+      {
+        "terme": "Délai de rétractation SRU (10 jours)",
+        "definition": "Délai légal de 10 jours calendaires accordé à l'acquéreur non professionnel, pendant lequel il peut renoncer sans motif ni pénalité et récupérer l'intégralité de son dépôt (sous 21 jours maximum). Il court à compter du lendemain de la notification du compromis. Il a été porté de 7 à 10 jours par la loi Macron de 2015."
+      },
+      {
+        "terme": "Condition suspensive (de prêt)",
+        "definition": "Clause qui suspend la vente à la réalisation d'un événement, le plus souvent l'obtention du prêt par l'acquéreur (en général 45 à 60 jours, minimum légal 1 mois). Si le prêt est refusé de bonne foi, la vente est annulée et le dépôt restitué à l'acquéreur. C'est la première cause de ventes qui échouent : l'agent doit surveiller ce jalon plus que tout autre."
+      },
+      {
+        "terme": "Séquestre et dépôt de garantie",
+        "definition": "Le dépôt de garantie est une somme versée par l'acquéreur à la signature de l'avant-contrat (usage : 5 à 10 % du prix, par exemple 16 000 € pour un bien à 320 000 €) pour prouver son sérieux ; elle s'impute sur le prix le jour de l'acte. Le séquestre est le fait de confier cette somme à un tiers de confiance, le plus souvent le notaire sur son compte à la Caisse des dépôts et consignations. Une agence ne peut la détenir que si elle dispose d'une garantie financière adaptée."
+      },
+      {
+        "terme": "Droit de préemption",
+        "definition": "Droit accordé à un tiers d'acheter un bien en priorité, avant tout autre acquéreur, au prix et aux conditions de la vente. Plusieurs titulaires possibles : la commune (droit de préemption urbain), le locataire, la SAFER (biens agricoles et ruraux), les autres indivisaires (article 815-14 du Code civil). Le notaire le « purge » et cela peut rallonger le calendrier d'environ 2 mois."
+      },
+      {
+        "terme": "DIA (Déclaration d'Intention d'Aliéner)",
+        "definition": "Document que le notaire envoie à la mairie pour l'informer de la vente et purger le droit de préemption urbain de la commune. Celle-ci dispose de 2 mois pour répondre : son silence vaut renonciation. Elle ne préempte que pour un projet d'intérêt général (logement, équipement), ce qui est rare, mais le délai de 2 mois s'impose dans tous les cas."
+      },
+      {
+        "terme": "Indivision",
+        "definition": "Situation où plusieurs personnes possèdent ensemble un même bien sans parts matérialisées (héritiers, couple non marié, ex-époux dont les biens ne sont pas partagés). La vente exige l'unanimité des indivisaires (article 815-3 du Code civil) : un seul opposant bloque tout. Un indivisaire qui vend sa quote-part à un tiers doit d'abord la proposer aux autres. Il faut donc faire signer le mandat par tous."
+      },
+      {
+        "terme": "Frais d'acquisition (les « frais de notaire »)",
+        "definition": "L'expression « frais de notaire » est trompeuse : ce sont des frais d'acquisition payés par l'acquéreur au notaire en plus du prix, et le notaire n'en garde qu'une petite part. Ils regroupent les droits de mutation, les émoluments du notaire, les débours et la contribution de sécurité immobilière (0,10 %). Ordre de grandeur : environ 7 à 8 % du prix dans l'ancien, 2 à 3 % dans le neuf."
+      },
+      {
+        "terme": "DMTO (Droits de Mutation à Titre Onéreux)",
+        "definition": "Impôts versés au département, à la commune et à l'État lors d'une vente ; c'est de loin la plus grosse part des « frais de notaire » (environ les 4/5 dans l'ancien). Standard d'environ 5,80 % du prix. Depuis le 1er avril 2025, les départements peuvent relever leur part de 4,50 % à 5,00 % (pour les actes conclus jusqu'au 31 mars 2028), portant le total à environ 6,3 % là où c'est appliqué. Les primo-accédants peuvent bénéficier d'un taux réduit, voire d'une exonération."
+      },
+      {
+        "terme": "Émoluments du notaire",
+        "definition": "La rémunération propre du notaire, fixée et réglementée par l'État, dégressive par tranches du prix : 3,870 % de 0 à 6 500 €, 1,596 % de 6 500 à 17 000 €, 1,064 % de 17 000 à 60 000 €, puis 0,799 % au-delà (à majorer de la TVA à 20 %). Le notaire peut accorder une remise allant jusqu'à 20 % sur la part du prix supérieure à 100 000 €. Exemple : environ 2 870 € TTC pour un bien à 250 000 €, soit à peu près 1,1 % du prix."
+      },
+      {
+        "terme": "Mainlevée d'hypothèque",
+        "definition": "Opération par laquelle le notaire « libère » le bien de l'hypothèque qui garantissait le crédit du vendeur. Le jour de l'acte, il rembourse la banque du vendeur sur le prix de vente puis fait lever l'hypothèque, afin que l'acquéreur reçoive un bien net de toute garantie. C'est l'une des étapes de la répartition des fonds par le notaire."
+      },
+      {
+        "terme": "Service de la publicité foncière",
+        "definition": "Administration (anciennement appelée « conservation des hypothèques ») auprès de laquelle le notaire publie la vente après la signature. C'est cette publication qui rend la vente opposable aux tiers, c'est-à-dire reconnue par tout le monde. La copie authentique définitive de l'acte arrive plusieurs mois plus tard, une fois la formalité accomplie."
+      },
+      {
+        "terme": "Plus-value immobilière",
+        "definition": "Gain réalisé par le vendeur quand il revend un bien plus cher qu'il ne l'a acheté. Elle est imposée à 19 % au titre de l'impôt sur le revenu, plus 17,2 % de prélèvements sociaux, soit 36,2 % au total, sauf exonération (notamment la résidence principale). C'est le notaire qui la calcule, la retient sur le prix et la reverse à l'État."
+      },
+      {
+        "terme": "Titre de propriété et origine de propriété",
+        "definition": "Le titre de propriété est le document qui prouve qu'on est propriétaire : copie authentique de l'acte de vente antérieur, attestation immobilière (succession, donation) ou acte de partage. L'origine de propriété est la chaîne des propriétaires successifs que le notaire doit remonter sur au moins 30 ans (durée de la prescription acquisitive), pour garantir que le vendeur détient un titre incontestable."
+      },
+      {
+        "terme": "Attestation de propriété et attestation immobilière",
+        "definition": "Après une vente, le notaire remet à l'acquéreur une attestation de propriété provisoire, qui prouve immédiatement sa qualité de propriétaire (pour EDF, l'assurance, la banque, le syndic) en attendant la copie authentique. Après un décès ou une donation, l'attestation immobilière constate le transfert du bien aux héritiers et constitue leur titre ; elle doit être publiée dans les 6 mois du décès, sinon le bien ne peut pas être vendu."
+      },
+      {
+        "terme": "DDT (Dossier de Diagnostics Techniques)",
+        "definition": "Ensemble des diagnostics obligatoires annexés à la vente : DPE, amiante, plomb, état des installations électrique et gaz selon le cas, termites, état des risques (ERP), etc. Il doit être complet et à jour pour l'acte authentique. Chaque pièce manquante retarde la signature, voire fait reporter le rendez-vous chez le notaire."
+      }
     ]
   },
   "loi-alur": {
@@ -4126,6 +5000,88 @@ export const ANIMATIONS_DATA: Record<string, AnimationModule> = {
       "Sanctions : amende administrative jusqu'à 3 000 € (personne physique) / 15 000 € (personne morale)",
       "exercice sans carte : 6 mois d'emprisonnement et 7 500 € d'amende (Hoguet).",
       "Urbanisme : généralisation du PLUi, suppression du COS et de la taille minimale des terrains, caducité des POS non transformés (retour au RNU)."
+    ],
+    "glossaire": [
+      {
+        "terme": "Loi ALUR",
+        "definition": "Loi n° 2014-366 du 24 mars 2014 pour l'Accès au Logement et un Urbanisme Rénové. C'est la plus grande réforme du métier depuis la loi Hoguet : elle protège le consommateur par plus de transparence et professionnalise les agents. Elle ne remplace pas Hoguet, elle la complète et la durcit, sur l'affichage des honoraires, les annonces, les mandats, la copropriété et la location."
+      },
+      {
+        "terme": "Loi Hoguet",
+        "definition": "Loi du 2 janvier 1970, socle historique de la profession, toujours en vigueur : elle impose la carte professionnelle, le mandat écrit préalable, la garantie financière et le registre des mandats. Sa règle d'or : pas de mandat écrit préalable, donc aucune rémunération, même si la vente se fait grâce à l'agent."
+      },
+      {
+        "terme": "Loi ELAN (2018)",
+        "definition": "Loi du 23 novembre 2018 qui ajuste la loi ALUR. Elle relance l'encadrement du niveau des loyers à titre expérimental, recentre le CNTGI sur un simple rôle consultatif et crée le bail mobilité (bail meublé court de 1 à 10 mois, non renouvelable, sans dépôt de garantie)."
+      },
+      {
+        "terme": "Loi Climat et résilience (2021)",
+        "definition": "Loi du 22 août 2021 à ne pas confondre avec ALUR. C'est elle, et non ALUR, qui a ajouté les obligations énergétiques : audit énergétique, interdiction progressive de louer les passoires thermiques (logements classés F et G). Beaucoup attribuent ces règles à ALUR par erreur."
+      },
+      {
+        "terme": "Carte professionnelle (carte T, G, S) / CPI",
+        "definition": "Autorisation d'exercer, appelée aussi CPI (carte professionnelle immobilière), délivrée par la CCI depuis 2015 et valable 3 ans (ALUR l'a ramenée de 10 à 3 ans). Trois mentions : « T » pour la transaction, « G » pour la gestion, « S » pour le syndic. Elle suppose une aptitude professionnelle (diplôme bac+3 juridique, économique ou commercial, BTS Professions immobilières, ou expérience), une garantie financière en cas de maniement de fonds, une assurance RCP et l'honorabilité. Exercer sans carte est puni de 6 mois de prison et 7 500 € d'amende."
+      },
+      {
+        "terme": "CCI (Chambre de Commerce et d'Industrie)",
+        "definition": "Organisme qui délivre la carte professionnelle immobilière depuis le 1er juillet 2015 (auparavant c'était la préfecture). C'est aussi elle qui délivre les attestations d'habilitation permettant aux collaborateurs d'exercer sous la carte du titulaire."
+      },
+      {
+        "terme": "Formation continue obligatoire",
+        "definition": "Obligation créée par ALUR (décret du 18 février 2016) : 14 heures par an, soit 42 heures sur le cycle de 3 ans de la carte, dont au moins 2 heures de déontologie et 2 heures de non-discrimination à l'accès au logement. Sans justificatif de formation, pas de renouvellement de la carte, donc plus de droit d'exercer. Elle concerne le titulaire comme ses collaborateurs."
+      },
+      {
+        "terme": "Code de déontologie",
+        "definition": "Règles de conduite de la profession fixées par le décret du 28 août 2015 : respect des lois et probité, compétence, transparence des honoraires, confidentialité, défense des intérêts du client, gestion des conflits d'intérêts, non-discrimination et confraternité. Un manquement peut aller jusqu'au retrait de la carte."
+      },
+      {
+        "terme": "CNTGI",
+        "definition": "Conseil National de la Transaction et de la Gestion Immobilières, instance créée par ALUR. La loi ELAN de 2018 l'a recentré sur un rôle consultatif (il rend des avis sur la déontologie et la formation) ; la commission de contrôle disciplinaire prévue au départ n'a finalement pas été mise en place."
+      },
+      {
+        "terme": "Attestation d'habilitation / agent commercial",
+        "definition": "Les négociateurs salariés et les agents commerciaux n'ont pas leur propre carte : ils agissent sous la carte du titulaire grâce à une attestation d'habilitation délivrée par la CCI. Ils sont tenus aux mêmes obligations de déontologie et de formation continue que le titulaire."
+      },
+      {
+        "terme": "Affichage des honoraires",
+        "definition": "ALUR impose d'afficher le barème d'honoraires, en TTC, en vitrine (lisible depuis l'extérieur), à l'accueil de l'agence et sur le site internet (règle pratique : accessible en 2 clics maximum). Le barème est un plafond, identique pour tous les clients. Son absence, ou un affichage en HT, est puni d'une amende administrative jusqu'à 3 000 € (personne physique) ou 15 000 € (personne morale). Règles fixées par les arrêtés du 10 janvier 2017 et du 26 janvier 2022."
+      },
+      {
+        "terme": "Mentions obligatoires de l'annonce (dont DPE)",
+        "definition": "ALUR, complétée par la loi Climat, impose dans chaque annonce : le prix et qui paie les honoraires (prix hors honoraires, taux et prix FAI si charge acquéreur), les informations de copropriété (nombre de lots, charges courantes moyennes, procédure éventuelle) et les 4 mentions DPE (classe énergie, classe climat/GES, estimation des coûts annuels d'énergie, et pour un logement F ou G la mention « consommation énergétique excessive »). Oublier une seule mention rend l'annonce non conforme."
+      },
+      {
+        "terme": "Mandat (simple, exclusif, semi-exclusif)",
+        "definition": "Contrat écrit, numéroté et inscrit au registre des mandats, qui autorise l'agence à vendre. Simple : plusieurs agences, le vendeur peut aussi vendre seul. Exclusif : une seule agence mandatée. Semi-exclusif : une seule agence, mais le vendeur garde le droit de vendre lui-même sans honoraires. ALUR impose d'y inscrire les moyens mis en œuvre et la reddition de comptes. Une clause pénale prévoit une indemnité si le vendeur viole l'exclusivité."
+      },
+      {
+        "terme": "Fiche synthétique et DTG",
+        "definition": "Deux documents de copropriété créés ou généralisés par ALUR. La fiche synthétique résume les données essentielles de la copropriété (lots, finances, syndic) et est tenue à jour par le syndic. Le DTG (Diagnostic Technique Global) évalue l'état du bâti et aide à planifier les travaux sur 10 ans ; une copropriété dont le DTG ne prévoit aucuns travaux sur 10 ans est dispensée de fonds de travaux."
+      },
+      {
+        "terme": "Fonds de travaux",
+        "definition": "Cagnotte obligatoire de la copropriété (article 14-2 de la loi de 1965), alimentée par une cotisation annuelle d'au moins 5 % du budget prévisionnel et, depuis la loi Climat, d'au moins 2,5 % du montant du plan pluriannuel de travaux. Point important pour une vente : les sommes versées restent acquises au syndicat, le vendeur ne les récupère pas. Les immeubles neufs (moins de 5 ans) en sont dispensés."
+      },
+      {
+        "terme": "État daté et pré-état daté",
+        "definition": "Deux documents à ne pas confondre. Le pré-état daté est un document commercial, non obligatoire, préparé pour le compromis : il donne une première photo des charges et de la situation. L'état daté est le document officiel établi par le syndic pour l'acte authentique, qui fixe la situation financière exacte entre le vendeur et le syndicat ; ses honoraires sont plafonnés à 380 € TTC."
+      },
+      {
+        "terme": "Dossier L721-2 (information de l'acquéreur en copropriété)",
+        "definition": "Ensemble de documents qu'ALUR impose d'annexer au compromis pour la vente d'un lot de copropriété : fiche synthétique, règlement de copropriété et état descriptif de division, PV des assemblées générales des 3 dernières années, carnet d'entretien, montant des charges et des impayés, montant du fonds de travaux, attestation de surface Carrez. À défaut, le délai de rétractation de 10 jours de l'acquéreur ne commence pas à courir."
+      },
+      {
+        "terme": "Honoraires de location plafonnés",
+        "definition": "ALUR limite la part des honoraires payée par le locataire à 4 prestations (visites, constitution du dossier, rédaction du bail, état des lieux) et la plafonne au mètre carré de surface habitable : 12 €/m² en zone très tendue, 10 €/m² en zone tendue, 8 €/m² ailleurs, plus 3 €/m² pour l'état des lieux. La part du locataire ne peut jamais dépasser celle du bailleur. Exemple : un studio de 30 m² en zone tendue est plafonné à 300 € + 90 € = 390 € maximum."
+      },
+      {
+        "terme": "Encadrement des loyers, loyer de référence majoré et IRL",
+        "definition": "Il existe deux mécanismes distincts. L'encadrement de l'évolution à la relocation (zone tendue) : le nouveau loyer ne peut dépasser l'ancien réévalué de l'IRL (indice de référence des loyers publié par l'INSEE, seul indice qui permet de réviser un loyer en cours de bail). L'encadrement du niveau des loyers (expérimental, villes volontaires comme Paris, Lyon, Lille, Bordeaux) : le loyer ne peut dépasser un loyer de référence majoré fixé par le préfet, sauf complément de loyer justifié par des caractéristiques exceptionnelles."
+      },
+      {
+        "terme": "Urbanisme rénové : PLUi et fin du COS",
+        "definition": "Le volet « U-R » d'ALUR. Elle généralise le PLU intercommunal (PLUi), transférant la planification des communes aux intercommunalités. Elle supprime le COS (coefficient d'occupation des sols) et la taille minimale des terrains, pour densifier. Conséquence : la constructibilité d'un terrain ne dépend plus d'un ratio automatique mais des règles de hauteur, d'emprise au sol et de recul du PLU, à vérifier via un certificat d'urbanisme avant toute promesse de division ou d'extension."
+      }
     ]
   },
   "cadre-legal": {
@@ -4471,6 +5427,88 @@ export const ANIMATIONS_DATA: Record<string, AnimationModule> = {
       "amende administrative jusqu'à 375 000 € pour une personne morale. — Honoraires en annonce : prix + montant TTC des honoraires + partie qui les paie (arrêté du 10 janvier 2017)",
       "barème affiché en agence, en vitrine et sur le site. — Carte professionnelle : mentions T / G / S, délivrée par la CCI, valable 3 ans",
       "garantie financière minimum 110 000 € (30 000 € les deux premières années) dès que l'on manie des fonds. — Non-discrimination : jusqu'à 3 ans d'emprisonnement et 45 000 € d'amende (personne physique)."
+    ],
+    "glossaire": [
+      {
+        "terme": "Loi Hoguet",
+        "definition": "C'est la loi fondatrice du métier d'agent immobilier (loi n° 70-9 du 2 janvier 1970 et son décret de 1972). Elle a transformé l'activité en profession réglementée pour protéger le public : sans elle, n'importe qui pourrait manier l'argent des clients. Elle impose notamment la carte professionnelle, la garantie financière et le mandat écrit."
+      },
+      {
+        "terme": "Carte professionnelle (mentions T, G, S)",
+        "definition": "C'est l'autorisation officielle d'exercer, délivrée au dirigeant de l'agence et valable 3 ans. Elle porte une ou plusieurs mentions : T pour la transaction (vente, achat), G pour la gestion locative, S pour le syndic de copropriété. On ne peut réaliser que les actes couverts par la mention détenue."
+      },
+      {
+        "terme": "CCI (chambre de commerce et d'industrie)",
+        "definition": "Depuis la loi ALUR de 2014, c'est la CCI qui délivre la carte professionnelle d'agent immobilier et les attestations d'habilitation (avant, c'était la préfecture). L'agence doit tenir ses documents à jour auprès d'elle et renouveler la carte tous les 3 ans."
+      },
+      {
+        "terme": "Garantie financière",
+        "definition": "C'est une garantie obligatoire dès que l'agent manie l'argent d'autrui (dépôts, séquestres, loyers) : elle assure que ces fonds seront remboursés en cas de problème. Le montant minimum est de 110 000 € (réduit à 30 000 € les deux premières années). Qui ne touche jamais aux fonds se déclare « non détenteur de fonds » et en est dispensé."
+      },
+      {
+        "terme": "Attestation d'habilitation (ex-carte blanche)",
+        "definition": "C'est le document qui permet à un négociateur (salarié ou agent commercial) de travailler sous la carte de son agence, car lui-même ne détient pas de carte. Elle est délivrée par la CCI à la demande du titulaire et prouve que la personne est bien rattachée à l'agence et habilitée à agir en son nom. Elle doit être à jour avant la première prise de mandat, sous peine de nullité."
+      },
+      {
+        "terme": "Mandat écrit préalable",
+        "definition": "C'est le contrat signé par le vendeur (ou le bailleur) qui autorise l'agent à agir pour lui. La loi Hoguet en fait la condition même de la rémunération : sans mandat écrit conforme, l'agent ne peut réclamer aucun honoraire, même s'il a trouvé l'acheteur. Il doit être signé avant toute action et recevoir un numéro reporté au registre des mandats."
+      },
+      {
+        "terme": "Mandat exclusif",
+        "definition": "C'est un mandat où le vendeur confie son bien à une seule agence, qui en contrepartie s'investit davantage. Il peut prévoir une clause pénale si le vendeur vend en direct à un acheteur présenté par l'agence. Passé 3 mois, chaque partie peut y mettre fin avec un préavis de 15 jours. À distinguer du mandat simple (plusieurs agences possibles) et du mandat semi-exclusif."
+      },
+      {
+        "terme": "Clause pénale",
+        "definition": "C'est une clause qui fixe à l'avance la somme due par la partie qui ne respecte pas son engagement. Dans un mandat exclusif, elle protège les honoraires de l'agent si le vendeur traite en direct avec un acheteur que l'agent avait présenté. Elle doit s'appuyer sur une preuve de présentation, comme le bon de visite signé."
+      },
+      {
+        "terme": "Bon de visite",
+        "definition": "C'est le document signé par un acheteur potentiel à chaque visite. À lui seul il ne crée pas de droit à commission, mais il prouve que c'est bien l'agent qui a présenté le bien à cette personne. C'est le filet de sécurité en cas de litige, notamment si le vendeur tente de vendre « en direct »."
+      },
+      {
+        "terme": "LCB-FT (lutte contre le blanchiment de capitaux et le financement du terrorisme)",
+        "definition": "C'est l'ensemble des obligations de vigilance qui pèsent sur l'agent immobilier, considéré comme un professionnel « assujetti » par le Code monétaire et financier. Concrètement, il doit identifier ses clients, comprendre leurs intentions, vérifier l'origine des fonds et conserver les justificatifs 5 ans. Depuis 2020, la location y entre aussi dès que le loyer mensuel atteint 10 000 €."
+      },
+      {
+        "terme": "Tracfin",
+        "definition": "C'est la cellule de renseignement financier de l'État, rattachée au ministère de l'Économie (Bercy), chargée de lutter contre le blanchiment et le financement du terrorisme. L'agent immobilier doit lui transmettre une déclaration de soupçon en cas de doute sérieux sur un dossier, via la téléprocédure sécurisée Ermes."
+      },
+      {
+        "terme": "Déclaration de soupçon",
+        "definition": "C'est le signalement que l'agent adresse à Tracfin dès qu'il a des indices concordants laissant penser à un blanchiment : il déclare un simple soupçon, pas une preuve. Ne pas déclarer malgré des indices est une faute sanctionnable. La déclaration est strictement confidentielle : il est interdit d'en informer le client (principe du « no tipping-off »)."
+      },
+      {
+        "terme": "Bénéficiaire effectif",
+        "definition": "C'est la personne physique réelle qui se cache derrière une société : celle qui détient directement ou indirectement plus de 25 % du capital ou des droits de vote, ou qui exerce un contrôle par d'autres moyens. L'agent doit l'identifier (notamment via le registre des bénéficiaires effectifs) pour éviter que des montages opaques ne masquent l'origine de l'argent."
+      },
+      {
+        "terme": "KYC (Know Your Customer, « connaître son client »)",
+        "definition": "C'est le réflexe d'identification du client dès l'entrée en relation : vérifier son identité sur une pièce officielle en cours de validité et en conserver une copie. Pour une société, on demande le Kbis, les statuts et l'identité du bénéficiaire effectif. C'est la première étape de la vigilance LCB-FT."
+      },
+      {
+        "terme": "Ermes",
+        "definition": "C'est la téléprocédure sécurisée en ligne par laquelle se fait obligatoirement la déclaration de soupçon à Tracfin. Une déclaration ne se fait jamais par courrier, téléphone ou e-mail, mais uniquement via cet outil officiel."
+      },
+      {
+        "terme": "RGPD (Règlement général sur la protection des données)",
+        "definition": "C'est le règlement européen qui encadre la collecte et l'usage des données personnelles (vendeurs, acquéreurs, prospects, locataires). Il impose de ne collecter que l'utile, pour une finalité définie, avec une base légale, et de pouvoir répondre à une demande d'accès ou de suppression sous un mois. Les manquements exposent à de lourdes amendes de la CNIL."
+      },
+      {
+        "terme": "DPO (délégué à la protection des données)",
+        "definition": "C'est la personne chargée de veiller au respect du RGPD au sein de l'agence. Sa désignation n'est pas toujours obligatoire pour une petite structure, mais elle est recommandée dès que les traitements de données deviennent importants."
+      },
+      {
+        "terme": "CNIL (Commission nationale de l'informatique et des libertés)",
+        "definition": "C'est l'autorité française qui contrôle l'application du RGPD et de la loi Informatique et Libertés. Elle peut prononcer des amendes très élevées (jusqu'à 20 millions d'euros ou 4 % du chiffre d'affaires mondial). Elle recommande par exemple de ne pas conserver les fiches de prospects non convertis au-delà de 3 ans."
+      },
+      {
+        "terme": "Démarchage et opt-in (consentement préalable)",
+        "definition": "Depuis le 11 août 2026 (loi n° 2025-594 du 30 juin 2025), on ne peut plus appeler un particulier sans son accord exprès et préalable : c'est le régime de l'opt-in. L'ancienne liste d'opposition Bloctel disparaît. Le consentement, valable un an maximum, doit être prouvé pendant au moins 3 ans ; les horaires restent limités (lundi-vendredi, 10h-13h et 14h-20h). La pige (appeler un vendeur qui a publié lui-même son annonce) reste autorisée."
+      },
+      {
+        "terme": "Non-discrimination",
+        "definition": "La loi (articles 225-1 et 225-2 du Code pénal) interdit de refuser un locataire ou un acquéreur à cause de critères prohibés (origine, sexe, âge, handicap, lieu de résidence, etc. : environ 25 critères). On sélectionne uniquement sur la solvabilité et des pièces autorisées. L'agent qui relaie une consigne discriminatoire d'un propriétaire devient co-responsable d'un délit puni jusqu'à 3 ans de prison et 45 000 € d'amende."
+      }
     ]
   },
   "compromis": {
@@ -4776,6 +5814,88 @@ export const ANIMATIONS_DATA: Record<string, AnimationModule> = {
       "offre maintenue 30 jours minimum (art.",
       "L313-24 et L313-34). — Conditions suspensives usuelles : obtention du prêt, purge des droits de préemption, urbanisme/servitudes. — Dépôt de garantie : usage de 5 à 10 % du prix, séquestré (notaire ou agence sous garantie financière), imputé sur le prix à l'acte. — Clause pénale : ~10 % du prix, joue dans les deux sens, modérable par le juge (art.",
       "1231-5). — HCSF : taux d'effort maxi 35 % (assurance comprise), durée ≤ 25 ans (27 ans avec différé dans le neuf), flexibilité sur 20 % des dossiers. — Frais d'acquisition (« frais de notaire ») : ~7 à 8 % dans l'ancien, ~2 à 3 % dans le neuf. — Délai moyen compromis vers acte : 2 à 3 mois."
+    ],
+    "glossaire": [
+      {
+        "terme": "Avant-contrat",
+        "definition": "C'est le premier contrat signé après l'acceptation de l'offre d'achat, avant le passage chez le notaire. Il fige l'accord, verrouille le prix et organise les conditions de la vente. Il prend le plus souvent la forme d'un compromis de vente, parfois d'une promesse unilatérale."
+      },
+      {
+        "terme": "Compromis de vente (promesse synallagmatique)",
+        "definition": "C'est l'avant-contrat le plus courant (plus de 90 % des cas) : il engage fermement les deux parties, le vendeur à vendre et l'acquéreur à acheter, à un prix fixé. Selon l'article 1589 du Code civil, « la promesse de vente vaut vente ». Si l'acquéreur se désiste sans motif légitime, le vendeur peut conserver le dépôt au titre de la clause pénale."
+      },
+      {
+        "terme": "Promesse unilatérale de vente (PUV)",
+        "definition": "C'est un avant-contrat où seul le vendeur s'engage à vendre pendant une durée donnée (l'option, souvent 2 à 3 mois). L'acquéreur reste libre : il « lève l'option » s'il confirme, et verse en contrepartie une indemnité d'immobilisation (environ 10 %). Signée sous seing privé, elle doit être enregistrée au service des impôts dans les 10 jours, sous peine de nullité."
+      },
+      {
+        "terme": "Indemnité d'immobilisation",
+        "definition": "C'est la somme (environ 10 % du prix) versée par l'acquéreur dans une promesse unilatérale, en échange de la réservation du bien pendant la durée de l'option. S'il renonce sans motif légitime, il la perd définitivement ; si une condition suspensive échoue, elle lui est restituée."
+      },
+      {
+        "terme": "Délai de rétractation SRU (10 jours)",
+        "definition": "C'est le droit de l'acquéreur non professionnel d'un logement de revenir sur son engagement pendant 10 jours calendaires, sans justification ni pénalité (article L271-1). Porté de 7 à 10 jours par la loi Macron de 2015, il court à compter du lendemain de la première présentation de la notification du compromis signé. Le dépôt de garantie est alors restitué sous 21 jours maximum. Le vendeur, lui, ne bénéficie pas de ce droit."
+      },
+      {
+        "terme": "Dépôt de garantie",
+        "definition": "C'est la somme (en général 5 à 10 % du prix) que l'acquéreur verse à la signature du compromis pour montrer son sérieux. Elle s'impute sur le prix le jour de l'acte. Ce n'est pas la commission de l'agence : elle appartient à l'acquéreur jusqu'à la vente, sauf s'il devient fautif après le délai de rétractation."
+      },
+      {
+        "terme": "Séquestre",
+        "definition": "C'est le fait de bloquer le dépôt de garantie sur un compte neutre et sécurisé, jamais entre les mains du vendeur. Le notaire est la solution la plus sûre ; l'agent ne peut séquestrer que s'il dispose d'une garantie financière suffisante et d'un compte dédié, jamais sur le compte courant de l'agence."
+      },
+      {
+        "terme": "Clause pénale",
+        "definition": "C'est la clause qui fixe à l'avance les dommages et intérêts dus par la partie défaillante, en général 10 % du prix. Elle joue dans les deux sens : si le vendeur se dérobe, il peut devoir cette somme à l'acquéreur. Le juge peut la modérer ou l'augmenter si elle est manifestement excessive ou dérisoire (article 1231-5 du Code civil)."
+      },
+      {
+        "terme": "Clause de dédit",
+        "definition": "C'est une clause qui autorise une partie à se dégager de la vente en abandonnant une somme convenue : c'est un droit de renoncer « acheté » d'avance. Il ne faut pas la confondre avec la clause pénale, qui sanctionne un manquement, alors que le dédit organise une sortie prévue."
+      },
+      {
+        "terme": "Condition suspensive",
+        "definition": "C'est un événement futur et incertain dont dépend la réalisation définitive de la vente (article 1304 du Code civil) : par exemple l'obtention du prêt ou l'absence de préemption. Tant qu'elle n'est pas réalisée, la vente est en attente ; si elle échoue sans faute de l'acquéreur, la vente est caduque et le dépôt restitué. Chaque condition doit avoir une date de réalisation."
+      },
+      {
+        "terme": "Condition potestative",
+        "definition": "C'est une condition qui dépend de la seule volonté de celui qui s'engage (« j'achète si je le décide ») : elle est nulle. Une condition suspensive valable doit dépendre d'un événement extérieur à la volonté des parties, comme l'accord d'une banque."
+      },
+      {
+        "terme": "Loi Scrivener (condition suspensive de prêt)",
+        "definition": "C'est la loi (article L313-41 du Code de la consommation) qui rend la condition suspensive de prêt obligatoire dès que l'acquéreur achète à crédit un logement : si la banque refuse, la vente est annulée et le dépôt remboursé. La durée minimale légale est d'un mois (en pratique 45 à 60 jours). La clause doit préciser le montant, la durée, le taux maximal et le délai. L'offre de prêt ne peut être acceptée qu'après un délai de réflexion de 10 jours."
+      },
+      {
+        "terme": "HCSF (Haut Conseil de stabilité financière)",
+        "definition": "C'est l'instance qui fixe depuis 2022 les règles contraignantes d'octroi des crédits immobiliers : taux d'effort maximal de 35 % des revenus (assurance comprise) et durée maximale de 25 ans (27 ans dans le neuf). Les banques disposent d'une marge de flexibilité de 20 % de leurs dossiers, en priorité pour la résidence principale et les primo-accédants."
+      },
+      {
+        "terme": "Taux d'usure",
+        "definition": "C'est le taux maximal légal (TAEG) au-delà duquel une banque n'a pas le droit de prêter : il protège l'emprunteur des taux abusifs. Il est publié par la Banque de France et redevenu trimestriel depuis début 2024. Un dossier peut être refusé non à cause de l'emprunteur, mais parce que taux + assurance + frais dépassent l'usure."
+      },
+      {
+        "terme": "Loi Lemoine (assurance emprunteur)",
+        "definition": "C'est la loi de 2022 qui a assoupli l'assurance du crédit immobilier : résiliation à tout moment sans frais, suppression du questionnaire de santé quand la part assurée est inférieure ou égale à 200 000 € par emprunteur et se termine avant ses 60 ans, et droit à l'oubli ramené à 5 ans pour certaines pathologies. L'assurance pèse lourd dans le coût total : c'est un levier d'économie."
+      },
+      {
+        "terme": "DDT (dossier de diagnostics techniques)",
+        "definition": "C'est l'ensemble des diagnostics obligatoires annexés au compromis puis à l'acte (article L271-4 du CCH) : DPE, amiante, plomb (CREP), termites, gaz et électricité, état des risques (ERP), loi Carrez, assainissement, et l'audit énergétique le cas échéant. Un DDT incomplet engage la responsabilité du vendeur. Attention aux validités courtes (termites et ERP : 6 mois)."
+      },
+      {
+        "terme": "Loi Carrez",
+        "definition": "C'est la règle qui impose de mesurer et d'indiquer la superficie privative d'un lot de copropriété vendu. Ce mesurage n'a pas de durée de validité, sauf si des travaux modifient la surface. Une erreur de plus de 5 % en défaveur de l'acheteur peut entraîner une réduction du prix."
+      },
+      {
+        "terme": "VEFA (vente en l'état futur d'achèvement)",
+        "definition": "C'est l'achat d'un logement neuf « sur plan », encore à construire. Il passe par un contrat de réservation puis un acte de vente, avec un paiement échelonné selon l'avancement du chantier (35 % aux fondations, 70 % hors d'eau, 95 % à l'achèvement, 5 % à la livraison). L'acquéreur bénéficie de garanties fortes et de frais de notaire réduits (2 à 3 %)."
+      },
+      {
+        "terme": "Contrat de réservation et GFA",
+        "definition": "Le contrat de réservation (article L261-15 du CCH) est l'avant-contrat du neuf : le promoteur réserve le logement, avec un dépôt plafonné (au maximum 5 % du prix). La GFA (garantie financière d'achèvement) est obligatoire : elle garantit que l'immeuble sera terminé même si le promoteur fait défaut. S'y ajoutent la garantie de parfait achèvement (1 an), la garantie biennale (2 ans) et la garantie décennale (10 ans)."
+      },
+      {
+        "terme": "Droit de préemption urbain (DIA)",
+        "definition": "C'est le droit pour la mairie d'acheter en priorité un bien situé dans une zone définie par la commune. Le notaire lui adresse une déclaration d'intention d'aliéner (DIA) et la mairie a 2 mois pour se porter acquéreur ou renoncer (son silence vaut renonciation). D'autres titulaires existent (SAFER pour l'agricole, locataire en place dans certains cas)."
+      }
     ]
   },
   "dpe-energie": {
@@ -5100,6 +6220,88 @@ export const ANIMATIONS_DATA: Record<string, AnimationModule> = {
       "G au-delà. — Méthode unifiée 3CL-DPE 2021 (fin du DPE « vierge » depuis juillet 2021)",
       "coefficient électricité en énergie primaire passé de 2,58 à 2,3. — Validité : 10 ans pour un DPE méthode 2021",
       "tous les DPE antérieurs à juillet 2021 périmés depuis le 1er janvier 2025. — Calendrier décence énergétique (interdiction de louer) : > 450 kWh/m²/an d'énergie FINALE depuis 2023, puis G au 1er janvier 2025, F en 2028, E en 2034. — Gel des loyers des passoires F et G depuis le 24 août 2022 (loi Climat et Résilience) : interdiction d'augmenter le loyer, y compris à la relocation et à l'indexation. — Audit énergétique réglementaire de vente : F/G depuis le 1er avril 2023, E depuis le 1er janvier 2025, D à partir de 2034 (maisons individuelles et immeubles entiers en mono-propriété). — Réforme du 1er juillet 2024 : recalcul des logements ≤ 40 m², environ 140 000 sortis du statut de passoire, attestation rééditable via le numéro ADEME. — Aides : MaPrimeRénov' (subvention), éco-PTZ (prêt à taux zéro), CEE (primes), TVA à 5,5 % sur les travaux de rénovation énergétique. — Martigues en zone climatique H3 (méditerranéen) : part chauffage allégée, confort d'été à valoriser."
+    ],
+    "glossaire": [
+      {
+        "terme": "DPE (Diagnostic de performance énergétique)",
+        "definition": "C'est le diagnostic qui classe un logement de A (très performant) à G (très énergivore). Il est devenu le diagnostic le plus scruté car il pèse sur la valeur, la louabilité et parfois la vendabilité du bien. Réalisé par un diagnostiqueur certifié, il est valable 10 ans (méthode 2021)."
+      },
+      {
+        "terme": "Étiquette énergie",
+        "definition": "C'est l'une des deux étiquettes du DPE : elle mesure la consommation d'énergie primaire du logement (chauffage, eau chaude, refroidissement, éclairage, auxiliaires) exprimée en kWh/m²/an. C'est elle qui sert à déterminer les classes A à G côté énergie."
+      },
+      {
+        "terme": "Étiquette climat (GES)",
+        "definition": "C'est la seconde étiquette du DPE : elle mesure les émissions de gaz à effet de serre (GES) du logement, en kg de CO2 par m² et par an. Un logement bien isolé mais chauffé au fioul sera pénalisé par cette étiquette climat."
+      },
+      {
+        "terme": "Double seuil",
+        "definition": "C'est le principe selon lequel, pour chaque classe, le logement doit respecter à la fois le plafond énergie ET le plafond climat. S'il dépasse l'un des deux, il bascule dans la classe inférieure. Moyen mnémotechnique : « la pire des deux lettres gagne »."
+      },
+      {
+        "terme": "Énergie primaire et énergie finale",
+        "definition": "L'énergie finale est celle que l'on paie, qui entre dans le logement (le compteur). L'énergie primaire y ajoute les pertes de production et de transport : c'est elle qui détermine les classes A à G. Piège à connaître : le seuil d'interdiction de louer de 2023 (450 kWh/m²/an) est exprimé en énergie FINALE, pas primaire."
+      },
+      {
+        "terme": "Numéro d'identification ADEME",
+        "definition": "C'est le numéro unique attribué à chaque DPE, qui permet de vérifier le diagnostic en ligne. L'agent doit toujours contrôler ce numéro et la date du DPE avant de publier une annonce, pour s'assurer qu'il est authentique et valide."
+      },
+      {
+        "terme": "Méthode 3CL-DPE 2021",
+        "definition": "C'est la méthode de calcul unifiée en vigueur depuis juillet 2021, basée sur les caractéristiques physiques du bâtiment et non plus sur les factures. Elle a fait disparaître le « DPE vierge » (sans données). Elle a aussi abaissé le coefficient de conversion de l'électricité (de 2,58 à 2,3), ce qui a amélioré le classement de beaucoup de logements électriques."
+      },
+      {
+        "terme": "DPE opposable",
+        "definition": "Depuis le 1er juillet 2021 (loi ELAN / loi Climat), le DPE a une valeur juridique : le vendeur ou le bailleur engage sa responsabilité sur ses résultats. Un acquéreur qui constate un écart manifeste peut agir en justice (dommages-intérêts, réduction du prix). Seules les étiquettes et consommations sont opposables ; les recommandations de travaux restent indicatives."
+      },
+      {
+        "terme": "Diagnostiqueur certifié",
+        "definition": "C'est le professionnel certifié, assuré et indépendant qui réalise le DPE : il ne doit avoir aucun lien avec l'agence ni avec une entreprise de travaux. Il engage sa responsabilité professionnelle et, en cas d'erreur de calcul, c'est souvent son assurance qui indemnise."
+      },
+      {
+        "terme": "Passoire thermique",
+        "definition": "C'est le surnom des logements les plus énergivores, classés F ou G au DPE. Ils font l'objet d'interdictions progressives de location et doivent porter dans l'annonce la mention « logement à consommation énergétique excessive ». La réforme de 2024 a sorti environ 140 000 petits logements de ce statut."
+      },
+      {
+        "terme": "Gel des loyers",
+        "definition": "Depuis le 24 août 2022, il est interdit d'augmenter le loyer d'un logement classé F ou G : pas de révision par l'IRL, pas de réévaluation au renouvellement, pas de hausse après travaux tant que le bien reste F ou G. C'est une mesure distincte de l'interdiction de louer."
+      },
+      {
+        "terme": "Calendrier d'interdiction de louer",
+        "definition": "Les passoires deviennent progressivement interdites à la location (résidence principale, métropole) : les pires G (plus de 450 kWh/m²/an d'énergie finale) depuis 2023, toute la classe G depuis 2025, la classe F au 1er janvier 2028 et la classe E au 1er janvier 2034. Moyen mnémotechnique : G-F-E = 25-28-34. L'interdiction joue aux nouveaux baux et aux renouvellements, pas sur les baux en cours."
+      },
+      {
+        "terme": "Décence énergétique (loi Climat et résilience)",
+        "definition": "La loi Climat et résilience de 2021 a fait du niveau de performance énergétique un critère de décence du logement. Un logement trop énergivore n'est plus considéré comme décent et ne peut donc plus être loué à partir des dates du calendrier. Vendre une passoire reste toutefois autorisé."
+      },
+      {
+        "terme": "Audit énergétique réglementaire de vente",
+        "definition": "À ne pas confondre avec le DPE : c'est un document plus détaillé, exigé pour VENDRE les maisons individuelles et les immeubles entiers en mono-propriété les plus énergivores (F/G depuis le 1er avril 2023, E depuis le 1er janvier 2025, D à partir de 2034). Valable 5 ans, il propose au moins deux scénarios de travaux chiffrés et doit être disponible dès la première visite. Les lots de copropriété n'y sont pas soumis."
+      },
+      {
+        "terme": "DPE collectif",
+        "definition": "C'est un DPE portant sur un immeuble entier en copropriété, obligatoire pour les copropriétés d'habitation dont le permis est antérieur au 1er janvier 2013. Il se déploie selon la taille (plus de 200 lots depuis 2024, 50 à 200 lots depuis 2025, 50 lots ou moins depuis 2026). Il ne remplace pas le DPE individuel, toujours obligatoire pour vendre ou louer un lot."
+      },
+      {
+        "terme": "Réforme des petites surfaces (2024)",
+        "definition": "Depuis le 1er juillet 2024, un coefficient correcteur a été appliqué aux logements de 40 m² ou moins, dont la méthode de calcul surévaluait l'eau chaude. Résultat : environ 140 000 logements sont sortis du statut de passoire. Pour un DPE antérieur à cette date, une nouvelle attestation peut être éditée gratuitement, sans refaire le diagnostic."
+      },
+      {
+        "terme": "RE2020 (Réglementation environnementale 2020)",
+        "definition": "C'est la réglementation qui s'applique aux constructions neuves depuis le 1er janvier 2022, en remplacement de la RT2012. Elle vise la sobriété énergétique, la réduction de l'empreinte carbone et le confort d'été. Un logement neuf conforme ressort en général en classe A ou B au DPE."
+      },
+      {
+        "terme": "France Rénov' et Mon Accompagnateur Rénov' (MAR)",
+        "definition": "France Rénov' est le service public gratuit d'information et de conseil sur la rénovation, avec des conseillers locaux. Depuis 2025, un rendez-vous préalable avec un conseiller est obligatoire avant une rénovation d'ampleur. Celle-ci impose aussi le recours à un Mon Accompagnateur Rénov' (MAR) agréé. L'agent oriente vers ces interlocuteurs sans se substituer à eux."
+      },
+      {
+        "terme": "MaPrimeRénov'",
+        "definition": "C'est l'aide de l'État à la rénovation énergétique, en deux parcours : « par geste » (un ou plusieurs travaux) et « parcours accompagné » pour une rénovation d'ampleur, réservé aux logements E, F ou G visant un gain d'au moins 2 classes (avec audit et MAR). Ses montants et conditions changent chaque année : il faut toujours vérifier le barème en vigueur avant d'annoncer un chiffre."
+      },
+      {
+        "terme": "Éco-PTZ, CEE et valeur verte",
+        "definition": "L'éco-PTZ est un prêt à taux zéro (jusqu'à 50 000 €, sur 20 ans, prolongé jusqu'au 31 décembre 2027) ; les CEE (certificats d'économie d'énergie) sont des primes versées par les fournisseurs d'énergie ; ces aides se cumulent avec MaPrimeRénov' et la TVA à 5,5 %. La « valeur verte » désigne l'effet du DPE sur le prix : une passoire se vend décotée, un A/B avec une surcote."
+      }
     ]
   },
   "mental-performance": {
@@ -5402,6 +6604,88 @@ export const ANIMATIONS_DATA: Record<string, AnimationModule> = {
       "Mémo mental (pas de normes juridiques ici) : les refus font partie du métier, 8 à 9 « non » sur 10 contacts en prospection",
       "chaque contact a une valeur monétaire (ex.",
       "1 mandat / 10 contacts à 5 000 € = 500 € par contact, refus compris). — Règle SW-SW-SW-N : « Some Will, Some Won't, So What, Next » (certains oui, d'autres non, et alors, au suivant) : on ne rumine pas, on enchaîne. — Loi de Pareto (80/20) : 80 % des résultats viennent de 20 % des actions (prospection, prise de mandat, relances acquéreurs) : les protéger en priorité. — Loi de Parkinson : le travail s'étale jusqu'à occuper tout le temps disponible : d'où le time-boxing (se fixer un chrono par tâche). — Matrice d'Eisenhower : le quadrant des top performers est l'important mais non urgent (prospection, formation), à planifier avant la crise. — Ancrage d'une habitude : environ 66 jours en moyenne (étude Lally, 2009), et non le mythe des 21 jours : tenir les deux premiers mois. — Objectifs : piloter l'activité (ce qu'on contrôle : contacts, estimations, relances), pas le résultat (ce qui dépend du client et du marché). — Loi des grands nombres : le taux de transformation se stabilise sur un grand volume, jamais sur une seule journée. — Mentalité de croissance (Carol Dweck) : ajouter « pas encore » à chaque limite. — Routines conseillées : routine du matin (préparation, visualisation, premiers appels avant 10h), bilan du soir (3 réussites, 1 axe de progrès), et le silence comme outil après une annonce de prix."
+    ],
+    "glossaire": [
+      {
+        "terme": "État d'esprit de croissance (Carol Dweck)",
+        "definition": "C'est la conviction, décrite par la psychologue Carol Dweck, que l'on peut progresser par l'effort, par opposition à la mentalité figée (« je suis mauvais, c'est comme ça »). L'astuce consiste à ajouter « pas encore » à ses limites : « je ne suis pas ENCORE bon au téléphone ». Un échec devient alors une information sur ce qu'il faut travailler, pas un verdict."
+      },
+      {
+        "terme": "Locus de contrôle interne",
+        "definition": "C'est le fait d'attribuer sa réussite à ses propres actions plutôt qu'aux circonstances (locus externe). Le top performer concentre son énergie sur ce qu'il maîtrise (sa préparation, son attitude, son volume d'activité) et lâche prise sur le reste (les taux de crédit, la conjoncture, la décision finale du client)."
+      },
+      {
+        "terme": "Cercle d'influence (Stephen Covey)",
+        "definition": "Stephen Covey distingue le cercle des préoccupations (tout ce qui nous inquiète) et le cercle d'influence (ce sur quoi on peut vraiment agir). Le médiocre s'épuise à se faire du souci ; le performer investit son énergie là où il a prise, et son cercle d'influence s'élargit avec le temps."
+      },
+      {
+        "terme": "Loi des grands nombres (jeu de nombres)",
+        "definition": "La vente est un jeu de nombres : sur peu d'appels les résultats sont erratiques, mais sur un grand nombre le taux de transformation se stabilise et devient prévisible. On ne juge donc jamais sa performance sur une seule journée. Quand les résultats baissent, le bon réflexe est d'augmenter l'activité, pas de la réduire."
+      },
+      {
+        "terme": "SW-SW-SW-N (Some Will, Some Won't, So What, Next)",
+        "definition": "C'est un moyen mnémotechnique pour gérer le refus : « certains diront oui, d'autres non, et alors, au suivant ». Il invite à ne pas ruminer un « non » et à passer immédiatement au contact suivant. Un refus n'est pas un échec personnel mais une étape statistique vers le prochain oui."
+      },
+      {
+        "terme": "Objectifs SMART",
+        "definition": "C'est une méthode pour formuler des objectifs clairs : Spécifiques, Mesurables, Atteignables, Réalistes et Temporels (datés). Au lieu de « faire plus de prospection », on écrit « 20 contacts par jour et 2 mandats par mois ». Un objectif écrit et affiché devient un engagement, pas un simple vœu."
+      },
+      {
+        "terme": "Objectifs d'activité vs objectifs de résultat",
+        "definition": "On ne contrôle pas directement un mandat (c'est la décision du client), mais on contrôle ses appels, ses estimations, ses tournées de pige. Piloter l'amont (l'activité) fait suivre mécaniquement l'aval (le résultat). Connaître ses ratios (combien de contacts pour un RDV, de RDV pour un mandat) permet de traduire un objectif de ventes en nombre d'appels à passer."
+      },
+      {
+        "terme": "Loi de Pareto (80/20)",
+        "definition": "C'est le principe selon lequel 80 % des résultats viennent de 20 % des actions. Pour un négociateur, ces 20 % sont presque toujours la prospection, la prise de mandat et les relances acquéreurs. Il faut identifier ces tâches à forte valeur et les protéger en priorité."
+      },
+      {
+        "terme": "Loi de Parkinson",
+        "definition": "C'est l'observation que « le travail s'étale jusqu'à occuper tout le temps disponible » : une estimation prendra une journée si on lui donne une journée, une heure si on lui donne une heure. Se fixer des délais courts et fermes crée donc l'efficacité."
+      },
+      {
+        "terme": "Matrice d'Eisenhower",
+        "definition": "C'est un outil qui classe les tâches selon deux axes, urgent et important : important + urgent (faire tout de suite), important + non urgent (planifier), urgent + non important (déléguer), ni l'un ni l'autre (éliminer). Le quadrant « important mais non urgent » (prospection, formation) est celui des top performers, car ils agissent avant la crise."
+      },
+      {
+        "terme": "Time-blocking",
+        "definition": "C'est le fait de réserver dans l'agenda des créneaux dédiés, comme des rendez-vous avec soi-même : prospection 9h-11h, visites l'après-midi, administratif en fin de journée. Le principe est simple : une tâche sans créneau ne se fait jamais."
+      },
+      {
+        "terme": "Méthode Pomodoro",
+        "definition": "C'est une technique pour venir à bout des tâches qu'on repousse : travailler par blocs de 25 minutes minutées, suivies de 5 minutes de pause. Elle désamorce la procrastination, car on ne se dit pas « je dois faire 2h de pige » mais « juste 25 minutes »."
+      },
+      {
+        "terme": "Règle des 3 MIT (Most Important Tasks)",
+        "definition": "C'est le fait de définir chaque matin ses 3 tâches les plus importantes : si l'on ne faisait que ces 3 choses, la journée serait réussie. Moyen mnémotechnique : « mes 3 MIT avant mes mails », pour ne pas laisser les urgences secondaires dévorer le temps à forte valeur."
+      },
+      {
+        "terme": "État de flow (Mihaly Csikszentmihalyi)",
+        "definition": "Décrit par le psychologue Mihaly Csikszentmihalyi, le flow est cet état où l'on est totalement absorbé par une tâche, performant et sans voir le temps passer. On y entre avec un objectif clair, un retour immédiat, un bon équilibre entre défi et compétence, et zéro distraction. C'est là que l'on travaille le mieux avec le moins de fatigue."
+      },
+      {
+        "terme": "Méthode CAP (préparation d'avant-RDV)",
+        "definition": "C'est une routine mentale en trois temps avant un rendez-vous : Corps (posture droite, épaules ouvertes, sourire), Ancrage (un geste déclencheur associé à ses meilleurs moments) et Projection (visualiser l'entretien réussi et la signature). La confiance naît d'abord de la compétence préparée, pas de l'improvisation."
+      },
+      {
+        "terme": "Syndrome de l'imposteur",
+        "definition": "C'est le sentiment de ne pas être légitime (« de quel droit je conseille cette personne ? »), très fréquent chez les jeunes négociateurs face à des clients plus âgés ou fortunés. Trois antidotes : s'appuyer sur les faits (on a les données du marché), sur la force de son réseau et de son enseigne, et sur ses réussites passées (tenues dans un journal à relire)."
+      },
+      {
+        "terme": "Posture de non-besoin et ancrage (négociation)",
+        "definition": "La posture de non-besoin consiste à négocier détendu grâce à un portefeuille d'affaires rempli : celui qui a absolument besoin de la vente la brade. L'ancrage désigne le premier chiffre énoncé, qui sert de référence à toute la discussion : d'où l'intérêt d'annoncer ses honoraires avec assurance. Un outil clé : après avoir annoncé un prix, se taire, car celui qui parle le premier concède souvent."
+      },
+      {
+        "terme": "Cohérence cardiaque (3-6-5)",
+        "definition": "C'est une technique de respiration simple pour faire retomber le stress en quelques minutes : 3 fois par jour, 6 respirations par minute (inspirer 5 secondes, expirer 5 secondes), pendant 5 minutes. À pratiquer par exemple dans la voiture avant un rendez-vous tendu ou après un appel difficile."
+      },
+      {
+        "terme": "Méthode STOP (gestion des émotions)",
+        "definition": "C'est un réflexe en quatre temps face à une émotion forte : Stop (ne pas réagir à chaud), Take a breath (prendre une respiration), Observer la situation et ses émotions avec recul, puis Procéder de façon choisie et non subie. Entre le stimulus et la réaction, il existe toujours un espace : c'est là que se joue le professionnalisme."
+      },
+      {
+        "terme": "Burnout (modèle de Maslach)",
+        "definition": "C'est l'épuisement professionnel, qui se construit selon le modèle de Maslach sur trois dimensions : l'épuisement émotionnel (être vidé en permanence), le cynisme ou dépersonnalisation (dureté envers les clients) et la perte du sentiment d'accomplissement (le « à quoi bon ? »). Ces signaux imposent de lever le pied et, si besoin, de consulter. L'hygiène de vie (sommeil, sport, vraies coupures) est le meilleur garde-fou."
+      }
     ]
   },
   "marketing-bien": {
@@ -5738,6 +7022,84 @@ export const ANIMATIONS_DATA: Record<string, AnimationModule> = {
       "Plan type Icaza : J+2 préparation / J+4 shooting / J+5 teasing fichier / J+7 multidiffusion / J+14 premier bilan vendeur.",
       "Reporting hebdomadaire = vues → contacts → visites → offres.",
       "Tolérance usuelle de home-staging léger : quelques centaines d'euros, souvent remboursés par la moindre négociation."
+    ],
+    "glossaire": [
+      {
+        "terme": "Home-staging",
+        "definition": "Art de mettre en scène un logement pour qu'un maximum d'acheteurs puissent s'y projeter. On désencombre, on dépersonnalise (photos de famille retirées), on répare les petits défauts et on neutralise les couleurs trop marquées. Pour un budget léger de 1 à 3 % du prix (souvent quelques centaines d'euros), on gagne généralement des milliers d'euros sur le prix et plusieurs semaines de délai de vente."
+      },
+      {
+        "terme": "Home-staging virtuel",
+        "definition": "Technique qui consiste à ajouter numériquement des meubles sur les photos d'un logement vide ou très daté, pour aider l'acheteur à se projeter. C'est légal mais chaque image doit porter la mention « image non contractuelle / home-staging virtuel ». Interdiction absolue d'effacer un défaut permanent (fissure, vis-à-vis) : ce serait une pratique commerciale trompeuse."
+      },
+      {
+        "terme": "DPE (Diagnostic de Performance Énergétique)",
+        "definition": "Document qui note le logement de A (très économe) à G (très énergivore) selon sa consommation d'énergie. Depuis le 1er juillet 2021, il est « opposable » : ses informations engagent juridiquement celui qui les communique. L'étiquette DPE est obligatoire dans toute annonce immobilière."
+      },
+      {
+        "terme": "GES (étiquette climat)",
+        "definition": "Étiquette qui classe le logement de A à G selon ses émissions de gaz à effet de serre (le climat), à côté de l'étiquette énergie du DPE. Elle est elle aussi obligatoire dans toute annonce. Depuis 2022, l'annonce doit en plus afficher une estimation des coûts annuels d'énergie (fourchette en euros)."
+      },
+      {
+        "terme": "Passoire énergétique (classe F ou G)",
+        "definition": "Logement très mal isolé, classé F ou G au DPE. Pour ce type de bien, l'annonce doit obligatoirement porter la mention « logement à consommation énergétique excessive ». Un audit énergétique est exigé à la vente des logements F et G depuis avril 2023, et E depuis le 1er janvier 2025."
+      },
+      {
+        "terme": "Diffusion / multidiffusion",
+        "definition": "Action de publier l'annonce sur plusieurs supports à la fois (portails, site de l'agence, vitrine, réseaux). La « multidiffusion maîtrisée » publie une annonce cohérente partout (même prix, mêmes photos). La « multidiffusion sauvage », où plusieurs agences affichent le même bien à des prix et photos différents, le dévalorise : l'acheteur le croit invendable."
+      },
+      {
+        "terme": "Portails immobiliers",
+        "definition": "Grands sites de petites annonces où cherchent les acheteurs : Leboncoin (plus grosse audience), SeLoger, Bien'ici, etc. Les acheteurs y filtrent par tranches de prix : un bien à 305 000 € n'apparaît pas dans la recherche « jusqu'à 300 000 € ». Les portails attendent des photos au format paysage et recadrent les photos verticales."
+      },
+      {
+        "terme": "AIDA",
+        "definition": "Méthode marketing en quatre étapes appliquée à l'annonce immobilière : Attention (la photo de couverture et le titre), Intérêt (les 3 premières photos et les 2 premières lignes), Désir (home-staging, vidéo, visite immersive) et Action (l'appel à visiter). 90 % des recherches commencent en ligne : l'Attention se joue en une seconde."
+      },
+      {
+        "terme": "Entonnoir de commercialisation",
+        "definition": "Image du parcours de l'acheteur en trois étapes : Attirer (être vu), Séduire (donner envie de visiter) et Convertir (transformer la visite en offre). Chaque étape a sa fuite : un bien très vu mais jamais contacté a un problème de séduction ou de prix ; un bien jamais vu a un problème de diffusion."
+      },
+      {
+        "terme": "Mandat exclusif",
+        "definition": "Contrat qui confie la vente d'un bien à une seule agence. Il justifie d'investir (photographe, vidéo, drone, diffusion payante) puisque l'effort ne profitera pas à un concurrent, et permet un lancement maîtrisé (teasing, fichier, portes ouvertes). À l'inverse, un mandat simple est confié à plusieurs agences en même temps."
+      },
+      {
+        "terme": "Loi Hoguet et carte T",
+        "definition": "La loi Hoguet (n°70-9 du 2 janvier 1970) interdit de diffuser une annonce sur un bien sans détenir un mandat écrit autorisant expressément la publicité. Exercer le métier suppose une carte professionnelle en cours de validité (carte T « Transactions »), délivrée par la Chambre de commerce et d'industrie (CCI)."
+      },
+      {
+        "terme": "Pratique commerciale trompeuse",
+        "definition": "Fait de tromper l'acheteur en effaçant un défaut permanent (fissure, pylône, vis-à-vis), en gonflant une surface ou en inventant un atout. C'est un délit (articles L.121-2 et suivants du Code de la consommation) puni jusqu'à 2 ans de prison et 300 000 € d'amende. La règle d'or : on valorise sans jamais tromper."
+      },
+      {
+        "terme": "Loi Carrez",
+        "definition": "Loi qui impose de mesurer précisément la surface privative des lots vendus en copropriété (la « surface loi Carrez »), à indiquer dans l'annonce et l'acte. Une surface réelle inférieure de plus de 5 % à celle annoncée permet à l'acquéreur de demander une réduction du prix. À ne pas confondre avec la surface habitable utilisée en location."
+      },
+      {
+        "terme": "Honoraires d'agence et prix net vendeur",
+        "definition": "Rémunération de l'agence, affichée toutes taxes comprises (TTC) avec l'indication de qui paie (vendeur ou acquéreur), selon l'arrêté du 10 janvier 2017. Le « prix net vendeur » (ou prix hors honoraires) est la somme que touche réellement le vendeur. Exemple : un bien affiché 265 000 € avec 4,5 % d'honoraires vendeur laisse un net vendeur d'environ 253 500 €."
+      },
+      {
+        "terme": "Capital nouveauté (effet de nouveauté)",
+        "definition": "Un bien n'est jamais aussi désirable que dans ses 15 premiers jours en ligne. Passé ce délai, les acheteurs réguliers le voient « encore là » et soupçonnent un problème (prix, défaut). Ce capital ne revient pas : on ne lance donc jamais un bien tant qu'il n'est pas prêt à être photographié et diffusé au meilleur niveau."
+      },
+      {
+        "terme": "Off-market (vente avant diffusion)",
+        "definition": "Vente d'un bien à un acheteur du fichier de l'agence avant toute diffusion publique. En exclusivité, le conseiller présente d'abord le bien à ses acquéreurs déjà qualifiés grâce au rapprochement automatique. Un bien vendu off-market prouve au vendeur la puissance du fichier et valorise l'exclusivité."
+      },
+      {
+        "terme": "Réglementation drone (AlphaTango, DGAC)",
+        "definition": "La prise de vue aérienne par drone est strictement encadrée en France sous le contrôle de la DGAC (Direction générale de l'aviation civile). Tout drone avec caméra impose d'enregistrer l'exploitant sur le portail AlphaTango, même sous 250 g ; l'altitude est limitée à 120 m et le survol de personnes est interdit. En pratique, on sous-traite à un télépilote déclaré et assuré (souvent 150 à 350 €)."
+      },
+      {
+        "terme": "KPI de l'annonce (vues, contacts, visites, offres)",
+        "definition": "Indicateurs chiffrés qui mesurent la performance d'une annonce, de haut en bas de l'entonnoir : vues/impressions, contacts (leads), visites puis offres. Ils servent de thermomètre : peu de vues = problème d'emballage ou de diffusion ; beaucoup de vues mais peu de contacts = prix perçu trop élevé ; beaucoup de visites sans offre = prix réel ou état inadapté."
+      },
+      {
+        "terme": "RGPD (données personnelles)",
+        "definition": "Règlement européen qui protège les données personnelles. Les contacts collectés (annonces, portes ouvertes, publicités ciblées) et la feuille d'émargement doivent être traités avec une finalité claire, un consentement et une durée de conservation limitée. Sur les visuels, on ne rend identifiables ni les personnes ni les plaques d'immatriculation."
+      }
     ]
   },
   "investissement-locatif": {
@@ -6042,6 +7404,88 @@ export const ANIMATIONS_DATA: Record<string, AnimationModule> = {
       "Déficit foncier (hors intérêts d'emprunt) imputable sur le revenu global jusqu'à 10 700 €/an (21 400 € avec travaux de rénovation énergétique sortant de passoire), excédent reportable 10 ans.",
       "TMI : 0 / 11 / 30 / 41 / 45 %.",
       "IFI au-delà de 1,3 M€ de patrimoine immobilier net."
+    ],
+    "glossaire": [
+      {
+        "terme": "Rendement brut",
+        "definition": "Premier indicateur rapide de rentabilité : loyer annuel divisé par le prix d'achat frais inclus, multiplié par 100. Il est trompeur car il ignore toutes les charges. Exemple : un T2 loué 640 €/mois (7 680 €/an) acheté 145 000 € frais inclus affiche un brut de 5,3 %."
+      },
+      {
+        "terme": "Rendement net de charges",
+        "definition": "Rendement obtenu après déduction des charges : taxe foncière, charges de copropriété non récupérables, assurance propriétaire (PNO), frais de gestion, GLI, provisions pour vacance et travaux. Sur le T2 ci-dessus, avec environ 2 944 € de charges annuelles, le net tombe à 3,3 % contre 5,3 % en brut."
+      },
+      {
+        "terme": "Rendement net-net (après impôt)",
+        "definition": "Rendement final qui intègre la fiscalité (régime fiscal et tranche d'imposition). C'est le seul chiffre qui compte vraiment pour l'investisseur. D'où la mnémonique du métier : « le brut ment, le net informe, le net-net décide »."
+      },
+      {
+        "terme": "Cash-flow",
+        "definition": "Différence entre les loyers encaissés et toutes les sorties d'argent (mensualité de crédit + charges + impôts). Un cash-flow positif signifie que le bien s'autofinance et enrichit sans effort ; négatif, l'investisseur doit compléter chaque mois (effort d'épargne). Exemple : 640 € de loyer − 865 € de crédit − 245 € de charges = −470 €/mois, un investissement patrimonial."
+      },
+      {
+        "terme": "Effet de levier",
+        "definition": "Principe qui consiste à investir avec l'argent de la banque et à rembourser avec les loyers du locataire. Tant que le rendement du bien dépasse le coût du crédit, chaque euro emprunté crée de la richesse. C'est le cœur de la performance de l'immobilier, seul placement qu'une banque finance largement à crédit pour un particulier."
+      },
+      {
+        "terme": "LMNP (loueur en meublé non professionnel)",
+        "definition": "Statut fiscal de la location meublée, relevant des BIC (bénéfices industriels et commerciaux). On est LMNP par défaut tant que les recettes meublées sont inférieures ou égales à 23 000 €/an OU restent inférieures aux autres revenus d'activité du foyer. Au régime réel, l'amortissement permet souvent un impôt proche de zéro pendant 10 à 20 ans."
+      },
+      {
+        "terme": "LMP (loueur en meublé professionnel)",
+        "definition": "Statut applicable quand les recettes meublées dépassent 23 000 €/an ET sont supérieures aux revenus d'activité du foyer. Régime plus lourd (cotisations sociales), mais il permet d'imputer les déficits sur le revenu global et relève du régime des plus-values professionnelles à la revente."
+      },
+      {
+        "terme": "Micro-foncier",
+        "definition": "Régime fiscal simplifié de la location nue, accessible si les revenus fonciers bruts ne dépassent pas 15 000 €/an. Il applique un abattement forfaitaire de 30 % (on n'est imposé que sur 70 % des loyers), sans justificatif. Il devient pénalisant dès que les charges réelles dépassent 30 % des loyers."
+      },
+      {
+        "terme": "Régime réel (revenus fonciers)",
+        "definition": "Régime de la location nue qui permet de déduire les charges réelles : intérêts d'emprunt, assurance, taxe foncière, charges de copropriété, frais de gestion et surtout les travaux d'entretien, réparation et amélioration. Obligatoire au-delà de 15 000 € de revenus, optionnel en dessous pour 3 ans irrévocables puis reconduit tacitement."
+      },
+      {
+        "terme": "Déficit foncier",
+        "definition": "Résultat négatif obtenu quand les charges déductibles (au réel) dépassent les loyers encaissés. La part hors intérêts d'emprunt s'impute sur le revenu global jusqu'à 10 700 €/an, l'excédent se reportant 10 ans sur les seuls revenus fonciers. Ce plafond est doublé à 21 400 € pour des travaux faisant sortir le logement du statut de passoire (dépenses de 2023 à 2027)."
+      },
+      {
+        "terme": "Micro-BIC",
+        "definition": "Régime simplifié de la location meublée de longue durée : abattement forfaitaire de 50 % jusqu'à 77 700 €/an de recettes, plus avantageux que les 30 % du micro-foncier. Attention : la loi Le Meur a abaissé l'abattement des meublés de tourisme non classés à 30 % (plafond 15 000 €) depuis les revenus 2025."
+      },
+      {
+        "terme": "Amortissement (réel LMNP)",
+        "definition": "Charge « comptable » qui étale sur plusieurs années la perte de valeur du bien (hors terrain) et du mobilier, sans sortie d'argent. Il efface tout ou partie de l'impôt sur les loyers, souvent pendant 10 à 20 ans. Depuis la loi de finances 2025, ces amortissements sont réintégrés dans le calcul de la plus-value à la revente (sauf résidences services gérées)."
+      },
+      {
+        "terme": "TMI (tranche marginale d'imposition)",
+        "definition": "Taux d'imposition appliqué à la dernière tranche des revenus du contribuable (0, 11, 30, 41 ou 45 %). Elle conditionne tout le raisonnement fiscal d'un investissement : plus elle est élevée, plus la fiscalité des loyers pèse et plus les régimes qui créent de la déduction (réel, LMNP, déficit foncier) deviennent intéressants."
+      },
+      {
+        "terme": "Prélèvements sociaux",
+        "definition": "Taxe de 17,2 % qui s'ajoute à l'impôt sur le revenu sur les revenus du capital, dont les revenus fonciers et les plus-values immobilières. En location nue au réel, une partie de la CSG payée (6,8 %) est déductible du revenu global de l'année suivante."
+      },
+      {
+        "terme": "Règles du HCSF (financement)",
+        "definition": "Règles d'octroi du crédit fixées par le Haut Conseil de stabilité financière : taux d'endettement maximal de 35 % des revenus (assurance comprise) et durée maximale de 25 ans (27 ans avec différé pour le neuf ou de gros travaux). Les banques peuvent déroger à ces règles pour 20 % de leurs dossiers et ne retiennent souvent que 70 % des loyers attendus."
+      },
+      {
+        "terme": "GLI (garantie loyers impayés)",
+        "definition": "Assurance souscrite par le bailleur pour se protéger contre les loyers impayés, souvent aussi les dégradations et les frais de procédure. Elle coûte environ 2,5 à 4 % du loyer charges comprises et exige en général un locataire dont le loyer ne dépasse pas 33 % des revenus."
+      },
+      {
+        "terme": "Denormandie",
+        "definition": "Dispositif de réduction d'impôt pour l'achat d'un logement ancien à rénover (travaux d'au moins 25 % du coût total) dans certaines villes, prolongé jusqu'au 31 décembre 2027. Réduction de 12 % (6 ans), 18 % (9 ans) ou 21 % (12 ans) du montant investi. À distinguer du Pinel, supprimé depuis le 1er janvier 2025."
+      },
+      {
+        "terme": "Plafonnement global des niches fiscales",
+        "definition": "Limite annuelle de 10 000 € sur la plupart des réductions d'impôt (Denormandie, Loc'Avantages). Le déficit foncier et l'amortissement LMNP n'y entrent PAS, car ce sont des charges déductibles et non des réductions d'impôt : d'où leur puissance pour un investisseur fortement imposé."
+      },
+      {
+        "terme": "SCI (société civile immobilière)",
+        "definition": "Société qui détient un ou plusieurs biens, utile pour gérer à plusieurs et transmettre (donation de parts avec abattements tous les 15 ans). À l'IR, chaque associé déclare sa quote-part en revenus fonciers et elle ne permet pas le meublé habituel ; à l'IS, elle amortit le bien mais subit une plus-value professionnelle lourde à la revente (sans abattement pour durée)."
+      },
+      {
+        "terme": "Démembrement (usufruit / nue-propriété)",
+        "definition": "Séparation entre l'usufruit (droit de jouir du bien et d'en percevoir les loyers) et la nue-propriété (la propriété des murs). Acheter la nue-propriété décotée de 30 à 40 %, sans gestion ni fiscalité pendant le démembrement, puis récupérer la pleine propriété au terme : un outil de transmission et d'optimisation de l'IFI."
+      }
     ]
   },
   "vefa-neuf": {
@@ -6372,6 +7816,88 @@ export const ANIMATIONS_DATA: Record<string, AnimationModule> = {
       "Norme RE2020 (depuis 01/01/2022).",
       "TVA réduite à 5,5 % en zone éligible (sinon 20 %).",
       "Tolérance de surface ~5 %."
+    ],
+    "glossaire": [
+      {
+        "terme": "VEFA (Vente en l'État Futur d'Achèvement)",
+        "definition": "Achat d'un logement neuf « sur plan » : l'acquéreur devient propriétaire du sol dès la signature, puis des constructions au fur et à mesure qu'elles sont bâties. Elle est régie par les articles L261-1 et suivants du Code de la construction (CCH) et offre des frais de notaire réduits, des garanties fortes et des normes récentes (RE2020)."
+      },
+      {
+        "terme": "Contrat de réservation (contrat préliminaire)",
+        "definition": "Premier contrat de la VEFA par lequel le promoteur réserve le lot à l'acquéreur, qui verse un dépôt de garantie. Encadré par l'article L261-15 du CCH, il fixe le prix prévisionnel, la date de signature et la description du logement. Ce n'est PAS l'achat définitif : celui-ci se fait ensuite par acte authentique chez le notaire."
+      },
+      {
+        "terme": "Dépôt de garantie VEFA (règle « 5 – 2 – 0 »)",
+        "definition": "Somme versée à la réservation, plafonnée selon le délai prévu de signature de l'acte (article R261-28 CCH) : 5 % du prix maximum si l'acte est signé dans moins d'un an, 2 % entre 1 et 2 ans, et aucun dépôt possible au-delà de 2 ans. Exemple : 13 250 € pour un T3 à 265 000 € signé sous un an."
+      },
+      {
+        "terme": "Compte séquestre",
+        "definition": "Compte bloqué chez le notaire ou une banque sur lequel est versé le dépôt de garantie. L'argent n'est pas encaissé par le promoteur : il est conservé en sécurité et restitué à l'acquéreur s'il se rétracte, si son prêt est refusé ou si le projet se dégrade. Encaisser un dépôt hors séquestre est strictement interdit."
+      },
+      {
+        "terme": "Rétractation 10 jours (loi SRU)",
+        "definition": "Après signature du contrat de réservation, l'acquéreur non professionnel dispose de 10 jours pour se rétracter, sans motif ni pénalité (article L271-1 du CCH). Le délai court à compter du lendemain de la première présentation de la notification du contrat (lettre recommandée, remise contre récépissé ou voie électronique)."
+      },
+      {
+        "terme": "GFA (Garantie Financière d'Achèvement)",
+        "definition": "Garantie qui assure que l'immeuble sera terminé même si le promoteur fait faillite : un garant (banque ou assureur) finance la fin des travaux. Depuis le 1er janvier 2015, seule la GFA « extrinsèque » (délivrée par un tiers) est admise. Le notaire en vérifie la présence avant de signer l'acte."
+      },
+      {
+        "terme": "Assurance dommages-ouvrage (DO)",
+        "definition": "Assurance souscrite par le promoteur avant l'ouverture du chantier (article L242-1 du Code des assurances). Elle préfinance les réparations relevant de la garantie décennale sans attendre un procès ni la recherche du responsable. Elle se transmet aux acquéreurs successifs pendant 10 ans : un vrai atout à la revente."
+      },
+      {
+        "terme": "Garantie de parfait achèvement (1 an)",
+        "definition": "Pendant la première année suivant la réception, le promoteur doit réparer TOUS les désordres signalés, même mineurs (article 1792-6 du Code civil). C'est le premier niveau de la protection « 1 – 2 – 10 » du neuf."
+      },
+      {
+        "terme": "Garantie biennale (2 ans)",
+        "definition": "Pendant 2 ans après la réception, elle couvre le bon fonctionnement des équipements dissociables du bâtiment : volets, robinetterie, chaudière, VMC (article 1792-3 du Code civil). Exemple : un volet roulant en panne 18 mois après la livraison relève de la biennale, pas de la décennale."
+      },
+      {
+        "terme": "Garantie décennale (10 ans)",
+        "definition": "Pendant 10 ans, elle couvre les dommages qui compromettent la solidité de l'ouvrage ou le rendent impropre à sa destination : fissures graves, infiltrations, défauts de toiture (article 1792 du Code civil). C'est la garantie la plus longue et la plus protectrice, adossée à l'assurance dommages-ouvrage."
+      },
+      {
+        "terme": "Appels de fonds",
+        "definition": "Versements échelonnés du prix au rythme de l'avancement du chantier, dans des plafonds légaux (article R261-14 CCH) : 35 % aux fondations, 70 % cumulés à la mise hors d'eau, 95 % à l'achèvement et 5 % de solde à la livraison. Mnémonique : « 35 aux fondations, 70 hors d'eau, 95 achevé, 5 à la clé »."
+      },
+      {
+        "terme": "Intérêts intercalaires",
+        "definition": "Intérêts payés pendant la construction, calculés uniquement sur les sommes de prêt déjà débloquées (le crédit se libère par tranches, au rythme des appels de fonds). La mensualité pleine (capital + intérêts) ne démarre généralement qu'à la livraison. À anticiper : l'acquéreur paie souvent un loyer + ces intérêts, une double charge temporaire."
+      },
+      {
+        "terme": "Procès-verbal de livraison et réserves",
+        "definition": "Document établi le jour de la remise des clés, pièce par pièce, qui fait foi. Les « réserves » sont tous les défauts constatés (carrelage fêlé, peinture, équipement manquant) que le promoteur devra lever dans un délai donné. En présence de réserves, l'acquéreur peut consigner (bloquer) les 5 % de solde jusqu'à leur correction."
+      },
+      {
+        "terme": "TMA (travaux modificatifs acquéreur)",
+        "definition": "Modifications que l'acquéreur peut demander pendant la construction : supprimer une cloison, choisir un carrelage, ajouter une prise, dans les limites techniques et de délai du promoteur. Ils se décident tôt (avant certains stades du chantier) et sont chiffrés à part du prix du logement."
+      },
+      {
+        "terme": "Loi Scrivener (offre de prêt)",
+        "definition": "Loi qui impose un délai de réflexion incompressible de 10 jours sur toute offre de prêt immobilier (article L313-34 du Code de la consommation). L'emprunteur ne peut accepter l'offre qu'à partir du 11e jour : une acceptation signée avant est nulle."
+      },
+      {
+        "terme": "RE2020 (réglementation environnementale)",
+        "definition": "Norme de construction applicable depuis le 1er janvier 2022 : logements basse consommation, confort d'été renforcé et faible empreinte carbone. Un logement neuf en VEFA respecte donc les dernières normes énergétiques, sans risque de passoire thermique et avec des factures d'énergie basses."
+      },
+      {
+        "terme": "TVA réduite à 5,5 %",
+        "definition": "Le prix VEFA est affiché TTC, TVA à 20 % incluse. Ce taux tombe à 5,5 % pour une résidence principale située en quartier prioritaire (QPV) ou zone ANRU, sous plafonds de ressources, et pour le PSLA et le BRS. Sur un T3 à 265 000 €, passer de 20 à 5,5 % représente environ 32 000 € d'économie."
+      },
+      {
+        "terme": "Frais de notaire réduits (neuf)",
+        "definition": "Dans le neuf, la vente étant soumise à TVA, les droits de mutation sont remplacés par la taxe de publicité foncière de 0,715 % : les frais tombent à 2 à 3 % du prix, contre 7 à 8 % dans l'ancien. Sur un T3 à 265 000 €, l'économie atteint environ 13 000 €."
+      },
+      {
+        "terme": "PTZ (prêt à taux zéro)",
+        "definition": "Prêt sans intérêt réservé aux primo-accédants pour leur résidence principale, sous plafonds de ressources. Depuis le 1er avril 2025 et jusqu'au 31 décembre 2027, il est ouvert sur tout le territoire et à tous les logements neufs, maisons individuelles comprises, et peut financer jusqu'à 50 % du coût d'un appartement."
+      },
+      {
+        "terme": "BRS (Bail Réel Solidaire)",
+        "definition": "Dispositif d'accession aidée où l'on achète les murs mais pas le terrain, détenu par un Organisme de Foncier Solidaire (OFS) moyennant une redevance mensuelle. Résultat : un prix nettement réduit (souvent 30 à 40 % de moins) et une TVA à 5,5 %. Idéal pour les primo-accédants en secteur tendu."
+      }
     ]
   },
   "plus-value": {
@@ -6713,6 +8239,88 @@ export const ANIMATIONS_DATA: Record<string, AnimationModule> = {
       "Prélèvement libératoire par le notaire le jour de la vente.",
       "LMNP : depuis la loi de finances 2025, amortissements réintégrés dans la plus-value (sauf résidences services gérées).",
       "Moins-value ni déductible ni reportable."
+    ],
+    "glossaire": [
+      {
+        "terme": "Plus-value immobilière des particuliers",
+        "definition": "Gain réalisé entre le prix d'achat et le prix de vente d'un bien par un particulier, imposé le jour de la vente chez le notaire. Elle peut être lourde ou totalement exonérée selon le bien et la durée de détention. La résidence principale est exonérée, mais un bien locatif ou une résidence secondaire ne l'est pas."
+      },
+      {
+        "terme": "Plus-value brute",
+        "definition": "Différence entre le prix de cession corrigé et le prix d'acquisition corrigé, avant tout abattement. Exemple : un bien locatif acheté 150 000 € (corrigé à 183 750 € avec forfaits) et vendu 250 000 € (corrigé à 248 700 €) dégage une plus-value brute de 64 950 €."
+      },
+      {
+        "terme": "Plus-value nette imposable",
+        "definition": "Ce qui reste de la plus-value brute après application des abattements pour durée de détention : c'est la base sur laquelle se calcule l'impôt. Elle s'ajoute aussi au revenu fiscal de référence (RFR) de l'année, ce qui peut faire perdre certains avantages."
+      },
+      {
+        "terme": "Prix de cession corrigé",
+        "definition": "Prix de vente figurant dans l'acte, diminué des frais supportés par le vendeur sur justificatifs : diagnostics obligatoires (DPE, amiante, plomb…), frais de mainlevée d'hypothèque, et commission d'agence si elle est à la charge du vendeur. Le réduire fait baisser la plus-value imposable."
+      },
+      {
+        "terme": "Prix d'acquisition corrigé",
+        "definition": "Prix d'achat d'origine, majoré pour réduire la plus-value : frais d'acquisition (réels ou forfait de 7,5 %) et travaux (réels facturés par une entreprise, ou forfait de 15 % si le bien bâti est détenu depuis plus de 5 ans). Pour un bien reçu par donation ou succession, on retient la valeur déclarée dans l'acte, majorée des droits payés."
+      },
+      {
+        "terme": "Forfait de frais d'acquisition (7,5 %)",
+        "definition": "À défaut de justificatifs, les frais d'acquisition (droits d'enregistrement, émoluments de notaire) qui majorent le prix d'achat peuvent être évalués forfaitairement à 7,5 % du prix d'achat. Ce forfait ne vaut que pour une acquisition à titre onéreux (pas pour une donation ou succession)."
+      },
+      {
+        "terme": "Forfait travaux (15 %)",
+        "definition": "À défaut de factures, les travaux majorant le prix d'achat peuvent être évalués à un forfait de 15 % du prix d'achat, à condition que le bien bâti soit détenu depuis plus de 5 ans. On choisit toujours le plus avantageux entre ce forfait et les travaux réels facturés par une entreprise."
+      },
+      {
+        "terme": "Abattement pour durée de détention",
+        "definition": "Réduction de la plus-value imposable qui augmente avec les années de détention, à des rythmes différents pour l'impôt et le social. Les 5 premières années ne donnent aucun abattement. Repère « 22 / 30 » : exonération d'impôt sur le revenu à 22 ans, exonération des prélèvements sociaux à 30 ans."
+      },
+      {
+        "terme": "Exonération de la résidence principale",
+        "definition": "La vente de la résidence principale effective au jour de la vente est totalement exonérée de plus-value, sans condition de durée ni de montant (article 150 U du Code général des impôts). Les dépendances immédiates (cave, garage, jardin) vendues en même temps en bénéficient aussi. Une résidence secondaire n'y a jamais droit."
+      },
+      {
+        "terme": "Prélèvement libératoire",
+        "definition": "L'impôt de plus-value est retenu une fois pour toutes par le notaire sur le prix de vente, le jour de l'acte. Le vendeur n'a ensuite aucune régularisation à faire : il « repart net ». Seule la plus-value nette est reportée pour information dans la déclaration de revenus, car elle entre dans le revenu fiscal de référence."
+      },
+      {
+        "terme": "Prélèvements sociaux (CSG, CRDS, solidarité)",
+        "definition": "Taxe de 17,2 % qui s'ajoute aux 19 % d'impôt sur le revenu sur la plus-value : CSG 9,2 %, CRDS 0,5 % et prélèvement de solidarité 7,5 %. Contrairement aux revenus fonciers, la CSG payée sur une plus-value immobilière n'est pas déductible du revenu imposable."
+      },
+      {
+        "terme": "Taux global de 36,2 %",
+        "definition": "Quand la plus-value est pleinement taxée (sans abattement), elle supporte 19 % d'impôt sur le revenu + 17,2 % de prélèvements sociaux, soit 36,2 %. Au-delà de 5 ans de détention, l'impôt et le social se calculent sur des bases différentes à cause de leurs abattements distincts."
+      },
+      {
+        "terme": "Surtaxe sur les plus-values élevées",
+        "definition": "Taxe additionnelle progressive de 2 % à 6 % qui frappe les plus-values imposables supérieures à 50 000 €, appréciées par vendeur. Le taux s'applique à la totalité de la plus-value imposable. La résidence principale (exonérée) et les terrains à bâtir en sont exclus. Dans une indivision ou un couple, le seuil s'apprécie par quote-part."
+      },
+      {
+        "terme": "Délai normal de vente",
+        "definition": "Tolérance qui maintient l'exonération de résidence principale quand le vendeur a déménagé avant d'avoir vendu : le bien doit être cédé dans un délai normal, en pratique un an, sans avoir été loué ni occupé gratuitement entre-temps, et avec des démarches de vente entreprises sans tarder."
+      },
+      {
+        "terme": "Formulaire 2048-IMM",
+        "definition": "Déclaration de plus-value établie par le notaire pour la cession d'un immeuble, déposée au service de publicité foncière en même temps que l'acte, avec le paiement. Pour la cession de parts d'une société à prépondérance immobilière (SCI familiale), c'est le formulaire 2048-M qui s'applique."
+      },
+      {
+        "terme": "Réforme LMNP 2025 (réintégration des amortissements)",
+        "definition": "Depuis la loi de finances 2025 (cessions postérieures au 15 février 2025), les amortissements déduits par un loueur en meublé non professionnel sont réintégrés dans le calcul de la plus-value : ils diminuent le prix d'acquisition et augmentent donc la base imposable. La plus-value reste au régime des particuliers (abattements 22/30 ans). Exception : les résidences services gérées."
+      },
+      {
+        "terme": "SCI à l'IR ou à l'IS",
+        "definition": "Une SCI à l'impôt sur le revenu relève du régime des plus-values des particuliers (abattements pour durée, exonérations). Une SCI à l'impôt sur les sociétés relève des plus-values professionnelles : les amortissements sont réintégrés et il n'y a aucun abattement pour durée, d'où une plus-value souvent bien plus lourde. Piège fréquent pour des vendeurs mal informés."
+      },
+      {
+        "terme": "Donation avant cession (purge de plus-value)",
+        "definition": "Donner un bien à ses enfants avant de le vendre « purge » la plus-value : la valeur de référence devient celle de la donation récente, proche du prix de vente, donc peu ou pas de plus-value pour les donataires. Outil légal mais encadré : la donation doit être réelle (le donateur ne récupère pas le prix), sinon c'est un abus de droit. À monter avec le notaire."
+      },
+      {
+        "terme": "Abus de droit",
+        "definition": "Montage juridique dont le but principal est d'éluder l'impôt, par exemple une donation « fictive » où le donateur récupère en réalité le prix de vente. Il est sanctionné (article L64 du Livre des procédures fiscales) par un redressement assorti de pénalités. C'est pourquoi une donation avant cession doit être réelle et montée avec le notaire."
+      },
+      {
+        "terme": "Revenu fiscal de référence (RFR)",
+        "definition": "Montant global qui sert à apprécier le niveau de revenus d'un foyer pour l'accès à certaines aides, exonérations ou seuils. Même si la plus-value est libératoire, sa fraction nette imposable s'ajoute au RFR de l'année : un RFR gonflé peut faire perdre des avantages, à signaler sur les grosses opérations."
+      }
     ]
   },
   "location-baux": {
@@ -7029,6 +8637,88 @@ export const ANIMATIONS_DATA: Record<string, AnimationModule> = {
       "DPE décence énergétique : G interdit depuis le 01/01/2025, F en 2028, E en 2034.",
       "DDT/annexes : DPE, CREP plomb (avant 1949), amiante, électricité/gaz > 15 ans, ERP, bruit.",
       "Garantie Visale (Action Logement) pour sécuriser les dossiers et le bail mobilité."
+    ],
+    "glossaire": [
+      {
+        "terme": "Bail loi 89 (loi du 6 juillet 1989)",
+        "definition": "Loi n°89-462 qui régit la location d'une résidence principale, vide ou meublée. C'est un texte d'ordre public : toute clause qui y déroge au détriment du locataire est « réputée non écrite » (sans effet). Depuis la loi ALUR, le bail doit respecter un modèle type fixé par décret et être accompagné d'une notice d'information."
+      },
+      {
+        "terme": "Loi ALUR",
+        "definition": "Loi du 24 mars 2014 qui a profondément réformé la location : bail type obligatoire, encadrement des loyers, plafonnement des honoraires de location, fonds travaux en copropriété et solidarité limitée du colocataire partant. C'est l'une des lois de référence du secteur avec les lois ELAN et Climat et résilience."
+      },
+      {
+        "terme": "Durées du bail",
+        "definition": "La durée dépend du type de location : 3 ans en vide pour un bailleur personne physique (ou SCI familiale), 6 ans pour une personne morale, 1 an en meublé, 9 mois pour un bail étudiant (non reconductible tacitement), et 1 à 10 mois pour un bail mobilité. À défaut de congé, le bail se reconduit tacitement."
+      },
+      {
+        "terme": "Dépôt de garantie",
+        "definition": "Somme versée par le locataire à la signature pour couvrir d'éventuels manquements, plafonnée à 1 mois de loyer hors charges en location vide et 2 mois en meublé ; aucun dépôt n'est autorisé en bail mobilité. Il ne peut pas être révisé en cours de bail et se restitue sous 1 mois (état des lieux conforme) ou 2 mois (retenues justifiées)."
+      },
+      {
+        "terme": "Préavis",
+        "definition": "Délai à respecter avant de quitter le logement ou d'y mettre fin. Pour le locataire : 3 mois en vide, réduit à 1 mois en zone tendue, en meublé ou pour un motif légal (mutation, perte d'emploi, santé, RSA/AAH…). Pour le bailleur : 6 mois en vide, 3 mois en meublé, uniquement à l'échéance du bail et pour un motif légal."
+      },
+      {
+        "terme": "IRL (Indice de Référence des Loyers)",
+        "definition": "Indice publié chaque trimestre par l'INSEE qui sert à réviser le loyer une fois par an, uniquement si le bail contient une clause de révision. On multiplie le loyer par le rapport entre le dernier IRL connu et celui du même trimestre l'an passé. La révision n'est pas rétroactive : oubliée plus d'un an, elle est perdue pour la période écoulée."
+      },
+      {
+        "terme": "Encadrement des loyers",
+        "definition": "Deux dispositifs à ne pas confondre. L'encadrement de l'évolution s'applique dans toutes les zones tendues et empêche d'augmenter le loyer au-delà de l'IRL à la relocation (sauf travaux ou loyer sous-évalué). L'encadrement du niveau (loi ELAN), lui, plafonne le loyer de base dans certaines grandes villes au loyer de référence majoré."
+      },
+      {
+        "terme": "Zone tendue",
+        "definition": "Communes où l'offre de logements est insuffisante, fortement élargies par le décret du 25 août 2023 : près de 3 700 communes au total. En zone tendue, le préavis du locataire est réduit à 1 mois et l'encadrement de l'évolution des loyers s'applique à la relocation et au renouvellement."
+      },
+      {
+        "terme": "Loyer de référence majoré",
+        "definition": "Dans les villes appliquant l'encadrement du niveau (Paris, Lyon, Lille, Bordeaux, Montpellier…), un arrêté préfectoral fixe par secteur et type de bien un loyer de référence, un loyer majoré (+20 %) et un loyer minoré (-30 %), en euros par m². Le loyer de base ne peut pas dépasser le loyer de référence majoré."
+      },
+      {
+        "terme": "Complément de loyer",
+        "definition": "Supplément au-dessus du loyer de référence majoré, autorisé seulement pour des caractéristiques exceptionnelles de localisation ou de confort non déjà prises en compte (grande terrasse, vue remarquable, prestations de luxe). Il doit être justifié et mentionné au bail ; le locataire peut le contester dans les 3 mois suivant la signature."
+      },
+      {
+        "terme": "État des lieux",
+        "definition": "Document établi contradictoirement (les deux parties) à l'entrée et à la sortie, pièce par pièce, et annexé au bail. Les dégradations s'apprécient par différence entre l'entrée et la sortie. Bonnes pratiques : photos datées et relevés de compteurs. Sans état des lieux d'entrée, le logement est présumé reçu en bon état, ce qui dessert le bailleur."
+      },
+      {
+        "terme": "Vétusté",
+        "definition": "Usure normale d'un logement liée au temps et à l'usage, qui ne peut jamais être facturée au locataire : seules les dégradations qui lui sont imputables peuvent être retenues sur le dépôt de garantie. Une grille de vétusté annexée au bail (abattements par année d'usage sur peintures, moquettes…) sécurise ce point."
+      },
+      {
+        "terme": "DDT (dossier de diagnostics techniques)",
+        "definition": "Ensemble des diagnostics annexés obligatoirement au bail : DPE, constat de risque d'exposition au plomb (CREP) pour un logement d'avant 1949, amiante, état des installations électricité et gaz de plus de 15 ans, état des risques (ERP) et diagnostic bruit en zone aéroportuaire. Oublier le DPE rend le bail contestable."
+      },
+      {
+        "terme": "Garanties contre l'impayé (caution, GLI, Visale)",
+        "definition": "La caution est un tiers qui s'engage à payer en cas de défaillance (simple ou solidaire). La GLI est une assurance souscrite par le bailleur (environ 2,5 à 4 % du loyer CC), non cumulable avec une caution sauf étudiant ou apprenti. Visale est une caution gratuite d'Action Logement pour les 18-30 ans et les salariés précaires."
+      },
+      {
+        "terme": "Bail mobilité (loi ELAN)",
+        "definition": "Bail meublé de 1 à 10 mois, non renouvelable et non reconductible, créé par la loi ELAN du 23 novembre 2018. Réservé à un public précis (études, formation, stage, mutation, mission temporaire…), il n'autorise aucun dépôt de garantie et prévoit des charges au forfait. Le bailleur peut se couvrir via la garantie Visale."
+      },
+      {
+        "terme": "Meublé (décret n°2015-981)",
+        "definition": "Logement loué garni de façon à permettre d'y dormir, manger et vivre avec ses seuls effets personnels. Le décret du 31 juillet 2015 fixe une liste de 11 éléments minimum (literie, plaques de cuisson, réfrigérateur, vaisselle, table et sièges, luminaires…). Un meublé incomplet peut être requalifié en location vide (bail de 3 ans, dépôt limité à 1 mois)."
+      },
+      {
+        "terme": "Décence énergétique",
+        "definition": "Depuis la loi Climat et résilience du 22 août 2021, un logement trop énergivore ne peut plus être mis en location. Calendrier d'interdiction en métropole : classe G depuis le 1er janvier 2025, F en 2028, E en 2034. Ces interdictions visent les nouveaux baux et renouvellements. De plus, les loyers des passoires F et G sont gelés depuis le 24 août 2022."
+      },
+      {
+        "terme": "Clause résolutoire et commandement de payer",
+        "definition": "La clause résolutoire, quasi systématique au bail, permet la résiliation automatique en cas d'impayé, de non-versement du dépôt ou de défaut d'assurance. Elle ne joue qu'après un commandement de payer délivré par commissaire de justice, resté infructueux : depuis la loi du 27 juillet 2023, le locataire a 6 semaines pour régulariser avant l'assignation."
+      },
+      {
+        "terme": "Trêve hivernale",
+        "definition": "Période du 1er novembre au 31 mars durant laquelle aucune expulsion locative ne peut être exécutée, sauf relogement assuré ou cas de squat. Hors de cette période, l'expulsion nécessite toujours une décision de justice : couper l'électricité ou changer la serrure soi-même est un délit."
+      },
+      {
+        "terme": "Congé pour vente et droit de préemption",
+        "definition": "Congé que le bailleur peut donner à l'échéance d'un bail vide (préavis 6 mois) pour vendre le logement libre. Il vaut offre de vente au locataire, qui bénéficie d'un droit de préemption : il peut acheter en priorité aux prix et conditions indiqués, dans un délai de 2 mois. Un congé pour vente fictif destiné à évincer le locataire ouvre droit à des dommages-intérêts."
+      }
     ]
   }
 };
