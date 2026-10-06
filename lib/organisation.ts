@@ -31,22 +31,25 @@ export const LABEL_NIVEAU: Record<Niveau, string> = {
 // Les 5 familles de tâches (ordre d'affichage).
 export const CATEGORIES = ["Chasse", "Identification", "Phoning", "Prospection", "Formation"] as const;
 
-// Dosage des tâches selon la charge de RDV : plus il y a de RDV, moins de tâches
-// terrain pour laisser le temps de les assurer.
-const PROFILS: Record<Niveau, { chasse: number; ident: number; phoning: number; prospection: number; form: number }> = {
-  intensif: { chasse: 10, ident: 5, phoning: 30, prospection: 2, form: 1 },
-  equilibre: { chasse: 6, ident: 3, phoning: 20, prospection: 1, form: 1 },
-  leger: { chasse: 3, ident: 1, phoning: 10, prospection: 1, form: 0 },
+// Chasse et identification sont des objectifs TERRAIN fixes, tous les jours :
+// 10 biens chassés et 5 biens identifiés. Le reste (phoning, prospection,
+// formation) est dosé selon la charge de RDV pour ne pas surcharger.
+const CHASSE_PAR_JOUR = 10;
+const IDENT_PAR_JOUR = 5;
+const PROFILS: Record<Niveau, { phoning: number; prospection: number; form: number }> = {
+  intensif: { phoning: 30, prospection: 2, form: 1 },
+  equilibre: { phoning: 20, prospection: 1, form: 1 },
+  leger: { phoning: 10, prospection: 1, form: 0 },
 };
 
 export function genererTaches(rdv: RdvJour): TacheOrg[] {
   const P = PROFILS[niveauDe(rdv)];
   const T: TacheOrg[] = []; let i = 0;
   const add = (categorie: string, libelle: string, objectif?: number) => T.push({ id: `t${i++}`, categorie, libelle, objectif, fait: false });
-  // Chasse : démarchage des vendeurs sur le terrain.
-  add("Chasse", `Démarcher ${P.chasse} vendeur(s) sur le terrain (porte-à-porte, boîtage, contact direct)`, P.chasse);
-  // Identification : trouver des biens à la vente.
-  add("Identification", `Identifier ${P.ident} bien(s) à vendre (annonces, panneaux, bouche-à-oreille)`, P.ident);
+  // Chasse : chasser des biens sur le terrain (objectif fixe quotidien).
+  add("Chasse", `Chasser ${CHASSE_PAR_JOUR} biens sur le terrain (démarchage des vendeurs : porte-à-porte, boîtage, contact direct)`, CHASSE_PAR_JOUR);
+  // Identification : trouver des biens à la vente (objectif fixe quotidien).
+  add("Identification", `Identifier ${IDENT_PAR_JOUR} biens à vendre (annonces, panneaux, bouche-à-oreille)`, IDENT_PAR_JOUR);
   // Phoning : relance de la base (estimations, mandats, acquéreurs…).
   add("Phoning", `Relancer ${P.phoning} contact(s) de la base phoning (estimations, mandats, acquéreurs)`, P.phoning);
   // Prospection ciblée via l'outil CRM.
