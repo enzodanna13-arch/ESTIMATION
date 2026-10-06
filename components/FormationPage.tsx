@@ -57,9 +57,12 @@ function Contenu({ lignes }: { lignes: string[] }) {
     if (puces.length === 0) return;
     const items = [...puces];
     blocs.push(
-      <ul key={`ul-${k}`} className="my-2 ml-1 space-y-1">
+      <ul key={`ul-${k}`} className="my-3 space-y-2">
         {items.map((p, i) => (
-          <li key={i} className="flex gap-2 text-sm text-slate-700"><span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-copper" />{inline(p, `li-${k}-${i}`)}</li>
+          <li key={i} className="flex gap-2.5 text-[15px] leading-relaxed text-slate-700">
+            <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-copper" />
+            <span className="flex-1">{inline(p, `li-${k}-${i}`)}</span>
+          </li>
         ))}
       </ul>,
     );
@@ -68,8 +71,12 @@ function Contenu({ lignes }: { lignes: string[] }) {
   lignes.forEach((l, i) => {
     if (l.startsWith("- ")) { puces.push(l.slice(2)); return; }
     viderPuces(`${i}`);
-    if (l.startsWith("## ")) blocs.push(<h4 key={i} className="mt-4 mb-1 text-sm font-bold uppercase tracking-wide text-copper">{l.slice(3)}</h4>);
-    else blocs.push(<p key={i} className="my-2 text-sm leading-relaxed text-slate-700">{inline(l, `p-${i}`)}</p>);
+    if (l.startsWith("## ")) blocs.push(
+      <h4 key={i} className="mt-6 mb-2 flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-copper first:mt-0">
+        <span className="h-4 w-1 shrink-0 rounded-full bg-copper" />{l.slice(3)}
+      </h4>,
+    );
+    else blocs.push(<p key={i} className="my-3 text-[15px] leading-relaxed text-slate-700">{inline(l, `p-${i}`)}</p>);
   });
   viderPuces("fin");
   return <div>{blocs}</div>;
