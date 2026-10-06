@@ -1,10 +1,16 @@
 "use client";
 
-import { useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { MODULES_FORMATION, NIVEAUX_FORMATION, minutesModule, type ModuleFormation, type NiveauFormation } from "@/lib/formations";
 import { genererAttestationFormationPdf, nomFichierAttestation } from "@/lib/attestationFormationPdf";
+import { chargerProgresNego, sauverProgresNego } from "@/lib/formationProgres";
+import { EQUIPE } from "@/lib/equipe";
 
 const CLE_PROGRES = "formation:progres:v1";
+const CLE_NEGO = "formation:nego:v1";
+
+// Négociateurs qui suivent la formation (transaction + gestion).
+const APPRENANTS = EQUIPE.filter((m) => m.sections.some((s) => s === "transaction" || s === "gestion"));
 
 type Progres = Record<string, { lecons: number[]; quiz?: number }>;
 
@@ -25,12 +31,14 @@ function estValide(m: ModuleFormation, p: Progres): boolean {
   return !!e && (e.lecons?.length ?? 0) >= m.lecons.length && e.quiz === m.quiz.length;
 }
 
-function lireProgres(): Progres {
+// Clé de cache locale : propre à chaque négociateur (ou globale si aucun choisi).
+const cleLocale = (negoId: string) => (negoId ? `${CLE_PROGRES}:${negoId}` : CLE_PROGRES);
+function lireProgres(negoId: string): Progres {
   if (typeof window === "undefined") return {};
-  try { return JSON.parse(localStorage.getItem(CLE_PROGRES) ?? "{}") as Progres; } catch { return {}; }
+  try { return JSON.parse(localStorage.getItem(cleLocale(negoId)) ?? "{}") as Progres; } catch { return {}; }
 }
-function ecrireProgres(p: Progres) {
-  try { localStorage.setItem(CLE_PROGRES, JSON.stringify(p)); } catch { /* stockage indisponible */ }
+function ecrireProgres(negoId: string, p: Progres) {
+  try { localStorage.setItem(cleLocale(negoId), JSON.stringify(p)); } catch { /* stockage indisponible */ }
 }
 
 // Rendu « markdown léger » : "## " sous-titre, "- " puce, **gras** inline.
@@ -120,19 +128,17 @@ function Quiz({ module, onReussi }: { module: ModuleFormation; onReussi: (score:
   );
 }
 
-function VueModule({ module, progres, setProgres, onRetour }: {
-  module: ModuleFormation; progres: Progres; setProgres: (p: Progres) => void; onRetour: () => void;
+function VueModule({ module, progres, persister, onRetour }: {
+  module: ModuleFormation; progres: Progres; persister: (p: Progres) => void; onRetour: () => void;
 }) {
   const lus = progres[module.id]?.lecons ?? [];
   const basculerLu = (i: number) => {
     const set = new Set(lus);
     if (set.has(i)) set.delete(i); else set.add(i);
-    const p = { ...progres, [module.id]: { ...progres[module.id], lecons: [...set] } };
-    setProgres(p); ecrireProgres(p);
+    persister({ ...progres, [module.id]: { ...progres[module.id], lecons: [...set] } });
   };
   const noterQuiz = (score: number) => {
-    const p = { ...progres, [module.id]: { lecons: progres[module.id]?.lecons ?? [], quiz: score } };
-    setProgres(p); ecrireProgres(p);
+    persister({ ...progres, [module.id]: { lecons: progres[module.id]?.lecons ?? [], quiz: score } });
   };
   return (
     <div>
@@ -174,11 +180,39 @@ function VueModule({ module, progres, setProgres, onRetour }: {
 }
 
 export default function FormationPage({ onRetour }: { onRetour: () => void }) {
-  const [progres, setProgres] = useState<Progres>(() => lireProgres());
+  const [negoId, setNegoId] = useState<string>(() => { try { return localStorage.getItem(CLE_NEGO) ?? ""; } catch { return ""; } });
+  const [progres, setProgres] = useState<Progres>(() => { try { return lireProgres(localStorage.getItem(CLE_NEGO) ?? ""); } catch { return {}; } });
   const [ouvert, setOuvert] = useState<ModuleFormation | null>(null);
   const [filtre, setFiltre] = useState<"" | "Commercial" | "Transaction" | "Juridique">("");
   const [niveau, setNiveau] = useState<"" | NiveauFormation>("");
   const [genAttest, setGenAttest] = useState(false);
+  const [sync, setSync] = useState<"" | "charge" | "ok">("");
+
+  // Enregistre la progression : cache local immédiat + serveur si un négociateur est choisi.
+  const persister = (p: Progres) => {
+    setProgres(p);
+    ecrireProgres(negoId, p);
+    if (negoId) { setSync("ok"); void sauverProgresNego(negoId, p); }
+  };
+
+  // Changement de négociateur : charge SA progression (le serveur fait foi).
+  useEffect(() => {
+    try { if (negoId) localStorage.setItem(CLE_NEGO, negoId); else localStorage.removeItem(CLE_NEGO); } catch { /* ignore */ }
+    if (!negoId) { setProgres(lireProgres("")); setSync(""); return; }
+    setProgres(lireProgres(negoId)); // cache local instantané
+    let annule = false;
+    setSync("charge");
+    void (async () => {
+      const serveur = await chargerProgresNego(negoId);
+      if (annule) return;
+      const local = lireProgres(negoId);
+      const vide = (o: Progres) => Object.keys(o).length === 0;
+      if (vide(serveur) && !vide(local)) { setProgres(local); void sauverProgresNego(negoId, local); }
+      else { setProgres(serveur); ecrireProgres(negoId, serveur); }
+      setSync("ok");
+    })();
+    return () => { annule = true; };
+  }, [negoId]);
 
   const avancement = (m: ModuleFormation) => {
     const p = progres[m.id];
@@ -242,7 +276,7 @@ export default function FormationPage({ onRetour }: { onRetour: () => void }) {
   };
 
   if (ouvert) {
-    return <VueModule module={ouvert} progres={progres} setProgres={setProgres} onRetour={() => setOuvert(null)} />;
+    return <VueModule module={ouvert} progres={progres} persister={persister} onRetour={() => setOuvert(null)} />;
   }
 
   const modules = MODULES_FORMATION.filter((m) => (!filtre || m.categorie === filtre) && (!niveau || m.niveau === niveau));
@@ -252,9 +286,27 @@ export default function FormationPage({ onRetour }: { onRetour: () => void }) {
       <div className="mb-4 flex flex-wrap items-center gap-3">
         <button onClick={onRetour} className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-100">← Accueil</button>
         <h2 className="text-2xl font-bold text-navy">🎓 Centre de formation</h2>
+        <div className="ml-auto flex items-center gap-2">
+          <label className="text-xs font-semibold text-slate-500">Je suis</label>
+          <select
+            value={negoId}
+            onChange={(e) => setNegoId(e.target.value)}
+            className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-semibold text-navy shadow-sm focus:border-copper focus:outline-none"
+          >
+            <option value="">— Sélectionner —</option>
+            {APPRENANTS.map((m) => (<option key={m.id} value={m.id}>{m.nom}</option>))}
+          </select>
+          {negoId && <span className="text-[11px] font-semibold text-emerald-600">{sync === "charge" ? "Synchronisation…" : "✓ Suivi enregistré"}</span>}
+        </div>
       </div>
 
-      <p className="mb-4 text-sm text-slate-500">Montez en compétence sur le métier : techniques commerciales de haut niveau et cadre légal (loi ALUR, Tracfin, compromis, fiscalité…). Chaque module se termine par un quiz. Votre progression est enregistrée sur cet appareil.</p>
+      {!negoId && (
+        <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+          Sélectionnez votre nom (en haut à droite) pour que <strong>votre progression soit enregistrée et visible par la direction</strong> dans « Suivi des négociateurs ». Sans sélection, elle reste uniquement sur cet appareil.
+        </div>
+      )}
+
+      <p className="mb-4 text-sm text-slate-500">Montez en compétence sur le métier : techniques commerciales de haut niveau et cadre légal (loi ALUR, Tracfin, compromis, fiscalité…). Chaque module se termine par un quiz. {negoId ? "Votre progression est enregistrée et synchronisée pour le suivi d'équipe." : "Votre progression est enregistrée sur cet appareil."}</p>
 
       {/* Tableau de bord de progression */}
       <div className="mb-5 rounded-2xl border border-slate-200 bg-gradient-to-br from-navy to-navy/90 p-5 text-white shadow-sm">

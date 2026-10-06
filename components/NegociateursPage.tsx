@@ -9,6 +9,8 @@ import { listChasse, type FicheChasse } from "@/lib/chasse";
 import { listTournees, type Tournee } from "@/lib/prospection";
 import { EQUIPE, ASSISTANTE, membreDepuisNom, estNonPersonne } from "@/lib/equipe";
 import { estDossierVendeurComplet } from "@/lib/docTypes";
+import { MODULES_FORMATION } from "@/lib/formations";
+import { listerProgresNego, statsFormation, type ProgresFormation } from "@/lib/formationProgres";
 
 const norm = (s?: string) => (s ?? "").trim().toLowerCase().replace(/\s+/g, " ");
 const estGenerique = (k: string) => !k || k === "—" || k === "-" || k === "n/a" || k === "na";
@@ -51,19 +53,21 @@ export default function NegociateursPage({ onRetour }: { onRetour: () => void })
   const [appels, setAppels] = useState<AppelEntry[]>([]);
   const [chasses, setChasses] = useState<FicheChasse[]>([]);
   const [tournees, setTournees] = useState<Tournee[]>([]);
+  const [formation, setFormation] = useState<Record<string, ProgresFormation>>({});
   const [chargement, setChargement] = useState(true);
   const [periode, setPeriode] = useState<number>(30);
   const [tri, setTri] = useState<ColKey>("estimations");
 
   const recharger = async () => {
-    const [l, c, e, d, r, ch, tn] = await Promise.all([
+    const [l, c, e, d, r, ch, tn, fo] = await Promise.all([
       listLeads(), listClients(),
       listEstimations().catch(() => []), listDocuments().catch(() => []),
       listRegistre().catch(() => ({ entrees: [] as AppelEntry[], mois: [] })),
       listChasse().catch(() => []), listTournees().catch(() => []),
+      listerProgresNego().catch(() => ({} as Record<string, ProgresFormation>)),
     ]);
     setLeads(l); setClients(c); setEstims(e); setDocs(d); setAppels(r.entrees);
-    setChasses(ch); setTournees(tn);
+    setChasses(ch); setTournees(tn); setFormation(fo);
     setChargement(false);
   };
   useEffect(() => {
@@ -161,6 +165,19 @@ export default function NegociateursPage({ onRetour }: { onRetour: () => void })
     return t;
   }, [rows]);
 
+  // Avancement formation par négociateur (indépendant de la période : c'est un cumul).
+  const formationRows = useMemo(() => {
+    const apprenants = EQUIPE.filter((m) => m.sections.some((s) => s === "transaction" || s === "gestion"));
+    const ids = new Set(apprenants.map((m) => m.id));
+    // Inclut aussi toute personne ayant une progression enregistrée (ex. un id ajouté plus tard).
+    const extra = Object.keys(formation).filter((id) => !ids.has(id)).map((id) => EQUIPE.find((m) => m.id === id)).filter(Boolean) as typeof apprenants;
+    return [...apprenants, ...extra]
+      .map((m) => ({ id: m.id, nom: m.nom, role: m.role, stats: statsFormation(formation[m.id] ?? {}) }))
+      .sort((a, b) => b.stats.globalPct - a.stats.globalPct || b.stats.valides - a.stats.valides || a.nom.localeCompare(b.nom));
+  }, [formation]);
+  const nbModules = MODULES_FORMATION.length;
+  const fmtHeures = (min: number) => { const h = Math.floor(min / 60), r = min % 60; return h > 0 ? `${h} h${r > 0 ? ` ${String(r).padStart(2, "0")}` : ""}` : `${r} min`; };
+
   return (
     <div>
       <div className="mb-4 flex flex-wrap items-center gap-3">
@@ -226,6 +243,52 @@ export default function NegociateursPage({ onRetour }: { onRetour: () => void })
             de la timeline), les <strong>biens en chasse</strong>, les <strong>tournées de prospection</strong> et les <strong>appels du registre</strong> (par destinataire). Cliquez sur une colonne pour trier. Astuce : saisissez
             toujours le <strong>même nom de négociateur</strong> pour un regroupement parfait.
           </p>
+
+          {/* Avancement formation par négociateur */}
+          <div className="mt-8">
+            <div className="mb-3 flex flex-wrap items-center gap-2">
+              <h3 className="text-lg font-bold text-navy">🎓 Formation — avancement par négociateur</h3>
+              <span className="text-xs text-slate-400">cumul (hors période) · {nbModules} modules au catalogue</span>
+            </div>
+            <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-sm">
+              <table className="w-full min-w-[720px] text-sm">
+                <thead>
+                  <tr className="border-b border-slate-200 bg-slate-50 text-left">
+                    <th className="sticky left-0 z-10 bg-slate-50 px-4 py-2.5 font-bold text-navy">Négociateur</th>
+                    <th className="px-3 py-2.5 text-left font-semibold text-slate-600">Progression</th>
+                    <th className="px-3 py-2.5 text-center font-semibold text-slate-600">Modules validés</th>
+                    <th className="px-3 py-2.5 text-center font-semibold text-slate-600">Terminés</th>
+                    <th className="px-3 py-2.5 text-center font-semibold text-slate-600">Quiz réussis</th>
+                    <th className="px-3 py-2.5 text-center font-semibold text-slate-600">Heures validées</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {formationRows.map((r) => (
+                    <tr key={r.id} className="border-b border-slate-100 hover:bg-slate-50/60">
+                      <td className="sticky left-0 z-10 bg-white px-4 py-2.5">
+                        <div className="font-bold text-navy">{r.nom}</div>
+                        {r.role && <div className="text-[11px] font-medium text-slate-400">{r.role}</div>}
+                      </td>
+                      <td className="px-3 py-2.5">
+                        <div className="flex items-center gap-2">
+                          <div className="h-2 w-28 overflow-hidden rounded-full bg-slate-100"><div className={`h-full rounded-full ${r.stats.globalPct === 100 ? "bg-emerald-500" : "bg-copper"}`} style={{ width: `${r.stats.globalPct}%` }} /></div>
+                          <span className="w-9 text-right text-xs font-bold text-navy">{r.stats.globalPct}%</span>
+                        </div>
+                      </td>
+                      <td className="px-3 py-2.5 text-center font-bold text-copper">{r.stats.valides}<span className="text-xs font-normal text-slate-400">/{nbModules}</span></td>
+                      <td className="px-3 py-2.5 text-center text-slate-700">{r.stats.termines || <span className="text-slate-300">0</span>}</td>
+                      <td className="px-3 py-2.5 text-center text-slate-700">{r.stats.quizReussis || <span className="text-slate-300">0</span>}</td>
+                      <td className="px-3 py-2.5 text-center text-slate-700">{r.stats.minutesValidees > 0 ? fmtHeures(r.stats.minutesValidees) : <span className="text-slate-300">—</span>}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <p className="mt-3 text-xs text-slate-400">
+              Chaque négociateur sélectionne son nom dans le <strong>Centre de formation</strong> ; sa progression se synchronise ici automatiquement.
+              Un module est <strong>validé</strong> quand toutes ses leçons sont lues et le quiz réussi à 100 % — c'est ce qui compte pour l'<strong>attestation ALUR</strong> et les heures validées.
+            </p>
+          </div>
         </>
       )}
     </div>
