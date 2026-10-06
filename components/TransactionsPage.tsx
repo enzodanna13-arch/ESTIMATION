@@ -34,6 +34,7 @@ export default function TransactionsPage({ onRetour }: { onRetour: () => void })
   const [factures, setFactures] = useState<DocHistoryMeta[] | null>(null);
   const [busyFacture, setBusyFacture] = useState(false);
   const [etatIA, setEtatIA] = useState<string | null>(null); // progression analyse attestation
+  const [dragListe, setDragListe] = useState(false); // dépôt d'attestation sur la liste
 
   const recharger = () => listTransactions().then(setListe).catch(() => setListe([]));
   useEffect(() => { void recharger(); }, []);
@@ -127,6 +128,19 @@ export default function TransactionsPage({ onRetour }: { onRetour: () => void })
           <span className="inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-copper/40 border-t-copper" />{etatIA}
         </p>
       )}
+
+      {/* Zone de dépôt : glisser une attestation pour créer la transaction par IA */}
+      <div
+        className={`mb-4 rounded-2xl border-2 border-dashed p-5 text-center text-sm transition ${dragListe ? "border-copper bg-copper-soft/40 text-copper" : "border-slate-300 bg-slate-50 text-slate-500"} ${etatIA ? "opacity-60" : ""}`}
+        onDragOver={(e) => { e.preventDefault(); setDragListe(true); }}
+        onDragEnter={(e) => { e.preventDefault(); setDragListe(true); }}
+        onDragLeave={(e) => { e.preventDefault(); setDragListe(false); }}
+        onDrop={(e) => { e.preventDefault(); setDragListe(false); if (!etatIA) void creerDepuisAttestation(e.dataTransfer.files); }}
+      >
+        {dragListe
+          ? <span className="font-bold">Relâchez : l'IA crée la transaction depuis l'attestation</span>
+          : <><strong>🪄 Glissez ici une attestation de vente</strong> pour créer automatiquement la transaction (l'IA remplit le dossier et attache le PDF).</>}
+      </div>
       <p className="mb-4 text-sm text-slate-500">Vos ventes réalisées, avec les pièces de clôture : <strong>attestation du notaire</strong>, <strong>facture d'agence</strong>, acte, compromis… Créez une transaction de zéro, <strong>à partir d'une facture générée</strong>, ou <strong>en déposant l'attestation de vente</strong> : l'IA l'analyse et remplit le dossier toute seule.</p>
 
       {picker && (
