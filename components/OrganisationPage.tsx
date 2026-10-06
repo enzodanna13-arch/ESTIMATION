@@ -2,20 +2,26 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { EQUIPE } from "@/lib/equipe";
-import { chargerOrg, sauverJour, listerOrg, construirePlan, niveauDe, totalRdv, LABEL_NIVEAU, dateJour, type JoursOrg, type PlanJour, type RdvJour, type TacheOrg, type OrgNego } from "@/lib/organisation";
+import { chargerOrg, sauverJour, listerOrg, construirePlan, niveauDe, totalRdv, LABEL_NIVEAU, dateJour, recapRdv, cumulRdv, debutSemaineISO, debutMoisISO, type JoursOrg, type PlanJour, type RdvJour, type TacheOrg, type OrgNego } from "@/lib/organisation";
 
 const CLE_NEGO = "organisation:nego:v1";
 const APPRENANTS = EQUIPE.filter((m) => m.sections.some((s) => s === "transaction" || s === "gestion"));
 
 const CAT_STYLE: Record<string, string> = {
-  Socle: "bg-slate-200 text-slate-600",
-  Prospection: "bg-blue-100 text-blue-700",
   Chasse: "bg-amber-100 text-amber-700",
+  Identification: "bg-blue-100 text-blue-700",
   Phoning: "bg-emerald-100 text-emerald-700",
-  Suivi: "bg-violet-100 text-violet-700",
+  Prospection: "bg-violet-100 text-violet-700",
   Formation: "bg-copper/15 text-copper",
 };
-const ORDRE_CAT = ["Socle", "Prospection", "Chasse", "Phoning", "Suivi", "Formation"];
+const CAT_AIDE: Record<string, string> = {
+  Chasse: "Démarchage des vendeurs sur le terrain",
+  Identification: "Trouver des biens à la vente",
+  Phoning: "Relance de la base (estimations, mandats, acquéreurs)",
+  Prospection: "Prospection ciblée via le CRM",
+  Formation: "Monter en compétences",
+};
+const ORDRE_CAT = ["Chasse", "Identification", "Phoning", "Prospection", "Formation"];
 
 const fmtJour = (iso: string) => { try { return new Date(iso + "T12:00:00").toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" }); } catch { return iso; } };
 
@@ -143,7 +149,7 @@ export default function OrganisationPage({ onRetour }: { onRetour: () => void })
               <div className="space-y-4">
                 {groupes.map(({ cat, taches }) => (
                   <div key={cat}>
-                    <div className="mb-1.5 flex items-center gap-2"><span className={`rounded-full px-2 py-0.5 text-[11px] font-bold ${CAT_STYLE[cat] ?? "bg-slate-100 text-slate-600"}`}>{cat}</span></div>
+                    <div className="mb-1.5 flex flex-wrap items-center gap-2"><span className={`rounded-full px-2 py-0.5 text-[11px] font-bold ${CAT_STYLE[cat] ?? "bg-slate-100 text-slate-600"}`}>{cat}</span>{CAT_AIDE[cat] && <span className="text-[11px] text-slate-400">{CAT_AIDE[cat]}</span>}</div>
                     <div className="space-y-1.5">
                       {taches.map((t) => (
                         <button key={t.id} onClick={() => basculer(t.id)} className={`flex w-full items-center gap-3 rounded-xl border px-3 py-2.5 text-left text-sm transition ${t.fait ? "border-emerald-200 bg-emerald-50 text-slate-500 line-through" : "border-slate-200 bg-white text-slate-700 hover:border-copper/40 hover:bg-slate-50"}`}>
@@ -156,11 +162,61 @@ export default function OrganisationPage({ onRetour }: { onRetour: () => void })
                 ))}
               </div>
               {stats.pct === 100 && <div className="mt-4 rounded-xl bg-emerald-50 p-3 text-center text-sm font-bold text-emerald-700">🎉 Journée bouclée — bravo !</div>}
-              <p className="mt-3 text-[11px] text-slate-400">Le socle est à faire tous les jours. Les tâches de prospection/formation sont dosées selon tes RDV pour ne pas te surcharger.</p>
+              <p className="mt-3 text-[11px] text-slate-400">Chasse, identification, phoning, prospection et formation sont dosées selon tes RDV du jour pour ne pas te surcharger.</p>
             </>
           )}
+
+          <RecapRdv jours={jours} />
         </>
       )}
+    </div>
+  );
+}
+
+// Récapitulatif des RDV saisis — traçabilité pour le négociateur.
+function RecapRdv({ jours }: { jours: JoursOrg }) {
+  const hist = useMemo(() => recapRdv(jours), [jours]);
+  const sem = useMemo(() => cumulRdv(jours, debutSemaineISO()), [jours]);
+  const mois = useMemo(() => cumulRdv(jours, debutMoisISO()), [jours]);
+  if (hist.length === 0) return null;
+  const tuile = (titre: string, c: { visites: number; r1: number; r2: number; total: number }) => (
+    <div className="rounded-xl border border-slate-200 bg-white p-3 text-center shadow-sm">
+      <div className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">{titre}</div>
+      <div className="mt-0.5 text-2xl font-black text-navy">{c.total}</div>
+      <div className="text-[11px] text-slate-500">{c.visites} visite(s) · {c.r1} R1 · {c.r2} R2</div>
+    </div>
+  );
+  return (
+    <div className="mt-8">
+      <h3 className="mb-2 text-sm font-bold text-navy">📊 Récap de mes RDV</h3>
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+        {tuile("Cette semaine", sem)}
+        {tuile("Ce mois", mois)}
+        <div className="col-span-2 rounded-xl border border-slate-200 bg-slate-50 p-3 text-center sm:col-span-1">
+          <div className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">Jours renseignés</div>
+          <div className="mt-0.5 text-2xl font-black text-navy">{hist.length}</div>
+          <div className="text-[11px] text-slate-500">derniers 120 jours</div>
+        </div>
+      </div>
+      <div className="mt-3 overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-sm">
+        <table className="w-full min-w-[420px] text-sm">
+          <thead><tr className="border-b border-slate-200 bg-slate-50 text-left text-xs font-semibold text-slate-500">
+            <th className="px-4 py-2">Jour</th><th className="px-3 py-2 text-center">Visites</th><th className="px-3 py-2 text-center">R1</th><th className="px-3 py-2 text-center">R2</th><th className="px-3 py-2 text-center">Total</th>
+          </tr></thead>
+          <tbody>
+            {hist.slice(0, 14).map((r) => (
+              <tr key={r.date} className="border-b border-slate-100">
+                <td className="px-4 py-2 font-medium capitalize text-slate-700">{fmtJour(r.date)}</td>
+                <td className="px-3 py-2 text-center text-slate-600">{r.rdv.visites}</td>
+                <td className="px-3 py-2 text-center text-slate-600">{r.rdv.r1}</td>
+                <td className="px-3 py-2 text-center text-slate-600">{r.rdv.r2}</td>
+                <td className="px-3 py-2 text-center font-bold text-copper">{r.total}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p className="mt-2 text-[11px] text-slate-400">Chaque jour où tu saisis tes RDV est archivé ici — ta direction a la même visibilité.</p>
     </div>
   );
 }
@@ -169,12 +225,14 @@ function VueEquipe({ equipe, aujd, onFermer }: { equipe: OrgNego[]; aujd: string
   const rows = useMemo(() => {
     const parId = new Map(equipe.map((o) => [o.negoId, o]));
     const ids = new Set(APPRENANTS.map((m) => m.id)); for (const o of equipe) ids.add(o.negoId);
+    const lundi = debutSemaineISO(); const prem = debutMoisISO();
     return [...ids].map((id) => {
       const membre = EQUIPE.find((m) => m.id === id);
-      const plan = parId.get(id)?.jours?.[aujd];
+      const jours = parId.get(id)?.jours ?? {};
+      const plan = jours[aujd];
       const faites = plan ? plan.taches.filter((t) => t.fait).length : 0;
       const total = plan ? plan.taches.length : 0;
-      return { id, nom: membre?.nom ?? id, plan, faites, total, pct: total ? Math.round((faites / total) * 100) : 0 };
+      return { id, nom: membre?.nom ?? id, plan, faites, total, pct: total ? Math.round((faites / total) * 100) : 0, sem: cumulRdv(jours, lundi), mois: cumulRdv(jours, prem) };
     }).sort((a, b) => b.pct - a.pct || a.nom.localeCompare(b.nom));
   }, [equipe, aujd]);
 
@@ -185,9 +243,9 @@ function VueEquipe({ equipe, aujd, onFermer }: { equipe: OrgNego[]; aujd: string
         <button onClick={onFermer} className="ml-auto rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 transition hover:bg-slate-50">← Mon organisation</button>
       </div>
       <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-sm">
-        <table className="w-full min-w-[640px] text-sm">
+        <table className="w-full min-w-[820px] text-sm">
           <thead><tr className="border-b border-slate-200 bg-slate-50 text-left text-xs font-semibold text-slate-500">
-            <th className="px-4 py-2.5">Négociateur</th><th className="px-3 py-2.5 text-center">RDV (V/R1/R2)</th><th className="px-3 py-2.5 text-left">Tâches du jour</th><th className="px-3 py-2.5 text-center">Avancement</th>
+            <th className="px-4 py-2.5">Négociateur</th><th className="px-3 py-2.5 text-center">RDV du jour (V/R1/R2)</th><th className="px-3 py-2.5 text-left">Tâches du jour</th><th className="px-3 py-2.5 text-center">Avancement</th><th className="px-3 py-2.5 text-center">RDV semaine</th><th className="px-3 py-2.5 text-center">RDV mois</th>
           </tr></thead>
           <tbody>
             {rows.map((r) => (
@@ -200,12 +258,14 @@ function VueEquipe({ equipe, aujd, onFermer }: { equipe: OrgNego[]; aujd: string
                   ) : <span className="text-xs text-slate-400">journée non démarrée</span>}
                 </td>
                 <td className="px-3 py-2.5 text-center font-bold text-copper">{r.plan ? `${r.pct}%` : <span className="text-slate-300">—</span>}</td>
+                <td className="px-3 py-2.5 text-center text-slate-700"><strong>{r.sem.total}</strong> <span className="text-[11px] text-slate-400">({r.sem.nbJours}j)</span></td>
+                <td className="px-3 py-2.5 text-center text-slate-700"><strong>{r.mois.total}</strong> <span className="text-[11px] text-slate-400">({r.mois.nbJours}j)</span></td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
-      <p className="mt-3 text-xs text-slate-400">Avancement des tâches du jour par négociateur (mis à jour en temps réel).</p>
+      <p className="mt-3 text-xs text-slate-400">Avancement des tâches du jour et cumul des RDV saisis (semaine / mois) par négociateur — traçabilité en temps réel.</p>
     </div>
   );
 }

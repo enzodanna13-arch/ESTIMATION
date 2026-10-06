@@ -28,32 +28,71 @@ export const LABEL_NIVEAU: Record<Niveau, string> = {
   leger: "Journée chargée en RDV (allégée)",
 };
 
-// Dosage des tâches selon la charge de RDV.
-const PROFILS: Record<Niveau, { pige: number; ident: number; appels: number; relance: number; form: number }> = {
-  intensif: { pige: 10, ident: 5, appels: 30, relance: 8, form: 1 },
-  equilibre: { pige: 6, ident: 3, appels: 20, relance: 5, form: 1 },
-  leger: { pige: 3, ident: 1, appels: 10, relance: 3, form: 0 },
+// Les 5 familles de tâches (ordre d'affichage).
+export const CATEGORIES = ["Chasse", "Identification", "Phoning", "Prospection", "Formation"] as const;
+
+// Dosage des tâches selon la charge de RDV : plus il y a de RDV, moins de tâches
+// terrain pour laisser le temps de les assurer.
+const PROFILS: Record<Niveau, { chasse: number; ident: number; phoning: number; prospection: number; form: number }> = {
+  intensif: { chasse: 10, ident: 5, phoning: 30, prospection: 2, form: 1 },
+  equilibre: { chasse: 6, ident: 3, phoning: 20, prospection: 1, form: 1 },
+  leger: { chasse: 3, ident: 1, phoning: 10, prospection: 1, form: 0 },
 };
 
 export function genererTaches(rdv: RdvJour): TacheOrg[] {
   const P = PROFILS[niveauDe(rdv)];
   const T: TacheOrg[] = []; let i = 0;
   const add = (categorie: string, libelle: string, objectif?: number) => T.push({ id: `t${i++}`, categorie, libelle, objectif, fait: false });
-  // Socle non négociable (tous les jours)
-  add("Socle", "Traiter mes leads reçus et mes rappels du jour");
-  add("Socle", "Mettre à jour mon CRM (statuts, suivis, notes)");
-  add("Socle", "Préparer mes RDV du jour (dossiers, itinéraire)");
-  // Prospection & chasse (dosé)
-  add("Prospection", `Piger ${P.pige} nouveaux biens`, P.pige);
-  add("Chasse", `Identifier ${P.ident} propriétaire(s) de biens repérés`, P.ident);
-  add("Phoning", `Passer ${P.appels} appels de phoning`, P.appels);
-  add("Suivi", `Relancer ${P.relance} contacts du portefeuille`, P.relance);
+  // Chasse : démarchage des vendeurs sur le terrain.
+  add("Chasse", `Démarcher ${P.chasse} vendeur(s) sur le terrain (porte-à-porte, boîtage, contact direct)`, P.chasse);
+  // Identification : trouver des biens à la vente.
+  add("Identification", `Identifier ${P.ident} bien(s) à vendre (annonces, panneaux, bouche-à-oreille)`, P.ident);
+  // Phoning : relance de la base (estimations, mandats, acquéreurs…).
+  add("Phoning", `Relancer ${P.phoning} contact(s) de la base phoning (estimations, mandats, acquéreurs)`, P.phoning);
+  // Prospection ciblée via l'outil CRM.
+  add("Prospection", `Travailler ${P.prospection} secteur(s) de prospection ciblée (CRM : propriétaires, DVF)`, P.prospection);
+  // Formation.
   if (P.form > 0) add("Formation", `Avancer ${P.form} leçon(s) du centre de formation`, P.form);
   return T;
 }
 
 export function construirePlan(date: string, rdv: RdvJour): PlanJour {
   return { date, rdv, niveau: niveauDe(rdv), taches: genererTaches(rdv) };
+}
+
+// --- Traçabilité des RDV ---
+// Chaque jour le négociateur saisit ses RDV ; on en garde l'historique pour le
+// suivi (côté négociateur et côté manager).
+export interface RecapJour { date: string; rdv: RdvJour; total: number; }
+export interface CumulRdv { visites: number; r1: number; r2: number; total: number; nbJours: number; }
+
+// Historique des RDV, du plus récent au plus ancien.
+export function recapRdv(jours: JoursOrg): RecapJour[] {
+  return Object.values(jours)
+    .map((p) => ({ date: p.date, rdv: p.rdv, total: totalRdv(p.rdv) }))
+    .sort((a, b) => b.date.localeCompare(a.date));
+}
+
+// Cumul des RDV sur les jours >= depuisInclus (yyyy-mm-dd). Sans borne : tout.
+export function cumulRdv(jours: JoursOrg, depuisInclus = ""): CumulRdv {
+  const c: CumulRdv = { visites: 0, r1: 0, r2: 0, total: 0, nbJours: 0 };
+  for (const p of Object.values(jours)) {
+    if (depuisInclus && p.date < depuisInclus) continue;
+    c.visites += p.rdv.visites || 0; c.r1 += p.rdv.r1 || 0; c.r2 += p.rdv.r2 || 0; c.nbJours += 1;
+  }
+  c.total = c.visites + c.r1 + c.r2;
+  return c;
+}
+
+const pad = (n: number) => String(n).padStart(2, "0");
+// Lundi de la semaine en cours (yyyy-mm-dd).
+export function debutSemaineISO(ref = new Date()): string {
+  const d = new Date(ref); const lundi = (d.getDay() + 6) % 7; d.setDate(d.getDate() - lundi);
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+}
+// Premier jour du mois en cours (yyyy-mm-dd).
+export function debutMoisISO(ref = new Date()): string {
+  const d = new Date(ref); return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-01`;
 }
 
 // --- API serveur ---
