@@ -70,6 +70,16 @@ function parseCSV(texte: string): { headers: string[]; rows: string[][] } {
   if (!clean.length) return { headers: [], rows: [] };
   return { headers: clean[0].map((h) => h.trim()), rows: clean.slice(1) };
 }
+// Les notes importées sont de la forme "Label : valeur · Label : valeur …".
+// On les éclate pour un affichage propre (puces label/valeur).
+function parseInfos(notes: string): { label: string; value: string }[] {
+  if (!notes) return [];
+  return notes.split(" · ").map((seg) => {
+    const i = seg.indexOf(" : ");
+    return i > 0 ? { label: seg.slice(0, i).trim(), value: seg.slice(i + 3).trim() } : { label: "", value: seg.trim() };
+  }).filter((x) => x.value);
+}
+
 function guessCol(headers: string[], mots: string[], exclure: string[] = []): number {
   for (let i = 0; i < headers.length; i++) {
     const h = headers[i].toLowerCase();
@@ -277,6 +287,11 @@ export default function PhoningPage({ onRetour, estAdmin = false }: { onRetour: 
   const [celebr, setCelebr] = useState<string | null>(null);
   const [editeur, setEditeur] = useState(false);
   const [importOuvert, setImportOuvert] = useState(false);
+  // Affichage de la liste : recherche, filtre « à appeler », pagination, édition note.
+  const [q, setQ] = useState("");
+  const [aAppelerSeul, setAAppelerSeul] = useState(false);
+  const [limite, setLimite] = useState(40);
+  const [noteOuverte, setNoteOuverte] = useState<string | null>(null);
 
   const estManager = (EQUIPE.find((m) => m.id === negoId)?.role ?? "").toLowerCase().includes("responsable");
 
@@ -380,6 +395,19 @@ export default function PhoningPage({ onRetour, estAdmin = false }: { onRetour: 
   const stCible = useMemo(() => statsLignes(lignes), [lignes]);
   const stGlobal = useMemo(() => statsData(data), [data]);
 
+  // Liste filtrée (recherche + « à appeler ») et paginée pour rester fluide.
+  const lignesFiltrees = useMemo(() => {
+    const s = q.trim().toLowerCase();
+    return lignes.filter((l) => {
+      if (aAppelerSeul && l.statut && l.statut !== "À appeler") return false;
+      if (s && !`${l.contact} ${l.tel} ${l.notes}`.toLowerCase().includes(s)) return false;
+      return true;
+    });
+  }, [lignes, q, aAppelerSeul]);
+  const visibles = lignesFiltrees.slice(0, limite);
+  // Repart du haut quand la recherche, le filtre ou la cible changent.
+  useEffect(() => { setLimite(40); }, [q, aAppelerSeul, cible]);
+
   // Vue équipe (manager)
   useEffect(() => {
     if (!vueEquipe) return;
@@ -389,7 +417,6 @@ export default function PhoningPage({ onRetour, estAdmin = false }: { onRetour: 
   }, [vueEquipe]);
 
   const scriptCourant = SCRIPTS_PHONING.find((s) => s.id === cible)!;
-  const inputCls = "w-full rounded-md border border-slate-200 bg-white px-2 py-1.5 text-sm focus:border-copper focus:outline-none";
 
   return (
     <div>
@@ -496,57 +523,70 @@ export default function PhoningPage({ onRetour, estAdmin = false }: { onRetour: 
                   <button onClick={ajouter} className="rounded-lg bg-navy px-3 py-1.5 text-sm font-bold text-white transition hover:brightness-110">+ Ajouter un contact</button>
                 </div>
               </div>
+              {/* Recherche + filtre (centaines de contacts) */}
+              {!chargement && lignes.length > 0 && (
+                <div className="mb-2 flex flex-wrap items-center gap-2">
+                  <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="🔍 Rechercher (nom, téléphone, ville, email…)" className="min-w-[180px] flex-1 rounded-lg border border-slate-200 px-3 py-1.5 text-sm focus:border-copper focus:outline-none" />
+                  <label className="flex items-center gap-1.5 text-xs font-semibold text-slate-600"><input type="checkbox" checked={aAppelerSeul} onChange={(e) => setAAppelerSeul(e.target.checked)} /> À appeler uniquement</label>
+                  <span className="text-xs text-slate-400">{lignesFiltrees.length} / {lignes.length}</span>
+                </div>
+              )}
               {chargement ? (
                 <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center text-slate-400">Chargement…</div>
               ) : lignes.length === 0 ? (
-                <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-8 text-center text-sm text-slate-400">Aucun contact pour cette cible. Cliquez sur « + Ajouter un contact » pour démarrer votre session de phoning.</div>
+                <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-8 text-center text-sm text-slate-400">Aucun contact pour cette cible. {base.length > 0 ? "Cliquez sur « 🗂️ Charger la base partagée » ou « + Ajouter un contact »." : "Cliquez sur « + Ajouter un contact » ou importez un fichier Excel/CSV."}</div>
+              ) : lignesFiltrees.length === 0 ? (
+                <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-8 text-center text-sm text-slate-400">Aucun contact ne correspond à « {q} ».</div>
               ) : (
-                <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-sm">
-                  <table className="w-full min-w-[880px] text-sm">
-                    <thead>
-                      <tr className="border-b border-slate-200 bg-slate-50 text-left text-xs font-semibold text-slate-500">
-                        <th className="px-2 py-2">Contact</th>
-                        <th className="px-2 py-2">Téléphone</th>
-                        <th className="px-2 py-2">Statut</th>
-                        <th className="px-2 py-2">Appelé le</th>
-                        <th className="px-2 py-2">Rappel le</th>
-                        <th className="px-2 py-2">Notes</th>
-                        <th className="px-2 py-2"></th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {lignes.map((l) => (
-                        <tr key={l.id} className="border-b border-slate-100 align-top">
-                          <td className="px-2 py-1.5"><input value={l.contact} onChange={(e) => modifier(l.id, { contact: e.target.value })} placeholder="Nom" className={inputCls} /></td>
-                          <td className="px-2 py-1.5">
-                            <div className="flex items-center gap-1">
-                              <input value={l.tel} onChange={(e) => modifier(l.id, { tel: e.target.value })} placeholder="Téléphone" className={inputCls} />
-                              {l.tel && <a href={`tel:${l.tel.replace(/\s+/g, "")}`} title="Appeler" className="shrink-0 rounded-md bg-emerald-500 px-2 py-1.5 text-xs text-white">📞</a>}
+                <>
+                  <div className="space-y-2">
+                    {visibles.map((l) => {
+                      const infos = parseInfos(l.notes);
+                      const sty = STYLE_STATUT[l.statut] ?? "bg-slate-100 text-slate-600";
+                      return (
+                        <div key={l.id} className="rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
+                          {/* En-tête : nom + téléphone + appel */}
+                          <div className="flex flex-wrap items-center gap-2">
+                            <input value={l.contact} onChange={(e) => modifier(l.id, { contact: e.target.value })} placeholder="Nom" className="min-w-[140px] flex-1 rounded-md border border-transparent bg-transparent px-1 py-0.5 text-[15px] font-bold text-navy hover:border-slate-200 focus:border-copper focus:outline-none" />
+                            <input value={l.tel} onChange={(e) => modifier(l.id, { tel: e.target.value })} placeholder="Téléphone" className="w-36 rounded-md border border-slate-200 px-2 py-1 text-sm focus:border-copper focus:outline-none" />
+                            {l.tel && <a href={`tel:${l.tel.replace(/\s+/g, "")}`} title="Appeler" className="shrink-0 rounded-md bg-emerald-500 px-2.5 py-1.5 text-sm text-white transition hover:brightness-110">📞</a>}
+                            <button onClick={() => supprimer(l.id)} title="Supprimer" className="shrink-0 rounded-md px-1.5 py-1 text-slate-300 transition hover:bg-red-50 hover:text-red-500">🗑</button>
+                          </div>
+                          {/* Infos contextuelles du bien (lecture) */}
+                          {infos.length > 0 && (
+                            <div className="mt-1.5 flex flex-wrap gap-x-3 gap-y-0.5 text-[12px] leading-snug">
+                              {infos.map((it, i) => (
+                                <span key={i}>{it.label && <span className="text-slate-400">{it.label} : </span>}<span className="font-medium text-slate-700">{it.value}</span></span>
+                              ))}
                             </div>
-                          </td>
-                          <td className="px-2 py-1.5">
-                            <div className="flex flex-col gap-1.5">
-                              <select value={l.statut} onChange={(e) => modifier(l.id, { statut: e.target.value })} className={`rounded-md border-0 px-2 py-1 text-[11px] font-semibold ${STYLE_STATUT[l.statut] ?? "bg-slate-100 text-slate-600"}`}>
-                                {STATUTS_PHONING.map((s) => <option key={s} value={s}>{s}</option>)}
-                              </select>
-                              <div className="flex gap-1">
-                                {ACTIONS.map((a) => (
-                                  <button key={a.label} onClick={() => pointer(l.id, a)} title={`Pointer : ${a.label}`} className={`flex h-7 w-7 items-center justify-center rounded-md border text-sm transition ${a.cls} ${l.statut === a.statut ? "ring-2 ring-copper ring-offset-1" : ""}`}>{a.icone}</button>
-                                ))}
-                              </div>
+                          )}
+                          {/* Actions : pointage rapide + statut + dates */}
+                          <div className="mt-2 flex flex-wrap items-center gap-2">
+                            <div className="flex gap-1">
+                              {ACTIONS.map((a) => (
+                                <button key={a.label} onClick={() => pointer(l.id, a)} title={`Pointer : ${a.label}`} className={`flex h-8 w-8 items-center justify-center rounded-md border text-base transition ${a.cls} ${l.statut === a.statut ? "ring-2 ring-copper ring-offset-1" : ""}`}>{a.icone}</button>
+                              ))}
                             </div>
-                          </td>
-                          <td className="px-2 py-1.5"><input type="date" value={toInput(l.date)} onChange={(e) => modifier(l.id, { date: fromInput(e.target.value) })} className={inputCls} /></td>
-                          <td className="px-2 py-1.5"><input type="date" value={toInput(l.rappel)} onChange={(e) => modifier(l.id, { rappel: fromInput(e.target.value) })} className={inputCls} /></td>
-                          <td className="px-2 py-1.5"><input value={l.notes} onChange={(e) => modifier(l.id, { notes: e.target.value })} placeholder="Notes…" className={inputCls} /></td>
-                          <td className="px-2 py-1.5 text-center"><button onClick={() => supprimer(l.id)} title="Supprimer" className="rounded-md px-2 py-1 text-slate-300 transition hover:bg-red-50 hover:text-red-500">🗑</button></td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                            <select value={l.statut} onChange={(e) => modifier(l.id, { statut: e.target.value })} className={`rounded-md border-0 px-2 py-1 text-[11px] font-semibold ${sty}`}>
+                              {STATUTS_PHONING.map((s) => <option key={s} value={s}>{s}</option>)}
+                            </select>
+                            <label className="flex items-center gap-1 text-[11px] text-slate-400">Appelé <input type="date" value={toInput(l.date)} onChange={(e) => modifier(l.id, { date: fromInput(e.target.value) })} className="rounded-md border border-slate-200 px-1.5 py-1 text-xs text-slate-600 focus:border-copper focus:outline-none" /></label>
+                            <label className="flex items-center gap-1 text-[11px] text-slate-400">Rappel <input type="date" value={toInput(l.rappel)} onChange={(e) => modifier(l.id, { rappel: fromInput(e.target.value) })} className="rounded-md border border-slate-200 px-1.5 py-1 text-xs text-slate-600 focus:border-copper focus:outline-none" /></label>
+                            <button onClick={() => setNoteOuverte((x) => (x === l.id ? null : l.id))} className="ml-auto rounded-md border border-slate-200 px-2 py-1 text-[11px] font-semibold text-slate-500 transition hover:bg-slate-50">✎ Note</button>
+                          </div>
+                          {noteOuverte === l.id && (
+                            <textarea value={l.notes} onChange={(e) => modifier(l.id, { notes: e.target.value })} rows={3} placeholder="Notes libres / infos du bien…" className="mt-2 w-full rounded-md border border-slate-200 p-2 text-xs leading-relaxed focus:border-copper focus:outline-none" />
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                  {lignesFiltrees.length > visibles.length && (
+                    <button onClick={() => setLimite((n) => n + 40)} className="mt-3 w-full rounded-xl border border-slate-200 bg-white py-2.5 text-sm font-bold text-slate-600 transition hover:bg-slate-50">Afficher plus ({lignesFiltrees.length - visibles.length} restant(s))</button>
+                  )}
+                </>
               )}
-              <p className="mt-2 text-[11px] text-slate-400">Enregistrement automatique. Changez le statut au fil des appels : tout est consolidé dans la « Vue équipe » pour la direction.</p>
+              <p className="mt-2 text-[11px] text-slate-400">Enregistrement automatique. Pointe le résultat d'appel (❌ / 📵 / ✅…) : tout est consolidé dans la « Vue équipe » pour la direction.</p>
             </div>
 
             {/* script à côté */}
