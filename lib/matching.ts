@@ -1,5 +1,6 @@
 import type { ClientDossier, RechercheImmo } from "./serverHistory";
 import type { EstimationReport, PropertyInput } from "./types";
+import type { FicheChasse } from "./serverChasse";
 
 // Moteur de RAPPROCHEMENT acquéreurs ⇄ biens — modulaire et « souple » :
 // chaque critère produit un sous-score dans [0,1] (jamais d'exclusion brutale
@@ -52,6 +53,28 @@ export function bienDepuisEstimation(input: PropertyInput, report?: EstimationRe
     cave: !!input.cave,
     dpe: (input.dpe ?? "").toUpperCase().slice(0, 1),
     travaux: (input.travauxAPrevoir ?? []).length > 0 || /rénover|travaux|rafraîch/i.test(input.etatGeneral ?? ""),
+  };
+}
+
+// Bien normalisé depuis une fiche de chasse (bien repéré à la vente).
+export function bienDepuisChasse(f: FicheChasse): BienCriteres {
+  return {
+    ville: f.ville ?? "",
+    codePostal: f.codePostal ?? "",
+    quartier: "",
+    typeBien: f.typeBien ?? "",
+    prix: f.prixAffiche > 0 ? f.prixAffiche : null,
+    surface: f.surface > 0 ? f.surface : null,
+    nbPieces: f.pieces > 0 ? f.pieces : null,
+    nbChambres: f.chambres > 0 ? f.chambres : null,
+    etage: null,
+    ascenseur: false,
+    exterieurs: [],
+    garage: false,
+    stationnement: false,
+    cave: false,
+    dpe: (f.dpe ?? "").toUpperCase().slice(0, 1),
+    travaux: false,
   };
 }
 

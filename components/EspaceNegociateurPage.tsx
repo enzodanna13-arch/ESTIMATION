@@ -5,6 +5,8 @@ import { listLeads, updateLead, deleteLead, STATUTS_LEAD, STATUT_LEAD_COULEURS, 
 import { listClients, createClient, type ClientDossier } from "@/lib/clients";
 import { STATUT_COULEURS } from "@/lib/acquereurs";
 import { listEstimations, type HistoryMeta } from "@/lib/history";
+import { listChasse, STATUT_CHASSE_COULEURS, type FicheChasse } from "@/lib/chasse";
+import { scorerRecherche, bienDepuisChasse, NIVEAUX, type NiveauMatch } from "@/lib/matching";
 import { EQUIPE, membreDepuisNom } from "@/lib/equipe";
 import { FicheLead } from "@/components/LeadsPage";
 
@@ -45,13 +47,14 @@ export default function EspaceNegociateurPage({ onRetour }: { onRetour: () => vo
   const [leads, setLeads] = useState<Lead[]>([]);
   const [clients, setClients] = useState<ClientDossier[]>([]);
   const [estims, setEstims] = useState<HistoryMeta[]>([]);
+  const [chasses, setChasses] = useState<FicheChasse[]>([]);
   const [chargement, setChargement] = useState(true);
-  const [onglet, setOnglet] = useState<"relance" | "leads" | "acquereurs" | "ventes" | "estimations">("relance");
+  const [onglet, setOnglet] = useState<"actions" | "relance" | "leads" | "acquereurs" | "ventes" | "estimations">("actions");
   const [copie, setCopie] = useState<string | null>(null);
 
   const recharger = async () => {
-    const [l, c, e] = await Promise.all([listLeads(), listClients(), listEstimations().catch(() => [])]);
-    setLeads(l); setClients(c); setEstims(e); setChargement(false);
+    const [l, c, e, ch] = await Promise.all([listLeads(), listClients(), listEstimations().catch(() => []), listChasse().catch(() => [])]);
+    setLeads(l); setClients(c); setEstims(e); setChasses(ch); setChargement(false);
   };
   useEffect(() => { void recharger(); }, []);
 
@@ -69,6 +72,30 @@ export default function EspaceNegociateurPage({ onRetour }: { onRetour: () => vo
       .sort((a, b) => (a.derniereInteraction ?? a.updatedAt) - (b.derniereInteraction ?? b.updatedAt));
     return { mesLeads, mesAcq, mesVentes, mesEstims, leadsRelance, dossiersRelance };
   }, [leads, clients, estims, membreId]);
+
+  // ACTIONS — rapprochements : mes acquéreurs ⇄ biens repérés en chasse (par moi
+  // ou un collègue). Ex. « Appeler M. X : correspond au bien chassé par Léa ».
+  const actions = useMemo(() => {
+    const fiches = chasses.filter((f) => !f.archived && f.statut !== "Écarté" && (f.prixAffiche > 0 || f.surface > 0));
+    const out: { fiche: FicheChasse; acq: ClientDossier; rechLibelle: string; score: number; niveau: NiveauMatch }[] = [];
+    for (const acq of data.mesAcq) {
+      const recherches = (acq.recherches ?? []).filter((r) => r.actif !== false);
+      if (recherches.length === 0) continue;
+      for (const f of fiches) {
+        const bien = bienDepuisChasse(f);
+        let best: { score: number; niveau: NiveauMatch; libelle: string } | null = null;
+        for (const r of recherches) {
+          const res = scorerRecherche(bien, r);
+          if (res.niveau && (!best || res.score > best.score)) best = { score: res.score, niveau: res.niveau, libelle: r.libelle || "Recherche" };
+        }
+        // On ne retient que les correspondances sérieuses (forte / intéressante).
+        if (best && (best.niveau === "forte" || best.niveau === "interessante")) {
+          out.push({ fiche: f, acq, rechLibelle: best.libelle, score: best.score, niveau: best.niveau });
+        }
+      }
+    }
+    return out.sort((a, b) => b.score - a.score);
+  }, [chasses, data.mesAcq]);
 
   const definirRelance = async (l: Lead, dans: number) => {
     const d = new Date(); d.setHours(9, 0, 0, 0); d.setDate(d.getDate() + dans);
@@ -140,6 +167,7 @@ export default function EspaceNegociateurPage({ onRetour }: { onRetour: () => vo
   );
 
   const ONGLETS: { id: typeof onglet; label: string; n: number }[] = [
+    { id: "actions", label: "🎯 Mes actions", n: actions.length },
     { id: "relance", label: "🔔 À relancer", n: data.leadsRelance.length + data.dossiersRelance.length },
     { id: "leads", label: "📥 Mes leads", n: data.mesLeads.length },
     { id: "acquereurs", label: "🔑 Mes acquéreurs", n: data.mesAcq.length },
@@ -169,8 +197,9 @@ export default function EspaceNegociateurPage({ onRetour }: { onRetour: () => vo
       ) : (
         <>
           {/* KPIs */}
-          <div className="mb-4 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
+          <div className="mb-4 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
             {[
+              { v: actions.length, l: "Actions à faire", a: "text-emerald-600" },
               { v: data.leadsRelance.length + data.dossiersRelance.length, l: "À relancer", a: "text-red-600" },
               { v: data.mesLeads.length, l: "Leads", a: "text-copper" },
               { v: data.mesAcq.length, l: "Acquéreurs", a: "text-blue-600" },
@@ -192,6 +221,41 @@ export default function EspaceNegociateurPage({ onRetour }: { onRetour: () => vo
               </button>
             ))}
           </div>
+
+          {/* MES ACTIONS — rapprochements acquéreur ⇄ bien repéré en chasse */}
+          {onglet === "actions" && (
+            <div className="space-y-2">
+              <p className="text-xs text-slate-500">Des biens repérés en chasse (par toi ou un collègue) correspondent à la recherche de tes acquéreurs : appelle-les pour leur proposer le bien.</p>
+              {actions.length === 0 ? (
+                <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center text-sm text-slate-400">Aucun rapprochement pour l&apos;instant. Dès qu&apos;un bien chassé collera à l&apos;un de tes acquéreurs, l&apos;action apparaîtra ici.</div>
+              ) : actions.map(({ fiche, acq, rechLibelle, score, niveau }) => {
+                const badgeCls = niveau === "forte" ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700";
+                const chasseur = membreDepuisNom(fiche.negociateur)?.nom ?? fiche.negociateur;
+                const parMoi = estMien(fiche.negociateur);
+                const bienTxt = [fiche.typeBien, fiche.surface > 0 ? `${fiche.surface} m²` : "", fiche.ville, fiche.prixAffiche > 0 ? eur(fiche.prixAffiche) : ""].filter(Boolean).join(" · ");
+                return (
+                  <div key={`${acq.id}-${fiche.id}`} className={`rounded-xl border bg-white p-3 shadow-sm ${niveau === "forte" ? "border-l-4 border-emerald-400 border-y-slate-200 border-r-slate-200" : "border-l-4 border-amber-400 border-y-slate-200 border-r-slate-200"}`}>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="text-base">📞</span>
+                      <span className="text-sm font-bold text-navy">Appeler {[acq.prenom, acq.nom].filter(Boolean).join(" ") || acq.nom}</span>
+                      <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${badgeCls}`}>{NIVEAUX[niveau].label} · {score}%</span>
+                      <div className="ml-auto"><Contacts tel={acq.tel} email={acq.email} /></div>
+                    </div>
+                    <div className="mt-1.5 text-[13px] text-slate-700">
+                      → pour le bien : <b className="text-navy">{bienTxt || fiche.titre || "Bien repéré"}</b>
+                    </div>
+                    <div className="mt-1 flex flex-wrap items-center gap-2 text-[11px]">
+                      <span className={`rounded-full px-2 py-0.5 font-semibold ${STATUT_CHASSE_COULEURS[fiche.statut] ?? "bg-slate-100 text-slate-500"}`}>{fiche.statut}</span>
+                      <span className="text-slate-400">Chassé par {parMoi ? "toi" : (chasseur || "un collègue")}</span>
+                      <span className="text-slate-300">·</span>
+                      <span className="text-slate-400">Recherche « {rechLibelle} »</span>
+                      {fiche.url && <a href={fiche.url} target="_blank" rel="noopener noreferrer" className="rounded-md border border-slate-200 px-2 py-0.5 font-semibold text-slate-500 hover:bg-slate-100">Voir l&apos;annonce ↗</a>}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
 
           {/* À RELANCER */}
           {onglet === "relance" && (
