@@ -6,6 +6,7 @@ import { listClients, createClient, type ClientDossier } from "@/lib/clients";
 import { STATUT_COULEURS } from "@/lib/acquereurs";
 import { listEstimations, type HistoryMeta } from "@/lib/history";
 import { listChasse, STATUT_CHASSE_COULEURS, type FicheChasse } from "@/lib/chasse";
+import { chargerPhoning, type PhoningData } from "@/lib/phoning";
 import { scorerRecherche, bienDepuisChasse, NIVEAUX, type NiveauMatch } from "@/lib/matching";
 import { EQUIPE, membreDepuisNom } from "@/lib/equipe";
 import { FicheLead } from "@/components/LeadsPage";
@@ -48,6 +49,8 @@ export default function EspaceNegociateurPage({ onRetour }: { onRetour: () => vo
   const [clients, setClients] = useState<ClientDossier[]>([]);
   const [estims, setEstims] = useState<HistoryMeta[]>([]);
   const [chasses, setChasses] = useState<FicheChasse[]>([]);
+  const [phoning, setPhoning] = useState<PhoningData>({});
+  const [masquees, setMasquees] = useState<Set<string>>(new Set());
   const [chargement, setChargement] = useState(true);
   const [onglet, setOnglet] = useState<"actions" | "relance" | "leads" | "acquereurs" | "ventes" | "estimations">("actions");
   const [copie, setCopie] = useState<string | null>(null);
@@ -57,6 +60,23 @@ export default function EspaceNegociateurPage({ onRetour }: { onRetour: () => vo
     setLeads(l); setClients(c); setEstims(e); setChasses(ch); setChargement(false);
   };
   useEffect(() => { void recharger(); }, []);
+
+  // Phoning + actions « traitées » du négociateur sélectionné.
+  const cleMasquees = (id: string) => `espace:actions:masquees:${id}`;
+  useEffect(() => {
+    let annule = false;
+    void (async () => { const p = await chargerPhoning(membreId); if (!annule) setPhoning(p); })();
+    try { const brut = localStorage.getItem(cleMasquees(membreId)); setMasquees(new Set(brut ? (JSON.parse(brut) as string[]) : [])); } catch { setMasquees(new Set()); }
+    return () => { annule = true; };
+  }, [membreId]);
+
+  const marquerTraitee = (cle: string) => {
+    setMasquees((s) => {
+      const n = new Set(s); n.add(cle);
+      try { localStorage.setItem(cleMasquees(membreId), JSON.stringify([...n])); } catch { /* ignore */ }
+      return n;
+    });
+  };
 
   const membre = roster.find((m) => m.id === membreId) ?? null;
   const estMien = (nego?: string) => membreDepuisNom(nego)?.id === membreId;
@@ -88,14 +108,27 @@ export default function EspaceNegociateurPage({ onRetour }: { onRetour: () => vo
           const res = scorerRecherche(bien, r);
           if (res.niveau && (!best || res.score > best.score)) best = { score: res.score, niveau: res.niveau, libelle: r.libelle || "Recherche" };
         }
-        // On ne retient que les correspondances sérieuses (forte / intéressante).
-        if (best && (best.niveau === "forte" || best.niveau === "interessante")) {
+        // On ne retient que les correspondances sérieuses (forte / intéressante)
+        // et non encore traitées.
+        if (best && (best.niveau === "forte" || best.niveau === "interessante") && !masquees.has(`${acq.id}:${f.id}`)) {
           out.push({ fiche: f, acq, rechLibelle: best.libelle, score: best.score, niveau: best.niveau });
         }
       }
     }
     return out.sort((a, b) => b.score - a.score);
-  }, [chasses, data.mesAcq]);
+  }, [chasses, data.mesAcq, masquees]);
+
+  // Rappels phoning dus aujourd'hui (date de rappel passée/du jour) ou statut « Rappel ».
+  const rappelsPhoning = useMemo(() => {
+    const fin = finJournee();
+    const out: { contact: string; tel: string; cible: string; rappel?: number }[] = [];
+    for (const lignes of Object.values(phoning)) {
+      for (const l of lignes) {
+        if ((l.rappel && l.rappel <= fin) || l.statut === "Rappel") out.push({ contact: l.contact, tel: l.tel, cible: "", rappel: l.rappel });
+      }
+    }
+    return out.sort((a, b) => (a.rappel ?? Infinity) - (b.rappel ?? Infinity));
+  }, [phoning]);
 
   const definirRelance = async (l: Lead, dans: number) => {
     const d = new Date(); d.setHours(9, 0, 0, 0); d.setDate(d.getDate() + dans);
@@ -167,7 +200,7 @@ export default function EspaceNegociateurPage({ onRetour }: { onRetour: () => vo
   );
 
   const ONGLETS: { id: typeof onglet; label: string; n: number }[] = [
-    { id: "actions", label: "🎯 Mes actions", n: actions.length },
+    { id: "actions", label: "🎯 Mes actions", n: actions.length + rappelsPhoning.length + data.leadsRelance.length + data.dossiersRelance.length },
     { id: "relance", label: "🔔 À relancer", n: data.leadsRelance.length + data.dossiersRelance.length },
     { id: "leads", label: "📥 Mes leads", n: data.mesLeads.length },
     { id: "acquereurs", label: "🔑 Mes acquéreurs", n: data.mesAcq.length },
@@ -199,7 +232,7 @@ export default function EspaceNegociateurPage({ onRetour }: { onRetour: () => vo
           {/* KPIs */}
           <div className="mb-4 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
             {[
-              { v: actions.length, l: "Actions à faire", a: "text-emerald-600" },
+              { v: actions.length + rappelsPhoning.length + data.leadsRelance.length + data.dossiersRelance.length, l: "Actions à faire", a: "text-emerald-600" },
               { v: data.leadsRelance.length + data.dossiersRelance.length, l: "À relancer", a: "text-red-600" },
               { v: data.mesLeads.length, l: "Leads", a: "text-copper" },
               { v: data.mesAcq.length, l: "Acquéreurs", a: "text-blue-600" },
@@ -222,38 +255,75 @@ export default function EspaceNegociateurPage({ onRetour }: { onRetour: () => vo
             ))}
           </div>
 
-          {/* MES ACTIONS — rapprochements acquéreur ⇄ bien repéré en chasse */}
+          {/* MES ACTIONS — hub : rapprochements + rappels phoning + relances */}
           {onglet === "actions" && (
-            <div className="space-y-2">
-              <p className="text-xs text-slate-500">Des biens repérés en chasse (par toi ou un collègue) correspondent à la recherche de tes acquéreurs : appelle-les pour leur proposer le bien.</p>
-              {actions.length === 0 ? (
-                <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center text-sm text-slate-400">Aucun rapprochement pour l&apos;instant. Dès qu&apos;un bien chassé collera à l&apos;un de tes acquéreurs, l&apos;action apparaîtra ici.</div>
-              ) : actions.map(({ fiche, acq, rechLibelle, score, niveau }) => {
-                const badgeCls = niveau === "forte" ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700";
-                const chasseur = membreDepuisNom(fiche.negociateur)?.nom ?? fiche.negociateur;
-                const parMoi = estMien(fiche.negociateur);
-                const bienTxt = [fiche.typeBien, fiche.surface > 0 ? `${fiche.surface} m²` : "", fiche.ville, fiche.prixAffiche > 0 ? eur(fiche.prixAffiche) : ""].filter(Boolean).join(" · ");
-                return (
-                  <div key={`${acq.id}-${fiche.id}`} className={`rounded-xl border bg-white p-3 shadow-sm ${niveau === "forte" ? "border-l-4 border-emerald-400 border-y-slate-200 border-r-slate-200" : "border-l-4 border-amber-400 border-y-slate-200 border-r-slate-200"}`}>
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className="text-base">📞</span>
-                      <span className="text-sm font-bold text-navy">Appeler {[acq.prenom, acq.nom].filter(Boolean).join(" ") || acq.nom}</span>
-                      <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${badgeCls}`}>{NIVEAUX[niveau].label} · {score}%</span>
-                      <div className="ml-auto"><Contacts tel={acq.tel} email={acq.email} /></div>
-                    </div>
-                    <div className="mt-1.5 text-[13px] text-slate-700">
-                      → pour le bien : <b className="text-navy">{bienTxt || fiche.titre || "Bien repéré"}</b>
-                    </div>
-                    <div className="mt-1 flex flex-wrap items-center gap-2 text-[11px]">
-                      <span className={`rounded-full px-2 py-0.5 font-semibold ${STATUT_CHASSE_COULEURS[fiche.statut] ?? "bg-slate-100 text-slate-500"}`}>{fiche.statut}</span>
-                      <span className="text-slate-400">Chassé par {parMoi ? "toi" : (chasseur || "un collègue")}</span>
-                      <span className="text-slate-300">·</span>
-                      <span className="text-slate-400">Recherche « {rechLibelle} »</span>
-                      {fiche.url && <a href={fiche.url} target="_blank" rel="noopener noreferrer" className="rounded-md border border-slate-200 px-2 py-0.5 font-semibold text-slate-500 hover:bg-slate-100">Voir l&apos;annonce ↗</a>}
-                    </div>
+            <div className="space-y-5">
+              {actions.length + rappelsPhoning.length + data.leadsRelance.length + data.dossiersRelance.length === 0 && (
+                <div className="rounded-2xl border border-green-200 bg-green-50/60 p-8 text-center text-sm text-green-700">✅ Aucune action en attente pour {membre?.nom}. Beau travail !</div>
+              )}
+
+              {/* 1. Rapprochements acquéreur ⇄ bien repéré en chasse */}
+              {actions.length > 0 && (
+                <div>
+                  <h3 className="mb-1.5 text-sm font-bold text-navy">🎯 Acquéreurs à appeler — un bien repéré leur correspond ({actions.length})</h3>
+                  <p className="mb-2 text-xs text-slate-500">Des biens repérés en chasse (par toi ou un collègue) collent à la recherche de tes acquéreurs : propose-leur le bien.</p>
+                  <div className="space-y-2">
+                    {actions.map(({ fiche, acq, rechLibelle, score, niveau }) => {
+                      const badgeCls = niveau === "forte" ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700";
+                      const chasseur = membreDepuisNom(fiche.negociateur)?.nom ?? fiche.negociateur;
+                      const parMoi = estMien(fiche.negociateur);
+                      const bienTxt = [fiche.typeBien, fiche.surface > 0 ? `${fiche.surface} m²` : "", fiche.ville, fiche.prixAffiche > 0 ? eur(fiche.prixAffiche) : ""].filter(Boolean).join(" · ");
+                      return (
+                        <div key={`${acq.id}-${fiche.id}`} className={`rounded-xl border border-y-slate-200 border-r-slate-200 bg-white p-3 shadow-sm border-l-4 ${niveau === "forte" ? "border-l-emerald-400" : "border-l-amber-400"}`}>
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span className="text-base">📞</span>
+                            <span className="text-sm font-bold text-navy">Appeler {[acq.prenom, acq.nom].filter(Boolean).join(" ") || acq.nom}</span>
+                            <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${badgeCls}`}>{NIVEAUX[niveau].label} · {score}%</span>
+                            <div className="ml-auto"><Contacts tel={acq.tel} email={acq.email} /></div>
+                          </div>
+                          <div className="mt-1.5 text-[13px] text-slate-700">→ pour le bien : <b className="text-navy">{bienTxt || fiche.titre || "Bien repéré"}</b></div>
+                          <div className="mt-1 flex flex-wrap items-center gap-2 text-[11px]">
+                            <span className={`rounded-full px-2 py-0.5 font-semibold ${STATUT_CHASSE_COULEURS[fiche.statut] ?? "bg-slate-100 text-slate-500"}`}>{fiche.statut}</span>
+                            <span className="text-slate-400">Chassé par {parMoi ? "toi" : (chasseur || "un collègue")}</span>
+                            <span className="text-slate-300">·</span>
+                            <span className="text-slate-400">Recherche « {rechLibelle} »</span>
+                            {fiche.url && <a href={fiche.url} target="_blank" rel="noopener noreferrer" className="rounded-md border border-slate-200 px-2 py-0.5 font-semibold text-slate-500 hover:bg-slate-100">Voir l&apos;annonce ↗</a>}
+                            <button onClick={() => marquerTraitee(`${acq.id}:${fiche.id}`)} className="ml-auto rounded-md border border-emerald-200 bg-emerald-50 px-2 py-0.5 font-semibold text-emerald-700 hover:bg-emerald-100" title="J'ai proposé le bien / traité">✓ Traité</button>
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
-                );
-              })}
+                </div>
+              )}
+
+              {/* 2. Rappels phoning du jour */}
+              {rappelsPhoning.length > 0 && (
+                <div>
+                  <h3 className="mb-1.5 text-sm font-bold text-navy">📞 Rappels phoning du jour ({rappelsPhoning.length})</h3>
+                  <div className="space-y-2">
+                    {rappelsPhoning.slice(0, 50).map((r, i) => (
+                      <div key={i} className="flex flex-wrap items-center gap-3 rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
+                        <div className="min-w-[140px]">
+                          <div className="text-sm font-bold text-navy">{r.contact || "Contact"}</div>
+                          <div className="text-xs text-slate-500">{r.rappel ? `rappel prévu le ${dateFr(r.rappel)}` : "à rappeler"}</div>
+                        </div>
+                        <div className="ml-auto"><Contacts tel={r.tel} /></div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* 3. Relances (leads + dossiers) — raccourci vers l'onglet détaillé */}
+              {(data.leadsRelance.length > 0 || data.dossiersRelance.length > 0) && (
+                <div>
+                  <h3 className="mb-1.5 text-sm font-bold text-navy">🔔 À relancer ({data.leadsRelance.length + data.dossiersRelance.length})</h3>
+                  <button onClick={() => setOnglet("relance")} className="rounded-xl border border-red-200 bg-red-50/60 px-4 py-3 text-left text-sm text-red-700 transition hover:bg-red-50">
+                    {data.leadsRelance.length} lead(s) et {data.dossiersRelance.length} dossier(s) à relancer aujourd&apos;hui — <span className="font-bold underline">ouvrir la liste →</span>
+                  </button>
+                </div>
+              )}
             </div>
           )}
 
