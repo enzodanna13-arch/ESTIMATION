@@ -24,9 +24,11 @@ import FormationPage from "@/components/FormationPage";
 import PhoningPage from "@/components/PhoningPage";
 import ProcessPage from "@/components/ProcessPage";
 import OrganisationPage from "@/components/OrganisationPage";
+import AdminUnlock from "@/components/AdminUnlock";
 import TransactionsPage from "@/components/TransactionsPage";
 import EspaceNegociateurPage from "@/components/EspaceNegociateurPage";
-import { CrmChrome, MetierBientot, Portail, type Metier } from "@/components/CrmShell";
+import { CrmChrome, MetierBientot, Portail, UNIVERS_ADMIN, type Metier } from "@/components/CrmShell";
+import { getAdminKey, setAdminKey, clearAdminKey, verifierCodeAdmin, adminConfigure, definirCodeAdmin } from "@/lib/admin";
 import { genererDossierPdf } from "@/lib/genererDossierPdf";
 import { NEGOCIATEURS } from "@/lib/equipe";
 import { deleteDocument, deleteEstimation, getDocument, getEstimation, getHistoryKey, HistoryLockedError, listDocuments, listEstimations, saveDocument, setHistoryKey, type DocHistoryMeta, type HistoryMeta } from "@/lib/history";
@@ -364,6 +366,9 @@ export default function Home() {
   const [historyPwd, setHistoryPwd] = useState("");
   const [historyError, setHistoryError] = useState<string | null>(null);
   const [printOnOpen, setPrintOnOpen] = useState(false);
+  // Accès admin (pilotage) : second niveau au-dessus du mot de passe d'équipe.
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [adminOuvert, setAdminOuvert] = useState(false);
 
   const [docHistory, setDocHistory] = useState<DocHistoryMeta[]>([]);
   // Espace Historiques : sous-menu ouvert (estimations ou un type de
@@ -422,6 +427,24 @@ export default function Home() {
       setHistoryKey("");
       setHistoryError("Mot de passe incorrect.");
     }
+  };
+
+  // Revérifier le code admin stocké dès que la session d'équipe est ouverte.
+  useEffect(() => {
+    if (historyLocked) { setIsAdmin(false); return; }
+    const code = getAdminKey();
+    if (!code) { setIsAdmin(false); return; }
+    let vivant = true;
+    verifierCodeAdmin(code).then((ok) => { if (vivant) { if (ok) setIsAdmin(true); else { clearAdminKey(); setIsAdmin(false); } } });
+    return () => { vivant = false; };
+  }, [historyLocked]);
+
+  // Quitter l'accès admin : on efface le code et on ramène les éventuels écrans
+  // admin vers l'accueil.
+  const quitterAdmin = () => {
+    clearAdminKey();
+    setIsAdmin(false);
+    setUnivers((u) => (UNIVERS_ADMIN.includes(u) ? "" : u));
   };
   // Téléchargement direct depuis l'historique : ouvre le dossier puis
   // déclenche l'impression PDF une fois la page rendue
@@ -794,11 +817,20 @@ export default function Home() {
         <Portail onTransaction={() => setEspace("transaction")} />
       ) : (
         <>
+          {adminOuvert && (
+            <AdminUnlock
+              onClose={() => setAdminOuvert(false)}
+              onSuccess={(code) => { setAdminKey(code); setIsAdmin(true); setAdminOuvert(false); }}
+            />
+          )}
           <CrmChrome
             univers={univers}
             histoSection={histoSection}
             metier={metier}
             onMetier={setMetier}
+            isAdmin={isAdmin}
+            onAdmin={() => setAdminOuvert(true)}
+            onQuitterAdmin={quitterAdmin}
             onPortail={() => { setUnivers(""); setMetier("transaction"); setEspace(""); }}
             onNavigate={(v, h) => {
               setResult(null); setStep(0); setDocResult(null); setDocType(""); setError(null);
@@ -854,18 +886,30 @@ export default function Home() {
             {univers === "ma-tournee" && <MaTourneePage tourneeId={tourneeCible} onRetour={() => { setTourneeCible(undefined); setUnivers("prospection"); }} />}
             {univers === "flyers" && <FlyersPage onRetour={() => setUnivers("")} />}
             {univers === "estimations-clients" && <EstimationsClientsPage onRetour={() => setUnivers("")} />}
-            {univers === "dashboard" && <DashboardPage onRetour={() => setUnivers("")} />}
-            {univers === "negociateurs" && <NegociateursPage onRetour={() => setUnivers("")} />}
+            {!isAdmin && UNIVERS_ADMIN.includes(univers) && (
+              <div className="mx-auto max-w-md rounded-3xl border border-slate-200 bg-white p-8 text-center shadow-sm">
+                <div className="text-4xl">🔒</div>
+                <h2 className="mt-3 text-xl font-bold text-navy">Espace réservé à la direction</h2>
+                <p className="mt-2 text-sm text-slate-500">Cette section (pilotage, transactions, sauvegarde, réglages) nécessite l&apos;accès admin.</p>
+                <div className="mt-5 flex flex-wrap justify-center gap-3">
+                  <button type="button" onClick={() => setAdminOuvert(true)} className="rounded-xl bg-navy px-5 py-2.5 text-sm font-bold text-white transition hover:bg-navy-deep">🔑 Déverrouiller l&apos;accès admin</button>
+                  <button type="button" onClick={() => setUnivers("")} className="rounded-xl border border-slate-300 px-5 py-2.5 text-sm font-semibold text-slate-600 transition hover:bg-slate-50">← Accueil</button>
+                </div>
+              </div>
+            )}
+            {univers === "dashboard" && isAdmin && <DashboardPage onRetour={() => setUnivers("")} />}
+            {univers === "negociateurs" && isAdmin && <NegociateursPage onRetour={() => setUnivers("")} />}
             {univers === "espace" && <EspaceNegociateurPage onRetour={() => setUnivers("")} />}
             {univers === "formation" && <FormationPage onRetour={() => setUnivers("")} />}
             {univers === "phoning" && <PhoningPage onRetour={() => setUnivers("")} />}
             {univers === "process" && <ProcessPage onRetour={() => setUnivers("")} />}
-            {univers === "organisation" && <OrganisationPage onRetour={() => setUnivers("")} />}
-            {univers === "transactions" && <TransactionsPage onRetour={() => setUnivers("")} />}
-            {univers === "reglages" && <><ReglagesMotDePasse /><ClePasserelleLeads /></>}
+            {univers === "organisation" && <OrganisationPage onRetour={() => setUnivers("")} estAdmin={isAdmin} />}
+            {univers === "transactions" && isAdmin && <TransactionsPage onRetour={() => setUnivers("")} />}
+            {univers === "reglages" && isAdmin && <><ReglagesMotDePasse /><ClePasserelleLeads /></>}
 
             {univers === "" && (
               <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 print:hidden">
+                {isAdmin && (
                 <button
                   type="button"
                   onClick={() => setUnivers("dashboard")}
@@ -881,6 +925,8 @@ export default function Home() {
                     Ouvrir le tableau de bord →
                   </span>
                 </button>
+                )}
+                {isAdmin && (
                 <button
                   type="button"
                   onClick={() => setUnivers("negociateurs")}
@@ -896,6 +942,7 @@ export default function Home() {
                     Voir l'activité →
                   </span>
                 </button>
+                )}
                 <button
                   type="button"
                   onClick={() => setUnivers("espace")}
@@ -1094,8 +1141,8 @@ export default function Home() {
               </div>
             )}
 
-            {/* Sauvegarde complète (télécharge tout le contenu en .zip) */}
-            {(univers === "" || univers === "sauvegarde") && (
+            {/* Sauvegarde complète (télécharge tout le contenu en .zip) — admin */}
+            {isAdmin && (univers === "" || univers === "sauvegarde") && (
               <div className="mb-10 flex flex-wrap items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4 print:hidden">
                 <div className="mr-auto">
                   <div className="text-sm font-bold text-navy">💾 Sauvegarde complète</div>

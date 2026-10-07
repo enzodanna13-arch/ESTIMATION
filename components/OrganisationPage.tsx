@@ -25,7 +25,7 @@ const ORDRE_CAT = ["Chasse", "Identification", "Phoning", "Prospection", "Format
 
 const fmtJour = (iso: string) => { try { return new Date(iso + "T12:00:00").toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" }); } catch { return iso; } };
 
-export default function OrganisationPage({ onRetour }: { onRetour: () => void }) {
+export default function OrganisationPage({ onRetour, estAdmin = false }: { onRetour: () => void; estAdmin?: boolean }) {
   const [negoId, setNegoId] = useState<string>(() => { try { return localStorage.getItem(CLE_NEGO) ?? ""; } catch { return ""; } });
   const [jours, setJours] = useState<JoursOrg>({});
   const [rdv, setRdv] = useState<RdvJour>({ visites: 0, r1: 0, r2: 0 });
@@ -100,7 +100,7 @@ export default function OrganisationPage({ onRetour }: { onRetour: () => void })
         <button onClick={onRetour} className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-100">← Accueil</button>
         <h2 className="text-2xl font-bold text-navy">🗓️ Mon organisation</h2>
         <div className="ml-auto flex items-center gap-2">
-          <button onClick={() => setVueEquipe((v) => !v)} className={`rounded-lg border px-3 py-1.5 text-xs font-semibold transition ${vueEquipe ? "border-copper bg-copper text-white" : "border-slate-300 bg-white text-slate-600 hover:bg-slate-50"}`}>👔 Vue équipe</button>
+          {estAdmin && <button onClick={() => setVueEquipe((v) => !v)} className={`rounded-lg border px-3 py-1.5 text-xs font-semibold transition ${vueEquipe ? "border-copper bg-copper text-white" : "border-slate-300 bg-white text-slate-600 hover:bg-slate-50"}`}>👔 Vue équipe</button>}
           <label className="text-xs font-semibold text-slate-500">Je suis</label>
           <select value={negoId} onChange={(e) => setNegoId(e.target.value)} className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-semibold text-navy shadow-sm focus:border-copper focus:outline-none">
             <option value="">— Sélectionner —</option>
@@ -110,7 +110,7 @@ export default function OrganisationPage({ onRetour }: { onRetour: () => void })
         </div>
       </div>
 
-      {vueEquipe ? (
+      {vueEquipe && estAdmin ? (
         <VueEquipe equipe={equipe} aujd={aujd} onFermer={() => setVueEquipe(false)} />
       ) : !negoId ? (
         <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-4 text-sm text-amber-800">Sélectionnez votre nom pour organiser votre journée. Votre plan est enregistré et visible par la direction.</div>

@@ -15,7 +15,11 @@ interface Item {
   i: string; // icône
   h?: string; // section d'historique éventuelle (pour l'univers "historique")
   tag?: string; // pastille facultative
+  admin?: boolean; // réservé à l'accès admin (masqué pour les négociateurs)
 }
+
+// Univers réservés à l'accès admin (pilotage). Partagé avec le routeur (app/page).
+export const UNIVERS_ADMIN = ["dashboard", "negociateurs", "transactions", "sauvegarde", "reglages"];
 interface Groupe {
   label: string;
   items: Item[];
@@ -23,8 +27,8 @@ interface Groupe {
 
 const GROUPES: Groupe[] = [
   { label: "Pilotage", items: [
-    { v: "dashboard", t: "Tableau de bord", i: "📊" },
-    { v: "negociateurs", t: "Suivi des négociateurs", i: "👔" },
+    { v: "dashboard", t: "Tableau de bord", i: "📊", admin: true },
+    { v: "negociateurs", t: "Suivi des négociateurs", i: "👔", admin: true },
     { v: "organisation", t: "Mon organisation", i: "🗓️" },
     { v: "espace", t: "Mon espace", i: "👤" },
   ] },
@@ -45,7 +49,7 @@ const GROUPES: Groupe[] = [
   { label: "Clients & dossiers", items: [
     { v: "clients", t: "Dossiers clients", i: "📁" },
     { v: "acquereurs", t: "Acquéreurs", i: "🔑" },
-    { v: "transactions", t: "Transactions", i: "💼" },
+    { v: "transactions", t: "Transactions", i: "💼", admin: true },
   ] },
   { label: "Marketing & médias", items: [
     { v: "documents", t: "Génération de documents", i: "📄" },
@@ -58,10 +62,10 @@ const GROUPES: Groupe[] = [
   ] },
   { label: "Archives", items: [
     { v: "historique", h: "", t: "Historiques", i: "🗂️" },
-    { v: "sauvegarde", t: "Sauvegarde", i: "💾" },
+    { v: "sauvegarde", t: "Sauvegarde", i: "💾", admin: true },
   ] },
   { label: "Réglages", items: [
-    { v: "reglages", t: "Mot de passe", i: "⚙️" },
+    { v: "reglages", t: "Mot de passe", i: "⚙️", admin: true },
   ] },
 ];
 
@@ -73,6 +77,7 @@ const METIERS: { id: Metier; label: string; icon: string; soon?: boolean }[] = [
 
 export function CrmChrome({
   univers, histoSection, metier, onMetier, onNavigate, onReset, onPortail,
+  isAdmin = false, onAdmin, onQuitterAdmin,
 }: {
   univers: string;
   histoSection: string;
@@ -81,9 +86,18 @@ export function CrmChrome({
   onNavigate: (v: string, h?: string) => void;
   onReset: () => void;
   onPortail?: () => void;
+  isAdmin?: boolean;
+  onAdmin?: () => void;
+  onQuitterAdmin?: () => void;
 }) {
   const [open, setOpen] = useState(false);
   const close = () => setOpen(false);
+
+  // Les items réservés à l'admin ne sont visibles qu'en accès admin ; les groupes
+  // qui deviennent vides sont masqués.
+  const groupesVisibles = GROUPES
+    .map((g) => ({ ...g, items: g.items.filter((it) => isAdmin || !it.admin) }))
+    .filter((g) => g.items.length > 0);
 
   const estActif = (it: Item) =>
     metier === "transaction" &&
@@ -168,7 +182,7 @@ export function CrmChrome({
           ))}
         </div>
 
-        {GROUPES.map((g) => (
+        {groupesVisibles.map((g) => (
           <div key={g.label} className="mb-5">
             <div className="mb-1.5 px-2.5 text-[10.5px] font-bold uppercase tracking-wider text-white/40">{g.label}</div>
             <div className="flex flex-col gap-0.5">
@@ -191,6 +205,32 @@ export function CrmChrome({
             </div>
           </div>
         ))}
+
+        {/* Accès admin : déverrouiller / quitter */}
+        <div className="mt-2 border-t border-white/10 pt-4">
+          {isAdmin ? (
+            <>
+              <div className="mb-1.5 flex items-center gap-2 px-2.5 text-[10.5px] font-bold uppercase tracking-wider text-copper">🔓 Accès admin</div>
+              <button
+                type="button"
+                onClick={() => { onQuitterAdmin?.(); close(); }}
+                className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2.5 text-left text-[13.5px] font-medium text-white/80 transition hover:bg-white/10 hover:text-white"
+              >
+                <span className="w-5 flex-none text-center text-[15px]">🚪</span>
+                <span className="min-w-0 flex-1 truncate">Quitter l&apos;espace admin</span>
+              </button>
+            </>
+          ) : (
+            <button
+              type="button"
+              onClick={() => { onAdmin?.(); close(); }}
+              className="flex w-full items-center gap-2.5 rounded-lg border border-white/15 px-2.5 py-2.5 text-left text-[13.5px] font-medium text-white/70 transition hover:bg-white/10 hover:text-white"
+            >
+              <span className="w-5 flex-none text-center text-[15px]">🔒</span>
+              <span className="min-w-0 flex-1 truncate">Espace admin</span>
+            </button>
+          )}
+        </div>
       </aside>
     </>
   );
