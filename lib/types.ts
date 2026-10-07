@@ -11,6 +11,25 @@ export interface ComparableListing {
   joursEnLigne: number | null;
 }
 
+// Motif de l'estimation : seules les estimations « vente » entrent dans les
+// rapprochements avec les acquéreurs. Les autres (donation, succession, divorce,
+// valeur bancaire, simple curiosité) sont exclues des rapprochements.
+export type MotifEstimation = "vente" | "donation" | "divorce" | "bancaire" | "curiosite" | "autre";
+
+export const MOTIFS: { id: MotifEstimation; label: string; court: string; rappro: boolean }[] = [
+  { id: "vente", label: "Projet de vente", court: "Vente", rappro: true },
+  { id: "donation", label: "Donation / succession / partage", court: "Donation/succession", rappro: false },
+  { id: "divorce", label: "Divorce / séparation", court: "Divorce", rappro: false },
+  { id: "bancaire", label: "Valeur bancaire / IFI / assurance", court: "Bancaire/IFI", rappro: false },
+  { id: "curiosite", label: "Simple information / curiosité", court: "Information", rappro: false },
+  { id: "autre", label: "Autre motif", court: "Autre", rappro: false },
+];
+
+// Une estimation entre-t-elle dans les rapprochements ? Les anciennes estimations
+// (motif non renseigné) restent rapprochables pour ne rien casser.
+export const motifRapprochable = (m?: string): boolean => !m || m === "vente";
+export const motifLabel = (m?: string): string => MOTIFS.find((x) => x.id === m)?.court ?? "Vente";
+
 export interface PropertyInput {
   // Client vendeur (repris dans le dossier)
   clientCivilite: string;
@@ -19,6 +38,7 @@ export interface PropertyInput {
   clientTel: string;
   clientEmail: string;
   horizonVente: string;
+  motif?: MotifEstimation; // motif de l'estimation (classification)
   negociateur: string;
   negociateurTel: string;
   negociateurEmail: string;

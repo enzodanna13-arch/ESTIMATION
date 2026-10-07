@@ -8,6 +8,7 @@ import { medianeReferences } from "@/lib/references";
 import { surfaceDependancesHabitables, surfaceHabitableTotale } from "@/lib/surfaces";
 import { photoNegociateur } from "@/lib/equipe";
 import type { EstimateResponse, PropertyInput } from "@/lib/types";
+import { motifRapprochable } from "@/lib/types";
 
 const euro = new Intl.NumberFormat("fr-FR", {
   style: "currency",
@@ -1058,8 +1059,9 @@ export default function Report({
         </section>
 
         {/* ANNEXE — Rapprochement acquéreurs : dernière page, masquée s'il y a
-            moins de 2 acquéreurs correspondants (le composant renvoie null). */}
-        <RapprochementAcquereurs input={input} report={report} page={pgRappro} secIdx={secRappro} label={docLabel} seuil={2} />
+            moins de 2 acquéreurs correspondants (le composant renvoie null).
+            Masquée aussi pour les estimations hors vente (donation, succession…). */}
+        {motifRapprochable(input.motif) && <RapprochementAcquereurs input={input} report={report} page={pgRappro} secIdx={secRappro} label={docLabel} seuil={2} />}
       </div>
     </div>
   );

@@ -439,6 +439,7 @@ export async function POST(request: Request) {
             negociateur: body.negociateur ?? "",
             fourchetteBasse: report.fourchette_basse,
             fourchetteHaute: report.fourchette_haute,
+            motif: body.motif ?? "vente",
             result: { report, dvfSales, dvfSource, engine, subject },
             input: body,
           });

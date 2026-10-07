@@ -65,6 +65,18 @@ export async function deleteEstimation(id: string): Promise<void> {
   await fetch(`/api/history/${encodeURIComponent(id)}`, { method: "DELETE", headers: headers() });
 }
 
+// Reclasse une estimation (motif) — ex. « donation » pour l'exclure des rapprochements.
+export async function reclasserEstimation(id: string, motif: string): Promise<boolean> {
+  try {
+    const res = await fetch(`/api/history/${encodeURIComponent(id)}`, {
+      method: "PATCH",
+      headers: { ...headers(), "content-type": "application/json" },
+      body: JSON.stringify({ motif }),
+    });
+    return res.ok;
+  } catch { return false; }
+}
+
 
 // ---- Historique des documents générés ----
 

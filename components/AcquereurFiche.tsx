@@ -11,6 +11,7 @@ import {
   completudeDossier, financementVide, investissementVide, rechercheVide,
 } from "@/lib/acquereurs";
 import { listEstimations, getEstimation } from "@/lib/history";
+import { motifRapprochable } from "@/lib/types";
 import { NEGOCIATEURS } from "@/lib/equipe";
 import { bienDepuisEstimation, NIVEAUX, scorerRecherche, type NiveauMatch, type ResultatMatch } from "@/lib/matching";
 
@@ -365,7 +366,10 @@ function RapprochementEstimation({ dossier, onOuvrir }: { dossier: ClientDossier
     setEtat("chargement"); setErreur(null); setDetail(null);
     try {
       const metas = await listEstimations();
-      const cibles = metas.slice(0, 60); // plus récentes d'abord
+      // On exclut les estimations qui ne sont pas des projets de vente
+      // (donation, succession, divorce, valeur bancaire…) : elles ne doivent
+      // pas ressortir dans les rapprochements acquéreurs.
+      const cibles = metas.filter((m) => motifRapprochable(m.motif)).slice(0, 60); // plus récentes d'abord
       const out: BienMatch[] = [];
       let i = 0;
       // Chargement en parallèle borné (6 à la fois) : rapide sans saturer.

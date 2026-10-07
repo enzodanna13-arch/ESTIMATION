@@ -31,12 +31,13 @@ import { CrmChrome, MetierBientot, Portail, UNIVERS_ADMIN, type Metier } from "@
 import { getAdminKey, setAdminKey, clearAdminKey, verifierCodeAdmin, adminConfigure, definirCodeAdmin } from "@/lib/admin";
 import { genererDossierPdf } from "@/lib/genererDossierPdf";
 import { NEGOCIATEURS } from "@/lib/equipe";
-import { deleteDocument, deleteEstimation, getDocument, getEstimation, getHistoryKey, HistoryLockedError, listDocuments, listEstimations, saveDocument, setHistoryKey, type DocHistoryMeta, type HistoryMeta } from "@/lib/history";
+import { deleteDocument, deleteEstimation, getDocument, getEstimation, getHistoryKey, HistoryLockedError, listDocuments, listEstimations, reclasserEstimation, saveDocument, setHistoryKey, type DocHistoryMeta, type HistoryMeta } from "@/lib/history";
 import { loyerNetAnnuel, prixParRendement, RENDEMENT_NET_BAS, RENDEMENT_NET_HAUT } from "@/lib/rendement";
 import { surfaceDependancesHabitables, surfaceHabitableTotale } from "@/lib/surfaces";
 import { compressImage } from "@/lib/compressImage";
 import { telechargerSauvegarde } from "@/lib/backup";
 import type { EstimateResponse, PhotoInput, PropertyInput } from "@/lib/types";
+import { MOTIFS, motifLabel, motifRapprochable } from "@/lib/types";
 
 const initialInput: PropertyInput = {
   clientCivilite: "",
@@ -45,6 +46,7 @@ const initialInput: PropertyInput = {
   clientTel: "",
   clientEmail: "",
   horizonVente: "",
+  motif: "vente",
   negociateur: "",
   negociateurTel: "",
   negociateurEmail: "",
@@ -496,6 +498,12 @@ export default function Home() {
   const removeEntry = async (id: string) => {
     await deleteEstimation(id).catch(() => {});
     refreshHistory();
+  };
+
+  // Reclasse une estimation (motif) et met à jour la liste localement.
+  const reclasser = async (id: string, motif: string) => {
+    setHistory((hs) => hs.map((h) => (h.id === id ? { ...h, motif } : h)));
+    await reclasserEstimation(id, motif).catch(() => {});
   };
 
   const openDocEntry = async (id: string) => {
@@ -1254,6 +1262,11 @@ export default function Home() {
                       <input className={inputCls} inputMode="email" value={input.clientEmail} onChange={(e) => set("clientEmail", e.target.value)} placeholder="marie.dupont@mail.fr" />
                     </Field>
                     <Select label="Horizon de vente" value={input.horizonVente} onChange={(v) => set("horizonVente", v)} options={OPT.horizon} />
+                    <Field label="Motif de l'estimation">
+                      <select className={inputCls} value={input.motif ?? "vente"} onChange={(e) => set("motif", e.target.value as PropertyInput["motif"])}>
+                        {MOTIFS.map((m) => <option key={m.id} value={m.id}>{m.label}{m.rappro ? "" : " — hors rapprochements"}</option>)}
+                      </select>
+                    </Field>
                     <Field label="Négociateur en charge">
                       <input className={inputCls} value={input.negociateur} onChange={(e) => set("negociateur", e.target.value)} placeholder="Votre nom (affiché sur le dossier)" list="negos-app" />
                       <datalist id="negos-app">{NEGOCIATEURS.map((n) => <option key={n} value={n} />)}</datalist>
@@ -2366,6 +2379,14 @@ export default function Home() {
                             </>
                           )}
                         </p>
+                        <div className="mt-1 flex flex-wrap items-center gap-1.5">
+                          <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${motifRapprochable(h.motif) ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}`} title={motifRapprochable(h.motif) ? "Entre dans les rapprochements acquéreurs" : "Exclue des rapprochements acquéreurs"}>
+                            {motifLabel(h.motif)}{motifRapprochable(h.motif) ? "" : " · hors rapprochements"}
+                          </span>
+                          <select value={h.motif ?? "vente"} onChange={(e) => void reclasser(h.id, e.target.value)} className="rounded-md border border-slate-200 px-1.5 py-0.5 text-[11px] text-slate-500 focus:border-copper focus:outline-none" title="Changer le motif de l'estimation">
+                            {MOTIFS.map((m) => <option key={m.id} value={m.id}>{m.label}</option>)}
+                          </select>
+                        </div>
                       </div>
                       <div className="flex items-center gap-2">
                         <button

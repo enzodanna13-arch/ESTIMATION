@@ -17,6 +17,7 @@ export interface HistoryMeta {
   negociateur: string;
   fourchetteBasse: number;
   fourchetteHaute: number;
+  motif?: string; // motif de l'estimation (vente, donation…) — filtre les rapprochements
 }
 
 export interface HistoryFull extends HistoryMeta {
@@ -41,6 +42,16 @@ export async function saveEstimationServer(entry: HistoryFull): Promise<void> {
       contentType: "application/json",
     }),
   ]);
+}
+
+// Reclasse une estimation existante (met à jour le motif dans meta + full).
+export async function updateMotifServer(id: string, motif: string): Promise<boolean> {
+  const full = await getEstimationServer(id);
+  if (!full) return false;
+  full.motif = motif;
+  full.input = { ...full.input, motif: motif as PropertyInput["motif"] };
+  await saveEstimationServer(full);
+  return true;
 }
 
 export async function listEstimationsServer(): Promise<HistoryMeta[]> {
