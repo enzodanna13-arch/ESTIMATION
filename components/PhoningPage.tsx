@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { EQUIPE } from "@/lib/equipe";
 import { SCRIPTS_PHONING, STATUTS_PHONING, PALIER_REMOTIVATION, type ScriptPhoning } from "@/lib/phoningScripts";
-import { chargerPhoning, sauverPhoning, listerPhoning, chargerMotivation, sauverMotivation, statsLignes, statsData, type LignePhoning, type PhoningData } from "@/lib/phoning";
+import { chargerPhoning, sauverPhoning, listerPhoning, chargerMotivation, sauverMotivation, chargerBasePhoning, remplacerBasePhoning, statsLignes, statsData, type LignePhoning, type PhoningData, type BaseContact } from "@/lib/phoning";
 
 // Actions rapides (un clic = résultat d'appel pointé). « neg » = non / non décroché.
 type TypeAction = "neg" | "neutre" | "pos";
@@ -104,13 +104,15 @@ function ScriptPanneau({ script }: { script: ScriptPhoning }) {
   );
 }
 
-function ImportCSV({ cibleDefaut, onImporter, onFermer }: { cibleDefaut: string; onImporter: (cible: string, lignes: LignePhoning[]) => void; onFermer: () => void }) {
+function ImportCSV({ cibleDefaut, estAdmin, onImporter, onBase, onFermer }: { cibleDefaut: string; estAdmin: boolean; onImporter: (cible: string, lignes: LignePhoning[]) => void; onBase: (cible: string, contacts: BaseContact[]) => Promise<boolean>; onFermer: () => void }) {
   const [headers, setHeaders] = useState<string[]>([]);
   const [rows, setRows] = useState<string[][]>([]);
-  const [map, setMap] = useState({ prenom: -1, nom: -1, tel: -1, notes: -1 });
+  const [map, setMap] = useState({ prenom: -1, nom: -1, tel: -1 });
   const [cible, setCible] = useState(cibleDefaut);
+  const [dest, setDest] = useState<"table" | "base">("table");
   const [colle, setColle] = useState("");
   const [erreur, setErreur] = useState("");
+  const [occupe, setOccupe] = useState(false);
 
   const traiter = (texte: string) => {
     const r = parseCSV(texte);
@@ -118,23 +120,51 @@ function ImportCSV({ cibleDefaut, onImporter, onFermer }: { cibleDefaut: string;
     setErreur(""); setHeaders(r.headers); setRows(r.rows);
     setMap({
       prenom: guessCol(r.headers, ["prénom", "prenom", "first"]),
-      nom: guessCol(r.headers, ["nom", "contact", "client", "propriétaire", "proprietaire", "vendeur", "acquéreur", "acquereur", "name"], ["prénom", "prenom"]),
+      nom: guessCol(r.headers, ["nom", "contact", "client", "propriétaire", "proprietaire", "vendeur", "bailleur", "acquéreur", "acquereur", "name"], ["prénom", "prenom"]),
       tel: guessCol(r.headers, ["téléphone", "telephone", "tél", "tel", "mobile", "portable", "gsm", "phone"]),
-      notes: guessCol(r.headers, ["note", "observation", "commentaire", "adresse", "bien", "ville", "email", "mail", "remarque", "type", "secteur"]),
     });
   };
-  const onFichier = (f: File | null) => { if (!f) return; const rd = new FileReader(); rd.onload = () => traiter(String(rd.result || "")); rd.readAsText(f); };
+  // Accepte le CSV mais aussi directement un fichier Excel (.xlsx/.xls).
+  const onFichier = async (f: File | null) => {
+    if (!f) return;
+    const nom = f.name.toLowerCase();
+    try {
+      if (nom.endsWith(".xlsx") || nom.endsWith(".xls")) {
+        const buf = await f.arrayBuffer();
+        const XLSX = await import("xlsx");
+        const wb = XLSX.read(buf, { type: "array", cellDates: true });
+        const ws = wb.Sheets[wb.SheetNames[0]];
+        traiter(XLSX.utils.sheet_to_csv(ws));
+      } else {
+        const rd = new FileReader(); rd.onload = () => traiter(String(rd.result || "")); rd.readAsText(f);
+      }
+    } catch { setErreur("Lecture du fichier impossible."); }
+  };
 
   const val = (r: string[], i: number) => (i >= 0 ? (r[i] ?? "").trim() : "");
+  // Les colonnes non identifiantes (ville, type, date, prix, email, adresse…)
+  // sont regroupées dans les notes, pour donner tout le contexte au négociateur.
+  const idsIdentite = new Set([map.prenom, map.nom, map.tel].filter((i) => i >= 0));
+  const composerNotes = (r: string[]) => headers.map((h, i) => (idsIdentite.has(i) ? "" : (val(r, i) ? `${h} : ${val(r, i)}` : ""))).filter(Boolean).join(" · ").slice(0, 2000);
   const construire = (): LignePhoning[] => rows.map((r) => ({
     id: nouvelId(),
     contact: [val(r, map.prenom), val(r, map.nom)].filter(Boolean).join(" ") || val(r, 0),
     tel: val(r, map.tel),
     statut: "À appeler",
-    notes: val(r, map.notes),
+    notes: composerNotes(r),
     createdAt: Date.now(),
-  })).filter((l) => l.contact || l.tel).slice(0, 2000);
+  })).filter((l) => l.contact || l.tel).slice(0, 20000);
   const apercu = headers.length ? construire() : [];
+  const validerImport = async () => {
+    if (dest === "base") {
+      setOccupe(true);
+      const ok = await onBase(cible, construire().map((l) => ({ contact: l.contact, tel: l.tel, notes: l.notes })));
+      setOccupe(false);
+      if (ok) onFermer(); else setErreur("Enregistrement de la base impossible (accès admin requis).");
+    } else {
+      onImporter(cible, construire()); onFermer();
+    }
+  };
 
   const sel = (valeur: number, onCh: (n: number) => void) => (
     <select value={valeur} onChange={(e) => onCh(Number(e.target.value))} className="w-full rounded-md border border-slate-200 px-2 py-1.5 text-sm focus:border-copper focus:outline-none">
@@ -146,15 +176,15 @@ function ImportCSV({ cibleDefaut, onImporter, onFermer }: { cibleDefaut: string;
   return (
     <div className="mb-4 rounded-2xl border border-copper/30 bg-white p-4 shadow-sm">
       <div className="mb-2 flex items-center justify-between">
-        <h3 className="text-base font-bold text-navy">📥 Importer des contacts (CSV)</h3>
+        <h3 className="text-base font-bold text-navy">📥 Importer des contacts (Excel ou CSV)</h3>
         <button onClick={onFermer} className="rounded-lg border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-500 transition hover:bg-slate-50">✕ Fermer</button>
       </div>
-      <p className="mb-3 text-xs text-slate-500">Exportez votre liste depuis Excel / votre CRM en CSV (séparateur <strong>,</strong> ou <strong>;</strong>, avec une ligne d'en-têtes). Les colonnes sont détectées automatiquement — ajustez si besoin.</p>
+      <p className="mb-3 text-xs text-slate-500">Chargez directement votre fichier <strong>Excel (.xlsx)</strong> ou un CSV (avec une ligne d'en-têtes). Les colonnes sont détectées automatiquement — ajustez si besoin. Toutes les colonnes non identifiantes (ville, type, date, prix, email…) sont regroupées dans les notes.</p>
 
       <div className="flex flex-wrap items-center gap-3">
         <label className="cursor-pointer rounded-lg bg-navy px-4 py-2 text-sm font-bold text-white transition hover:brightness-110">
-          Choisir un fichier CSV
-          <input type="file" accept=".csv,text/csv,text/plain" className="hidden" onChange={(e) => onFichier(e.target.files?.[0] ?? null)} />
+          Choisir un fichier Excel / CSV
+          <input type="file" accept=".xlsx,.xls,.csv,text/csv,text/plain" className="hidden" onChange={(e) => void onFichier(e.target.files?.[0] ?? null)} />
         </label>
         <span className="text-xs text-slate-400">ou collez vos lignes ci-dessous</span>
       </div>
@@ -167,22 +197,30 @@ function ImportCSV({ cibleDefaut, onImporter, onFermer }: { cibleDefaut: string;
 
       {headers.length > 0 && (
         <div className="mt-4 border-t border-slate-100 pt-4">
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-3 sm:grid-cols-3">
             <div><label className="text-xs font-semibold text-slate-500">Prénom (option.)</label>{sel(map.prenom, (n) => setMap((m) => ({ ...m, prenom: n })))}</div>
             <div><label className="text-xs font-semibold text-slate-500">Nom / Contact</label>{sel(map.nom, (n) => setMap((m) => ({ ...m, nom: n })))}</div>
             <div><label className="text-xs font-semibold text-slate-500">Téléphone</label>{sel(map.tel, (n) => setMap((m) => ({ ...m, tel: n })))}</div>
-            <div><label className="text-xs font-semibold text-slate-500">Notes (option.)</label>{sel(map.notes, (n) => setMap((m) => ({ ...m, notes: n })))}</div>
           </div>
           <div className="mt-3 flex flex-wrap items-end gap-3">
-            <div><label className="text-xs font-semibold text-slate-500">Importer dans la cible</label>
+            <div><label className="text-xs font-semibold text-slate-500">Cible</label>
               <select value={cible} onChange={(e) => setCible(e.target.value)} className="block w-full rounded-md border border-slate-200 px-2 py-1.5 text-sm font-semibold text-navy focus:border-copper focus:outline-none">
                 {SCRIPTS_PHONING.map((s) => <option key={s.id} value={s.id}>{s.icone} {s.titre}</option>)}
               </select>
             </div>
-            <button onClick={() => { onImporter(cible, construire()); onFermer(); }} disabled={apercu.length === 0} className="rounded-lg bg-copper px-4 py-2 text-sm font-bold text-white transition hover:brightness-110 disabled:opacity-40">
-              Importer {apercu.length} contact(s)
+            {estAdmin && (
+              <div><label className="text-xs font-semibold text-slate-500">Destination</label>
+                <select value={dest} onChange={(e) => setDest(e.target.value as "table" | "base")} className="block w-full rounded-md border border-slate-200 px-2 py-1.5 text-sm font-semibold text-navy focus:border-copper focus:outline-none">
+                  <option value="table">Mon tableau (perso)</option>
+                  <option value="base">Base partagée (toute l&apos;équipe)</option>
+                </select>
+              </div>
+            )}
+            <button onClick={() => void validerImport()} disabled={apercu.length === 0 || occupe} className="rounded-lg bg-copper px-4 py-2 text-sm font-bold text-white transition hover:brightness-110 disabled:opacity-40">
+              {occupe ? "Enregistrement…" : dest === "base" ? `Enregistrer ${apercu.length} contact(s) dans la base` : `Importer ${apercu.length} contact(s)`}
             </button>
           </div>
+          {estAdmin && dest === "base" && <p className="mt-2 text-[11px] text-amber-700">⚠️ La base partagée <strong>remplace</strong> entièrement les contacts existants de cette cible et devient visible par toute l&apos;équipe (chacun pourra la charger dans son tableau).</p>}
           {apercu.length > 0 && (
             <div className="mt-3">
               <div className="text-xs font-semibold text-slate-500">Aperçu ({apercu.length} ligne(s)) :</div>
@@ -201,10 +239,11 @@ function ImportCSV({ cibleDefaut, onImporter, onFermer }: { cibleDefaut: string;
   );
 }
 
-export default function PhoningPage({ onRetour }: { onRetour: () => void }) {
+export default function PhoningPage({ onRetour, estAdmin = false }: { onRetour: () => void; estAdmin?: boolean }) {
   const [negoId, setNegoId] = useState<string>(() => { try { return localStorage.getItem(CLE_NEGO) ?? ""; } catch { return ""; } });
   const [data, setData] = useState<PhoningData>({});
   const [cible, setCible] = useState<string>(SCRIPTS_PHONING[0].id);
+  const [base, setBase] = useState<BaseContact[]>([]); // base partagée de la cible courante
   const [chargement, setChargement] = useState(false);
   const [sauve, setSauve] = useState<"" | "en" | "ok">("");
   const [vueEquipe, setVueEquipe] = useState(false);
@@ -294,6 +333,33 @@ export default function PhoningPage({ onRetour }: { onRetour: () => void }) {
     if (!nouvelles.length) return;
     maj({ ...data, [cibleCible]: [...(data[cibleCible] ?? []), ...nouvelles] });
     setCible(cibleCible);
+  };
+
+  // Base partagée de la cible courante (chargée à chaque changement de cible).
+  useEffect(() => {
+    let annule = false;
+    void (async () => { const b = await chargerBasePhoning(cible); if (!annule) setBase(b); })();
+    return () => { annule = true; };
+  }, [cible]);
+
+  // Admin : enregistre la base partagée d'une cible (depuis l'import).
+  const enregistrerBase = async (cibleCible: string, contacts: BaseContact[]): Promise<boolean> => {
+    const r = await remplacerBasePhoning(cibleCible, contacts);
+    if (!r) return false;
+    if (cibleCible === cible) setBase(r);
+    return true;
+  };
+
+  // Charge la base partagée dans le tableau perso (sans doublon de téléphone).
+  const telNorm = (t: string) => (t || "").replace(/\D/g, "");
+  const chargerLaBase = () => {
+    if (!base.length) return;
+    const dejaTel = new Set(lignes.map((l) => telNorm(l.tel)).filter(Boolean));
+    const dejaNom = new Set(lignes.map((l) => l.contact.trim().toLowerCase()).filter(Boolean));
+    const nouvelles: LignePhoning[] = base
+      .filter((c) => { const t = telNorm(c.tel); const n = c.contact.trim().toLowerCase(); return (t ? !dejaTel.has(t) : true) && (t || (n ? !dejaNom.has(n) : true)); })
+      .map((c) => ({ id: nouvelId(), contact: c.contact, tel: c.tel, statut: "À appeler", notes: c.notes, createdAt: Date.now() }));
+    if (nouvelles.length) majLignes([...lignes, ...nouvelles]);
   };
 
   const stCible = useMemo(() => statsLignes(lignes), [lignes]);
@@ -399,7 +465,7 @@ export default function PhoningPage({ onRetour }: { onRetour: () => void }) {
             </div>
           )}
 
-          {importOuvert && <ImportCSV cibleDefaut={cible} onImporter={importer} onFermer={() => setImportOuvert(false)} />}
+          {importOuvert && <ImportCSV cibleDefaut={cible} estAdmin={estAdmin} onImporter={importer} onBase={enregistrerBase} onFermer={() => setImportOuvert(false)} />}
 
           <div className="grid gap-4 lg:grid-cols-[1fr_minmax(320px,380px)]">
             {/* tableau interactif */}
@@ -409,8 +475,9 @@ export default function PhoningPage({ onRetour }: { onRetour: () => void }) {
                   <span className="font-bold text-navy">{scriptCourant.icone} {scriptCourant.titre}</span>
                   <span>· {stCible.total} contact(s) · {stCible.appeles} appelé(s) · {stCible.rdv} RDV</span>
                 </div>
-                <div className="flex gap-2">
-                  <button onClick={() => setImportOuvert((o) => !o)} className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-bold text-slate-600 transition hover:bg-slate-50">📥 Importer CSV</button>
+                <div className="flex flex-wrap gap-2">
+                  {base.length > 0 && <button onClick={chargerLaBase} className="rounded-lg border border-copper/40 bg-copper/10 px-3 py-1.5 text-sm font-bold text-copper transition hover:bg-copper/20" title="Ajoute les contacts de la base partagée de l'agence à ton tableau (sans doublon)">🗂️ Charger la base partagée ({base.length})</button>}
+                  <button onClick={() => setImportOuvert((o) => !o)} className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-bold text-slate-600 transition hover:bg-slate-50">📥 Importer Excel/CSV</button>
                   <button onClick={ajouter} className="rounded-lg bg-navy px-3 py-1.5 text-sm font-bold text-white transition hover:brightness-110">+ Ajouter un contact</button>
                 </div>
               </div>

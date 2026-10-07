@@ -2,10 +2,13 @@
 // Stockage serveur par négociateur (voir serverPhoning), pour la visibilité manager.
 
 import { getHistoryKey } from "./history";
+import { getAdminKey } from "./admin";
 import { STATUTS_NEGATIFS, STATUTS_POSITIFS, PHRASES_MOTIVATION_DEFAUT } from "./phoningScripts";
 import type { LignePhoning, PhoningData, PhoningNego } from "./serverPhoning";
+import type { BaseContact } from "./serverPhoningBase";
 
 export type { LignePhoning, PhoningData, PhoningNego } from "./serverPhoning";
+export type { BaseContact } from "./serverPhoningBase";
 
 export const estNegatif = (statut: string) => STATUTS_NEGATIFS.includes(statut);
 export const estPositif = (statut: string) => STATUTS_POSITIFS.includes(statut);
@@ -85,5 +88,27 @@ export async function sauverMotivation(phrases: string[]): Promise<string[] | nu
     const res = await fetch(`/api/phoning/motivation`, { method: "PUT", headers: jsonHeaders(), body: JSON.stringify({ phrases }) });
     if (!res.ok) return null;
     return ((await res.json()) as { phrases?: string[] }).phrases ?? null;
+  } catch { return null; }
+}
+
+// --- Base partagée de contacts par cible (importée par l'admin) ---
+export async function chargerBasePhoning(cibleId: string): Promise<BaseContact[]> {
+  try {
+    const res = await fetch(`/api/phoning/base/${encodeURIComponent(cibleId)}`, { cache: "no-store", headers: headers() });
+    if (!res.ok) return [];
+    return ((await res.json()) as { contacts?: BaseContact[] }).contacts ?? [];
+  } catch { return []; }
+}
+
+// Réservé à l'admin : le code admin voyage dans x-admin-key (vérifié côté serveur).
+export async function remplacerBasePhoning(cibleId: string, contacts: BaseContact[]): Promise<BaseContact[] | null> {
+  try {
+    const res = await fetch(`/api/phoning/base/${encodeURIComponent(cibleId)}`, {
+      method: "PUT",
+      headers: { ...jsonHeaders(), "x-admin-key": getAdminKey() },
+      body: JSON.stringify({ contacts }),
+    });
+    if (!res.ok) return null;
+    return ((await res.json()) as { contacts?: BaseContact[] }).contacts ?? [];
   } catch { return null; }
 }

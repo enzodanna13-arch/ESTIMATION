@@ -901,7 +901,7 @@ export default function Home() {
             {univers === "negociateurs" && isAdmin && <NegociateursPage onRetour={() => setUnivers("")} />}
             {univers === "espace" && <EspaceNegociateurPage onRetour={() => setUnivers("")} />}
             {univers === "formation" && <FormationPage onRetour={() => setUnivers("")} />}
-            {univers === "phoning" && <PhoningPage onRetour={() => setUnivers("")} />}
+            {univers === "phoning" && <PhoningPage onRetour={() => setUnivers("")} estAdmin={isAdmin} />}
             {univers === "process" && <ProcessPage onRetour={() => setUnivers("")} />}
             {univers === "organisation" && <OrganisationPage onRetour={() => setUnivers("")} estAdmin={isAdmin} />}
             {univers === "transactions" && isAdmin && <TransactionsPage onRetour={() => setUnivers("")} />}
