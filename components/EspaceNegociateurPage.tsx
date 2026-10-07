@@ -52,7 +52,7 @@ export default function EspaceNegociateurPage({ onRetour }: { onRetour: () => vo
   const [phoning, setPhoning] = useState<PhoningData>({});
   const [masquees, setMasquees] = useState<Set<string>>(new Set());
   const [chargement, setChargement] = useState(true);
-  const [onglet, setOnglet] = useState<"actions" | "relance" | "leads" | "acquereurs" | "ventes" | "estimations">("actions");
+  const [onglet, setOnglet] = useState<"tableau" | "actions" | "relance" | "leads" | "acquereurs" | "ventes" | "estimations">("tableau");
   const [copie, setCopie] = useState<string | null>(null);
 
   const recharger = async () => {
@@ -130,6 +130,19 @@ export default function EspaceNegociateurPage({ onRetour }: { onRetour: () => vo
     return out.sort((a, b) => (a.rappel ?? Infinity) - (b.rappel ?? Infinity));
   }, [phoning]);
 
+  // Synthèse pour le tableau de bord (répartitions + chiffres du mois).
+  const synthese = useMemo(() => {
+    const parStatut = (arr: { statut?: string }[]) => {
+      const m = new Map<string, number>();
+      for (const x of arr) { const s = x.statut || "—"; m.set(s, (m.get(s) ?? 0) + 1); }
+      return [...m.entries()].sort((a, b) => b[1] - a[1]);
+    };
+    const d = new Date(); const debutMois = new Date(d.getFullYear(), d.getMonth(), 1).getTime();
+    const estimsMois = data.mesEstims.filter((e) => e.createdAt >= debutMois).length;
+    const mandatsEnCours = data.mesVentes.filter((v) => !["Projet abandonné", "Projet réalisé", "Vendu"].includes(v.statut ?? "")).length;
+    return { leadsParStatut: parStatut(data.mesLeads), acqParStatut: parStatut(data.mesAcq), estimsMois, mandatsEnCours };
+  }, [data.mesLeads, data.mesAcq, data.mesEstims, data.mesVentes]);
+
   const definirRelance = async (l: Lead, dans: number) => {
     const d = new Date(); d.setHours(9, 0, 0, 0); d.setDate(d.getDate() + dans);
     const maj = await updateLead(l.id, { relanceLe: d.getTime() });
@@ -200,6 +213,7 @@ export default function EspaceNegociateurPage({ onRetour }: { onRetour: () => vo
   );
 
   const ONGLETS: { id: typeof onglet; label: string; n: number }[] = [
+    { id: "tableau", label: "📊 Tableau de bord", n: 0 },
     { id: "actions", label: "🎯 Mes actions", n: actions.length + rappelsPhoning.length + data.leadsRelance.length + data.dossiersRelance.length },
     { id: "relance", label: "🔔 À relancer", n: data.leadsRelance.length + data.dossiersRelance.length },
     { id: "leads", label: "📥 Mes leads", n: data.mesLeads.length },
@@ -250,10 +264,86 @@ export default function EspaceNegociateurPage({ onRetour }: { onRetour: () => vo
           <div className="mb-3 flex flex-wrap gap-1.5">
             {ONGLETS.map((o) => (
               <button key={o.id} onClick={() => setOnglet(o.id)} className={`rounded-full px-3 py-1.5 text-sm font-semibold transition ${onglet === o.id ? "bg-copper text-white" : "border border-slate-200 bg-white text-slate-600 hover:bg-slate-100"}`}>
-                {o.label} ({o.n})
+                {o.label}{o.n > 0 ? ` (${o.n})` : ""}
               </button>
             ))}
           </div>
+
+          {/* TABLEAU DE BORD — synthèse du négociateur */}
+          {onglet === "tableau" && (
+            <div className="space-y-5">
+              {/* Priorités du jour */}
+              <div>
+                <h3 className="mb-2 text-sm font-bold text-navy">🚀 Tes priorités du jour</h3>
+                <div className="grid gap-2 sm:grid-cols-3">
+                  {[
+                    { n: actions.length, t: "Acquéreurs à appeler", s: "un bien repéré leur correspond", go: "actions" as const, cls: "border-emerald-200 bg-emerald-50/60 text-emerald-800" },
+                    { n: rappelsPhoning.length, t: "Rappels phoning", s: "prévus aujourd'hui", go: "actions" as const, cls: "border-blue-200 bg-blue-50/60 text-blue-800" },
+                    { n: data.leadsRelance.length + data.dossiersRelance.length, t: "À relancer", s: "leads & dossiers", go: "relance" as const, cls: "border-red-200 bg-red-50/60 text-red-800" },
+                  ].map((p) => (
+                    <button key={p.t} onClick={() => setOnglet(p.go)} className={`rounded-2xl border p-4 text-left transition hover:shadow-md ${p.cls}`}>
+                      <div className="text-3xl font-black">{p.n}</div>
+                      <div className="text-sm font-bold">{p.t}</div>
+                      <div className="text-[11px] opacity-80">{p.s}</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Pipelines */}
+              <div className="grid gap-4 lg:grid-cols-2">
+                <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+                  <div className="mb-2 flex items-center justify-between">
+                    <h3 className="text-sm font-bold text-navy">📥 Mes leads par statut</h3>
+                    <button onClick={() => setOnglet("leads")} className="text-[11px] font-semibold text-copper hover:underline">tout voir →</button>
+                  </div>
+                  {synthese.leadsParStatut.length === 0 ? <p className="text-xs text-slate-400">Aucun lead attribué.</p> : (
+                    <div className="space-y-1.5">
+                      {synthese.leadsParStatut.map(([s, n]) => (
+                        <div key={s} className="flex items-center gap-2">
+                          <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${STATUT_LEAD_COULEURS[s] ?? "bg-slate-100 text-slate-600"}`}>{s}</span>
+                          <div className="h-2 flex-1 overflow-hidden rounded-full bg-slate-100"><div className="h-full rounded-full bg-copper" style={{ width: `${Math.round((n / data.mesLeads.length) * 100)}%` }} /></div>
+                          <span className="w-6 text-right text-xs font-bold text-navy">{n}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+                  <div className="mb-2 flex items-center justify-between">
+                    <h3 className="text-sm font-bold text-navy">🔑 Mes acquéreurs par statut</h3>
+                    <button onClick={() => setOnglet("acquereurs")} className="text-[11px] font-semibold text-copper hover:underline">tout voir →</button>
+                  </div>
+                  {synthese.acqParStatut.length === 0 ? <p className="text-xs text-slate-400">Aucun acquéreur attribué.</p> : (
+                    <div className="space-y-1.5">
+                      {synthese.acqParStatut.map(([s, n]) => (
+                        <div key={s} className="flex items-center gap-2">
+                          <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${STATUT_COULEURS[s] ?? "bg-slate-100 text-slate-600"}`}>{s}</span>
+                          <div className="h-2 flex-1 overflow-hidden rounded-full bg-slate-100"><div className="h-full rounded-full bg-blue-400" style={{ width: `${Math.round((n / data.mesAcq.length) * 100)}%` }} /></div>
+                          <span className="w-6 text-right text-xs font-bold text-navy">{n}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Chiffres clés */}
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                {[
+                  { v: synthese.mandatsEnCours, l: "Mandats / ventes en cours", go: "ventes" as const },
+                  { v: synthese.estimsMois, l: "Estimations ce mois-ci", go: "estimations" as const },
+                  { v: data.mesEstims.length, l: "Estimations au total", go: "estimations" as const },
+                  { v: data.mesAcq.length, l: "Acquéreurs actifs", go: "acquereurs" as const },
+                ].map((k) => (
+                  <button key={k.l} onClick={() => setOnglet(k.go)} className="rounded-xl border border-slate-200 bg-white p-3 text-left transition hover:border-copper hover:shadow-sm">
+                    <div className="text-2xl font-extrabold text-navy">{k.v}</div>
+                    <div className="text-[11px] font-semibold text-slate-500">{k.l}</div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* MES ACTIONS — hub : rapprochements + rappels phoning + relances */}
           {onglet === "actions" && (
