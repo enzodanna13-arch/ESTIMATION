@@ -7,6 +7,8 @@ import { STATUT_COULEURS } from "@/lib/acquereurs";
 import { listEstimations, type HistoryMeta } from "@/lib/history";
 import { listChasse, STATUT_CHASSE_COULEURS, type FicheChasse } from "@/lib/chasse";
 import { chargerPhoning, type PhoningData } from "@/lib/phoning";
+import { listTournees, type Tournee } from "@/lib/prospection";
+import { chargerOrg, sauverJour, dateJour, type PlanJour } from "@/lib/organisation";
 import { scorerRecherche, bienDepuisChasse, NIVEAUX, type NiveauMatch } from "@/lib/matching";
 import { EQUIPE, membreDepuisNom } from "@/lib/equipe";
 import { FicheLead } from "@/components/LeadsPage";
@@ -43,21 +45,23 @@ function dossierARelancer(c: ClientDossier): boolean {
 
 const roster = EQUIPE.filter((m) => m.sections.some((s) => s === "transaction" || s === "gestion"));
 
-export default function EspaceNegociateurPage({ onRetour }: { onRetour: () => void }) {
+export default function EspaceNegociateurPage({ onRetour, onOuvrirChasse, onOuvrirTournee, onOuvrirOrganisation }: { onRetour: () => void; onOuvrirChasse?: (id: string) => void; onOuvrirTournee?: (id: string) => void; onOuvrirOrganisation?: () => void }) {
   const [membreId, setMembreId] = useState<string>(roster.find((m) => m.id === "lea")?.id ?? roster[0]?.id ?? "");
   const [leads, setLeads] = useState<Lead[]>([]);
   const [clients, setClients] = useState<ClientDossier[]>([]);
   const [estims, setEstims] = useState<HistoryMeta[]>([]);
   const [chasses, setChasses] = useState<FicheChasse[]>([]);
+  const [tournees, setTournees] = useState<Tournee[]>([]);
   const [phoning, setPhoning] = useState<PhoningData>({});
+  const [planOrg, setPlanOrg] = useState<PlanJour | null>(null);
   const [masquees, setMasquees] = useState<Set<string>>(new Set());
   const [chargement, setChargement] = useState(true);
   const [onglet, setOnglet] = useState<"tableau" | "actions" | "relance" | "leads" | "acquereurs" | "ventes" | "estimations">("tableau");
   const [copie, setCopie] = useState<string | null>(null);
 
   const recharger = async () => {
-    const [l, c, e, ch] = await Promise.all([listLeads(), listClients(), listEstimations().catch(() => []), listChasse().catch(() => [])]);
-    setLeads(l); setClients(c); setEstims(e); setChasses(ch); setChargement(false);
+    const [l, c, e, ch, tn] = await Promise.all([listLeads(), listClients(), listEstimations().catch(() => []), listChasse().catch(() => []), listTournees().catch(() => [])]);
+    setLeads(l); setClients(c); setEstims(e); setChasses(ch); setTournees(tn); setChargement(false);
   };
   useEffect(() => { void recharger(); }, []);
 
@@ -66,9 +70,18 @@ export default function EspaceNegociateurPage({ onRetour }: { onRetour: () => vo
   useEffect(() => {
     let annule = false;
     void (async () => { const p = await chargerPhoning(membreId); if (!annule) setPhoning(p); })();
+    void (async () => { const j = await chargerOrg(membreId); if (!annule) setPlanOrg(j[dateJour()] ?? null); })();
     try { const brut = localStorage.getItem(cleMasquees(membreId)); setMasquees(new Set(brut ? (JSON.parse(brut) as string[]) : [])); } catch { setMasquees(new Set()); }
     return () => { annule = true; };
   }, [membreId]);
+
+  // Coche/décoche une tâche d'organisation du jour (et l'enregistre).
+  const toggleTacheOrg = async (id: string) => {
+    if (!planOrg) return;
+    const maj: PlanJour = { ...planOrg, taches: planOrg.taches.map((t) => (t.id === id ? { ...t, fait: !t.fait } : t)) };
+    setPlanOrg(maj);
+    await sauverJour(membreId, maj).catch(() => {});
+  };
 
   const marquerTraitee = (cle: string) => {
     setMasquees((s) => {
@@ -143,6 +156,11 @@ export default function EspaceNegociateurPage({ onRetour }: { onRetour: () => vo
     return { leadsParStatut: parStatut(data.mesLeads), acqParStatut: parStatut(data.mesAcq), estimsMois, mandatsEnCours };
   }, [data.mesLeads, data.mesAcq, data.mesEstims, data.mesVentes]);
 
+  // Mes tournées de prospection (non terminées) et mes tâches d'organisation du jour.
+  const mesTournees = useMemo(() => tournees.filter((t) => estMien(t.negociateur) && t.statut !== "terminee").sort((a, b) => (a.index ?? 0) - (b.index ?? 0)), [tournees, membreId]);
+  const tachesOrg = planOrg?.taches ?? [];
+  const tachesOrgRestantes = tachesOrg.filter((t) => !t.fait).length;
+
   const definirRelance = async (l: Lead, dans: number) => {
     const d = new Date(); d.setHours(9, 0, 0, 0); d.setDate(d.getDate() + dans);
     const maj = await updateLead(l.id, { relanceLe: d.getTime() });
@@ -214,7 +232,7 @@ export default function EspaceNegociateurPage({ onRetour }: { onRetour: () => vo
 
   const ONGLETS: { id: typeof onglet; label: string; n: number }[] = [
     { id: "tableau", label: "📊 Tableau de bord", n: 0 },
-    { id: "actions", label: "🎯 Mes actions", n: actions.length + rappelsPhoning.length + data.leadsRelance.length + data.dossiersRelance.length },
+    { id: "actions", label: "🎯 Mes actions", n: actions.length + rappelsPhoning.length + data.leadsRelance.length + data.dossiersRelance.length + mesTournees.length + tachesOrgRestantes },
     { id: "relance", label: "🔔 À relancer", n: data.leadsRelance.length + data.dossiersRelance.length },
     { id: "leads", label: "📥 Mes leads", n: data.mesLeads.length },
     { id: "acquereurs", label: "🔑 Mes acquéreurs", n: data.mesAcq.length },
@@ -246,7 +264,7 @@ export default function EspaceNegociateurPage({ onRetour }: { onRetour: () => vo
           {/* KPIs */}
           <div className="mb-4 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
             {[
-              { v: actions.length + rappelsPhoning.length + data.leadsRelance.length + data.dossiersRelance.length, l: "Actions à faire", a: "text-emerald-600" },
+              { v: actions.length + rappelsPhoning.length + data.leadsRelance.length + data.dossiersRelance.length + mesTournees.length + tachesOrgRestantes, l: "Actions à faire", a: "text-emerald-600" },
               { v: data.leadsRelance.length + data.dossiersRelance.length, l: "À relancer", a: "text-red-600" },
               { v: data.mesLeads.length, l: "Leads", a: "text-copper" },
               { v: data.mesAcq.length, l: "Acquéreurs", a: "text-blue-600" },
@@ -275,9 +293,11 @@ export default function EspaceNegociateurPage({ onRetour }: { onRetour: () => vo
               {/* Priorités du jour */}
               <div>
                 <h3 className="mb-2 text-sm font-bold text-navy">🚀 Tes priorités du jour</h3>
-                <div className="grid gap-2 sm:grid-cols-3">
+                <div className="grid gap-2 sm:grid-cols-3 lg:grid-cols-5">
                   {[
                     { n: actions.length, t: "Acquéreurs à appeler", s: "un bien repéré leur correspond", go: "actions" as const, cls: "border-emerald-200 bg-emerald-50/60 text-emerald-800" },
+                    { n: tachesOrgRestantes, t: "Tâches du jour", s: "ton organisation", go: "actions" as const, cls: "border-copper/30 bg-copper/10 text-copper" },
+                    { n: mesTournees.length, t: "Tournées de prospection", s: "à faire sur le terrain", go: "actions" as const, cls: "border-violet-200 bg-violet-50/60 text-violet-800" },
                     { n: rappelsPhoning.length, t: "Rappels phoning", s: "prévus aujourd'hui", go: "actions" as const, cls: "border-blue-200 bg-blue-50/60 text-blue-800" },
                     { n: data.leadsRelance.length + data.dossiersRelance.length, t: "À relancer", s: "leads & dossiers", go: "relance" as const, cls: "border-red-200 bg-red-50/60 text-red-800" },
                   ].map((p) => (
@@ -348,7 +368,7 @@ export default function EspaceNegociateurPage({ onRetour }: { onRetour: () => vo
           {/* MES ACTIONS — hub : rapprochements + rappels phoning + relances */}
           {onglet === "actions" && (
             <div className="space-y-5">
-              {actions.length + rappelsPhoning.length + data.leadsRelance.length + data.dossiersRelance.length === 0 && (
+              {actions.length + rappelsPhoning.length + data.leadsRelance.length + data.dossiersRelance.length + mesTournees.length + tachesOrgRestantes === 0 && (
                 <div className="rounded-2xl border border-green-200 bg-green-50/60 p-8 text-center text-sm text-green-700">✅ Aucune action en attente pour {membre?.nom}. Beau travail !</div>
               )}
 
@@ -377,12 +397,49 @@ export default function EspaceNegociateurPage({ onRetour }: { onRetour: () => vo
                             <span className="text-slate-400">Chassé par {parMoi ? "toi" : (chasseur || "un collègue")}</span>
                             <span className="text-slate-300">·</span>
                             <span className="text-slate-400">Recherche « {rechLibelle} »</span>
+                            {onOuvrirChasse && <button onClick={() => onOuvrirChasse(fiche.id)} className="rounded-md border border-copper/40 bg-copper/10 px-2 py-0.5 font-semibold text-copper hover:bg-copper/20">🏹 Ouvrir la chasse</button>}
                             {fiche.url && <a href={fiche.url} target="_blank" rel="noopener noreferrer" className="rounded-md border border-slate-200 px-2 py-0.5 font-semibold text-slate-500 hover:bg-slate-100">Voir l&apos;annonce ↗</a>}
                             <button onClick={() => marquerTraitee(`${acq.id}:${fiche.id}`)} className="ml-auto rounded-md border border-emerald-200 bg-emerald-50 px-2 py-0.5 font-semibold text-emerald-700 hover:bg-emerald-100" title="J'ai proposé le bien / traité">✓ Traité</button>
                           </div>
                         </div>
                       );
                     })}
+                  </div>
+                </div>
+              )}
+
+              {/* 1b. Mes tournées de prospection */}
+              {mesTournees.length > 0 && (
+                <div>
+                  <h3 className="mb-1.5 text-sm font-bold text-navy">🧭 Mes tournées de prospection ({mesTournees.length})</h3>
+                  <div className="space-y-2">
+                    {mesTournees.map((t) => (
+                      <div key={t.id} className="flex flex-wrap items-center gap-3 rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
+                        <div className="min-w-[160px]">
+                          <div className="text-sm font-bold text-navy">Tournée{t.index ? ` n°${t.index}` : ""} — {t.etapes.length} bien(s)</div>
+                          <div className="text-xs text-slate-500">{Math.round(t.distanceKm)} km · ~{Math.round(t.dureeMin)} min · {t.statut === "en_cours" ? "en cours" : "planifiée"}</div>
+                        </div>
+                        {onOuvrirTournee && <button onClick={() => onOuvrirTournee(t.id)} className="ml-auto rounded-lg bg-navy px-3 py-1.5 text-xs font-bold text-white transition hover:bg-navy-deep">Ouvrir ma tournée →</button>}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* 1c. Mes tâches du jour (Mon organisation) */}
+              {tachesOrg.length > 0 && (
+                <div>
+                  <div className="mb-1.5 flex items-center justify-between">
+                    <h3 className="text-sm font-bold text-navy">✅ Mes tâches du jour ({tachesOrg.length - tachesOrgRestantes}/{tachesOrg.length})</h3>
+                    {onOuvrirOrganisation && <button onClick={onOuvrirOrganisation} className="text-[11px] font-semibold text-copper hover:underline">Mon organisation →</button>}
+                  </div>
+                  <div className="space-y-1.5">
+                    {tachesOrg.map((t) => (
+                      <button key={t.id} onClick={() => void toggleTacheOrg(t.id)} className={`flex w-full items-center gap-3 rounded-xl border px-3 py-2 text-left text-sm transition ${t.fait ? "border-emerald-200 bg-emerald-50 text-slate-500 line-through" : "border-slate-200 bg-white text-slate-700 hover:border-copper/40 hover:bg-slate-50"}`}>
+                        <span className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-md border text-xs ${t.fait ? "border-emerald-500 bg-emerald-500 text-white" : "border-slate-300"}`}>{t.fait ? "✓" : ""}</span>
+                        <span className="flex-1">{t.libelle}</span>
+                      </button>
+                    ))}
                   </div>
                 </div>
               )}

@@ -255,6 +255,7 @@ export default function Home() {
   // documents (menu des documents de l'agence)
   const [univers, setUnivers] = useState<"" | "estimation" | "documents" | "clients" | "historique" | "visites" | "registre" | "leads" | "chasse" | "veille" | "acquereurs" | "prospection" | "ma-tournee" | "flyers" | "estimations-clients" | "dashboard" | "negociateurs" | "espace" | "formation" | "transactions" | "phoning" | "process" | "organisation" | "sauvegarde" | "reglages">("");
   const [tourneeCible, setTourneeCible] = useState<string | undefined>(undefined);
+  const [chasseCible, setChasseCible] = useState<string | undefined>(undefined);
   // Métier actif (compartimentage CRM) : Transaction contient tout l'existant ;
   // Syndic et Gestion locative sont préparés (écran « à venir »).
   const [metier, setMetier] = useState<Metier>("transaction");
@@ -887,7 +888,7 @@ export default function Home() {
 
 
             {univers === "leads" && <LeadsPage onRetour={() => setUnivers("")} />}
-            {univers === "chasse" && <ChassePage onRetour={() => setUnivers("")} />}
+            {univers === "chasse" && <ChassePage ficheCible={chasseCible} onRetour={() => { setChasseCible(undefined); setUnivers(""); }} />}
             {univers === "veille" && <VeilleDpePage onRetour={() => setUnivers("")} onOuvrirEstimation={(id) => void openEntry(id, false)} />}
             {univers === "acquereurs" && <AcquereursPage onRetour={() => setUnivers("")} onOuvrirEstimation={(id) => void openEntry(id, false)} />}
             {univers === "prospection" && <ProspectionPage onRetour={() => setUnivers("")} />}
@@ -907,7 +908,7 @@ export default function Home() {
             )}
             {univers === "dashboard" && isAdmin && <DashboardPage onRetour={() => setUnivers("")} />}
             {univers === "negociateurs" && isAdmin && <NegociateursPage onRetour={() => setUnivers("")} />}
-            {univers === "espace" && <EspaceNegociateurPage onRetour={() => setUnivers("")} />}
+            {univers === "espace" && <EspaceNegociateurPage onRetour={() => setUnivers("")} onOuvrirChasse={(id) => { setChasseCible(id); setUnivers("chasse"); window.scrollTo({ top: 0 }); }} onOuvrirTournee={(id) => { setTourneeCible(id); setUnivers("ma-tournee"); window.scrollTo({ top: 0 }); }} onOuvrirOrganisation={() => { setUnivers("organisation"); window.scrollTo({ top: 0 }); }} />}
             {univers === "formation" && <FormationPage onRetour={() => setUnivers("")} />}
             {univers === "phoning" && <PhoningPage onRetour={() => setUnivers("")} estAdmin={isAdmin} />}
             {univers === "process" && <ProcessPage onRetour={() => setUnivers("")} />}

@@ -23,7 +23,7 @@ function StatutChip({ s }: { s: string }) {
   return <span className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-semibold ${STATUT_CHASSE_COULEURS[s] ?? "bg-slate-100 text-slate-600"}`}>{s}</span>;
 }
 
-export default function ChassePage({ onRetour }: { onRetour: () => void }) {
+export default function ChassePage({ onRetour, ficheCible }: { onRetour: () => void; ficheCible?: string }) {
   const [fiches, setFiches] = useState<FicheChasse[]>([]);
   const [chargement, setChargement] = useState(true);
   const [q, setQ] = useState("");
@@ -50,6 +50,13 @@ export default function ChassePage({ onRetour }: { onRetour: () => void }) {
     listChasse().then((f) => { setFiches(f); setChargement(false); }).catch(() => setChargement(false));
   };
   useEffect(recharger, []);
+
+  // Ouverture directe d'une fiche ciblée (depuis le tableau de bord négociateur).
+  useEffect(() => {
+    if (!ficheCible || fiches.length === 0) return;
+    const f = fiches.find((x) => x.id === ficheCible);
+    if (f) { setSelection(f); setVue("liste"); }
+  }, [ficheCible, fiches]);
 
   // À l'ouverture de la carte : géocode les fiches sans coordonnées (adresse ou
   // commune) et met à jour la fiche pour ne le refaire qu'une fois.
