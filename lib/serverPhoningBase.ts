@@ -32,10 +32,25 @@ export async function getBaseServer(cibleId: string): Promise<PhoningBase | null
   try { const r = await fetch(best.url, { cache: "no-store" }); return r.ok ? ((await r.json()) as PhoningBase) : null; } catch { return null; }
 }
 
-// Remplace entièrement la base d'une cible.
-export async function saveBaseServer(cibleId: string, contacts: unknown): Promise<PhoningBase> {
+const telNorm = (t: string) => (t || "").replace(/\D/g, "");
+
+// Enregistre la base d'une cible. mode="remplacer" (défaut) écrase ; mode="ajouter"
+// fusionne avec l'existant en évitant les doublons (par téléphone, sinon par nom).
+export async function saveBaseServer(cibleId: string, contacts: unknown, mode: "remplacer" | "ajouter" = "remplacer"): Promise<PhoningBase> {
   const id = safeId(cibleId);
-  const clean = nettoyerContacts(contacts);
+  let clean = nettoyerContacts(contacts);
+  if (mode === "ajouter") {
+    const existant = (await getBaseServer(id))?.contacts ?? [];
+    const vuTel = new Set(existant.map((c) => telNorm(c.tel)).filter(Boolean));
+    const vuNom = new Set(existant.map((c) => c.contact.trim().toLowerCase()).filter(Boolean));
+    const ajouts = clean.filter((c) => {
+      const t = telNorm(c.tel); const n = c.contact.trim().toLowerCase();
+      if (t) { if (vuTel.has(t)) return false; vuTel.add(t); return true; }
+      if (n) { if (vuNom.has(n)) return false; vuNom.add(n); return true; }
+      return true;
+    });
+    clean = [...existant, ...ajouts].slice(0, 20000);
+  }
   const now = Date.now();
   const payload: PhoningBase = { cible: id, contacts: clean, updatedAt: now };
   const nom = `${PREFIX}${id}~${now}.json`;

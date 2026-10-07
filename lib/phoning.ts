@@ -101,12 +101,13 @@ export async function chargerBasePhoning(cibleId: string): Promise<BaseContact[]
 }
 
 // Réservé à l'admin : le code admin voyage dans x-admin-key (vérifié côté serveur).
-export async function remplacerBasePhoning(cibleId: string, contacts: BaseContact[]): Promise<BaseContact[] | null> {
+// mode "remplacer" (défaut) écrase la base ; "ajouter" complète sans doublon.
+export async function remplacerBasePhoning(cibleId: string, contacts: BaseContact[], mode: "remplacer" | "ajouter" = "remplacer"): Promise<BaseContact[] | null> {
   try {
     const res = await fetch(`/api/phoning/base/${encodeURIComponent(cibleId)}`, {
       method: "PUT",
       headers: { ...jsonHeaders(), "x-admin-key": getAdminKey() },
-      body: JSON.stringify({ contacts }),
+      body: JSON.stringify({ contacts, mode }),
     });
     if (!res.ok) return null;
     return ((await res.json()) as { contacts?: BaseContact[] }).contacts ?? [];

@@ -21,10 +21,11 @@ export async function PUT(request: Request, { params }: { params: Promise<{ cibl
   if (!(await verifierAccesEquipe(request))) return Response.json({ error: "Accès réservé" }, { status: 401 });
   if (!(await verifierAdmin(request.headers.get("x-admin-key") ?? ""))) return Response.json({ error: "Accès admin requis" }, { status: 403 });
   const { cibleId } = await params;
-  let body: { contacts?: unknown };
-  try { body = (await request.json()) as { contacts?: unknown }; } catch { return Response.json({ error: "Corps invalide" }, { status: 400 }); }
+  let body: { contacts?: unknown; mode?: unknown };
+  try { body = (await request.json()) as { contacts?: unknown; mode?: unknown }; } catch { return Response.json({ error: "Corps invalide" }, { status: 400 }); }
+  const mode = body.mode === "ajouter" ? "ajouter" : "remplacer";
   try {
-    const b = await saveBaseServer(cibleId, body.contacts);
+    const b = await saveBaseServer(cibleId, body.contacts, mode);
     return Response.json({ contacts: b.contacts, updatedAt: b.updatedAt });
   } catch {
     return Response.json({ error: "Enregistrement impossible" }, { status: 500 });

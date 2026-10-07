@@ -104,12 +104,13 @@ function ScriptPanneau({ script }: { script: ScriptPhoning }) {
   );
 }
 
-function ImportCSV({ cibleDefaut, estAdmin, onImporter, onBase, onFermer }: { cibleDefaut: string; estAdmin: boolean; onImporter: (cible: string, lignes: LignePhoning[]) => void; onBase: (cible: string, contacts: BaseContact[]) => Promise<boolean>; onFermer: () => void }) {
+function ImportCSV({ cibleDefaut, estAdmin, onImporter, onBase, onFermer }: { cibleDefaut: string; estAdmin: boolean; onImporter: (cible: string, lignes: LignePhoning[]) => void; onBase: (cible: string, contacts: BaseContact[], mode: "ajouter" | "remplacer") => Promise<boolean>; onFermer: () => void }) {
   const [headers, setHeaders] = useState<string[]>([]);
   const [rows, setRows] = useState<string[][]>([]);
   const [map, setMap] = useState({ prenom: -1, nom: -1, tel: -1 });
   const [cible, setCible] = useState(cibleDefaut);
   const [dest, setDest] = useState<"table" | "base">("table");
+  const [modeBase, setModeBase] = useState<"ajouter" | "remplacer">("ajouter");
   const [colle, setColle] = useState("");
   const [erreur, setErreur] = useState("");
   const [occupe, setOccupe] = useState(false);
@@ -158,7 +159,7 @@ function ImportCSV({ cibleDefaut, estAdmin, onImporter, onBase, onFermer }: { ci
   const validerImport = async () => {
     if (dest === "base") {
       setOccupe(true);
-      const ok = await onBase(cible, construire().map((l) => ({ contact: l.contact, tel: l.tel, notes: l.notes })));
+      const ok = await onBase(cible, construire().map((l) => ({ contact: l.contact, tel: l.tel, notes: l.notes })), modeBase);
       setOccupe(false);
       if (ok) onFermer(); else setErreur("Enregistrement de la base impossible (accès admin requis).");
     } else {
@@ -216,11 +217,25 @@ function ImportCSV({ cibleDefaut, estAdmin, onImporter, onBase, onFermer }: { ci
                 </select>
               </div>
             )}
+            {estAdmin && dest === "base" && (
+              <div><label className="text-xs font-semibold text-slate-500">Mode</label>
+                <select value={modeBase} onChange={(e) => setModeBase(e.target.value as "ajouter" | "remplacer")} className="block w-full rounded-md border border-slate-200 px-2 py-1.5 text-sm font-semibold text-navy focus:border-copper focus:outline-none">
+                  <option value="ajouter">Ajouter à la base (sans doublon)</option>
+                  <option value="remplacer">Remplacer toute la base</option>
+                </select>
+              </div>
+            )}
             <button onClick={() => void validerImport()} disabled={apercu.length === 0 || occupe} className="rounded-lg bg-copper px-4 py-2 text-sm font-bold text-white transition hover:brightness-110 disabled:opacity-40">
-              {occupe ? "Enregistrement…" : dest === "base" ? `Enregistrer ${apercu.length} contact(s) dans la base` : `Importer ${apercu.length} contact(s)`}
+              {occupe ? "Enregistrement…" : dest === "base" ? (modeBase === "ajouter" ? `Ajouter ${apercu.length} contact(s) à la base` : `Remplacer la base par ${apercu.length} contact(s)`) : `Importer ${apercu.length} contact(s)`}
             </button>
           </div>
-          {estAdmin && dest === "base" && <p className="mt-2 text-[11px] text-amber-700">⚠️ La base partagée <strong>remplace</strong> entièrement les contacts existants de cette cible et devient visible par toute l&apos;équipe (chacun pourra la charger dans son tableau).</p>}
+          {estAdmin && dest === "base" && (
+            <p className="mt-2 text-[11px] text-amber-700">
+              {modeBase === "ajouter"
+                ? "➕ Les contacts seront ajoutés à la base partagée existante (les doublons par téléphone/nom sont ignorés)."
+                : "⚠️ Attention : « Remplacer » efface toute la base partagée actuelle de cette cible avant d'enregistrer la nouvelle liste."}
+            </p>
+          )}
           {apercu.length > 0 && (
             <div className="mt-3">
               <div className="text-xs font-semibold text-slate-500">Aperçu ({apercu.length} ligne(s)) :</div>
@@ -342,9 +357,9 @@ export default function PhoningPage({ onRetour, estAdmin = false }: { onRetour: 
     return () => { annule = true; };
   }, [cible]);
 
-  // Admin : enregistre la base partagée d'une cible (depuis l'import).
-  const enregistrerBase = async (cibleCible: string, contacts: BaseContact[]): Promise<boolean> => {
-    const r = await remplacerBasePhoning(cibleCible, contacts);
+  // Admin : enregistre la base partagée d'une cible (ajout ou remplacement).
+  const enregistrerBase = async (cibleCible: string, contacts: BaseContact[], mode: "ajouter" | "remplacer"): Promise<boolean> => {
+    const r = await remplacerBasePhoning(cibleCible, contacts, mode);
     if (!r) return false;
     if (cibleCible === cible) setBase(r);
     return true;
