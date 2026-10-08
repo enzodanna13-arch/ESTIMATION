@@ -351,6 +351,8 @@ export default function FormationPage({ onRetour }: { onRetour: () => void }) {
   const [niveau, setNiveau] = useState<"" | NiveauFormation>("");
   const [genAttest, setGenAttest] = useState(false);
   const [sync, setSync] = useState<"" | "charge" | "ok">("");
+  // Progression réalisée sur cet appareil SANS nom sélectionné (à récupérer).
+  const [recup, setRecup] = useState<Progres | null>(null);
 
   // Enregistre la progression : cache local immédiat + serveur si un négociateur est choisi.
   const persister = (p: Progres) => {
@@ -362,6 +364,7 @@ export default function FormationPage({ onRetour }: { onRetour: () => void }) {
   // Changement de négociateur : charge SA progression (le serveur fait foi).
   useEffect(() => {
     try { if (negoId) localStorage.setItem(CLE_NEGO, negoId); else localStorage.removeItem(CLE_NEGO); } catch { /* ignore */ }
+    setRecup(null);
     if (!negoId) { setProgres(lireProgres("")); setSync(""); return; }
     setProgres(lireProgres(negoId)); // cache local instantané
     let annule = false;
@@ -374,9 +377,22 @@ export default function FormationPage({ onRetour }: { onRetour: () => void }) {
       if (vide(serveur) && !vide(local)) { setProgres(local); void sauverProgresNego(negoId, local); }
       else { setProgres(serveur); ecrireProgres(negoId, serveur); }
       setSync("ok");
+      // Ce négociateur n'a aucune progression, mais une progression anonyme
+      // existe sur cet appareil (formation faite sans sélectionner son nom) →
+      // on propose de la lui attribuer.
+      const anon = lireProgres("");
+      if (vide(serveur) && vide(local) && !vide(anon)) setRecup(anon);
     })();
     return () => { annule = true; };
   }, [negoId]);
+
+  // Attribue la progression anonyme de l'appareil au négociateur sélectionné.
+  const attribuerRecup = () => {
+    if (!recup || !negoId) return;
+    persister(recup);        // enregistre sous ce négociateur + serveur
+    ecrireProgres("", {});   // vide la progression anonyme de l'appareil
+    setRecup(null);
+  };
 
   const avancement = (m: ModuleFormation) => avancementModule(m, progres[m.id]);
 
@@ -446,6 +462,17 @@ export default function FormationPage({ onRetour }: { onRetour: () => void }) {
       {!negoId && (
         <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
           Sélectionnez votre nom (en haut à droite) pour que <strong>votre progression soit enregistrée et visible par la direction</strong> dans « Suivi des négociateurs ». Sans sélection, elle reste uniquement sur cet appareil.
+        </div>
+      )}
+
+      {recup && negoId && (
+        <div className="mb-4 rounded-xl border border-copper/40 bg-copper/10 px-4 py-3 text-sm text-navy">
+          <div className="font-bold">📥 Progression à récupérer sur cet appareil</div>
+          <p className="mt-0.5 text-slate-600">Une formation a été réalisée <strong>sur cet appareil sans sélectionner de nom</strong> : {MODULES_FORMATION.filter((m) => recup[m.id]).map((m) => m.titre).join(", ") || "des modules"}. Est-ce la tienne ?</p>
+          <div className="mt-2 flex flex-wrap gap-2">
+            <button onClick={attribuerRecup} className="rounded-lg bg-navy px-4 py-1.5 text-xs font-bold text-white transition hover:bg-navy-deep">✓ Oui, c&apos;est ma progression — l&apos;attribuer à {APPRENANTS.find((m) => m.id === negoId)?.nom ?? "moi"}</button>
+            <button onClick={() => setRecup(null)} className="rounded-lg border border-slate-300 bg-white px-4 py-1.5 text-xs font-semibold text-slate-600 transition hover:bg-slate-50">Ignorer</button>
+          </div>
         </div>
       )}
 
