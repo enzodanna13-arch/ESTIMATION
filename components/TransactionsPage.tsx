@@ -7,6 +7,7 @@ import {
   CATEGORIES_TRANSACTION, type Transaction, type PieceTransaction,
 } from "@/lib/transactions";
 import { listDocuments, getDocument, type DocHistoryMeta } from "@/lib/history";
+import { chargerObjectifs, definirObjectif, OBJECTIF_CA_DEFAUT } from "@/lib/objectifs";
 import { NEGOCIATEURS } from "@/lib/equipe";
 
 const euro = (n: number) => n > 0 ? new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR", maximumFractionDigits: 0 }).format(n) : "—";
@@ -128,6 +129,8 @@ export default function TransactionsPage({ onRetour }: { onRetour: () => void })
           <span className="inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-copper/40 border-t-copper" />{etatIA}
         </p>
       )}
+
+      <SuiviObjectifCA transactions={liste ?? []} />
 
       {/* Zone de dépôt : glisser une attestation pour créer la transaction par IA */}
       <div
@@ -422,6 +425,142 @@ function FicheTransaction({ t, onFermer, onMaj }: { t: Transaction; onFermer: ()
           )}
         </div>
       </div>
+    </div>
+  );
+}
+
+const MOIS_COURT = ["Jan", "Fév", "Mar", "Avr", "Mai", "Juin", "Juil", "Août", "Sep", "Oct", "Nov", "Déc"];
+
+// Suivi d'atteinte de l'objectif annuel de CA (commissions), avec retard vs rythme
+// et objectifs mensuels pour rattraper. Objectif par année, éditable (admin).
+function SuiviObjectifCA({ transactions }: { transactions: Transaction[] }) {
+  const [objectifs, setObjectifs] = useState<Record<string, number>>({});
+  const [annee, setAnnee] = useState<number>(() => new Date().getFullYear());
+  const [edit, setEdit] = useState(false);
+  const [saisie, setSaisie] = useState("");
+  const [sauve, setSauve] = useState(false);
+
+  useEffect(() => { void (async () => setObjectifs(await chargerObjectifs()))(); }, []);
+
+  const objectif = objectifs[String(annee)] ?? OBJECTIF_CA_DEFAUT;
+
+  const d = useMemo(() => {
+    const parMoisCA = Array(12).fill(0) as number[];
+    for (const t of transactions) {
+      const ref = t.dateVente > 0 ? t.dateVente : t.createdAt;
+      const dt = new Date(ref);
+      if (dt.getFullYear() === annee && t.honoraires > 0) parMoisCA[dt.getMonth()] += t.honoraires;
+    }
+    const realise = parMoisCA.reduce((s, x) => s + x, 0);
+    const now = new Date();
+    const anneeCourante = now.getFullYear();
+    let prorata = 1;
+    if (annee > anneeCourante) prorata = 0;
+    else if (annee === anneeCourante) {
+      const debut = new Date(annee, 0, 1).getTime();
+      const fin = new Date(annee + 1, 0, 1).getTime();
+      prorata = Math.min(1, Math.max(0, (now.getTime() - debut) / (fin - debut)));
+    }
+    const attendu = objectif * prorata;
+    const retard = attendu - realise;
+    const reste = Math.max(0, objectif - realise);
+    const moisRestants = annee > anneeCourante ? 12 : annee < anneeCourante ? 0 : 12 - now.getMonth();
+    const parMoisCible = moisRestants > 0 ? reste / moisRestants : 0;
+    const moisRestantsIdx = annee === anneeCourante ? Array.from({ length: moisRestants }, (_, i) => now.getMonth() + i) : annee > anneeCourante ? Array.from({ length: 12 }, (_, i) => i) : [];
+    const pct = objectif > 0 ? Math.round((realise / objectif) * 100) : 0;
+    const cibleMensuelleLineaire = objectif / 12;
+    return { parMoisCA, realise, attendu, retard, reste, moisRestants, parMoisCible, moisRestantsIdx, pct, cibleMensuelleLineaire };
+  }, [transactions, annee, objectif]);
+
+  const enregistrer = async () => {
+    const montant = Number(saisie.replace(/[^0-9.]/g, "")) || 0;
+    const maj = await definirObjectif(annee, montant);
+    if (maj) { setObjectifs(maj); setSauve(true); setTimeout(() => setSauve(false), 2500); }
+    setEdit(false);
+  };
+
+  const maxBar = Math.max(d.cibleMensuelleLineaire, ...d.parMoisCA, 1);
+
+  return (
+    <div className="mb-5 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+      <div className="flex flex-wrap items-center gap-2">
+        <h3 className="text-lg font-bold text-navy">📈 Objectif chiffre d&apos;affaires {annee}</h3>
+        <div className="ml-auto flex items-center gap-1">
+          <button onClick={() => setAnnee((a) => a - 1)} className="rounded-lg border border-slate-200 px-2 py-1 text-sm text-slate-500 hover:bg-slate-50">←</button>
+          <span className="px-1 text-sm font-bold text-navy">{annee}</span>
+          <button onClick={() => setAnnee((a) => a + 1)} className="rounded-lg border border-slate-200 px-2 py-1 text-sm text-slate-500 hover:bg-slate-50">→</button>
+        </div>
+      </div>
+
+      <div className="mt-3">
+        <div className="flex flex-wrap items-end justify-between gap-2">
+          <div>
+            <div className="text-3xl font-black text-navy">{euro(d.realise)} <span className="text-base font-semibold text-slate-400">/ {euro(objectif)}</span></div>
+            <div className="text-xs text-slate-500">{d.pct}% de l&apos;objectif atteint</div>
+          </div>
+          {edit ? (
+            <div className="flex items-center gap-1">
+              <input autoFocus value={saisie} onChange={(e) => setSaisie(e.target.value)} placeholder={String(objectif)} className="w-28 rounded-lg border border-slate-300 px-2 py-1 text-sm" />
+              <button onClick={() => void enregistrer()} className="rounded-lg bg-navy px-3 py-1 text-xs font-bold text-white">OK</button>
+              <button onClick={() => setEdit(false)} className="rounded-lg border border-slate-200 px-2 py-1 text-xs text-slate-500">✕</button>
+            </div>
+          ) : (
+            <button onClick={() => { setSaisie(String(objectif)); setEdit(true); }} className="rounded-lg border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-500 hover:bg-slate-50">✏️ Modifier l&apos;objectif</button>
+          )}
+        </div>
+        <div className="mt-2 h-3 overflow-hidden rounded-full bg-slate-100">
+          <div className="h-full rounded-full bg-gradient-to-r from-copper to-emerald-500" style={{ width: `${Math.min(100, d.pct)}%` }} />
+        </div>
+        {sauve && <div className="mt-1 text-[11px] font-semibold text-emerald-600">✓ Objectif enregistré</div>}
+      </div>
+
+      <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
+        <TuileCA label="Attendu à ce jour" valeur={euro(d.attendu)} />
+        <TuileCA label={d.retard >= 0 ? "Retard" : "Avance"} valeur={euro(Math.abs(Math.round(d.retard)))} ton={d.retard >= 0 ? "rouge" : "vert"} />
+        <TuileCA label="Reste à réaliser" valeur={euro(d.reste)} />
+        <TuileCA label={`À faire /mois (${d.moisRestants} mois)`} valeur={d.moisRestants > 0 ? euro(Math.round(d.parMoisCible)) : "—"} ton="copper" />
+      </div>
+
+      {d.moisRestantsIdx.length > 0 && (
+        <div className="mt-3 rounded-xl border border-copper/30 bg-copper/5 p-3">
+          <div className="text-xs font-bold text-copper">🎯 Pour atteindre {euro(objectif)} : à réaliser chaque mois restant</div>
+          <div className="mt-1.5 flex flex-wrap gap-1.5">
+            {d.moisRestantsIdx.map((mi) => (
+              <span key={mi} className="rounded-lg bg-white px-2.5 py-1 text-xs font-semibold text-navy shadow-sm">{MOIS_COURT[mi]} : {euro(Math.round(d.parMoisCible))}</span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <div className="mt-4">
+        <div className="mb-1 flex items-center justify-between text-[11px] text-slate-400">
+          <span>CA encaissé par mois</span>
+          <span>- - rythme cible {euro(Math.round(d.cibleMensuelleLineaire))}/mois</span>
+        </div>
+        <div className="relative flex items-end gap-1" style={{ height: 120 }}>
+          <div className="pointer-events-none absolute inset-x-0 border-t border-dashed border-slate-300" style={{ bottom: `${(d.cibleMensuelleLineaire / maxBar) * 100}%` }} />
+          {d.parMoisCA.map((v, i) => {
+            const atteint = v >= d.cibleMensuelleLineaire && v > 0;
+            return (
+              <div key={i} className="flex flex-1 flex-col items-center justify-end" title={`${MOIS_COURT[i]} : ${euro(v)}`}>
+                <div className={`w-full rounded-t ${atteint ? "bg-emerald-400" : v > 0 ? "bg-copper" : "bg-slate-100"}`} style={{ height: `${Math.max(2, (v / maxBar) * 100)}%` }} />
+                <div className="mt-1 text-[9px] text-slate-400">{MOIS_COURT[i]}</div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+      <p className="mt-3 text-[11px] text-slate-400">Le CA est calculé à partir des <strong>honoraires d&apos;agence</strong> des transactions, par <strong>date de vente</strong>. Renseignez la date et les honoraires sur chaque transaction pour un suivi juste.</p>
+    </div>
+  );
+}
+
+function TuileCA({ label, valeur, ton = "neutre" }: { label: string; valeur: string; ton?: "neutre" | "rouge" | "vert" | "copper" }) {
+  const c = ton === "rouge" ? "text-red-600" : ton === "vert" ? "text-emerald-600" : ton === "copper" ? "text-copper" : "text-navy";
+  return (
+    <div className="rounded-xl border border-slate-200 bg-slate-50/60 p-2.5">
+      <div className={`text-lg font-extrabold ${c}`}>{valeur}</div>
+      <div className="text-[10px] font-semibold text-slate-500">{label}</div>
     </div>
   );
 }
