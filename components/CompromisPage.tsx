@@ -21,6 +21,24 @@ interface Piece {
 
 const OR = { r: 0.706, g: 0.592, b: 0.357 };
 
+// La police PDF standard (WinAnsi / CP1252) ne sait pas encoder certains
+// caractères Unicode (exposants comme « ᵉ » dans « 1ᵉ », lettres modificatrices,
+// espaces exotiques…). On normalise le texte avant de le dessiner : on garde le
+// Latin-1 + les caractères spéciaux CP1252 (guillemets courbes, tirets, puce, €…),
+// et on décompose le reste vers sa base ASCII (sinon on le retire).
+const WINANSI_EXTRA = new Set([..."€‚ƒ„…†‡ˆ‰Š‹ŒŽ‘’“”•–—˜™š›œžŸ"]);
+function safePdf(s?: string): string {
+  if (!s) return "";
+  let out = "";
+  for (const ch of s.normalize("NFC")) {
+    const code = ch.codePointAt(0) ?? 0;
+    if (code <= 0xff || WINANSI_EXTRA.has(ch)) { out += ch === " " ? " " : ch; continue; }
+    const dec = ch.normalize("NFKD").replace(/[̀-ͯ]/g, "");
+    for (const d of dec) { const c = d.codePointAt(0) ?? 0; if (c <= 0xff || WINANSI_EXTRA.has(d)) out += d; }
+  }
+  return out;
+}
+
 const inputCls =
   "w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 transition focus:border-copper focus:outline-none focus:ring-2 focus:ring-copper/20";
 
@@ -415,7 +433,7 @@ export default function CompromisPage({
         const font = opts.font ?? times;
         const size = opts.size ?? 11;
         const indent = opts.indent ?? 0;
-        for (const brut of texte.split("\n")) {
+        for (const brut of safePdf(texte).split("\n")) {
           for (const l of wrap(brut, font, size, LARG - indent)) {
             if (y < 96) nouvellePage();
             page.drawText(l, { x: M + indent, y, size, font, color: opts.couleur ?? noir });
@@ -433,7 +451,7 @@ export default function CompromisPage({
 
       // ----- La lettre -----
       enTetePdf();
-      const dateTxt = `Martigues, le ${dateStr}`;
+      const dateTxt = safePdf(`Martigues, le ${dateStr}`);
       page.drawText(dateTxt, { x: A4[0] - M - times.widthOfTextAtSize(dateTxt, 11), y, size: 11, font: times, color: noir });
       y -= 34;
       para(`Objet : ${objet}`, { font: timesB, size: 11.5, gap: 12 });
@@ -492,7 +510,7 @@ export default function CompromisPage({
       const pageGarde = (titre: string, pieces: Piece[]) => {
         const p = pdf.addPage(A4);
         p.drawText("CENTURY 21 — Icaza Immobilier", { x: M, y: A4[1] - 50, size: 10, font: helvB, color: or });
-        const t = titre.toUpperCase();
+        const t = safePdf(titre).toUpperCase();
         p.drawText(t, {
           x: (A4[0] - helvB.widthOfTextAtSize(t, 20)) / 2,
           y: A4[1] / 2 + 40,
@@ -502,7 +520,7 @@ export default function CompromisPage({
         });
         let yy = A4[1] / 2;
         for (const pc of pieces) {
-          const l = `•  ${pc.nom}`;
+          const l = safePdf(`•  ${pc.nom}`);
           p.drawText(l.length > 90 ? l.slice(0, 90) + "…" : l, {
             x: (A4[0] - Math.min(helv.widthOfTextAtSize(l, 11), LARG)) / 2,
             y: yy,
