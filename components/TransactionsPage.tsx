@@ -460,21 +460,30 @@ function SuiviObjectifCA({ transactions, onRefresh }: { transactions: Transactio
   const objectif = objectifs[String(annee)] ?? OBJECTIF_CA_DEFAUT;
 
   const d = useMemo(() => {
+    const now = new Date();
+    const anneeCourante = now.getFullYear();
     const parMoisCA = Array(12).fill(0) as number[];
     const anneeTx: Transaction[] = [];
     const sansHonoraires: Transaction[] = [];
     for (const t of transactions) {
-      const ref = t.dateVente > 0 ? t.dateVente : t.createdAt;
-      const dt = new Date(ref);
-      if (dt.getFullYear() !== annee) continue;
+      const date = t.dateVente > 0 ? t.dateVente : 0;
+      const dt = date ? new Date(date) : null;
+      // Transaction datée → compte dans l'année de sa date de vente.
+      // Transaction SANS date → comptée dans l'année en cours (toutes les
+      // transactions saisies sont de l'exercice courant).
+      const appartient = dt ? dt.getFullYear() === annee : annee === anneeCourante;
+      if (!appartient) continue;
       anneeTx.push(t);
-      if (t.honoraires > 0) parMoisCA[dt.getMonth()] += t.honoraires;
+      // Mois : date de vente si connue, sinon mois de création s'il tombe dans
+      // l'année, sinon le mois courant.
+      let mois: number;
+      if (dt) mois = dt.getMonth();
+      else { const dc = new Date(t.createdAt); mois = dc.getFullYear() === annee ? dc.getMonth() : now.getMonth(); }
+      if (t.honoraires > 0) parMoisCA[mois] += t.honoraires;
       else sansHonoraires.push(t);
     }
     const realise = parMoisCA.reduce((s, x) => s + x, 0);
     const nbAvec = anneeTx.length - sansHonoraires.length;
-    const now = new Date();
-    const anneeCourante = now.getFullYear();
     let prorata = 1;
     if (annee > anneeCourante) prorata = 0;
     else if (annee === anneeCourante) {
