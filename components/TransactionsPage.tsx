@@ -444,6 +444,8 @@ function SuiviObjectifCA({ transactions, onRefresh }: { transactions: Transactio
   const [qa, setQa] = useState({ montant: "", date: toInput(Date.now()), libelle: "", negociateur: "" });
   const [qaBusy, setQaBusy] = useState(false);
   const [fixOuvert, setFixOuvert] = useState(false);
+  const [anaBusy, setAnaBusy] = useState(false);
+  const [anaMsg, setAnaMsg] = useState<string | null>(null);
 
   useEffect(() => { void (async () => setObjectifs(await chargerObjectifs()))(); }, []);
 
@@ -509,6 +511,26 @@ function SuiviObjectifCA({ transactions, onRefresh }: { transactions: Transactio
     setEdit(false);
   };
 
+  // Analyse IA en lot des actes/promesses pour remplir les commissions manquantes.
+  const analyserCommissions = async () => {
+    const cibles = d.sansHonoraires.filter((t) => (t.pieces?.length ?? 0) > 0);
+    if (cibles.length === 0) { setAnaMsg("Aucun document à analyser : ajoute d'abord les PDF (compromis / acte) dans les dossiers."); return; }
+    setAnaBusy(true); let trouves = 0;
+    for (let i = 0; i < cibles.length; i++) {
+      const t = cibles[i];
+      const piece = choisirPieceCommission(t.pieces);
+      setAnaMsg(`Analyse ${i + 1}/${cibles.length} — ${t.bien || "vente"}…`);
+      if (!piece) continue;
+      try {
+        const r = await analyserPieceTransaction(t.id, piece.fileId);
+        if (r?.transaction && r.transaction.honoraires > 0) trouves++;
+      } catch { /* on continue */ }
+    }
+    setAnaBusy(false);
+    setAnaMsg(`✓ ${trouves} commission(s) trouvée(s) sur ${cibles.length} dossier(s) analysé(s).`);
+    onRefresh();
+  };
+
   const maxBar = Math.max(d.cibleMensuelleLineaire, ...d.parMoisCA, 1);
 
   return (
@@ -570,9 +592,13 @@ function SuiviObjectifCA({ transactions, onRefresh }: { transactions: Transactio
         <div className="mt-3 rounded-xl border border-amber-200 bg-amber-50 p-3">
           <div className="flex flex-wrap items-center gap-2">
             <span className="text-sm font-bold text-amber-800">⚠️ {d.sansHonoraires.length} vente(s) {annee} sans honoraires renseignés</span>
-            <span className="text-[11px] text-amber-700">— elles ne sont pas comptées dans le CA ({d.nbAvec} vente(s) comptée(s)). Renseigne la commission pour les ajouter.</span>
-            <button onClick={() => setFixOuvert((o) => !o)} className="ml-auto rounded-lg border border-amber-300 bg-white px-3 py-1 text-xs font-bold text-amber-800 hover:bg-amber-100">{fixOuvert ? "Masquer" : "Compléter"} {fixOuvert ? "▾" : "▸"}</button>
+            <span className="text-[11px] text-amber-700">— elles ne sont pas comptées dans le CA ({d.nbAvec} vente(s) comptée(s)).</span>
+            <div className="ml-auto flex items-center gap-1.5">
+              <button onClick={() => void analyserCommissions()} disabled={anaBusy} className="rounded-lg bg-copper px-3 py-1 text-xs font-bold text-white transition hover:brightness-110 disabled:opacity-50">{anaBusy ? "Analyse…" : "🪄 Analyser les actes (IA)"}</button>
+              <button onClick={() => setFixOuvert((o) => !o)} className="rounded-lg border border-amber-300 bg-white px-3 py-1 text-xs font-bold text-amber-800 hover:bg-amber-100">{fixOuvert ? "Masquer" : "Saisir à la main"} {fixOuvert ? "▾" : "▸"}</button>
+            </div>
           </div>
+          {anaMsg && <p className="mt-1.5 text-[11px] font-semibold text-amber-800">{anaMsg}</p>}
           {fixOuvert && (
             <div className="mt-2 space-y-1.5">
               {d.sansHonoraires.map((t) => (
@@ -656,4 +682,19 @@ function LigneHonoraires({ t, onRefresh }: { t: Transaction; onRefresh: () => vo
       <button onClick={() => void enregistrer()} disabled={busy || !(Number(val.replace(/[^0-9.]/g, "")) > 0)} className="rounded-lg bg-navy px-3 py-1 text-xs font-bold text-white transition hover:brightness-110 disabled:opacity-50">{busy ? "…" : "OK"}</button>
     </div>
   );
+}
+
+// Choisit, dans un dossier, la pièce la plus susceptible de contenir la commission
+// d'agence : acte de vente / compromis / promesse, puis attestation, puis facture.
+function choisirPieceCommission(pieces: PieceTransaction[]): PieceTransaction | null {
+  if (!pieces || pieces.length === 0) return null;
+  const rang = (p: PieceTransaction): number => {
+    const s = `${p.categorie} ${p.nom}`.toLowerCase();
+    if (/acte/.test(s)) return 0;
+    if (/compromis|promesse/.test(s)) return 1;
+    if (/attestation/.test(s)) return 2;
+    if (/facture/.test(s)) return 3;
+    return 4;
+  };
+  return [...pieces].sort((a, b) => rang(a) - rang(b))[0] ?? null;
 }

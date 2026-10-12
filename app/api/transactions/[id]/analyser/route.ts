@@ -20,26 +20,28 @@ function dateEnTs(s: string): number {
 interface ExtraitVente {
   bien?: string; adresse?: string; ville?: string; prixVente?: unknown;
   vendeur?: string; acquereur?: string; dateVente?: string; notaire?: string;
+  honoraires?: unknown;
 }
 
 async function extraire(b64: string): Promise<ExtraitVente | null> {
   if (!process.env.ANTHROPIC_API_KEY) return null;
   const client = new Anthropic();
   const consigne = [
-    "Ce document est une attestation de propriété / attestation de vente notariée (ou l'acte de vente).",
-    "Extrais les informations de la TRANSACTION IMMOBILIÈRE pour créer un dossier de vente.",
+    "Ce document est un acte notarial immobilier : compromis / promesse de vente, ou acte de vente / attestation.",
+    "Extrais les informations de la TRANSACTION IMMOBILIÈRE pour renseigner le dossier de vente.",
     "Renvoie EXCLUSIVEMENT ce JSON (chaîne vide si l'info est absente) :",
     "{",
     '  "bien": "type et désignation courte du bien (ex. « Maison individuelle », « Appartement T3 »)",',
     '  "adresse": "rue / voie du bien",',
     '  "ville": "commune du bien",',
-    '  "prixVente": "prix de vente en euros (nombre uniquement)",',
+    '  "prixVente": "prix de vente net vendeur en euros (nombre uniquement)",',
     '  "vendeur": "nom et prénom du ou des VENDEURS (séparés par « , »)",',
     '  "acquereur": "nom et prénom du ou des ACQUÉREURS (séparés par « , »)",',
     '  "dateVente": "date de l\'acte / de la vente au format JJ/MM/AAAA",',
-    '  "notaire": "nom du notaire ou de l\'étude"',
+    '  "notaire": "nom du notaire ou de l\'étude",',
+    '  "honoraires": "montant de la RÉMUNÉRATION / COMMISSION / HONORAIRES de l\'AGENCE IMMOBILIÈRE en euros TTC (nombre uniquement). On la trouve dans une clause « rémunération de l\'agence », « honoraires de négociation », « commission d\'agence » ou « frais d\'agence », à la charge de l\'acquéreur ou du vendeur. NE PAS confondre avec le prix de vente, les frais de notaire / émoluments, ni les droits d\'enregistrement."',
     "}",
-    "N'INVENTE RIEN : laisse vide si l'information ne figure pas clairement.",
+    "N'INVENTE RIEN : laisse vide si l'information ne figure pas clairement. Si le montant des honoraires d'agence n'apparaît pas, renvoie une chaîne vide pour « honoraires ».",
   ].join("\n");
 
   let msg: Anthropic.Message | null = null;
@@ -97,6 +99,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       adresse: texte(extrait.adresse) || t.adresse,
       ville: texte(extrait.ville) || t.ville,
       prixVente: nombre(extrait.prixVente) || t.prixVente,
+      honoraires: t.honoraires || nombre(extrait.honoraires),
       vendeur: texte(extrait.vendeur) || t.vendeur,
       acquereur: texte(extrait.acquereur) || t.acquereur,
       dateVente: dateEnTs(texte(extrait.dateVente)) || t.dateVente,
