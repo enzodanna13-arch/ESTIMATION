@@ -481,7 +481,8 @@ function SuiviObjectifCA({ transactions, onRefresh }: { transactions: Transactio
       let mois: number;
       if (dt) mois = dt.getMonth();
       else { const dc = new Date(t.createdAt); mois = dc.getFullYear() === annee ? dc.getMonth() : now.getMonth(); }
-      if (t.honoraires > 0) parMoisCA[mois] += t.honoraires;
+      // Honoraires stockés en TTC → on suit le CA en HT (TVA 20 %).
+      if (t.honoraires > 0) parMoisCA[mois] += t.honoraires / 1.2;
       else sansHonoraires.push(t);
     }
     const realise = parMoisCA.reduce((s, x) => s + x, 0);
@@ -536,7 +537,7 @@ function SuiviObjectifCA({ transactions, onRefresh }: { transactions: Transactio
   return (
     <div className="mb-5 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
       <div className="flex flex-wrap items-center gap-2">
-        <h3 className="text-lg font-bold text-navy">📈 Objectif chiffre d&apos;affaires {annee}</h3>
+        <h3 className="text-lg font-bold text-navy">📈 Objectif chiffre d&apos;affaires {annee} <span className="text-xs font-semibold text-slate-400">· HT (TVA 20 %)</span></h3>
         <div className="ml-auto flex items-center gap-1">
           <button onClick={() => setAnnee((a) => a - 1)} className="rounded-lg border border-slate-200 px-2 py-1 text-sm text-slate-500 hover:bg-slate-50">←</button>
           <span className="px-1 text-sm font-bold text-navy">{annee}</span>
@@ -573,7 +574,7 @@ function SuiviObjectifCA({ transactions, onRefresh }: { transactions: Transactio
           <div className="mt-2 rounded-xl border border-slate-200 bg-slate-50/60 p-3">
             <p className="mb-2 text-[11px] text-slate-500">Rattrape vite les ventes signées non encore saisies : indique le <strong>montant des honoraires</strong> et la <strong>date de vente</strong>. Chaque ajout crée une transaction et met à jour le CA immédiatement.</p>
             <div className="grid gap-2 sm:grid-cols-4">
-              <input value={qa.montant} onChange={(e) => setQa({ ...qa, montant: e.target.value })} inputMode="decimal" placeholder="Honoraires € *" className={inputCls} onKeyDown={(e) => { if (e.key === "Enter") void ajoutRapide(); }} />
+              <input value={qa.montant} onChange={(e) => setQa({ ...qa, montant: e.target.value })} inputMode="decimal" placeholder="Honoraires € TTC *" className={inputCls} onKeyDown={(e) => { if (e.key === "Enter") void ajoutRapide(); }} />
               <label className="text-[11px] text-slate-500">Date de vente *<input type="date" value={qa.date} onChange={(e) => setQa({ ...qa, date: e.target.value })} className={inputCls} /></label>
               <input value={qa.libelle} onChange={(e) => setQa({ ...qa, libelle: e.target.value })} placeholder="Bien / libellé (option.)" className={inputCls} />
               <input value={qa.negociateur} onChange={(e) => setQa({ ...qa, negociateur: e.target.value })} placeholder="Négociateur (option.)" list="negos-ca" className={inputCls} />
@@ -629,7 +630,7 @@ function SuiviObjectifCA({ transactions, onRefresh }: { transactions: Transactio
 
       <div className="mt-4">
         <div className="mb-1 flex items-center justify-between text-[11px] text-slate-400">
-          <span>CA encaissé par mois</span>
+          <span>CA encaissé par mois (HT)</span>
           <span>- - rythme cible {euro(Math.round(d.cibleMensuelleLineaire))}/mois</span>
         </div>
         <div className="relative flex items-end gap-1" style={{ height: 120 }}>
@@ -645,7 +646,7 @@ function SuiviObjectifCA({ transactions, onRefresh }: { transactions: Transactio
           })}
         </div>
       </div>
-      <p className="mt-3 text-[11px] text-slate-400">Le CA est calculé à partir des <strong>honoraires d&apos;agence</strong> des transactions, par <strong>date de vente</strong>. Renseignez la date et les honoraires sur chaque transaction pour un suivi juste.</p>
+      <p className="mt-3 text-[11px] text-slate-400">CA en <strong>HT</strong> : les honoraires sont saisis en TTC et convertis en HT (÷ 1,20, TVA 20 %). Calcul par <strong>date de vente</strong>. Renseignez la date et les honoraires sur chaque transaction pour un suivi juste.</p>
     </div>
   );
 }
@@ -678,7 +679,7 @@ function LigneHonoraires({ t, onRefresh }: { t: Transaction; onRefresh: () => vo
         <div className="truncate text-xs font-semibold text-navy">{t.bien || "Vente"}</div>
         <div className="text-[10px] text-slate-400">{[t.ville, dateFr(t.dateVente || t.createdAt), t.negociateur].filter((x) => x && x !== "—").join(" · ")}{t.prixVente > 0 ? ` · prix ${euro(t.prixVente)}` : ""}</div>
       </div>
-      <input value={val} onChange={(e) => setVal(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") void enregistrer(); }} inputMode="decimal" placeholder="Honoraires €" className="w-28 rounded-lg border border-slate-300 px-2 py-1 text-sm focus:border-copper focus:outline-none" />
+      <input value={val} onChange={(e) => setVal(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") void enregistrer(); }} inputMode="decimal" placeholder="Honoraires € TTC" className="w-28 rounded-lg border border-slate-300 px-2 py-1 text-sm focus:border-copper focus:outline-none" />
       <button onClick={() => void enregistrer()} disabled={busy || !(Number(val.replace(/[^0-9.]/g, "")) > 0)} className="rounded-lg bg-navy px-3 py-1 text-xs font-bold text-white transition hover:brightness-110 disabled:opacity-50">{busy ? "…" : "OK"}</button>
     </div>
   );
