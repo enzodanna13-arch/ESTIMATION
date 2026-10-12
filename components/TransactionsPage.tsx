@@ -130,7 +130,7 @@ export default function TransactionsPage({ onRetour }: { onRetour: () => void })
         </p>
       )}
 
-      <SuiviObjectifCA transactions={liste ?? []} />
+      <SuiviObjectifCA transactions={liste ?? []} onRefresh={recharger} />
 
       {/* Zone de dépôt : glisser une attestation pour créer la transaction par IA */}
       <div
@@ -433,25 +433,46 @@ const MOIS_COURT = ["Jan", "Fév", "Mar", "Avr", "Mai", "Juin", "Juil", "Août",
 
 // Suivi d'atteinte de l'objectif annuel de CA (commissions), avec retard vs rythme
 // et objectifs mensuels pour rattraper. Objectif par année, éditable (admin).
-function SuiviObjectifCA({ transactions }: { transactions: Transaction[] }) {
+function SuiviObjectifCA({ transactions, onRefresh }: { transactions: Transaction[]; onRefresh: () => void }) {
   const [objectifs, setObjectifs] = useState<Record<string, number>>({});
   const [annee, setAnnee] = useState<number>(() => new Date().getFullYear());
   const [edit, setEdit] = useState(false);
   const [saisie, setSaisie] = useState("");
   const [sauve, setSauve] = useState(false);
+  // Ajout rapide d'une commission déjà signée (backfill du CA).
+  const [qaOuvert, setQaOuvert] = useState(false);
+  const [qa, setQa] = useState({ montant: "", date: toInput(Date.now()), libelle: "", negociateur: "" });
+  const [qaBusy, setQaBusy] = useState(false);
+  const [fixOuvert, setFixOuvert] = useState(false);
 
   useEffect(() => { void (async () => setObjectifs(await chargerObjectifs()))(); }, []);
+
+  const ajoutRapide = async () => {
+    const montant = Number(qa.montant.replace(/[^0-9.]/g, "")) || 0;
+    const dateVente = fromInput(qa.date);
+    if (montant <= 0 || !dateVente) return;
+    setQaBusy(true);
+    const t = await createTransaction({ bien: qa.libelle.trim() || "Commission", honoraires: montant, dateVente, negociateur: qa.negociateur.trim(), prixVente: 0, ville: "", adresse: "", vendeur: "", acquereur: "", notes: "Commission saisie pour le suivi de CA" });
+    setQaBusy(false);
+    if (t) { setQa((q) => ({ ...q, montant: "", libelle: "" })); onRefresh(); }
+  };
 
   const objectif = objectifs[String(annee)] ?? OBJECTIF_CA_DEFAUT;
 
   const d = useMemo(() => {
     const parMoisCA = Array(12).fill(0) as number[];
+    const anneeTx: Transaction[] = [];
+    const sansHonoraires: Transaction[] = [];
     for (const t of transactions) {
       const ref = t.dateVente > 0 ? t.dateVente : t.createdAt;
       const dt = new Date(ref);
-      if (dt.getFullYear() === annee && t.honoraires > 0) parMoisCA[dt.getMonth()] += t.honoraires;
+      if (dt.getFullYear() !== annee) continue;
+      anneeTx.push(t);
+      if (t.honoraires > 0) parMoisCA[dt.getMonth()] += t.honoraires;
+      else sansHonoraires.push(t);
     }
     const realise = parMoisCA.reduce((s, x) => s + x, 0);
+    const nbAvec = anneeTx.length - sansHonoraires.length;
     const now = new Date();
     const anneeCourante = now.getFullYear();
     let prorata = 1;
@@ -469,7 +490,7 @@ function SuiviObjectifCA({ transactions }: { transactions: Transaction[] }) {
     const moisRestantsIdx = annee === anneeCourante ? Array.from({ length: moisRestants }, (_, i) => now.getMonth() + i) : annee > anneeCourante ? Array.from({ length: 12 }, (_, i) => i) : [];
     const pct = objectif > 0 ? Math.round((realise / objectif) * 100) : 0;
     const cibleMensuelleLineaire = objectif / 12;
-    return { parMoisCA, realise, attendu, retard, reste, moisRestants, parMoisCible, moisRestantsIdx, pct, cibleMensuelleLineaire };
+    return { parMoisCA, realise, attendu, retard, reste, moisRestants, parMoisCible, moisRestantsIdx, pct, cibleMensuelleLineaire, anneeTx, sansHonoraires, nbAvec };
   }, [transactions, annee, objectif]);
 
   const enregistrer = async () => {
@@ -513,6 +534,45 @@ function SuiviObjectifCA({ transactions }: { transactions: Transaction[] }) {
         </div>
         {sauve && <div className="mt-1 text-[11px] font-semibold text-emerald-600">✓ Objectif enregistré</div>}
       </div>
+
+      {/* Ajout rapide des commissions déjà signées mais pas encore saisies */}
+      <div className="mt-3">
+        <button onClick={() => setQaOuvert((o) => !o)} className="rounded-lg border border-copper/40 bg-copper/10 px-3 py-1.5 text-xs font-bold text-copper transition hover:bg-copper/20">➕ Ajouter une commission déjà signée {qaOuvert ? "▾" : "▸"}</button>
+        {qaOuvert && (
+          <div className="mt-2 rounded-xl border border-slate-200 bg-slate-50/60 p-3">
+            <p className="mb-2 text-[11px] text-slate-500">Rattrape vite les ventes signées non encore saisies : indique le <strong>montant des honoraires</strong> et la <strong>date de vente</strong>. Chaque ajout crée une transaction et met à jour le CA immédiatement.</p>
+            <div className="grid gap-2 sm:grid-cols-4">
+              <input value={qa.montant} onChange={(e) => setQa({ ...qa, montant: e.target.value })} inputMode="decimal" placeholder="Honoraires € *" className={inputCls} onKeyDown={(e) => { if (e.key === "Enter") void ajoutRapide(); }} />
+              <label className="text-[11px] text-slate-500">Date de vente *<input type="date" value={qa.date} onChange={(e) => setQa({ ...qa, date: e.target.value })} className={inputCls} /></label>
+              <input value={qa.libelle} onChange={(e) => setQa({ ...qa, libelle: e.target.value })} placeholder="Bien / libellé (option.)" className={inputCls} />
+              <input value={qa.negociateur} onChange={(e) => setQa({ ...qa, negociateur: e.target.value })} placeholder="Négociateur (option.)" list="negos-ca" className={inputCls} />
+              <datalist id="negos-ca">{NEGOCIATEURS.map((n) => <option key={n} value={n} />)}</datalist>
+            </div>
+            <div className="mt-2 flex items-center gap-2">
+              <button onClick={() => void ajoutRapide()} disabled={qaBusy || !(Number(qa.montant.replace(/[^0-9.]/g, "")) > 0) || !qa.date} className="rounded-lg bg-navy px-4 py-1.5 text-xs font-bold text-white transition hover:brightness-110 disabled:opacity-50">{qaBusy ? "Ajout…" : "Ajouter au CA"}</button>
+              <span className="text-[11px] text-slate-400">Le formulaire reste ouvert pour en enchaîner plusieurs.</span>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Diagnostic : ventes de l'année sans honoraires renseignés (non comptées) */}
+      {d.sansHonoraires.length > 0 && (
+        <div className="mt-3 rounded-xl border border-amber-200 bg-amber-50 p-3">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-sm font-bold text-amber-800">⚠️ {d.sansHonoraires.length} vente(s) {annee} sans honoraires renseignés</span>
+            <span className="text-[11px] text-amber-700">— elles ne sont pas comptées dans le CA ({d.nbAvec} vente(s) comptée(s)). Renseigne la commission pour les ajouter.</span>
+            <button onClick={() => setFixOuvert((o) => !o)} className="ml-auto rounded-lg border border-amber-300 bg-white px-3 py-1 text-xs font-bold text-amber-800 hover:bg-amber-100">{fixOuvert ? "Masquer" : "Compléter"} {fixOuvert ? "▾" : "▸"}</button>
+          </div>
+          {fixOuvert && (
+            <div className="mt-2 space-y-1.5">
+              {d.sansHonoraires.map((t) => (
+                <LigneHonoraires key={t.id} t={t} onRefresh={onRefresh} />
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
         <TuileCA label="Attendu à ce jour" valeur={euro(d.attendu)} />
@@ -561,6 +621,30 @@ function TuileCA({ label, valeur, ton = "neutre" }: { label: string; valeur: str
     <div className="rounded-xl border border-slate-200 bg-slate-50/60 p-2.5">
       <div className={`text-lg font-extrabold ${c}`}>{valeur}</div>
       <div className="text-[10px] font-semibold text-slate-500">{label}</div>
+    </div>
+  );
+}
+
+// Ligne de complétion rapide des honoraires d'une vente (pour l'intégrer au CA).
+function LigneHonoraires({ t, onRefresh }: { t: Transaction; onRefresh: () => void }) {
+  const [val, setVal] = useState("");
+  const [busy, setBusy] = useState(false);
+  const enregistrer = async () => {
+    const h = Number(val.replace(/[^0-9.]/g, "")) || 0;
+    if (h <= 0) return;
+    setBusy(true);
+    const maj = await updateTransaction(t.id, { honoraires: h });
+    setBusy(false);
+    if (maj) onRefresh();
+  };
+  return (
+    <div className="flex flex-wrap items-center gap-2 rounded-lg bg-white px-2.5 py-1.5">
+      <div className="min-w-[160px] flex-1">
+        <div className="truncate text-xs font-semibold text-navy">{t.bien || "Vente"}</div>
+        <div className="text-[10px] text-slate-400">{[t.ville, dateFr(t.dateVente || t.createdAt), t.negociateur].filter((x) => x && x !== "—").join(" · ")}{t.prixVente > 0 ? ` · prix ${euro(t.prixVente)}` : ""}</div>
+      </div>
+      <input value={val} onChange={(e) => setVal(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") void enregistrer(); }} inputMode="decimal" placeholder="Honoraires €" className="w-28 rounded-lg border border-slate-300 px-2 py-1 text-sm focus:border-copper focus:outline-none" />
+      <button onClick={() => void enregistrer()} disabled={busy || !(Number(val.replace(/[^0-9.]/g, "")) > 0)} className="rounded-lg bg-navy px-3 py-1 text-xs font-bold text-white transition hover:brightness-110 disabled:opacity-50">{busy ? "…" : "OK"}</button>
     </div>
   );
 }
