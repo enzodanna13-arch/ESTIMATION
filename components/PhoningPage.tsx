@@ -18,6 +18,11 @@ const ACTIONS: { label: string; icone: string; statut: string; type: TypeAction;
 const CLE_NEGO = "phoning:nego:v1";
 const APPRENANTS = EQUIPE.filter((m) => m.sections.some((s) => s === "transaction" || s === "gestion"));
 
+// Session guidée : nombre d'appels par session + statuts considérés « traités »
+// (donc exclus de la file). Les autres contacts sont à (r)appeler.
+const SESSION_TAILLE = 80;
+const STATUTS_TERMINES = ["RDV fixé", "Mandat / Vente", "Pas intéressé"];
+
 const STYLE_STATUT: Record<string, string> = {
   "À appeler": "bg-slate-100 text-slate-600",
   "Répondeur": "bg-amber-100 text-amber-700",
@@ -292,6 +297,10 @@ export default function PhoningPage({ onRetour, estAdmin = false }: { onRetour: 
   const [aAppelerSeul, setAAppelerSeul] = useState(false);
   const [limite, setLimite] = useState(40);
   const [noteOuverte, setNoteOuverte] = useState<string | null>(null);
+  // Session guidée (défilement client par client, façon code de la route).
+  const [sessionIds, setSessionIds] = useState<string[] | null>(null);
+  const [sessIdx, setSessIdx] = useState(0);
+  const [sessFini, setSessFini] = useState(false);
 
   const estManager = (EQUIPE.find((m) => m.id === negoId)?.role ?? "").toLowerCase().includes("responsable");
 
@@ -318,6 +327,37 @@ export default function PhoningPage({ onRetour, estAdmin = false }: { onRetour: 
     }
   };
   const resetSession = () => { setSessAppels(0); setSessRdv(0); setStreak(0); setRemotiv(null); setCelebr(null); };
+
+  // --- Session guidée ---
+  // Lance une session : file d'au plus 80 contacts à (r)appeler de la cible,
+  // jamais appelés en priorité puis les plus anciens. Le négociateur ne choisit
+  // personne : tout le monde finit par être appelé.
+  const lancerSession = () => {
+    const aFaire = (data[cible] ?? []).filter((l) => !STATUTS_TERMINES.includes(l.statut) && (l.contact || l.tel));
+    const rang = (l: LignePhoning) => (!l.statut || l.statut === "À appeler" ? 0 : 1);
+    const tri = [...aFaire].sort((a, b) => rang(a) - rang(b) || (a.date ?? 0) - (b.date ?? 0) || a.createdAt - b.createdAt);
+    const ids = tri.slice(0, SESSION_TAILLE).map((l) => l.id);
+    if (ids.length === 0) { setCelebr("✅ Tous les contacts de cette cible sont déjà traités — bravo !"); return; }
+    resetSession();
+    setSessionIds(ids); setSessIdx(0); setSessFini(false);
+    window.scrollTo({ top: 0 });
+  };
+  // Pointe le résultat du client courant puis enchaîne automatiquement.
+  const pointerSession = (action: typeof ACTIONS[number]) => {
+    if (!sessionIds) return;
+    const id = sessionIds[sessIdx];
+    pointer(id, action);
+    if (action.statut === "Rappel") modifier(id, { rappel: Date.now() + 2 * 86400000 });
+    if (sessIdx + 1 >= sessionIds.length) setSessFini(true);
+    else setSessIdx((i) => i + 1);
+  };
+  const passerSession = () => {
+    if (!sessionIds) return;
+    if (sessIdx + 1 >= sessionIds.length) setSessFini(true);
+    else setSessIdx((i) => i + 1);
+  };
+  const quitterSession = () => { setSessionIds(null); setSessFini(false); setRemotiv(null); setCelebr(null); };
+  const ligneSession = sessionIds ? (data[cible] ?? []).find((l) => l.id === sessionIds[sessIdx]) : null;
 
   // Masque la félicitation après quelques secondes.
   useEffect(() => { if (!celebr) return; const t = window.setTimeout(() => setCelebr(null), 5000); return () => window.clearTimeout(t); }, [celebr]);
@@ -440,6 +480,63 @@ export default function PhoningPage({ onRetour, estAdmin = false }: { onRetour: 
         <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-4 text-sm text-amber-800">
           Sélectionnez votre nom (en haut à droite) pour remplir vos tableaux de phoning. Votre activité est enregistrée et <strong>visible par la direction</strong> (bouton « Vue équipe »).
         </div>
+      ) : sessionIds && !sessFini ? (
+        <div className="mx-auto max-w-2xl">
+          <div className="mb-3 flex items-center gap-3">
+            <button onClick={quitterSession} className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-semibold text-slate-600 transition hover:bg-slate-100">← Quitter</button>
+            <div className="flex-1">
+              <div className="flex items-center justify-between text-xs font-semibold text-slate-500"><span>Appel {sessIdx + 1} / {sessionIds.length}</span><span>{sessAppels} fait(s) · {sessRdv} RDV</span></div>
+              <div className="mt-1 h-2 overflow-hidden rounded-full bg-slate-100"><div className="h-full rounded-full bg-copper transition-all" style={{ width: `${(sessIdx / sessionIds.length) * 100}%` }} /></div>
+            </div>
+          </div>
+
+          {remotiv && (
+            <div className="mb-3 flex items-start gap-3 rounded-2xl border border-copper/30 bg-gradient-to-br from-copper to-copper/80 p-4 text-white shadow-md">
+              <span className="text-2xl">💬</span>
+              <div className="flex-1"><div className="text-[11px] font-bold uppercase tracking-wider text-white/80">Message de ton manager</div><p className="mt-0.5 text-[15px] font-semibold leading-snug">« {remotiv} »</p><div className="mt-1 text-xs text-white/80">— Enzo</div></div>
+              <button onClick={() => setRemotiv(null)} className="shrink-0 rounded-lg bg-white/15 px-3 py-1.5 text-sm font-bold transition hover:bg-white/25">Je repars ! 💪</button>
+            </div>
+          )}
+          {celebr && <div className="mb-3 rounded-2xl border border-emerald-200 bg-emerald-50 p-3 text-center text-[15px] font-bold text-emerald-800 shadow-sm">{celebr}</div>}
+
+          {ligneSession ? (
+            <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+              <div className="text-center">
+                <div className="text-[11px] font-bold uppercase tracking-wider text-copper">{scriptCourant.icone} {scriptCourant.titre}</div>
+                <div className="mt-1 text-2xl font-black text-navy">{ligneSession.contact || "Contact"}</div>
+                {ligneSession.tel
+                  ? <a href={`tel:${ligneSession.tel.replace(/\s+/g, "")}`} className="mt-2 inline-flex items-center gap-2 rounded-xl bg-emerald-500 px-5 py-2.5 text-lg font-bold text-white transition hover:brightness-110">📞 {ligneSession.tel}</a>
+                  : <div className="mt-2 text-sm text-slate-400">Pas de téléphone renseigné</div>}
+              </div>
+              {parseInfos(ligneSession.notes).length > 0 && (
+                <div className="mt-3 flex flex-wrap justify-center gap-x-3 gap-y-0.5 text-[12px] leading-snug">
+                  {parseInfos(ligneSession.notes).map((it, i) => <span key={i}>{it.label && <span className="text-slate-400">{it.label} : </span>}<span className="font-medium text-slate-700">{it.value}</span></span>)}
+                </div>
+              )}
+              {ligneSession.statut && ligneSession.statut !== "À appeler" && <div className="mt-2 text-center"><span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${STYLE_STATUT[ligneSession.statut] ?? "bg-slate-100 text-slate-600"}`}>déjà : {ligneSession.statut}</span></div>}
+
+              <div className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-5">
+                {ACTIONS.map((a) => (
+                  <button key={a.label} onClick={() => pointerSession(a)} className={`flex flex-col items-center gap-1 rounded-xl border px-2 py-3 text-sm font-bold transition ${a.cls}`}>
+                    <span className="text-2xl">{a.icone}</span>{a.label}
+                  </button>
+                ))}
+              </div>
+              <div className="mt-2 text-center"><button onClick={passerSession} className="text-xs font-semibold text-slate-400 transition hover:text-slate-600">⏭️ Passer ce contact</button></div>
+
+              <details className="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-3">
+                <summary className="cursor-pointer text-sm font-bold text-navy">📄 Voir le script d&apos;appel</summary>
+                <div className="mt-2 space-y-3">
+                  {scriptCourant.blocs.map((b, bi) => (<div key={bi}><h4 className="mb-1 text-[12px] font-bold uppercase tracking-wider text-copper">{b.titre}</h4><ul className="space-y-1">{b.lignes.map((l, li) => <LigneScript key={li} l={l} k={`${bi}-${li}`} />)}</ul></div>))}
+                </div>
+              </details>
+            </div>
+          ) : (
+            <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center text-slate-400">Contact introuvable. <button onClick={passerSession} className="font-semibold text-copper underline">Suivant →</button></div>
+          )}
+        </div>
+      ) : sessionIds && sessFini ? (
+        <RecapSession ids={sessionIds} lignes={data[cible] ?? []} appels={sessAppels} onNouvelle={lancerSession} onFermer={quitterSession} />
       ) : (
         <>
           {/* onglets de cible */}
@@ -453,6 +550,21 @@ export default function PhoningPage({ onRetour, estAdmin = false }: { onRetour: 
               );
             })}
           </div>
+
+          {/* Lancer une session guidée (défilement client par client) */}
+          {(() => {
+            const aFaire = (data[cible] ?? []).filter((l) => !STATUTS_TERMINES.includes(l.statut) && (l.contact || l.tel)).length;
+            return (
+              <div className="mb-4 flex flex-wrap items-center gap-3 rounded-2xl border border-copper/30 bg-gradient-to-br from-navy to-navy/90 p-4 text-white shadow-sm">
+                <span className="text-3xl">🎧</span>
+                <div className="mr-auto">
+                  <div className="text-base font-bold">Lancer une session de phoning</div>
+                  <div className="text-xs text-white/70">Les contacts défilent un par un (jusqu&apos;à {SESSION_TAILLE}) — tu ne choisis personne, tout le monde est appelé. {aFaire} contact(s) à appeler.</div>
+                </div>
+                <button onClick={lancerSession} disabled={aFaire === 0} className="rounded-xl bg-copper px-5 py-2.5 text-sm font-bold text-white transition hover:brightness-110 disabled:opacity-50">▶ Démarrer ({Math.min(aFaire, SESSION_TAILLE)})</button>
+              </div>
+            );
+          })()}
 
           {/* stats globales du négociateur */}
           <div className="mb-4 grid grid-cols-3 gap-2 sm:grid-cols-6">
@@ -673,6 +785,29 @@ function VueEquipe({ equipe, onFermer }: { equipe: Record<string, PhoningData>; 
         </table>
       </div>
       <p className="mt-3 text-xs text-slate-400">Consolidé en temps réel à partir des tableaux remplis par chaque négociateur (toutes cibles confondues).</p>
+    </div>
+  );
+}
+
+// Récapitulatif de fin de session guidée.
+function RecapSession({ ids, lignes, appels, onNouvelle, onFermer }: { ids: string[]; lignes: LignePhoning[]; appels: number; onNouvelle: () => void; onFermer: () => void }) {
+  const byId = new Map(lignes.map((l) => [l.id, l]));
+  const cnt = (statut: string) => ids.filter((id) => byId.get(id)?.statut === statut).length;
+  const cases: [string, number][] = [["✅ RDV", cnt("RDV fixé")], ["🏆 Mandats", cnt("Mandat / Vente")], ["❌ Non", cnt("Pas intéressé")], ["📵 Pas décroché", cnt("Répondeur")], ["🔁 Rappels", cnt("Rappel")]];
+  return (
+    <div className="mx-auto max-w-lg rounded-3xl border border-slate-200 bg-white p-8 text-center shadow-sm">
+      <div className="text-5xl">🎉</div>
+      <h3 className="mt-2 text-xl font-bold text-navy">Session terminée !</h3>
+      <p className="text-sm text-slate-500">{appels} appel(s) pointé(s) sur {ids.length} contact(s).</p>
+      <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-5">
+        {cases.map(([l, v]) => (
+          <div key={l} className="rounded-xl border border-slate-200 bg-slate-50 p-3"><div className="text-xl font-extrabold text-navy">{v}</div><div className="text-[11px] text-slate-500">{l}</div></div>
+        ))}
+      </div>
+      <div className="mt-5 flex flex-wrap justify-center gap-2">
+        <button onClick={onNouvelle} className="rounded-xl bg-navy px-5 py-2.5 text-sm font-bold text-white transition hover:brightness-110">🎧 Nouvelle session</button>
+        <button onClick={onFermer} className="rounded-xl border border-slate-300 bg-white px-5 py-2.5 text-sm font-semibold text-slate-600 transition hover:bg-slate-50">Revenir au tableau</button>
+      </div>
     </div>
   );
 }
