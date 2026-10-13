@@ -280,26 +280,34 @@ export default function CompromisPage({
     setIaEnCours(true);
     setIaMessage(null);
     try {
-      // Limite d'envoi serveur (~4,5 Mo) : les pièces les plus légères d'abord
+      // Limite d'envoi serveur ~4,5 Mo : le base64 gonfle les octets d'environ
+      // 1/3, donc on plafonne le brut à ~3 Mo (≈ 4 Mo en base64). Pièces les plus
+      // légères d'abord (le règlement de copropriété, lourd et inutile ici, est
+      // naturellement écarté).
       const triees = [...toutes].sort((a, b) => a.taille - b.taille);
       let total = 0;
       const retenues: Piece[] = [];
       for (const p of triees) {
-        if (total + p.taille > 3_800_000) continue;
+        if (total + p.taille > 3_000_000) continue;
         total += p.taille;
         retenues.push(p);
       }
-      if (retenues.length === 0) throw new Error("Pièces trop lourdes pour la lecture IA (limite ~4 Mo)");
+      if (retenues.length === 0) throw new Error("Pièces trop lourdes pour la lecture IA. Retire les gros PDF (ex. règlement de copropriété) et garde les pièces utiles (identité, offre, mandat, taxe foncière).");
       const res = await fetch("/api/compromis-extract", {
         method: "POST",
         headers: { "content-type": "application/json", "x-history-key": getHistoryKey() },
         body: JSON.stringify({ fichiers: retenues.map((p) => ({ nom: p.nom, data: bufToB64(p.data) })) }),
       });
-      const body = (await res.json()) as {
-        champs?: Record<string, string | number>;
-        lots?: { numero: string; nature: string }[];
-        error?: string;
-      };
+      // Réponse robuste : si le serveur renvoie du texte (ex. « Request Entity
+      // Too Large »), on affiche un message clair au lieu d'une erreur JSON.
+      const brut = await res.text();
+      let body: { champs?: Record<string, string | number>; lots?: { numero: string; nature: string }[]; error?: string };
+      try { body = JSON.parse(brut) as typeof body; }
+      catch {
+        throw new Error(res.status === 413 || /too large|entity/i.test(brut)
+          ? "Pièces trop volumineuses pour l'IA. Retire les gros PDF (ex. règlement de copropriété) et garde les pièces utiles, puis réessaie."
+          : "Lecture impossible (réponse du serveur illisible). Réessaie avec des PDF plus légers.");
+      }
       if (!res.ok || !body.champs) throw new Error(body.error ?? "Lecture impossible");
       const champs = body.champs;
       const lotsIA = (body.lots ?? []).filter((l) => l.numero?.trim());
