@@ -48,19 +48,26 @@ export async function listerPhoning(): Promise<Record<string, PhoningData>> {
 export interface StatsPhoning {
   total: number;
   aAppeler: number;
-  appeles: number;   // tout contact avec un statut autre que « À appeler »
+  appeles: number;      // tout contact avec un statut autre que « À appeler » = appels passés
+  decroches: number;    // le contact a décroché (hors répondeur / injoignable)
+  nonDecroches: number; // répondeur / injoignable
+  nonInteresses: number;
   rdv: number;
   mandats: number;
-  rappels: number;   // statut « Rappel » ou rappel daté dans le futur/passé
+  rappels: number;      // statut « Rappel » ou rappel daté dans le futur/passé
 }
 
 const estAppele = (s: string) => s && s !== "À appeler";
+const SANS_DECROCHE = ["Répondeur", "Injoignable"];
 
 export function statsLignes(lignes: LignePhoning[]): StatsPhoning {
-  const st: StatsPhoning = { total: 0, aAppeler: 0, appeles: 0, rdv: 0, mandats: 0, rappels: 0 };
+  const st: StatsPhoning = { total: 0, aAppeler: 0, appeles: 0, decroches: 0, nonDecroches: 0, nonInteresses: 0, rdv: 0, mandats: 0, rappels: 0 };
   for (const l of lignes) {
     st.total++;
-    if (!estAppele(l.statut)) st.aAppeler++; else st.appeles++;
+    if (!estAppele(l.statut)) { st.aAppeler++; continue; }
+    st.appeles++;
+    if (SANS_DECROCHE.includes(l.statut)) st.nonDecroches++; else st.decroches++;
+    if (l.statut === "Pas intéressé") st.nonInteresses++;
     if (l.statut === "RDV fixé") st.rdv++;
     if (l.statut === "Mandat / Vente") st.mandats++;
     if (l.statut === "Rappel" || l.rappel) st.rappels++;

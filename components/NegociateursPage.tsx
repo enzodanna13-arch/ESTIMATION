@@ -11,6 +11,7 @@ import { EQUIPE, ASSISTANTE, membreDepuisNom, estNonPersonne } from "@/lib/equip
 import { estDossierVendeurComplet } from "@/lib/docTypes";
 import { MODULES_FORMATION } from "@/lib/formations";
 import { listerProgresNego, statsFormation, type ProgresFormation } from "@/lib/formationProgres";
+import { listerPhoning, statsData, type PhoningData } from "@/lib/phoning";
 
 const norm = (s?: string) => (s ?? "").trim().toLowerCase().replace(/\s+/g, " ");
 const estGenerique = (k: string) => !k || k === "—" || k === "-" || k === "n/a" || k === "na";
@@ -54,20 +55,22 @@ export default function NegociateursPage({ onRetour }: { onRetour: () => void })
   const [chasses, setChasses] = useState<FicheChasse[]>([]);
   const [tournees, setTournees] = useState<Tournee[]>([]);
   const [formation, setFormation] = useState<Record<string, ProgresFormation>>({});
+  const [phoning, setPhoning] = useState<Record<string, PhoningData>>({});
   const [chargement, setChargement] = useState(true);
   const [periode, setPeriode] = useState<number>(30);
   const [tri, setTri] = useState<ColKey>("estimations");
 
   const recharger = async () => {
-    const [l, c, e, d, r, ch, tn, fo] = await Promise.all([
+    const [l, c, e, d, r, ch, tn, fo, ph] = await Promise.all([
       listLeads(), listClients(),
       listEstimations().catch(() => []), listDocuments().catch(() => []),
       listRegistre().catch(() => ({ entrees: [] as AppelEntry[], mois: [] })),
       listChasse().catch(() => []), listTournees().catch(() => []),
       listerProgresNego().catch(() => ({} as Record<string, ProgresFormation>)),
+      listerPhoning().catch(() => ({} as Record<string, PhoningData>)),
     ]);
     setLeads(l); setClients(c); setEstims(e); setDocs(d); setAppels(r.entrees);
-    setChasses(ch); setTournees(tn); setFormation(fo);
+    setChasses(ch); setTournees(tn); setFormation(fo); setPhoning(ph);
     setChargement(false);
   };
   useEffect(() => {
@@ -176,6 +179,16 @@ export default function NegociateursPage({ onRetour }: { onRetour: () => void })
       .sort((a, b) => b.stats.globalPct - a.stats.globalPct || b.stats.valides - a.stats.valides || a.nom.localeCompare(b.nom));
   }, [formation]);
   const nbModules = MODULES_FORMATION.length;
+
+  // Activité phoning par négociateur (cumul des tableaux + sessions).
+  const phoningRows = useMemo(() => {
+    const apprenants = EQUIPE.filter((m) => m.sections.some((s) => s === "transaction" || s === "gestion"));
+    const ids = new Set(apprenants.map((m) => m.id));
+    const extra = Object.keys(phoning).filter((id) => !ids.has(id)).map((id) => EQUIPE.find((m) => m.id === id)).filter(Boolean) as typeof apprenants;
+    return [...apprenants, ...extra]
+      .map((m) => ({ id: m.id, nom: m.nom, role: m.role, stats: statsData(phoning[m.id] ?? {}) }))
+      .sort((a, b) => b.stats.appeles - a.stats.appeles || b.stats.rdv - a.stats.rdv || a.nom.localeCompare(b.nom));
+  }, [phoning]);
   const fmtHeures = (min: number) => { const h = Math.floor(min / 60), r = min % 60; return h > 0 ? `${h} h${r > 0 ? ` ${String(r).padStart(2, "0")}` : ""}` : `${r} min`; };
 
   return (
@@ -287,6 +300,50 @@ export default function NegociateursPage({ onRetour }: { onRetour: () => void })
             <p className="mt-3 text-xs text-slate-400">
               Chaque négociateur sélectionne son nom dans le <strong>Centre de formation</strong> ; sa progression se synchronise ici automatiquement.
               Un module est <strong>validé</strong> quand toutes ses leçons sont lues et l'examen réussi (≥ 80 %) — c'est ce qui compte pour l'<strong>attestation ALUR</strong> et les heures validées.
+            </p>
+          </div>
+
+          {/* Activité phoning par négociateur (sessions + tableaux) */}
+          <div className="mt-8">
+            <div className="mb-3 flex flex-wrap items-center gap-2">
+              <h3 className="text-lg font-bold text-navy">📞 Phoning — activité par négociateur</h3>
+              <span className="text-xs text-slate-400">cumul des appels pointés (sessions comprises)</span>
+            </div>
+            <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-sm">
+              <table className="w-full min-w-[820px] text-sm">
+                <thead>
+                  <tr className="border-b border-slate-200 bg-slate-50 text-left">
+                    <th className="sticky left-0 z-10 bg-slate-50 px-4 py-2.5 font-bold text-navy">Négociateur</th>
+                    <th className="px-3 py-2.5 text-center font-semibold text-slate-600">Appels passés</th>
+                    <th className="px-3 py-2.5 text-center font-semibold text-slate-600">Décrochés</th>
+                    <th className="px-3 py-2.5 text-center font-semibold text-slate-600">Pas décrochés</th>
+                    <th className="px-3 py-2.5 text-center font-semibold text-slate-600">RDV pris</th>
+                    <th className="px-3 py-2.5 text-center font-semibold text-slate-600">Mandats / ventes</th>
+                    <th className="px-3 py-2.5 text-center font-semibold text-slate-600">Rappels</th>
+                    <th className="px-3 py-2.5 text-center font-semibold text-slate-600">À appeler</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {phoningRows.map((r) => (
+                    <tr key={r.id} className="border-b border-slate-100 hover:bg-slate-50/60">
+                      <td className="sticky left-0 z-10 bg-white px-4 py-2.5">
+                        <div className="font-bold text-navy">{r.nom}</div>
+                        {r.role && <div className="text-[11px] font-medium text-slate-400">{r.role}</div>}
+                      </td>
+                      <td className="px-3 py-2.5 text-center font-bold text-navy">{r.stats.appeles || <span className="text-slate-300">0</span>}</td>
+                      <td className="px-3 py-2.5 text-center text-emerald-700">{r.stats.decroches || <span className="text-slate-300">0</span>}</td>
+                      <td className="px-3 py-2.5 text-center text-slate-500">{r.stats.nonDecroches || <span className="text-slate-300">0</span>}</td>
+                      <td className="px-3 py-2.5 text-center font-bold text-emerald-600">{r.stats.rdv || <span className="text-slate-300">0</span>}</td>
+                      <td className="px-3 py-2.5 text-center font-bold text-copper">{r.stats.mandats || <span className="text-slate-300">0</span>}</td>
+                      <td className="px-3 py-2.5 text-center text-blue-600">{r.stats.rappels || <span className="text-slate-300">0</span>}</td>
+                      <td className="px-3 py-2.5 text-center text-slate-400">{r.stats.aAppeler || <span className="text-slate-300">0</span>}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <p className="mt-3 text-xs text-slate-400">
+              Chaque résultat d'appel pointé (session guidée ou tableau) est consolidé ici. <strong>Appels passés</strong> = contacts traités ; <strong>décrochés</strong> = le contact a répondu (hors répondeur / injoignable).
             </p>
           </div>
         </>
