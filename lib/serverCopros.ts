@@ -1,0 +1,185 @@
+import { del, list, put } from "@vercel/blob";
+import { fetchDpeCommune, type DpeBrut } from "./ademe";
+
+// PROSPECTION COPROPRIÉTÉS (appartements) : à partir du Registre National
+// d'Immatriculation des Copropriétés (RNIC, open data ANAH via l'API tabulaire
+// data.gouv.fr), on liste les copropriétés d'une commune au-dessus d'un seuil de
+// lots, puis on les CROISE avec les derniers DPE réalisés (ADEME) par proximité
+// géographique — pour repérer les immeubles « actifs » (diagnostics récents =
+// signal de mise en vente) et afficher toutes les infos du diag.
+
+// Resource « Actualisation quotidienne » du RNIC (CSV indexé, API tabulaire).
+const RNIC_RESOURCE = process.env.RNIC_RESOURCE_ID ?? "3ea8e2c3-0038-464a-b17e-cd5c91f65ce2";
+const RNIC_BASE = `https://tabular-api.data.gouv.fr/api/resources/${RNIC_RESOURCE}/data/`;
+
+export interface DpeCopro {
+  numeroDpe: string;
+  date: string;
+  etiquetteDpe: string;
+  etiquetteGes: string;
+  typeBien: string;
+  surface: number | null;
+  adresse: string;
+  details: Record<string, string | number | null>;
+}
+export interface Copro {
+  id: string;
+  nom: string;
+  adresse: string;
+  codePostal: string;
+  ville: string;
+  lotsTotal: number;
+  lotsHabitation: number;
+  periodeConstruction: string;
+  typeSyndic: string;
+  syndic: string;
+  parcelle: string;
+  dateImmatriculation: string;
+  lat: number | null;
+  lon: number | null;
+  dpeCount: number;
+  dernierDpe: DpeCopro | null;
+  dpes: DpeCopro[];
+}
+export interface CoproDataset {
+  commune: string;
+  insee: string;
+  minLots: number;
+  copros: Copro[];
+  nbDpeIndexes: number;
+  updatedAt: number;
+}
+
+const txt = (v: unknown) => (v === null || v === undefined ? "" : String(v)).trim();
+const n0 = (v: unknown) => { const n = Number(v); return Number.isFinite(n) ? n : 0; };
+const numOrNull = (v: unknown) => { const n = Number(v); return Number.isFinite(n) ? n : null; };
+
+async function fetchJson(url: string, ms = 25000, retries = 2): Promise<Record<string, unknown> | null> {
+  for (let i = 0; i <= retries; i++) {
+    try {
+      const res = await fetch(url, { signal: AbortSignal.timeout(ms), headers: { accept: "application/json", "user-agent": "IA-Estimation/1.0 (CENTURY21 Icaza; copros)" } });
+      if (res.ok) return (await res.json()) as Record<string, unknown>;
+      if (res.status === 404) return null;
+    } catch { /* réseau : on réessaie */ }
+    if (i < retries) await new Promise((r) => setTimeout(r, 600 * (i + 1)));
+  }
+  return null;
+}
+
+// Récupère les copropriétés d'une commune (INSEE) avec plus de `minLots` lots.
+async function fetchCoprosRNC(insee: string, minLots: number): Promise<Copro[]> {
+  const copros: Copro[] = [];
+  const pageSize = 50;
+  for (let page = 1; page <= 40; page++) {
+    const url = `${RNIC_BASE}?commune__exact=${encodeURIComponent(insee)}&nombre_total_lots__greater=${minLots}&page=${page}&page_size=${pageSize}`;
+    const body = await fetchJson(url);
+    const rows = (body?.data as Record<string, unknown>[] | undefined) ?? [];
+    if (rows.length === 0) break;
+    for (const r of rows) {
+      copros.push({
+        id: txt(r.numero_immatriculation) || `${txt(r.nom_usage_copropriete)}-${copros.length}`,
+        nom: txt(r.nom_usage_copropriete) || "Copropriété",
+        adresse: txt(r.adresse_reference),
+        codePostal: txt(r.code_postal_adresse),
+        ville: txt(r.commune_adresse),
+        lotsTotal: n0(r.nombre_total_lots),
+        lotsHabitation: n0(r.nombre_lots_habitation),
+        periodeConstruction: txt(r.periode_construction),
+        typeSyndic: txt(r.type_syndic),
+        syndic: txt(r.raison_sociale_representant_legal),
+        parcelle: txt(r.reference_cadastrale_1),
+        dateImmatriculation: txt(r.date_immatriculation).slice(0, 10),
+        lat: numOrNull(r.latitude),
+        lon: numOrNull(r.longitude),
+        dpeCount: 0,
+        dernierDpe: null,
+        dpes: [],
+      });
+    }
+    if (rows.length < pageSize) break;
+  }
+  return copros;
+}
+
+// Distance approximative (mètres) entre deux points géographiques.
+function distanceM(aLat: number, aLon: number, bLat: number, bLon: number): number {
+  const R = 6371000;
+  const dLat = ((bLat - aLat) * Math.PI) / 180;
+  const dLon = ((bLon - aLon) * Math.PI) / 180;
+  const la1 = (aLat * Math.PI) / 180, la2 = (bLat * Math.PI) / 180;
+  const h = Math.sin(dLat / 2) ** 2 + Math.cos(la1) * Math.cos(la2) * Math.sin(dLon / 2) ** 2;
+  return 2 * R * Math.asin(Math.min(1, Math.sqrt(h)));
+}
+
+const RAYON_M = 90; // rayon de rapprochement copro ↔ DPE
+const dpeCopro = (d: DpeBrut): DpeCopro => ({
+  numeroDpe: d.numeroDpe,
+  date: d.dateEtablissement,
+  etiquetteDpe: d.etiquetteDpe,
+  etiquetteGes: d.etiquetteGes,
+  typeBien: d.typeBien,
+  surface: d.surface,
+  adresse: d.adresse,
+  details: d.details,
+});
+
+// Croise les copros avec les DPE par proximité géographique (grille spatiale).
+function croiser(copros: Copro[], dpes: DpeBrut[]): void {
+  const cle = (lat: number, lon: number) => `${Math.round(lat * 1000)},${Math.round(lon * 1000)}`;
+  const grille = new Map<string, DpeBrut[]>();
+  for (const d of dpes) {
+    if (d.lat == null || d.lon == null) continue;
+    const k = cle(d.lat, d.lon);
+    (grille.get(k) ?? grille.set(k, []).get(k)!).push(d);
+  }
+  for (const c of copros) {
+    if (c.lat == null || c.lon == null) continue;
+    const baseLat = Math.round(c.lat * 1000), baseLon = Math.round(c.lon * 1000);
+    const proches: { d: DpeBrut; dist: number }[] = [];
+    for (let dla = -1; dla <= 1; dla++) {
+      for (let dlo = -1; dlo <= 1; dlo++) {
+        const bucket = grille.get(`${baseLat + dla},${baseLon + dlo}`);
+        if (!bucket) continue;
+        for (const d of bucket) {
+          const dist = distanceM(c.lat, c.lon, d.lat!, d.lon!);
+          if (dist <= RAYON_M) proches.push({ d, dist });
+        }
+      }
+    }
+    proches.sort((a, b) => (b.d.dateEtablissement).localeCompare(a.d.dateEtablissement));
+    c.dpeCount = proches.length;
+    c.dpes = proches.slice(0, 40).map((p) => dpeCopro(p.d));
+    c.dernierDpe = c.dpes[0] ?? null;
+  }
+}
+
+export async function computeCoproDataset(insee: string, minLots: number, depuisDate: string): Promise<CoproDataset> {
+  const [copros, dpes] = await Promise.all([
+    fetchCoprosRNC(insee, minLots),
+    fetchDpeCommune(insee, ["appartement", "immeuble"], depuisDate, { maxPages: 60, taille: 100 }).catch(() => [] as DpeBrut[]),
+  ]);
+  croiser(copros, dpes);
+  // Tri : diagnostics récents d'abord (copros actives), puis par nombre de lots.
+  copros.sort((a, b) => (b.dernierDpe?.date ?? "").localeCompare(a.dernierDpe?.date ?? "") || b.lotsTotal - a.lotsTotal);
+  return { commune: copros[0]?.ville || "Martigues", insee, minLots, copros, nbDpeIndexes: dpes.length, updatedAt: Date.now() };
+}
+
+// --- Cache Blob (recalcul coûteux : on garde le dernier calcul) ---
+const PREFIX = "copros/";
+const version = (p: string) => { const m = p.match(/~(\d+)\.json$/); return m ? Number(m[1]) : 0; };
+
+export async function getCoprosCache(insee: string): Promise<CoproDataset | null> {
+  const { blobs } = await list({ prefix: `${PREFIX}${insee}~`, limit: 50 });
+  if (blobs.length === 0) return null;
+  let best = blobs[0];
+  for (const b of blobs) if (version(b.pathname) > version(best.pathname)) best = b;
+  try { const r = await fetch(best.url, { cache: "no-store" }); return r.ok ? ((await r.json()) as CoproDataset) : null; } catch { return null; }
+}
+
+export async function saveCoprosCache(ds: CoproDataset): Promise<void> {
+  const nom = `${PREFIX}${ds.insee}~${ds.updatedAt}.json`;
+  await put(nom, JSON.stringify(ds), { access: "public", addRandomSuffix: false, contentType: "application/json" });
+  const { blobs } = await list({ prefix: `${PREFIX}${ds.insee}~`, limit: 50 });
+  const anciennes = blobs.filter((b) => b.pathname !== nom).map((b) => b.url);
+  if (anciennes.length > 0) await del(anciennes);
+}
