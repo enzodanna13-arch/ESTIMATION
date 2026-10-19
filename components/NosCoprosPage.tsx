@@ -53,7 +53,7 @@ export default function NosCoprosPage({ onRetour }: { onRetour: () => void }) {
   const [maj, setMaj] = useState(false);
   const [erreur, setErreur] = useState<string | null>(null);
   const [q, setQ] = useState("");
-  const [avecDpe, setAvecDpe] = useState(true);
+  const [avecDpe, setAvecDpe] = useState(false); // on montre TOUTES nos copros par défaut
   const [limite, setLimite] = useState(30);
 
   // Fenêtre glissante : on met en avant les diags de 3 mois max (signaux chauds),
