@@ -112,37 +112,42 @@ export default function RapprochementDpePage({ onRetour }: { onRetour: () => voi
 
 function CarteOpp({ o }: { o: OpportuniteDpe }) {
   const d = o.dpe;
-  const localise = d.etage !== "" || d.residence;
+  const recent = (jours(d.date) ?? 99) <= 21;
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-      <div className="flex flex-wrap items-start gap-2">
-        <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="rounded-full bg-copper/15 px-2 py-0.5 text-[11px] font-bold text-copper">DPE {dateFr(d.date)}</span>
-            <span className={`rounded-md px-2 py-0.5 text-xs font-black ${badgeDpe(d.etiquetteDpe)}`}>{d.etiquetteDpe || "?"}</span>
-            <h3 className="text-base font-bold text-navy">{d.typeBien}{d.surface ? ` · ${d.surface} m²` : ""}</h3>
-          </div>
-          <div className="text-sm text-slate-600">{d.adresse}{d.ville ? ` · ${d.ville}` : ""}</div>
-          {localise && <div className="mt-0.5 text-[13px] font-semibold text-copper">📍 {d.etage !== "" ? `Étage ${d.etage === "0" ? "RDC" : d.etage}` : d.residence}</div>}
+    <div className={`overflow-hidden rounded-2xl border bg-white shadow-sm ${recent ? "border-copper/40" : "border-slate-200"}`}>
+      {/* En-tête : le bien */}
+      <div className="border-l-4 border-copper bg-slate-50/70 p-4">
+        <div className="mb-1 flex flex-wrap items-center gap-2">
+          <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-bold ${recent ? "bg-copper text-white" : "bg-slate-200 text-slate-600"}`}>📅 DPE {dateFr(d.date)}</span>
+          <span className={`rounded-md px-2 py-0.5 text-sm font-black ${badgeDpe(d.etiquetteDpe)}`}>DPE {d.etiquetteDpe || "?"}</span>
+          {d.etiquetteGes && <span className={`rounded-md px-2 py-0.5 text-[11px] font-bold ${badgeDpe(d.etiquetteGes)}`}>GES {d.etiquetteGes}</span>}
         </div>
-        <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-bold text-emerald-700">{o.acqs.length} acquéreur(s)</span>
+        <div className="text-lg font-black text-navy">{d.typeBien}{d.surface ? ` · ${d.surface} m²` : ""}</div>
+        <div className="text-sm text-slate-600">{d.adresse}{d.ville ? ` · ${d.ville}` : ""}</div>
+        {(d.etage !== "" || d.residence) && <div className="mt-1 inline-flex items-center gap-1 rounded-lg bg-white px-2 py-0.5 text-[13px] font-semibold text-copper shadow-sm">📍 {d.etage !== "" ? `Étage ${d.etage === "0" ? "RDC" : d.etage}` : d.residence}</div>}
       </div>
-      <div className="mt-2 space-y-1.5 border-t border-slate-100 pt-2">
-        {o.acqs.map((a) => {
-          const badge = a.niveau === "forte" ? "bg-emerald-100 text-emerald-700" : a.niveau === "interessante" ? "bg-amber-100 text-amber-700" : "bg-slate-100 text-slate-600";
-          return (
-            <div key={a.dossier.id} className="flex flex-wrap items-center gap-2 text-sm">
-              <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${badge}`}>{a.score}%</span>
-              <span className="font-bold text-navy">{[a.dossier.prenom, a.dossier.nom].filter(Boolean).join(" ") || a.dossier.nom}</span>
-              <span className="text-xs text-slate-500">{resumeRecherche(a.dossier)}</span>
-              {a.dossier.negociateur && <span className="text-[11px] text-slate-400">· 👤 {a.dossier.negociateur}</span>}
-              <span className="ml-auto flex items-center gap-1">
-                {a.dossier.tel && <a href={`tel:${a.dossier.tel}`} className="rounded-lg bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-700 hover:bg-emerald-100" title="Appeler">📞</a>}
-                {a.dossier.email && <a href={`mailto:${a.dossier.email}`} className="rounded-lg border border-slate-200 px-2 py-1 text-xs text-slate-500 hover:bg-slate-100" title="Email">✉</a>}
-              </span>
-            </div>
-          );
-        })}
+
+      {/* Acquéreurs à contacter */}
+      <div className="p-4">
+        <div className="mb-2 text-[11px] font-bold uppercase tracking-wider text-slate-400">👉 {o.acqs.length} acquéreur{o.acqs.length > 1 ? "s" : ""} à placer sur ce bien</div>
+        <div className="space-y-2">
+          {o.acqs.map((a) => {
+            const badge = a.niveau === "forte" ? "bg-emerald-500 text-white" : a.niveau === "interessante" ? "bg-amber-400 text-white" : "bg-slate-300 text-slate-700";
+            return (
+              <div key={a.dossier.id} className="flex items-center gap-3 rounded-xl border border-slate-200 p-2.5">
+                <span className={`flex h-10 w-12 shrink-0 flex-col items-center justify-center rounded-lg text-xs font-black leading-none ${badge}`}>{a.score}<span className="text-[8px] font-semibold opacity-80">%</span></span>
+                <div className="min-w-0 flex-1">
+                  <div className="truncate text-sm font-bold text-navy">{[a.dossier.prenom, a.dossier.nom].filter(Boolean).join(" ") || a.dossier.nom}{a.dossier.negociateur && <span className="ml-1 text-[11px] font-medium text-slate-400">· géré par {a.dossier.negociateur}</span>}</div>
+                  <div className="truncate text-xs text-slate-500">🔎 {resumeRecherche(a.dossier)}</div>
+                </div>
+                <div className="flex shrink-0 items-center gap-1">
+                  {a.dossier.tel && <a href={`tel:${a.dossier.tel}`} className="rounded-lg bg-emerald-500 px-3 py-1.5 text-sm font-bold text-white transition hover:brightness-110" title={`Appeler ${a.dossier.tel}`}>📞</a>}
+                  {a.dossier.email && <a href={`mailto:${a.dossier.email}`} className="rounded-lg border border-slate-200 px-2.5 py-1.5 text-sm text-slate-500 transition hover:bg-slate-100" title="Email">✉</a>}
+                </div>
+              </div>
+            );
+          })}
+        </div>
       </div>
     </div>
   );
