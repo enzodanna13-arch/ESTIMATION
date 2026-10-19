@@ -30,6 +30,8 @@ export const CHAMPS_DETAILS = [
   "type_ventilation", "qualite_isolation_murs", "qualite_isolation_menuiseries",
   "qualite_isolation_plancher_bas",
   "date_fin_validite_dpe", "date_derniere_modification_dpe", "version_dpe", "modele_dpe",
+  // Localisation fine dans l'immeuble (priorisation des diags localisés).
+  "numero_etage_appartement", "nom_residence", "complement_adresse_batiment", "logement_traversant",
 ];
 
 const CHAMPS = [...CHAMPS_BASE, ...CHAMPS_DETAILS].join(",");

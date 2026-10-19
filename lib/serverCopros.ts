@@ -20,6 +20,9 @@ export interface DpeCopro {
   typeBien: string;
   surface: number | null;
   adresse: string;
+  etage: string;      // numéro d'étage de l'appartement (si connu)
+  residence: string;  // nom de résidence / bâtiment (si spécifique)
+  precis: boolean;    // localisation fine connue (étage et/ou entrée/bâtiment)
   details: Record<string, string | number | null>;
 }
 export interface Copro {
@@ -38,6 +41,7 @@ export interface Copro {
   lat: number | null;
   lon: number | null;
   dpeCount: number;
+  dpeCountPrecis: number; // DPE avec localisation fine (étage / entrée)
   dernierDpe: DpeCopro | null;
   dpes: DpeCopro[];
 }
@@ -92,6 +96,7 @@ async function fetchCoprosRNC(insee: string, minLots: number): Promise<Copro[]> 
         lat: numOrNull(r.latitude),
         lon: numOrNull(r.longitude),
         dpeCount: 0,
+        dpeCountPrecis: 0,
         dernierDpe: null,
         dpes: [],
       });
@@ -112,16 +117,26 @@ function distanceM(aLat: number, aLon: number, bLat: number, bLon: number): numb
 }
 
 const RAYON_M = 90; // rayon de rapprochement copro ↔ DPE
-const dpeCopro = (d: DpeBrut): DpeCopro => ({
-  numeroDpe: d.numeroDpe,
-  date: d.dateEtablissement,
-  etiquetteDpe: d.etiquetteDpe,
-  etiquetteGes: d.etiquetteGes,
-  typeBien: d.typeBien,
-  surface: d.surface,
-  adresse: d.adresse,
-  details: d.details,
-});
+const RESIDENCE_GENERIQUE = new Set(["", "batiment", "bâtiment", "immeuble", "-", "sans", "na", "nc", "appartement"]);
+const dpeCopro = (d: DpeBrut): DpeCopro => {
+  const etageRaw = txt(d.details.numero_etage_appartement);
+  const residenceRaw = txt(d.details.nom_residence);
+  const residenceSpecifique = !RESIDENCE_GENERIQUE.has(residenceRaw.toLowerCase());
+  const etageConnu = etageRaw !== "" && Number.isFinite(Number(etageRaw)) && Number(etageRaw) > 0;
+  return {
+    numeroDpe: d.numeroDpe,
+    date: d.dateEtablissement,
+    etiquetteDpe: d.etiquetteDpe,
+    etiquetteGes: d.etiquetteGes,
+    typeBien: d.typeBien,
+    surface: d.surface,
+    adresse: d.adresse,
+    etage: etageRaw,
+    residence: residenceSpecifique ? residenceRaw : "",
+    precis: etageConnu || residenceSpecifique,
+    details: d.details,
+  };
+};
 
 // Croise les copros avec les DPE par proximité géographique (grille spatiale).
 function croiser(copros: Copro[], dpes: DpeBrut[]): void {
@@ -146,9 +161,12 @@ function croiser(copros: Copro[], dpes: DpeBrut[]): void {
         }
       }
     }
-    proches.sort((a, b) => (b.d.dateEtablissement).localeCompare(a.d.dateEtablissement));
-    c.dpeCount = proches.length;
-    c.dpes = proches.slice(0, 40).map((p) => dpeCopro(p.d));
+    const convertis = proches.map((p) => dpeCopro(p.d));
+    // Priorité aux diags localisés (étage / entrée connus), puis aux plus récents.
+    convertis.sort((a, b) => Number(b.precis) - Number(a.precis) || b.date.localeCompare(a.date));
+    c.dpeCount = convertis.length;
+    c.dpeCountPrecis = convertis.filter((d) => d.precis).length;
+    c.dpes = convertis.slice(0, 40);
     c.dernierDpe = c.dpes[0] ?? null;
   }
 }
@@ -159,13 +177,17 @@ export async function computeCoproDataset(insee: string, minLots: number, depuis
     fetchDpeCommune(insee, ["appartement", "immeuble"], depuisDate, { maxPages: 60, taille: 100 }).catch(() => [] as DpeBrut[]),
   ]);
   croiser(copros, dpes);
-  // Tri : diagnostics récents d'abord (copros actives), puis par nombre de lots.
-  copros.sort((a, b) => (b.dernierDpe?.date ?? "").localeCompare(a.dernierDpe?.date ?? "") || b.lotsTotal - a.lotsTotal);
+  // Tri : copros avec diagnostics LOCALISÉS d'abord, puis diag récent, puis lots.
+  copros.sort((a, b) =>
+    Number(b.dpeCountPrecis > 0) - Number(a.dpeCountPrecis > 0)
+    || (b.dernierDpe?.date ?? "").localeCompare(a.dernierDpe?.date ?? "")
+    || b.lotsTotal - a.lotsTotal);
   return { commune: copros[0]?.ville || "Martigues", insee, minLots, copros, nbDpeIndexes: dpes.length, updatedAt: Date.now() };
 }
 
 // --- Cache Blob (recalcul coûteux : on garde le dernier calcul) ---
-const PREFIX = "copros/";
+// v2 : ajout de la localisation fine (étage / entrée) → on repart d'un cache neuf.
+const PREFIX = "coprosv2/";
 const version = (p: string) => { const m = p.match(/~(\d+)\.json$/); return m ? Number(m[1]) : 0; };
 
 export async function getCoprosCache(insee: string): Promise<CoproDataset | null> {

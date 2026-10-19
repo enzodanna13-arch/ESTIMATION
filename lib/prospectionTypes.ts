@@ -403,6 +403,10 @@ export const LABELS_ADEME: Record<string, string> = {
   date_derniere_modification_dpe: "Dernière modification DPE",
   version_dpe: "Version DPE",
   modele_dpe: "Méthode DPE",
+  numero_etage_appartement: "Étage de l'appartement",
+  nom_residence: "Résidence / bâtiment",
+  complement_adresse_batiment: "Complément d'adresse (bâtiment)",
+  logement_traversant: "Logement traversant",
 };
 
 // Lien vers le DPE officiel (observatoire ADEME) à partir du n° de DPE.

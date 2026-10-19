@@ -28,12 +28,19 @@ function DiagInfos({ d }: { d: DpeCopro }) {
   const tout = [...entrees, ...autres];
   return (
     <div className="mt-2 rounded-xl border border-slate-200 bg-slate-50/60 p-3">
-      <div className="mb-2 flex flex-wrap items-center gap-2 text-xs">
+      <div className="mb-1.5 flex flex-wrap items-center gap-2 text-xs">
         <span className={`rounded-md px-2 py-1 text-sm font-black ${badgeDpe(d.etiquetteDpe)}`}>DPE {d.etiquetteDpe || "?"}</span>
         <span className={`rounded-md px-2 py-0.5 text-xs font-bold ${badgeDpe(d.etiquetteGes)}`}>GES {d.etiquetteGes || "?"}</span>
         <span className="text-slate-500">{d.typeBien}{d.surface ? ` · ${d.surface} m²` : ""} · établi le {dateFr(d.date)}</span>
         {d.numeroDpe && <span className="text-[10px] text-slate-400">N° {d.numeroDpe}</span>}
       </div>
+      {(d.etage !== "" || d.residence) && (
+        <div className="mb-2 flex flex-wrap items-center gap-1.5 text-[12px]">
+          <span className="rounded-full bg-copper/15 px-2 py-0.5 font-bold text-copper">📍 Localisé</span>
+          {d.etage !== "" && <span className="font-semibold text-navy">Étage {d.etage === "0" ? "RDC" : d.etage}</span>}
+          {d.residence && <span className="text-slate-600">· {d.residence}</span>}
+        </div>
+      )}
       <div className="grid gap-x-4 gap-y-1 sm:grid-cols-2">
         {tout.map((k) => (
           <div key={k} className="flex justify-between gap-2 border-b border-slate-100 py-0.5 text-[12px] last:border-0">
@@ -57,6 +64,7 @@ function CarteCopro({ c }: { c: Copro }) {
             <h3 className="text-base font-bold text-navy">{c.nom}</h3>
             {dpe && <span className={`rounded-md px-2 py-0.5 text-xs font-black ${badgeDpe(dpe.etiquetteDpe)}`}>{dpe.etiquetteDpe || "?"}</span>}
             {c.dpeCount > 0 && <span className="rounded-full bg-copper/10 px-2 py-0.5 text-[11px] font-bold text-copper">{c.dpeCount} DPE croisé(s)</span>}
+            {c.dpeCountPrecis > 0 && <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-bold text-emerald-700">📍 {c.dpeCountPrecis} localisé(s)</span>}
           </div>
           <div className="text-sm text-slate-500">{c.adresse}</div>
           <div className="mt-1 flex flex-wrap gap-x-3 gap-y-0.5 text-[12px] text-slate-600">
@@ -66,7 +74,9 @@ function CarteCopro({ c }: { c: Copro }) {
           </div>
         </div>
         <div className="text-right">
-          {dpe ? <div className="text-[11px] text-slate-400">dernier diag<br /><strong className="text-slate-600">{dateFr(dpe.date)}</strong></div> : <span className="text-[11px] text-slate-300">aucun DPE croisé</span>}
+          {dpe ? (
+            <div className="text-[11px] text-slate-400">dernier diag<br /><strong className="text-slate-600">{dateFr(dpe.date)}</strong>{(dpe.etage !== "" || dpe.residence) && <><br /><span className="font-semibold text-copper">📍 {dpe.etage !== "" ? `Étage ${dpe.etage === "0" ? "RDC" : dpe.etage}` : dpe.residence}</span></>}</div>
+          ) : <span className="text-[11px] text-slate-300">aucun DPE croisé</span>}
         </div>
       </div>
       {dpe && (
@@ -95,6 +105,7 @@ export default function CoproprietesPage({ onRetour }: { onRetour: () => void })
   const [q, setQ] = useState("");
   const [classe, setClasse] = useState("");
   const [avecDpe, setAvecDpe] = useState(false);
+  const [precisSeul, setPrecisSeul] = useState(false);
   const [limite, setLimite] = useState(30);
 
   useEffect(() => { let a = false; void (async () => { const d = await chargerCopros(); if (!a) { if (!d) setErreur("Chargement impossible (réessaie la mise à jour)."); setDs(d); setChargement(false); } })(); return () => { a = true; }; }, []);
@@ -111,11 +122,12 @@ export default function CoproprietesPage({ onRetour }: { onRetour: () => void })
     const s = q.trim().toLowerCase();
     return ds.copros.filter((c) => {
       if (avecDpe && !c.dernierDpe) return false;
+      if (precisSeul && c.dpeCountPrecis === 0) return false;
       if (classe && c.dernierDpe?.etiquetteDpe !== classe) return false;
       if (s && !`${c.nom} ${c.adresse} ${c.syndic}`.toLowerCase().includes(s)) return false;
       return true;
     });
-  }, [ds, q, classe, avecDpe]);
+  }, [ds, q, classe, avecDpe, precisSeul]);
 
   const avecDiag = ds ? ds.copros.filter((c) => c.dernierDpe).length : 0;
 
@@ -148,7 +160,8 @@ export default function CoproprietesPage({ onRetour }: { onRetour: () => void })
               <option value="">Toutes classes DPE</option>
               {CLASSES.map((c) => <option key={c} value={c}>DPE {c}</option>)}
             </select>
-            <label className="flex items-center gap-1.5 text-xs font-semibold text-slate-600"><input type="checkbox" checked={avecDpe} onChange={(e) => setAvecDpe(e.target.checked)} /> Avec diagnostic uniquement</label>
+            <label className="flex items-center gap-1.5 text-xs font-semibold text-slate-600"><input type="checkbox" checked={avecDpe} onChange={(e) => setAvecDpe(e.target.checked)} /> Avec diagnostic</label>
+            <label className="flex items-center gap-1.5 text-xs font-semibold text-emerald-700"><input type="checkbox" checked={precisSeul} onChange={(e) => setPrecisSeul(e.target.checked)} /> 📍 Localisé (étage / entrée)</label>
             <span className="text-xs text-slate-400">{filtrees.length} résultat(s)</span>
           </div>
 
