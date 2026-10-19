@@ -8,7 +8,7 @@ const COULEUR_DPE: Record<string, string> = {
   A: "bg-emerald-500 text-white", B: "bg-green-500 text-white", C: "bg-lime-500 text-white",
   D: "bg-yellow-400 text-navy", E: "bg-orange-400 text-white", F: "bg-orange-600 text-white", G: "bg-red-600 text-white",
 };
-const badgeDpe = (c: string) => COULEUR_DPE[c] ?? "bg-slate-200 text-slate-600";
+export const badgeDpe = (c: string) => COULEUR_DPE[c] ?? "bg-slate-200 text-slate-600";
 const dateFr = (s: string) => { if (!s) return "—"; try { return new Date(s + "T12:00:00").toLocaleDateString("fr-FR", { day: "2-digit", month: "short", year: "numeric" }); } catch { return s; } };
 const nf = new Intl.NumberFormat("fr-FR");
 const CLASSES = ["A", "B", "C", "D", "E", "F", "G"];
@@ -38,7 +38,7 @@ const ORDRE_DETAILS = [
   "date_fin_validite_dpe", "version_dpe", "modele_dpe",
 ];
 
-function DiagInfos({ d }: { d: DpeCopro }) {
+export function DiagInfos({ d }: { d: DpeCopro }) {
   const entrees = ORDRE_DETAILS.filter((k) => d.details[k] !== undefined && d.details[k] !== null && d.details[k] !== "");
   const autres = Object.keys(d.details).filter((k) => !ORDRE_DETAILS.includes(k) && d.details[k] !== "" && d.details[k] != null);
   const tout = [...entrees, ...autres];

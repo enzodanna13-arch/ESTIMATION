@@ -147,7 +147,7 @@ async function fetchCoprosRNC(insee: string, minLots: number): Promise<Copro[]> 
 }
 
 // Distance approximative (mètres) entre deux points géographiques.
-function distanceM(aLat: number, aLon: number, bLat: number, bLon: number): number {
+export function distanceM(aLat: number, aLon: number, bLat: number, bLon: number): number {
   const R = 6371000;
   const dLat = ((bLat - aLat) * Math.PI) / 180;
   const dLon = ((bLon - aLon) * Math.PI) / 180;
@@ -156,9 +156,9 @@ function distanceM(aLat: number, aLon: number, bLat: number, bLon: number): numb
   return 2 * R * Math.asin(Math.min(1, Math.sqrt(h)));
 }
 
-const RAYON_M = 90; // rayon de rapprochement copro ↔ DPE
+export const RAYON_M = 90; // rayon de rapprochement copro ↔ DPE
 const RESIDENCE_GENERIQUE = new Set(["", "batiment", "bâtiment", "immeuble", "-", "sans", "na", "nc", "appartement"]);
-const dpeCopro = (d: DpeBrut): DpeCopro => {
+export const dpeCopro = (d: DpeBrut): DpeCopro => {
   const etageRaw = txt(d.details.numero_etage_appartement);
   const residenceRaw = txt(d.details.nom_residence);
   const residenceSpecifique = !RESIDENCE_GENERIQUE.has(residenceRaw.toLowerCase());
@@ -177,6 +177,17 @@ const dpeCopro = (d: DpeBrut): DpeCopro => {
     details: d.details,
   };
 };
+
+// DPE proches d'un point (tri localisés puis récents). Réutilisé par « Nos copros ».
+export function dpesAutour(lat: number, lon: number, dpes: DpeBrut[], rayon = RAYON_M): DpeCopro[] {
+  const conv: DpeCopro[] = [];
+  for (const d of dpes) {
+    if (d.lat == null || d.lon == null) continue;
+    if (distanceM(lat, lon, d.lat, d.lon) <= rayon) conv.push(dpeCopro(d));
+  }
+  conv.sort((a, b) => Number(b.precis) - Number(a.precis) || b.date.localeCompare(a.date));
+  return conv;
+}
 
 // Croise les copros avec les DPE par proximité géographique (grille spatiale).
 function croiser(copros: Copro[], dpes: DpeBrut[]): void {
