@@ -25,6 +25,7 @@ import PhoningPage from "@/components/PhoningPage";
 import ProcessPage from "@/components/ProcessPage";
 import OrganisationPage from "@/components/OrganisationPage";
 import CoproprietesPage from "@/components/CoproprietesPage";
+import ProspectionSyndicPage from "@/components/ProspectionSyndicPage";
 import AdminUnlock from "@/components/AdminUnlock";
 import TransactionsPage from "@/components/TransactionsPage";
 import EspaceNegociateurPage from "@/components/EspaceNegociateurPage";
@@ -254,7 +255,7 @@ export default function Home() {
   const [step, setStep] = useState(0);
   // Accueil à deux univers : Estimation (les 4 missions) et Génération de
   // documents (menu des documents de l'agence)
-  const [univers, setUnivers] = useState<"" | "estimation" | "documents" | "clients" | "historique" | "visites" | "registre" | "leads" | "chasse" | "veille" | "acquereurs" | "prospection" | "ma-tournee" | "flyers" | "estimations-clients" | "dashboard" | "negociateurs" | "espace" | "formation" | "transactions" | "phoning" | "process" | "organisation" | "coproprietes" | "sauvegarde" | "reglages">("");
+  const [univers, setUnivers] = useState<"" | "estimation" | "documents" | "clients" | "historique" | "visites" | "registre" | "leads" | "chasse" | "veille" | "acquereurs" | "prospection" | "ma-tournee" | "flyers" | "estimations-clients" | "dashboard" | "negociateurs" | "espace" | "formation" | "transactions" | "phoning" | "process" | "organisation" | "coproprietes" | "prospection-syndic" | "sauvegarde" | "reglages">("");
   const [tourneeCible, setTourneeCible] = useState<string | undefined>(undefined);
   const [chasseCible, setChasseCible] = useState<string | undefined>(undefined);
   // Métier actif (compartimentage CRM) : Transaction contient tout l'existant ;
@@ -891,6 +892,7 @@ export default function Home() {
             {univers === "leads" && <LeadsPage onRetour={() => setUnivers("")} />}
             {univers === "chasse" && <ChassePage ficheCible={chasseCible} onRetour={() => { setChasseCible(undefined); setUnivers(""); }} />}
             {univers === "coproprietes" && <CoproprietesPage onRetour={() => setUnivers("")} />}
+            {univers === "prospection-syndic" && <ProspectionSyndicPage onRetour={() => setUnivers("")} />}
             {univers === "veille" && <VeilleDpePage onRetour={() => setUnivers("")} onOuvrirEstimation={(id) => void openEntry(id, false)} />}
             {univers === "acquereurs" && <AcquereursPage onRetour={() => setUnivers("")} onOuvrirEstimation={(id) => void openEntry(id, false)} />}
             {univers === "prospection" && <ProspectionPage onRetour={() => setUnivers("")} />}
