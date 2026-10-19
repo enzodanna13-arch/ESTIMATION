@@ -27,7 +27,8 @@ export default function RapprochementDpePage({ onRetour }: { onRetour: () => voi
   const [erreur, setErreur] = useState<string | null>(null);
   const [niveauMin, setNiveauMin] = useState<"forte" | "interessante" | "possible">("interessante");
   const [q, setQ] = useState("");
-  const [limite, setLimite] = useState(30);
+  const [limite, setLimite] = useState(24);
+  const [selId, setSelId] = useState<string | null>(null);
 
   useEffect(() => { let a = false; void (async () => { const [c, d] = await Promise.all([listClients().catch(() => []), chargerDpeFrais()]); if (a) return; if (!d) setErreur("Chargement des DPE impossible — réessaie la mise à jour."); setClients(c); setDs(d); setChargement(false); })(); return () => { a = true; }; }, []);
 
@@ -76,10 +77,12 @@ export default function RapprochementDpePage({ onRetour }: { onRetour: () => voi
         <div className="rounded-2xl border border-slate-200 bg-white p-10 text-center text-slate-400">Chargement…</div>
       ) : !ds ? (
         <div className="rounded-2xl border border-slate-200 bg-white p-10 text-center text-sm text-slate-400">Aucune donnée DPE. Clique sur « ↻ Mettre à jour ».</div>
+      ) : selId && opportunites.find((o) => o.dpe.numeroDpe === selId) ? (
+        <FicheDpe o={opportunites.find((o) => o.dpe.numeroDpe === selId)!} onRetour={() => setSelId(null)} />
       ) : (
         <>
           <div className="mb-3 grid grid-cols-3 gap-2 sm:grid-cols-4">
-            {[["Opportunités", nf.format(opportunites.length)], ["Acquéreurs actifs", nf.format(acquereurs.length)], ["DPE frais (3 mois)", nf.format(ds.dpes.length)], ["Mis à jour", new Date(ds.updatedAt).toLocaleDateString("fr-FR")]].map(([l, v]) => (
+            {[["Biens (annonces)", nf.format(opportunites.length)], ["Acquéreurs actifs", nf.format(acquereurs.length)], ["DPE frais (3 mois)", nf.format(ds.dpes.length)], ["Mis à jour", new Date(ds.updatedAt).toLocaleDateString("fr-FR")]].map(([l, v]) => (
               <div key={l} className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-center"><div className="text-lg font-bold text-navy">{v}</div><div className="text-[10px] text-slate-500">{l}</div></div>
             ))}
           </div>
@@ -97,12 +100,12 @@ export default function RapprochementDpePage({ onRetour }: { onRetour: () => voi
           {filtrees.length === 0 ? (
             <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-8 text-center text-sm text-slate-400">Aucun rapprochement pour l'instant. Dès qu'un DPE frais colle à un acquéreur de l'équipe, il apparaît ici.</div>
           ) : (
-            <div className="space-y-2.5">
-              {filtrees.slice(0, limite).map((o) => <CarteOpp key={o.dpe.numeroDpe} o={o} />)}
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {filtrees.slice(0, limite).map((o) => <CarteAnnonce key={o.dpe.numeroDpe} o={o} onOuvrir={() => setSelId(o.dpe.numeroDpe)} />)}
             </div>
           )}
           {filtrees.length > limite && (
-            <button onClick={() => setLimite((n) => n + 30)} className="mt-3 w-full rounded-xl border border-slate-200 bg-white py-2.5 text-sm font-bold text-slate-600 transition hover:bg-slate-50">Afficher plus ({filtrees.length - limite} restant(s))</button>
+            <button onClick={() => setLimite((n) => n + 24)} className="mt-3 w-full rounded-xl border border-slate-200 bg-white py-2.5 text-sm font-bold text-slate-600 transition hover:bg-slate-50">Afficher plus ({filtrees.length - limite} restant(s))</button>
           )}
         </>
       )}
@@ -110,43 +113,79 @@ export default function RapprochementDpePage({ onRetour }: { onRetour: () => voi
   );
 }
 
-function CarteOpp({ o }: { o: OpportuniteDpe }) {
+// Carte « annonce » compacte (grille) — on clique pour voir les acquéreurs.
+function CarteAnnonce({ o, onOuvrir }: { o: OpportuniteDpe; onOuvrir: () => void }) {
   const d = o.dpe;
   const recent = (jours(d.date) ?? 99) <= 21;
+  const fortes = o.acqs.filter((a) => a.niveau === "forte").length;
   return (
-    <div className={`overflow-hidden rounded-2xl border bg-white shadow-sm ${recent ? "border-copper/40" : "border-slate-200"}`}>
-      {/* En-tête : le bien */}
-      <div className="border-l-4 border-copper bg-slate-50/70 p-4">
-        <div className="mb-1 flex flex-wrap items-center gap-2">
-          <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-bold ${recent ? "bg-copper text-white" : "bg-slate-200 text-slate-600"}`}>📅 DPE {dateFr(d.date)}</span>
-          <span className={`rounded-md px-2 py-0.5 text-sm font-black ${badgeDpe(d.etiquetteDpe)}`}>DPE {d.etiquetteDpe || "?"}</span>
-          {d.etiquetteGes && <span className={`rounded-md px-2 py-0.5 text-[11px] font-bold ${badgeDpe(d.etiquetteGes)}`}>GES {d.etiquetteGes}</span>}
+    <button onClick={onOuvrir} className={`flex flex-col overflow-hidden rounded-2xl border bg-white text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md ${recent ? "border-copper/40" : "border-slate-200"}`}>
+      <div className="flex items-center justify-between bg-slate-50/80 px-3 py-2">
+        <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${recent ? "bg-copper text-white" : "bg-slate-200 text-slate-600"}`}>📅 DPE {dateFr(d.date)}</span>
+        <div className="flex gap-1">
+          <span className={`rounded px-1.5 py-0.5 text-[11px] font-black ${badgeDpe(d.etiquetteDpe)}`}>{d.etiquetteDpe || "?"}</span>
+          {d.etiquetteGes && <span className={`rounded px-1.5 py-0.5 text-[10px] font-bold ${badgeDpe(d.etiquetteGes)}`}>{d.etiquetteGes}</span>}
         </div>
-        <div className="text-lg font-black text-navy">{d.typeBien}{d.surface ? ` · ${d.surface} m²` : ""}</div>
-        <div className="text-sm text-slate-600">{d.adresse}{d.ville ? ` · ${d.ville}` : ""}</div>
-        {(d.etage !== "" || d.residence) && <div className="mt-1 inline-flex items-center gap-1 rounded-lg bg-white px-2 py-0.5 text-[13px] font-semibold text-copper shadow-sm">📍 {d.etage !== "" ? `Étage ${d.etage === "0" ? "RDC" : d.etage}` : d.residence}</div>}
       </div>
+      <div className="flex-1 p-3">
+        <div className="text-base font-black text-navy">{d.typeBien}{d.surface ? ` · ${d.surface} m²` : ""}</div>
+        <div className="mt-0.5 line-clamp-2 text-[13px] text-slate-600">{d.adresse}{d.ville ? ` · ${d.ville}` : ""}</div>
+        {(d.etage !== "" || d.residence) && <div className="mt-1 text-[12px] font-semibold text-copper">📍 {d.etage !== "" ? `Étage ${d.etage === "0" ? "RDC" : d.etage}` : d.residence}</div>}
+      </div>
+      <div className="flex items-center justify-between border-t border-slate-100 px-3 py-2">
+        <span className="text-[13px] font-bold text-navy">👥 {o.acqs.length} acquéreur{o.acqs.length > 1 ? "s" : ""}{fortes > 0 ? <span className="ml-1 text-[11px] font-bold text-emerald-600">· {fortes} fort{fortes > 1 ? "s" : ""}</span> : null}</span>
+        <span className="text-xs font-bold text-copper">Voir →</span>
+      </div>
+    </button>
+  );
+}
 
-      {/* Acquéreurs à contacter */}
-      <div className="p-4">
-        <div className="mb-2 text-[11px] font-bold uppercase tracking-wider text-slate-400">👉 {o.acqs.length} acquéreur{o.acqs.length > 1 ? "s" : ""} à placer sur ce bien</div>
-        <div className="space-y-2">
-          {o.acqs.map((a) => {
-            const badge = a.niveau === "forte" ? "bg-emerald-500 text-white" : a.niveau === "interessante" ? "bg-amber-400 text-white" : "bg-slate-300 text-slate-700";
-            return (
-              <div key={a.dossier.id} className="flex items-center gap-3 rounded-xl border border-slate-200 p-2.5">
-                <span className={`flex h-10 w-12 shrink-0 flex-col items-center justify-center rounded-lg text-xs font-black leading-none ${badge}`}>{a.score}<span className="text-[8px] font-semibold opacity-80">%</span></span>
-                <div className="min-w-0 flex-1">
-                  <div className="truncate text-sm font-bold text-navy">{[a.dossier.prenom, a.dossier.nom].filter(Boolean).join(" ") || a.dossier.nom}{a.dossier.negociateur && <span className="ml-1 text-[11px] font-medium text-slate-400">· géré par {a.dossier.negociateur}</span>}</div>
-                  <div className="truncate text-xs text-slate-500">🔎 {resumeRecherche(a.dossier)}</div>
+// Fiche détaillée d'un bien (DPE) : le bien + les acquéreurs à placer.
+function FicheDpe({ o, onRetour }: { o: OpportuniteDpe; onRetour: () => void }) {
+  const d = o.dpe;
+  const recent = (jours(d.date) ?? 99) <= 21;
+  const [lim, setLim] = useState(40);
+  const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${d.adresse} ${d.ville}`)}`;
+  return (
+    <div className="mx-auto max-w-3xl">
+      <button onClick={onRetour} className="mb-3 rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-100">← Tous les biens</button>
+
+      <div className={`overflow-hidden rounded-2xl border bg-white shadow-sm ${recent ? "border-copper/40" : "border-slate-200"}`}>
+        <div className="border-l-4 border-copper bg-slate-50/70 p-5">
+          <div className="mb-1 flex flex-wrap items-center gap-2">
+            <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-bold ${recent ? "bg-copper text-white" : "bg-slate-200 text-slate-600"}`}>📅 DPE {dateFr(d.date)}</span>
+            <span className={`rounded-md px-2 py-0.5 text-sm font-black ${badgeDpe(d.etiquetteDpe)}`}>DPE {d.etiquetteDpe || "?"}</span>
+            {d.etiquetteGes && <span className={`rounded-md px-2 py-0.5 text-[11px] font-bold ${badgeDpe(d.etiquetteGes)}`}>GES {d.etiquetteGes}</span>}
+          </div>
+          <div className="text-xl font-black text-navy">{d.typeBien}{d.surface ? ` · ${d.surface} m²` : ""}</div>
+          <div className="text-sm text-slate-600">{d.adresse}{d.ville ? ` · ${d.ville}` : ""}</div>
+          <div className="mt-2 flex flex-wrap items-center gap-2">
+            {(d.etage !== "" || d.residence) && <span className="inline-flex items-center gap-1 rounded-lg bg-white px-2 py-0.5 text-[13px] font-semibold text-copper shadow-sm">📍 {d.etage !== "" ? `Étage ${d.etage === "0" ? "RDC" : d.etage}` : d.residence}</span>}
+            <a href={mapsUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2 py-0.5 text-[12px] font-semibold text-slate-600 hover:bg-slate-50">🗺️ Itinéraire</a>
+          </div>
+        </div>
+
+        <div className="p-4">
+          <div className="mb-2 text-[11px] font-bold uppercase tracking-wider text-slate-400">👉 {o.acqs.length} acquéreur{o.acqs.length > 1 ? "s" : ""} à placer sur ce bien</div>
+          <div className="space-y-2">
+            {o.acqs.slice(0, lim).map((a) => {
+              const badge = a.niveau === "forte" ? "bg-emerald-500 text-white" : a.niveau === "interessante" ? "bg-amber-400 text-white" : "bg-slate-300 text-slate-700";
+              return (
+                <div key={a.dossier.id} className="flex items-center gap-3 rounded-xl border border-slate-200 p-2.5">
+                  <span className={`flex h-10 w-12 shrink-0 flex-col items-center justify-center rounded-lg text-xs font-black leading-none ${badge}`}>{a.score}<span className="text-[8px] font-semibold opacity-80">%</span></span>
+                  <div className="min-w-0 flex-1">
+                    <div className="truncate text-sm font-bold text-navy">{[a.dossier.prenom, a.dossier.nom].filter(Boolean).join(" ") || a.dossier.nom}{a.dossier.negociateur && <span className="ml-1 text-[11px] font-medium text-slate-400">· géré par {a.dossier.negociateur}</span>}</div>
+                    <div className="truncate text-xs text-slate-500">🔎 {resumeRecherche(a.dossier)}</div>
+                  </div>
+                  <div className="flex shrink-0 items-center gap-1">
+                    {a.dossier.tel && <a href={`tel:${a.dossier.tel}`} className="rounded-lg bg-emerald-500 px-3 py-1.5 text-sm font-bold text-white transition hover:brightness-110" title={`Appeler ${a.dossier.tel}`}>📞</a>}
+                    {a.dossier.email && <a href={`mailto:${a.dossier.email}`} className="rounded-lg border border-slate-200 px-2.5 py-1.5 text-sm text-slate-500 transition hover:bg-slate-100" title="Email">✉</a>}
+                  </div>
                 </div>
-                <div className="flex shrink-0 items-center gap-1">
-                  {a.dossier.tel && <a href={`tel:${a.dossier.tel}`} className="rounded-lg bg-emerald-500 px-3 py-1.5 text-sm font-bold text-white transition hover:brightness-110" title={`Appeler ${a.dossier.tel}`}>📞</a>}
-                  {a.dossier.email && <a href={`mailto:${a.dossier.email}`} className="rounded-lg border border-slate-200 px-2.5 py-1.5 text-sm text-slate-500 transition hover:bg-slate-100" title="Email">✉</a>}
-                </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
+          {o.acqs.length > lim && <button onClick={() => setLim((n) => n + 40)} className="mt-3 w-full rounded-xl border border-slate-200 bg-white py-2 text-sm font-bold text-slate-600 hover:bg-slate-50">Afficher plus ({o.acqs.length - lim})</button>}
         </div>
       </div>
     </div>
