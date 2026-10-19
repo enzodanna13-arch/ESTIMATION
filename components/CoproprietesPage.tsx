@@ -12,6 +12,22 @@ const badgeDpe = (c: string) => COULEUR_DPE[c] ?? "bg-slate-200 text-slate-600";
 const dateFr = (s: string) => { if (!s) return "—"; try { return new Date(s + "T12:00:00").toLocaleDateString("fr-FR", { day: "2-digit", month: "short", year: "numeric" }); } catch { return s; } };
 const nf = new Intl.NumberFormat("fr-FR");
 const CLASSES = ["A", "B", "C", "D", "E", "F", "G"];
+
+async function copier(t: string): Promise<boolean> { try { await navigator.clipboard.writeText(t); return true; } catch { return false; } }
+// Courrier type de démarchage syndic (adressé au conseil syndical, à l'adresse de l'immeuble).
+function courrierSyndic(c: Copro): string {
+  return [
+    "Mesdames, Messieurs les membres du conseil syndical,",
+    "",
+    `Votre copropriété « ${c.nom} » (${c.adresse}) représente ${c.lotsTotal} lots.`,
+    "CENTURY 21 Icaza Immobilier, agence implantée à Martigues, assure la gestion de copropriétés de proximité : syndic réactif, transparence des comptes, suivi des travaux et accompagnement du conseil syndical.",
+    "",
+    "Nous serions honorés de vous présenter une offre de gestion et de nous positionner lors de votre prochaine assemblée générale (mise en concurrence du syndic).",
+    "N'hésitez pas à nous contacter pour un rendez-vous sans engagement.",
+    "",
+    "CENTURY 21 Icaza Immobilier — 32 avenue de la Paix, 13500 Martigues",
+  ].join("\n");
+}
 // Ordre d'affichage des infos du diag.
 const ORDRE_DETAILS = [
   "annee_construction", "conso_5_usages_par_m2_ep", "conso_5_usages_par_m2_ef", "emission_ges_5_usages_par_m2", "cout_total_5_usages",
@@ -55,7 +71,11 @@ function DiagInfos({ d }: { d: DpeCopro }) {
 
 function CarteCopro({ c }: { c: Copro }) {
   const [ouvert, setOuvert] = useState(false);
+  const [demarch, setDemarch] = useState(false);
+  const [copie, setCopie] = useState("");
   const dpe = c.dernierDpe;
+  const faireCopie = async (cle: string, t: string) => { if (await copier(t)) { setCopie(cle); setTimeout(() => setCopie(""), 2000); } };
+  const adressePostale = `Conseil syndical – Copropriété ${c.nom}\n${c.adresse}`;
   return (
     <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
       <div className="flex flex-wrap items-start gap-3">
@@ -65,12 +85,14 @@ function CarteCopro({ c }: { c: Copro }) {
             {dpe && <span className={`rounded-md px-2 py-0.5 text-xs font-black ${badgeDpe(dpe.etiquetteDpe)}`}>{dpe.etiquetteDpe || "?"}</span>}
             {c.dpeCount > 0 && <span className="rounded-full bg-copper/10 px-2 py-0.5 text-[11px] font-bold text-copper">{c.dpeCount} DPE croisé(s)</span>}
             {c.dpeCountPrecis > 0 && <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-bold text-emerald-700">📍 {c.dpeCountPrecis} localisé(s)</span>}
+            {c.cibleSyndic && <span className="rounded-full bg-violet-100 px-2 py-0.5 text-[11px] font-bold text-violet-700" title="Opportunité de prospection syndic">🎯 Cible syndic — {c.motifSyndic}</span>}
           </div>
           <div className="text-sm text-slate-500">{c.adresse}</div>
           <div className="mt-1 flex flex-wrap gap-x-3 gap-y-0.5 text-[12px] text-slate-600">
             <span><strong className="text-navy">{nf.format(c.lotsTotal)}</strong> lots{c.lotsHabitation ? ` · ${nf.format(c.lotsHabitation)} habitation` : ""}</span>
             {c.periodeConstruction && <span>· {c.periodeConstruction}</span>}
-            {c.syndic && <span>· Syndic : {c.syndic}{c.typeSyndic ? ` (${c.typeSyndic})` : ""}</span>}
+            {c.syndic ? <span>· Syndic : {c.syndic}{c.typeSyndic ? ` (${c.typeSyndic})` : ""}</span> : c.typeSyndic && <span>· Syndic {c.typeSyndic}</span>}
+            {c.dateFinMandat && <span>· fin de mandat {dateFr(c.dateFinMandat)}</span>}
           </div>
         </div>
         <div className="text-right">
@@ -93,6 +115,22 @@ function CarteCopro({ c }: { c: Copro }) {
           )}
         </div>
       )}
+
+      {/* Démarchage syndic : courrier au conseil syndical (à l'adresse de l'immeuble) */}
+      <div className="mt-2 border-t border-slate-100 pt-2">
+        <button onClick={() => setDemarch((d) => !d)} className="text-xs font-semibold text-violet-700 hover:underline">{demarch ? "Masquer le démarchage syndic ▾" : "✉️ Démarcher le conseil syndical (syndic) ▸"}</button>
+        {demarch && (
+          <div className="mt-2 rounded-xl border border-violet-200 bg-violet-50/50 p-3">
+            <div className="text-[11px] font-semibold uppercase tracking-wide text-violet-700">Adresse postale</div>
+            <pre className="mt-1 whitespace-pre-wrap font-sans text-[13px] text-navy">{adressePostale}</pre>
+            <button onClick={() => void faireCopie("adr", adressePostale)} className="mt-1 rounded-lg border border-violet-300 bg-white px-3 py-1 text-xs font-bold text-violet-700 hover:bg-violet-100">{copie === "adr" ? "✓ Copiée" : "📋 Copier l'adresse"}</button>
+            <div className="mt-3 text-[11px] font-semibold uppercase tracking-wide text-violet-700">Courrier type</div>
+            <pre className="mt-1 max-h-40 overflow-auto whitespace-pre-wrap rounded-lg bg-white p-2 font-sans text-[12px] leading-relaxed text-slate-700">{courrierSyndic(c)}</pre>
+            <button onClick={() => void faireCopie("lettre", courrierSyndic(c))} className="mt-1 rounded-lg border border-violet-300 bg-white px-3 py-1 text-xs font-bold text-violet-700 hover:bg-violet-100">{copie === "lettre" ? "✓ Copié" : "📋 Copier le courrier"}</button>
+            <p className="mt-2 text-[11px] text-slate-500">Les noms des membres du conseil syndical ne sont pas publics (RGPD). On adresse le courrier au <strong>« Conseil syndical »</strong> à l&apos;adresse de l&apos;immeuble — légal et efficace.</p>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
@@ -106,6 +144,7 @@ export default function CoproprietesPage({ onRetour }: { onRetour: () => void })
   const [classe, setClasse] = useState("");
   const [avecDpe, setAvecDpe] = useState(true);
   const [precisSeul, setPrecisSeul] = useState(false);
+  const [ciblesSyndic, setCiblesSyndic] = useState(false);
   const [limite, setLimite] = useState(30);
 
   // Fenêtre glissante : on ne garde que les diagnostics de 2 mois maximum.
@@ -136,15 +175,17 @@ export default function CoproprietesPage({ onRetour }: { onRetour: () => void })
     if (!ds) return [] as Copro[];
     const s = q.trim().toLowerCase();
     return coprosRecents.filter((c) => {
-      if (avecDpe && !c.dernierDpe) return false;
+      if (ciblesSyndic && !c.cibleSyndic) return false;
+      if (avecDpe && !ciblesSyndic && !c.dernierDpe) return false;
       if (precisSeul && c.dpeCountPrecis === 0) return false;
       if (classe && c.dernierDpe?.etiquetteDpe !== classe) return false;
       if (s && !`${c.nom} ${c.adresse} ${c.syndic}`.toLowerCase().includes(s)) return false;
       return true;
     });
-  }, [ds, coprosRecents, q, classe, avecDpe, precisSeul]);
+  }, [ds, coprosRecents, q, classe, avecDpe, precisSeul, ciblesSyndic]);
 
   const avecDiag = coprosRecents.filter((c) => c.dernierDpe).length;
+  const nbCibles = coprosRecents.filter((c) => c.cibleSyndic).length;
 
   return (
     <div>
@@ -164,7 +205,7 @@ export default function CoproprietesPage({ onRetour }: { onRetour: () => void })
       ) : (
         <>
           <div className="mb-3 grid grid-cols-3 gap-2 sm:grid-cols-4">
-            {[["Copropriétés", nf.format(ds.copros.length)], ["Diag < 2 mois", nf.format(avecDiag)], ["DPE indexés", nf.format(ds.nbDpeIndexes)], ["Mis à jour", dateFr(new Date(ds.updatedAt).toISOString().slice(0, 10))]].map(([l, v]) => (
+            {[["Copropriétés", nf.format(ds.copros.length)], ["Diag < 2 mois", nf.format(avecDiag)], ["🎯 Cibles syndic", nf.format(nbCibles)], ["Mis à jour", dateFr(new Date(ds.updatedAt).toISOString().slice(0, 10))]].map(([l, v]) => (
               <div key={l} className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-center"><div className="text-lg font-bold text-navy">{v}</div><div className="text-[10px] text-slate-500">{l}</div></div>
             ))}
           </div>
@@ -177,6 +218,7 @@ export default function CoproprietesPage({ onRetour }: { onRetour: () => void })
             </select>
             <label className="flex items-center gap-1.5 text-xs font-semibold text-slate-600"><input type="checkbox" checked={avecDpe} onChange={(e) => setAvecDpe(e.target.checked)} /> Avec diagnostic</label>
             <label className="flex items-center gap-1.5 text-xs font-semibold text-emerald-700"><input type="checkbox" checked={precisSeul} onChange={(e) => setPrecisSeul(e.target.checked)} /> 📍 Localisé (étage / entrée)</label>
+            <label className="flex items-center gap-1.5 text-xs font-semibold text-violet-700"><input type="checkbox" checked={ciblesSyndic} onChange={(e) => setCiblesSyndic(e.target.checked)} /> 🎯 Cibles syndic</label>
             <span className="text-xs text-slate-400">{filtrees.length} résultat(s)</span>
           </div>
 
