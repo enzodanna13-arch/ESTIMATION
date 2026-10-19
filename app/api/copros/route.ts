@@ -12,12 +12,19 @@ const depuis5ans = () => { const d = new Date(); d.setFullYear(d.getFullYear() -
 export async function GET(request: Request) {
   if (!(await verifierAccesEquipe(request))) return Response.json({ error: "Accès réservé" }, { status: 401 });
   try {
-    let ds = await getCoprosCache(INSEE_MARTIGUES);
-    if (!ds) {
-      ds = await computeCoproDataset(INSEE_MARTIGUES, MIN_LOTS, depuis5ans());
-      await saveCoprosCache(ds).catch(() => {});
+    const cache = await getCoprosCache(INSEE_MARTIGUES);
+    const perime = !cache || Date.now() - cache.updatedAt > 24 * 3600 * 1000; // recalcul quotidien
+    if (perime) {
+      try {
+        const frais = await computeCoproDataset(INSEE_MARTIGUES, MIN_LOTS, depuis5ans());
+        await saveCoprosCache(frais).catch(() => {});
+        return Response.json({ dataset: frais });
+      } catch (e) {
+        if (cache) return Response.json({ dataset: cache }); // sources indispo : on sert le cache
+        throw e;
+      }
     }
-    return Response.json({ dataset: ds });
+    return Response.json({ dataset: cache });
   } catch (e) {
     return Response.json({ error: e instanceof Error ? e.message : "Chargement impossible" }, { status: 500 });
   }

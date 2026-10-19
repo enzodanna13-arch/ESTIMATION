@@ -104,9 +104,24 @@ export default function CoproprietesPage({ onRetour }: { onRetour: () => void })
   const [erreur, setErreur] = useState<string | null>(null);
   const [q, setQ] = useState("");
   const [classe, setClasse] = useState("");
-  const [avecDpe, setAvecDpe] = useState(false);
+  const [avecDpe, setAvecDpe] = useState(true);
   const [precisSeul, setPrecisSeul] = useState(false);
   const [limite, setLimite] = useState(30);
+
+  // Fenêtre glissante : on ne garde que les diagnostics de 2 mois maximum.
+  // Calculé à chaque rendu → un diag qui dépasse 2 mois disparaît automatiquement.
+  const cutoff = useMemo(() => { const d = new Date(); d.setMonth(d.getMonth() - 2); return d.toISOString().slice(0, 10); }, []);
+  const coprosRecents = useMemo(() => {
+    if (!ds) return [] as Copro[];
+    return ds.copros.map((c) => {
+      const dpes = c.dpes.filter((d) => d.date && d.date >= cutoff);
+      const dpeCountPrecis = dpes.filter((d) => d.precis).length;
+      return { ...c, dpes, dpeCount: dpes.length, dpeCountPrecis, dernierDpe: dpes[0] ?? null };
+    }).sort((a, b) =>
+      Number(b.dpeCountPrecis > 0) - Number(a.dpeCountPrecis > 0)
+      || (b.dernierDpe?.date ?? "").localeCompare(a.dernierDpe?.date ?? "")
+      || b.lotsTotal - a.lotsTotal);
+  }, [ds, cutoff]);
 
   useEffect(() => { let a = false; void (async () => { const d = await chargerCopros(); if (!a) { if (!d) setErreur("Chargement impossible (réessaie la mise à jour)."); setDs(d); setChargement(false); } })(); return () => { a = true; }; }, []);
 
@@ -120,16 +135,16 @@ export default function CoproprietesPage({ onRetour }: { onRetour: () => void })
   const filtrees = useMemo(() => {
     if (!ds) return [] as Copro[];
     const s = q.trim().toLowerCase();
-    return ds.copros.filter((c) => {
+    return coprosRecents.filter((c) => {
       if (avecDpe && !c.dernierDpe) return false;
       if (precisSeul && c.dpeCountPrecis === 0) return false;
       if (classe && c.dernierDpe?.etiquetteDpe !== classe) return false;
       if (s && !`${c.nom} ${c.adresse} ${c.syndic}`.toLowerCase().includes(s)) return false;
       return true;
     });
-  }, [ds, q, classe, avecDpe, precisSeul]);
+  }, [ds, coprosRecents, q, classe, avecDpe, precisSeul]);
 
-  const avecDiag = ds ? ds.copros.filter((c) => c.dernierDpe).length : 0;
+  const avecDiag = coprosRecents.filter((c) => c.dernierDpe).length;
 
   return (
     <div>
@@ -138,7 +153,7 @@ export default function CoproprietesPage({ onRetour }: { onRetour: () => void })
         <h2 className="text-2xl font-bold text-navy">🏢 Copropriétés</h2>
         <button onClick={() => void mettreAJour()} disabled={maj} className="ml-auto rounded-lg bg-navy px-4 py-2 text-sm font-bold text-white transition hover:brightness-110 disabled:opacity-50">{maj ? "Mise à jour… (30–90 s)" : "↻ Mettre à jour"}</button>
       </div>
-      <p className="mb-4 text-sm text-slate-500">Les copropriétés de Martigues de <strong>plus de 10 lots</strong> (Registre National des Copropriétés), croisées avec les <strong>derniers DPE réalisés</strong> (ADEME) par proximité du bâtiment. Les immeubles avec des diagnostics récents sont souvent en mouvement — un bon signal de prospection.</p>
+      <p className="mb-4 text-sm text-slate-500">Les copropriétés de Martigues de <strong>plus de 10 lots</strong> (Registre National des Copropriétés), croisées avec les DPE réalisés <strong>dans les 2 derniers mois</strong> (ADEME) par proximité du bâtiment. Un diagnostic de moins de 2 mois = signal fort de mise en vente. Les diags qui dépassent 2 mois disparaissent automatiquement de la liste.</p>
 
       {erreur && <div className="mb-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">{erreur}</div>}
 
@@ -149,7 +164,7 @@ export default function CoproprietesPage({ onRetour }: { onRetour: () => void })
       ) : (
         <>
           <div className="mb-3 grid grid-cols-3 gap-2 sm:grid-cols-4">
-            {[["Copropriétés", nf.format(ds.copros.length)], ["Avec DPE croisé", nf.format(avecDiag)], ["DPE indexés", nf.format(ds.nbDpeIndexes)], ["Mis à jour", dateFr(new Date(ds.updatedAt).toISOString().slice(0, 10))]].map(([l, v]) => (
+            {[["Copropriétés", nf.format(ds.copros.length)], ["Diag < 2 mois", nf.format(avecDiag)], ["DPE indexés", nf.format(ds.nbDpeIndexes)], ["Mis à jour", dateFr(new Date(ds.updatedAt).toISOString().slice(0, 10))]].map(([l, v]) => (
               <div key={l} className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-center"><div className="text-lg font-bold text-navy">{v}</div><div className="text-[10px] text-slate-500">{l}</div></div>
             ))}
           </div>
