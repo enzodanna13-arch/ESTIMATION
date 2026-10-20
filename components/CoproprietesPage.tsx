@@ -142,7 +142,7 @@ export default function CoproprietesPage({ onRetour }: { onRetour: () => void })
   const [erreur, setErreur] = useState<string | null>(null);
   const [q, setQ] = useState("");
   const [classe, setClasse] = useState("");
-  const [avecDpe, setAvecDpe] = useState(true);
+  const [avecDpe, setAvecDpe] = useState(false);
   const [precisSeul, setPrecisSeul] = useState(false);
   const [ciblesSyndic, setCiblesSyndic] = useState(false);
   const [limite, setLimite] = useState(30);
@@ -194,7 +194,7 @@ export default function CoproprietesPage({ onRetour }: { onRetour: () => void })
         <h2 className="text-2xl font-bold text-navy">🏢 Copropriétés</h2>
         <button onClick={() => void mettreAJour()} disabled={maj} className="ml-auto rounded-lg bg-navy px-4 py-2 text-sm font-bold text-white transition hover:brightness-110 disabled:opacity-50">{maj ? "Mise à jour… (30–90 s)" : "↻ Mettre à jour"}</button>
       </div>
-      <p className="mb-4 text-sm text-slate-500">Les copropriétés de Martigues de <strong>plus de 10 lots</strong> (Registre National des Copropriétés), croisées avec les DPE réalisés <strong>dans les 2 derniers mois</strong> (ADEME) par proximité du bâtiment. Un diagnostic de moins de 2 mois = signal fort de mise en vente. Les diags qui dépassent 2 mois disparaissent automatiquement de la liste.</p>
+      <p className="mb-4 text-sm text-slate-500"><strong>Toutes les copropriétés de Martigues</strong> (Registre National des Copropriétés, sans filtre de lots), croisées avec les DPE réalisés <strong>dans les 2 derniers mois</strong> (ADEME) par proximité du bâtiment. Un diagnostic de moins de 2 mois = signal fort de mise en vente. Les diags qui dépassent 2 mois disparaissent automatiquement de la liste.</p>
 
       {erreur && <div className="mb-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">{erreur}</div>}
 

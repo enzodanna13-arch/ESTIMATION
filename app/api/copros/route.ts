@@ -5,7 +5,7 @@ export const dynamic = "force-dynamic";
 export const maxDuration = 120;
 
 const INSEE_MARTIGUES = "13056";
-const MIN_LOTS = 10; // > 10 lots
+const MIN_LOTS = 0; // 0 = aucun filtre : toutes les copropriétés de la commune
 const depuis5ans = () => { const d = new Date(); d.setFullYear(d.getFullYear() - 5); return d.toISOString().slice(0, 10); };
 
 // GET : renvoie le jeu de données en cache ; le calcule si absent.

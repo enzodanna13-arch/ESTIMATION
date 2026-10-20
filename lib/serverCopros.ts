@@ -102,12 +102,14 @@ async function fetchJson(url: string, ms = 25000, retries = 2): Promise<Record<s
   return null;
 }
 
-// Récupère les copropriétés d'une commune (INSEE) avec plus de `minLots` lots.
+// Récupère les copropriétés d'une commune (INSEE). Si `minLots <= 0`, aucun
+// filtre sur le nombre de lots : on remonte TOUTES les copros de la commune.
 async function fetchCoprosRNC(insee: string, minLots: number): Promise<Copro[]> {
   const copros: Copro[] = [];
   const pageSize = 50;
-  for (let page = 1; page <= 40; page++) {
-    const url = `${RNIC_BASE}?commune__exact=${encodeURIComponent(insee)}&nombre_total_lots__greater=${minLots}&page=${page}&page_size=${pageSize}`;
+  const filtreLots = minLots > 0 ? `&nombre_total_lots__greater=${minLots}` : "";
+  for (let page = 1; page <= 80; page++) {
+    const url = `${RNIC_BASE}?commune__exact=${encodeURIComponent(insee)}${filtreLots}&page=${page}&page_size=${pageSize}`;
     const body = await fetchJson(url);
     const rows = (body?.data as Record<string, unknown>[] | undefined) ?? [];
     if (rows.length === 0) break;
@@ -238,7 +240,8 @@ export async function computeCoproDataset(insee: string, minLots: number, depuis
 
 // --- Cache Blob (recalcul coûteux : on garde le dernier calcul) ---
 // v2 : ajout de la localisation fine (étage / entrée) → on repart d'un cache neuf.
-const PREFIX = "coprosv3/";
+// v4 : plus de filtre sur le nombre de lots (toutes les copros) → cache neuf.
+const PREFIX = "coprosv4/";
 const version = (p: string) => { const m = p.match(/~(\d+)\.json$/); return m ? Number(m[1]) : 0; };
 
 export async function getCoprosCache(insee: string): Promise<CoproDataset | null> {
