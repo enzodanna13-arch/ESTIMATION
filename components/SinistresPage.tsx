@@ -114,6 +114,7 @@ export default function SinistresPage({ onRetour }: { onRetour: () => void }) {
   const [nouveau, setNouveau] = useState(false);
   const [importer, setImporter] = useState(false);
   const [couts, setCouts] = useState(false);
+  const [courrier, setCourrier] = useState(false);
   const [q, setQ] = useState("");
   const [fStatut, setFStatut] = useState("");
   const [fMotif, setFMotif] = useState("");
@@ -146,8 +147,9 @@ export default function SinistresPage({ onRetour }: { onRetour: () => void }) {
       <div className="mb-4 flex flex-wrap items-center gap-3">
         <button onClick={onRetour} className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-100">← Accueil</button>
         <h2 className="text-2xl font-bold text-navy">🌊 Sinistres &amp; assurances</h2>
-        {!nouveau && !importer && !couts && !selected && (
+        {!nouveau && !importer && !couts && !courrier && !selected && (
           <div className="ml-auto flex flex-wrap gap-2">
+            <button onClick={() => setCourrier(true)} className="rounded-lg border border-violet-500 bg-white px-4 py-2 text-sm font-bold text-violet-700 transition hover:bg-violet-50">📧 Courrier Mairie (CatNat)</button>
             <button onClick={() => setCouts(true)} className="rounded-lg border border-emerald-600 bg-white px-4 py-2 text-sm font-bold text-emerald-700 transition hover:bg-emerald-50">💰 Coûts postaux</button>
             <button onClick={() => setImporter(true)} className="rounded-lg border border-navy bg-white px-4 py-2 text-sm font-bold text-navy transition hover:bg-slate-50">📥 Importer un PDF</button>
             <button onClick={() => setNouveau(true)} className="rounded-lg bg-navy px-4 py-2 text-sm font-bold text-white transition hover:brightness-110">+ Nouveau sinistre</button>
@@ -155,7 +157,9 @@ export default function SinistresPage({ onRetour }: { onRetour: () => void }) {
         )}
       </div>
 
-      {couts ? (
+      {courrier ? (
+        <CourrierMairie sinistres={sinistres} onRetour={() => setCourrier(false)} />
+      ) : couts ? (
         <CoutsPostaux sinistres={sinistres} onChange={majLocal} onRetour={() => setCouts(false)} />
       ) : importer ? (
         <ImportPdf
@@ -220,6 +224,69 @@ export default function SinistresPage({ onRetour }: { onRetour: () => void }) {
           )}
         </>
       )}
+    </div>
+  );
+}
+
+// ------- Courrier Mairie : demande de reconnaissance CatNat -------
+function genererCourrierMairie(sinistres: Sinistre[]): string {
+  const liste = sinistres
+    .map((s) => `• ${s.coproNom || "Copropriété"}${s.coproAdresse ? ` – ${s.coproAdresse}` : ""} : ${(s.description || "").trim() || s.motif}`)
+    .join("\n");
+  const n = sinistres.length;
+  return `Objet : Demande de reconnaissance de l'état de catastrophe naturelle – intempéries des 19 et 20 octobre 2026 – copropriétés gérées par CENTURY 21 Icaza Immobilier
+
+Madame, Monsieur le Maire,
+
+En notre qualité de syndic de copropriétés sur la commune de Martigues, nous souhaitons vous signaler les nombreux dégâts subis par les immeubles que nous gérons à la suite de l'épisode pluvieux intense survenu dans la nuit du 19 au 20 octobre 2026.
+
+Ces intempéries ont provoqué des inondations, des coulées de boue, des mouvements de terrain (éboulements, glissements) et d'importantes infiltrations d'eau, touchant à ce jour ${n} copropriété${n > 1 ? "s" : ""} :
+
+${liste}
+
+Compte tenu de l'ampleur et de la simultanéité de ces sinistres, nous sollicitons la commune afin qu'elle engage auprès de Monsieur le Préfet des Bouches-du-Rhône une demande de reconnaissance de l'état de catastrophe naturelle au titre de cet épisode (inondations et coulées de boue, mouvements de terrain), conformément à la loi n° 82-600 du 13 juillet 1982.
+
+Cette reconnaissance est déterminante pour permettre l'indemnisation des copropriétés concernées par leurs assureurs.
+
+Nous nous tenons à votre entière disposition pour vous transmettre l'ensemble des pièces justificatives (déclarations de sinistre adressées aux assureurs, reportages photographiques, constats) utiles à la constitution du dossier communal.
+
+Dans l'attente de votre retour, nous vous prions d'agréer, Madame, Monsieur le Maire, l'expression de nos salutations distinguées.
+
+Virginie FIORELLO
+CENTURY 21 Icaza Immobilier – Service Syndic
+32 avenue de la Paix, 13500 Martigues
+Tél. 04 42 42 80 85 – icaza@century21.fr`;
+}
+
+function CourrierMairie({ sinistres, onRetour }: { sinistres: Sinistre[]; onRetour: () => void }) {
+  const genere = useMemo(() => genererCourrierMairie(sinistres), [sinistres]);
+  const [texte, setTexte] = useState(genere);
+  const [copie, setCopie] = useState(false);
+  useEffect(() => { setTexte(genere); }, [genere]);
+
+  const copier = async () => {
+    try { await navigator.clipboard.writeText(texte); setCopie(true); setTimeout(() => setCopie(false), 2000); } catch { /* ignore */ }
+  };
+  const telecharger = () => {
+    const blob = new Blob([texte], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a"); a.href = url; a.download = "Courrier mairie - reconnaissance catastrophe naturelle.txt"; a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 2000);
+  };
+
+  return (
+    <div className="mx-auto max-w-3xl">
+      <div className="mb-3 flex flex-wrap items-center gap-2">
+        <button onClick={onRetour} className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-100">← Sinistres</button>
+        <h3 className="text-lg font-bold text-navy">📧 Courrier Mairie – reconnaissance catastrophe naturelle</h3>
+      </div>
+      <p className="mb-3 text-sm text-slate-500">Courrier généré automatiquement à partir de tes <strong>{sinistres.length} sinistre(s)</strong> (copropriétés touchées + nature des dégâts). Tu peux l'ajuster avant de l'envoyer à la mairie.</p>
+      <div className="mb-3 flex flex-wrap gap-2">
+        <button onClick={() => void copier()} className="rounded-lg bg-navy px-4 py-2 text-sm font-bold text-white transition hover:brightness-110">{copie ? "✓ Copié" : "📋 Copier le texte"}</button>
+        <button onClick={telecharger} className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-100">⬇ Télécharger (.txt)</button>
+        <button onClick={() => setTexte(genere)} className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-100">↻ Régénérer</button>
+      </div>
+      <textarea value={texte} onChange={(e) => setTexte(e.target.value)} rows={26} className="w-full rounded-2xl border border-slate-200 bg-white p-4 font-mono text-[13px] leading-relaxed text-slate-700 focus:border-copper focus:outline-none" />
     </div>
   );
 }
