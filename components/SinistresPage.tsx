@@ -4,10 +4,38 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import {
   listSinistres, createSinistre, updateSinistre, deleteSinistre,
   ajouterSuivi, ajouterPhoto, modifierPhoto, supprimerPhoto,
-  compresserPhoto, urlPhotoSinistre,
+  ajouterDocument, supprimerDocument,
+  compresserPhoto, urlPhotoSinistre, urlDocumentSinistre,
   STATUTS_SINISTRE, MOTIFS_SINISTRE, type Sinistre,
 } from "@/lib/sinistres";
+import { compresserDocument } from "@/lib/compressDoc";
 import { genererDeclarationSinistrePdf, type PhotoBytes } from "@/lib/declarationSinistrePdf";
+
+const estImage = (f: File) => f.type.startsWith("image/") || /\.(jpe?g|png|webp|heic|heif)$/i.test(f.name);
+const estPdf = (f: File) => f.type === "application/pdf" || /\.pdf$/i.test(f.name);
+const octetsLisible = (n: number) => (n > 1024 * 1024 ? `${(n / 1024 / 1024).toFixed(1)} Mo` : `${Math.max(1, Math.round(n / 1024))} Ko`);
+
+// Téléverse une liste de fichiers vers un sinistre : images → photos (JPEG),
+// PDF → documents. Renvoie le dernier état du sinistre.
+async function televerserFichiers(
+  id: string,
+  fichiers: File[],
+  onProgress?: (fait: number, total: number) => void,
+): Promise<Sinistre | null> {
+  let dernier: Sinistre | null = null;
+  let fait = 0;
+  for (const f of fichiers) {
+    if (estImage(f)) {
+      const data = await compresserPhoto(f);
+      dernier = await ajouterPhoto(id, { nom: f.name.replace(/\.[^.]+$/, "").slice(0, 60), legende: "", data });
+    } else if (estPdf(f)) {
+      const piece = await compresserDocument(f);
+      dernier = await ajouterDocument(id, { nom: f.name.slice(0, 120), data: piece.data });
+    }
+    onProgress?.(++fait, fichiers.length);
+  }
+  return dernier;
+}
 
 const nf = new Intl.NumberFormat("fr-FR");
 const euros = (n: number | null) => (n && n > 0 ? `${nf.format(n)} €` : "—");
@@ -149,26 +177,73 @@ export default function SinistresPage({ onRetour }: { onRetour: () => void }) {
 // ------- Formulaire de création -------
 function FormSinistre({ onCancel, onSaved }: { onCancel: () => void; onSaved: (s: Sinistre) => void }) {
   const [f, setF] = useState<Partial<Sinistre>>({ motif: "Inondation", statut: "Déclaré", dateSinistre: new Date().toISOString().slice(0, 10), qualite: "Syndic de copropriété", signataire: "CENTURY 21 ICAZA Immobilier" });
+  const [fichiers, setFichiers] = useState<File[]>([]);
   const [enreg, setEnreg] = useState(false);
+  const [progres, setProgres] = useState("");
   const [err, setErr] = useState<string | null>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
   const set = (k: keyof Sinistre, v: unknown) => setF((p) => ({ ...p, [k]: v }));
+
+  const ajouterFichiers = (liste: FileList | null) => {
+    if (!liste) return;
+    const valides = Array.from(liste).filter((x) => estImage(x) || estPdf(x));
+    setFichiers((p) => [...p, ...valides]);
+    if (fileRef.current) fileRef.current.value = "";
+  };
 
   const soumettre = async () => {
     if (!f.coproNom?.trim() && !f.coproAdresse?.trim()) { setErr("Indique au moins la copropriété."); return; }
     setEnreg(true); setErr(null);
     const s = await createSinistre(f);
-    setEnreg(false);
-    if (s) onSaved(s); else setErr("Enregistrement impossible (réessaie).");
+    if (!s) { setEnreg(false); setErr("Enregistrement impossible (réessaie)."); return; }
+    let final = s;
+    if (fichiers.length > 0) {
+      try {
+        const maj = await televerserFichiers(s.id, fichiers, (fait, total) => setProgres(`Envoi des pièces… ${fait}/${total}`));
+        if (maj) final = maj;
+      } catch (e) { setErr(`Sinistre créé, mais une pièce n'a pas pu être envoyée : ${e instanceof Error ? e.message : ""} (tu peux la rajouter dans la fiche).`); }
+    }
+    setEnreg(false); setProgres("");
+    onSaved(final);
   };
+
+  const nbPhotos = fichiers.filter(estImage).length;
+  const nbDocs = fichiers.filter(estPdf).length;
 
   return (
     <div className="mx-auto max-w-2xl rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
       <h3 className="mb-4 text-lg font-bold text-navy">Nouveau sinistre</h3>
       {err && <div className="mb-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">{err}</div>}
       <ChampsSinistre f={f} set={set} />
-      <div className="mt-5 flex gap-2">
-        <button onClick={() => void soumettre()} disabled={enreg} className="rounded-lg bg-navy px-5 py-2 text-sm font-bold text-white transition hover:brightness-110 disabled:opacity-50">{enreg ? "Enregistrement…" : "Enregistrer"}</button>
-        <button onClick={onCancel} className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-100">Annuler</button>
+
+      <div className="mt-4 rounded-xl border border-dashed border-slate-300 bg-slate-50 p-3">
+        <div className="mb-2 flex items-center justify-between">
+          <span className="text-xs font-bold uppercase tracking-wide text-slate-500">Pièces jointes (photos &amp; PDF)</span>
+          <button type="button" onClick={() => fileRef.current?.click()} className="rounded-lg bg-white px-3 py-1.5 text-xs font-bold text-navy shadow-sm ring-1 ring-slate-200 transition hover:bg-slate-100">+ Ajouter</button>
+        </div>
+        <input ref={fileRef} type="file" accept="image/*,application/pdf" multiple className="hidden" onChange={(e) => ajouterFichiers(e.target.files)} />
+        {fichiers.length === 0 ? (
+          <p className="text-xs text-slate-400">Joins dès maintenant les photos des dégâts et les documents PDF (constat, devis, rapport…). Les photos iront aussi en annexe de la déclaration.</p>
+        ) : (
+          <>
+            <p className="mb-2 text-[11px] text-slate-500">{nbPhotos} photo(s) · {nbDocs} PDF</p>
+            <ul className="space-y-1">
+              {fichiers.map((file, i) => (
+                <li key={i} className="flex items-center gap-2 rounded-lg bg-white px-2.5 py-1.5 text-xs ring-1 ring-slate-100">
+                  <span>{estPdf(file) ? "📄" : "🖼️"}</span>
+                  <span className="min-w-0 flex-1 truncate text-slate-600">{file.name}</span>
+                  <span className="shrink-0 text-slate-400">{octetsLisible(file.size)}</span>
+                  <button type="button" onClick={() => setFichiers((p) => p.filter((_, j) => j !== i))} className="shrink-0 text-red-400 hover:text-red-600">✕</button>
+                </li>
+              ))}
+            </ul>
+          </>
+        )}
+      </div>
+
+      <div className="mt-5 flex items-center gap-2">
+        <button onClick={() => void soumettre()} disabled={enreg} className="rounded-lg bg-navy px-5 py-2 text-sm font-bold text-white transition hover:brightness-110 disabled:opacity-50">{enreg ? (progres || "Enregistrement…") : "Enregistrer"}</button>
+        <button onClick={onCancel} disabled={enreg} className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-100 disabled:opacity-50">Annuler</button>
       </div>
     </div>
   );
@@ -214,7 +289,7 @@ function FicheSinistre({ s, onRetour, onChange, onDelete }: { s: Sinistre; onRet
   const [f, setF] = useState<Partial<Sinistre>>(s);
   const [enreg, setEnreg] = useState(false);
   const [dirty, setDirty] = useState(false);
-  const [onglet, setOnglet] = useState<"infos" | "photos" | "suivi" | "declaration">("infos");
+  const [onglet, setOnglet] = useState<"infos" | "photos" | "documents" | "suivi" | "declaration">("infos");
   const set = (k: keyof Sinistre, v: unknown) => { setF((p) => ({ ...p, [k]: v })); setDirty(true); };
 
   useEffect(() => { setF(s); setDirty(false); }, [s.id]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -241,7 +316,7 @@ function FicheSinistre({ s, onRetour, onChange, onDelete }: { s: Sinistre; onRet
           <div className="text-sm text-slate-600">{s.motif} · {dateFr(s.dateSinistre)}{s.coproAdresse ? ` · ${s.coproAdresse}` : ""}</div>
         </div>
         <div className="flex flex-wrap gap-1 border-b border-slate-100 p-2">
-          {([["infos", "📋 Infos"], ["photos", `📷 Photos (${s.photos.length})`], ["suivi", `📈 Suivi (${s.suivi.length})`], ["declaration", "📄 Déclaration"]] as const).map(([v, t]) => (
+          {([["infos", "📋 Infos"], ["photos", `📷 Photos (${s.photos.length})`], ["documents", `📎 Documents (${s.documents.length})`], ["suivi", `📈 Suivi (${s.suivi.length})`], ["declaration", "📄 Déclaration"]] as const).map(([v, t]) => (
             <button key={v} onClick={() => setOnglet(v)} className={`rounded-lg px-3 py-1.5 text-sm font-bold transition ${onglet === v ? "bg-navy text-white" : "text-slate-500 hover:text-navy"}`}>{t}</button>
           ))}
         </div>
@@ -257,6 +332,7 @@ function FicheSinistre({ s, onRetour, onChange, onDelete }: { s: Sinistre; onRet
             </>
           )}
           {onglet === "photos" && <OngletPhotos s={s} onChange={onChange} />}
+          {onglet === "documents" && <OngletDocuments s={s} onChange={onChange} />}
           {onglet === "suivi" && <OngletSuivi s={s} onChange={onChange} />}
           {onglet === "declaration" && <OngletDeclaration s={s} />}
         </div>
@@ -316,6 +392,57 @@ function OngletPhotos({ s, onChange }: { s: Sinistre; onChange: (s: Sinistre) =>
             </div>
           ))}
         </div>
+      )}
+    </div>
+  );
+}
+
+// ------- Onglet documents (PDF) -------
+function OngletDocuments({ s, onChange }: { s: Sinistre; onChange: (s: Sinistre) => void }) {
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [envoi, setEnvoi] = useState(false);
+  const [progres, setProgres] = useState("");
+  const [err, setErr] = useState<string | null>(null);
+
+  const ajouter = async (files: FileList | null) => {
+    if (!files || files.length === 0) return;
+    const liste = Array.from(files).filter(estPdf);
+    if (liste.length === 0) { setErr("Seuls les fichiers PDF sont acceptés ici (les photos se mettent dans l'onglet « Photos »)."); if (fileRef.current) fileRef.current.value = ""; return; }
+    setEnvoi(true); setErr(null);
+    try {
+      const maj = await televerserFichiers(s.id, liste, (fait, total) => setProgres(`${fait}/${total}`));
+      if (maj) onChange(maj);
+    } catch (e) { setErr(e instanceof Error ? e.message : "Envoi impossible"); }
+    setEnvoi(false); setProgres("");
+    if (fileRef.current) fileRef.current.value = "";
+  };
+
+  const supprimer = async (docId: string) => { const maj = await supprimerDocument(s.id, docId); if (maj) onChange(maj); };
+
+  return (
+    <div>
+      <div className="mb-3 flex items-center gap-2">
+        <input ref={fileRef} type="file" accept="application/pdf" multiple className="hidden" onChange={(e) => void ajouter(e.target.files)} />
+        <button onClick={() => fileRef.current?.click()} disabled={envoi} className="rounded-lg bg-navy px-4 py-2 text-sm font-bold text-white transition hover:brightness-110 disabled:opacity-50">{envoi ? `Envoi… ${progres}` : "+ Ajouter des PDF"}</button>
+        <span className="text-xs text-slate-400">Constat, devis, rapport d'expertise, courriers…</span>
+      </div>
+      {err && <div className="mb-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">{err}</div>}
+      {s.documents.length === 0 ? (
+        <div className="rounded-xl border border-dashed border-slate-300 p-6 text-center text-sm text-slate-400">Aucun document PDF pour l'instant.</div>
+      ) : (
+        <ul className="space-y-2">
+          {s.documents.map((d) => (
+            <li key={d.id} className="flex items-center gap-3 rounded-xl border border-slate-200 p-2.5">
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-red-50 text-lg">📄</span>
+              <div className="min-w-0 flex-1">
+                <div className="truncate text-sm font-semibold text-navy">{d.nom}</div>
+                <div className="text-[11px] text-slate-400">{octetsLisible(d.taille)} · {dateFr(new Date(d.addedAt).toISOString().slice(0, 10))}</div>
+              </div>
+              <a href={urlDocumentSinistre(s.id, d.id)} target="_blank" rel="noopener noreferrer" className="shrink-0 rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-bold text-navy transition hover:bg-slate-100">Ouvrir</a>
+              <button onClick={() => void supprimer(d.id)} className="shrink-0 text-[11px] font-semibold text-red-500 hover:underline">Supprimer</button>
+            </li>
+          ))}
+        </ul>
       )}
     </div>
   );

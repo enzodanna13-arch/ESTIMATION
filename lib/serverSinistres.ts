@@ -32,6 +32,13 @@ export interface PhotoSinistre {
   addedAt: number;
 }
 
+export interface DocSinistre {
+  id: string;
+  nom: string;
+  taille: number; // octets (après compression)
+  addedAt: number;
+}
+
 export interface SuiviEntree {
   id: string;
   date: number;
@@ -58,6 +65,7 @@ export interface Sinistre {
   signataire: string;
   qualite: string;
   photos: PhotoSinistre[];
+  documents: DocSinistre[];
   suivi: SuiviEntree[];
   createdAt: number;
   updatedAt: number;
@@ -65,6 +73,7 @@ export interface Sinistre {
 
 const META_PREFIX = "sinistres/meta/";
 const PHOTO_PREFIX = "sinistres/photos/";
+const DOC_PREFIX = "sinistres/docs/";
 
 const safeId = (s: string) => (s || "").replace(/[^a-zA-Z0-9_-]/g, "").slice(0, 80);
 const version = (p: string) => { const m = p.match(/~(\d+)\.json$/); return m ? Number(m[1]) : 0; };
@@ -96,6 +105,7 @@ function normaliser(input: Partial<Sinistre>, base?: Sinistre): Sinistre {
     signataire: txt(input.signataire, 120),
     qualite: txt(input.qualite, 120),
     photos: Array.isArray(base?.photos) ? base!.photos : [],
+    documents: Array.isArray(base?.documents) ? base!.documents : [],
     suivi: Array.isArray(base?.suivi) ? base!.suivi : [],
     createdAt: base?.createdAt ?? now,
     updatedAt: now,
@@ -159,11 +169,12 @@ export async function updateSinistre(id: string, input: Partial<Sinistre>): Prom
 
 export async function deleteSinistre(id: string): Promise<boolean> {
   const safe = safeId(id);
-  const [meta, photos] = await Promise.all([
+  const [meta, photos, docs] = await Promise.all([
     list({ prefix: `${META_PREFIX}${safe}~`, limit: 100 }),
     list({ prefix: `${PHOTO_PREFIX}${safe}/`, limit: 1000 }),
+    list({ prefix: `${DOC_PREFIX}${safe}/`, limit: 1000 }),
   ]);
-  const urls = [...meta.blobs, ...photos.blobs].map((b) => b.url);
+  const urls = [...meta.blobs, ...photos.blobs, ...docs.blobs].map((b) => b.url);
   if (urls.length > 0) await del(urls);
   return urls.length > 0;
 }
@@ -212,6 +223,37 @@ export async function deletePhoto(id: string, photoId: string): Promise<Sinistre
 
 export async function getPhotoBytes(id: string, photoId: string): Promise<ArrayBuffer | null> {
   const { blobs } = await list({ prefix: `${PHOTO_PREFIX}${safeId(id)}/${safeId(photoId)}.jpg`, limit: 1 });
+  if (blobs.length === 0) return null;
+  try { const r = await fetch(blobs[0].url, { cache: "no-store" }); return r.ok ? await r.arrayBuffer() : null; } catch { return null; }
+}
+
+// --- Documents (PDF) ---
+export async function addDocument(id: string, doc: { nom: string; data: string }): Promise<Sinistre | null> {
+  const base = await getSinistre(id);
+  if (!base) return null;
+  const docId = rid();
+  const octets = Buffer.from(doc.data, "base64");
+  await put(`${DOC_PREFIX}${base.id}/${docId}.pdf`, octets, { access: "public", addRandomSuffix: false, contentType: "application/pdf" });
+  let nom = txt(doc.nom, 160) || "Document";
+  if (!/\.pdf$/i.test(nom)) nom = `${nom}.pdf`;
+  const d: DocSinistre = { id: docId, nom, taille: octets.length, addedAt: Date.now() };
+  const s: Sinistre = { ...base, documents: [...base.documents, d], updatedAt: Date.now() };
+  await putMeta(s);
+  return s;
+}
+
+export async function deleteDocument(id: string, docId: string): Promise<Sinistre | null> {
+  const base = await getSinistre(id);
+  if (!base) return null;
+  const { blobs } = await list({ prefix: `${DOC_PREFIX}${safeId(id)}/${safeId(docId)}.pdf`, limit: 1 });
+  if (blobs.length > 0) await del(blobs.map((b) => b.url));
+  const s: Sinistre = { ...base, documents: base.documents.filter((x) => x.id !== docId), updatedAt: Date.now() };
+  await putMeta(s);
+  return s;
+}
+
+export async function getDocBytes(id: string, docId: string): Promise<ArrayBuffer | null> {
+  const { blobs } = await list({ prefix: `${DOC_PREFIX}${safeId(id)}/${safeId(docId)}.pdf`, limit: 1 });
   if (blobs.length === 0) return null;
   try { const r = await fetch(blobs[0].url, { cache: "no-store" }); return r.ok ? await r.arrayBuffer() : null; } catch { return null; }
 }

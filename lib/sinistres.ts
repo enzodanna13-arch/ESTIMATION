@@ -1,7 +1,7 @@
 import { getHistoryKey } from "./history";
 import type { Sinistre } from "./serverSinistres";
 
-export type { Sinistre, PhotoSinistre, SuiviEntree } from "./serverSinistres";
+export type { Sinistre, PhotoSinistre, DocSinistre, SuiviEntree } from "./serverSinistres";
 export { STATUTS_SINISTRE, MOTIFS_SINISTRE } from "./serverSinistres";
 
 const headers = () => ({ "x-history-key": getHistoryKey() });
@@ -73,6 +73,26 @@ export async function supprimerPhoto(id: string, photoId: string): Promise<Sinis
 
 export const urlPhotoSinistre = (id: string, photoId: string) =>
   `/api/sinistres/${encodeURIComponent(id)}/photos/${encodeURIComponent(photoId)}`;
+
+export async function ajouterDocument(id: string, doc: { nom: string; data: string }): Promise<Sinistre | null> {
+  const res = await fetch(`/api/sinistres/${encodeURIComponent(id)}/documents`, { method: "POST", headers: jsonHeaders(), body: JSON.stringify(doc) });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => null)) as { error?: string } | null;
+    throw new Error(body?.error ?? "Envoi du document impossible");
+  }
+  return ((await res.json()) as { sinistre?: Sinistre }).sinistre ?? null;
+}
+
+export async function supprimerDocument(id: string, docId: string): Promise<Sinistre | null> {
+  try {
+    const res = await fetch(`/api/sinistres/${encodeURIComponent(id)}/documents/${encodeURIComponent(docId)}`, { method: "DELETE", headers: headers() });
+    if (!res.ok) return null;
+    return ((await res.json()) as { sinistre?: Sinistre }).sinistre ?? null;
+  } catch { return null; }
+}
+
+export const urlDocumentSinistre = (id: string, docId: string) =>
+  `/api/sinistres/${encodeURIComponent(id)}/documents/${encodeURIComponent(docId)}`;
 
 // Compresse une photo (fichier appareil) sous la limite serverless (~4,5 Mo de
 // corps de requête) et renvoie le base64 JPEG prêt à l'envoi.
