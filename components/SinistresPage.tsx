@@ -16,6 +16,26 @@ const estImage = (f: File) => f.type.startsWith("image/") || /\.(jpe?g|png|webp|
 const estPdf = (f: File) => f.type === "application/pdf" || /\.pdf$/i.test(f.name);
 const octetsLisible = (n: number) => (n > 1024 * 1024 ? `${(n / 1024 / 1024).toFixed(1)} Mo` : `${Math.max(1, Math.round(n / 1024))} Ko`);
 
+function u8ToB64(u8: Uint8Array): string {
+  let s = ""; const CH = 0x8000;
+  for (let i = 0; i < u8.length; i += CH) s += String.fromCharCode(...u8.subarray(i, i + CH));
+  return btoa(s);
+}
+
+// Prépare un PDF pour l'envoi : tel quel s'il tient sous la limite serverless,
+// sinon compressé. Lève une erreur claire si le fichier est vide (cas fréquent
+// d'un fichier cloud pas encore téléchargé sur mobile).
+async function pdfVersData(f: File): Promise<string> {
+  const buf = await f.arrayBuffer();
+  if (!buf || buf.byteLength === 0) {
+    throw new Error(`« ${f.name} » est vide ou pas encore téléchargé sur l'appareil. Ouvre-le une fois (ou enregistre-le localement) puis réessaie.`);
+  }
+  if (buf.byteLength <= 3_600_000) return u8ToB64(new Uint8Array(buf));
+  const piece = await compresserDocument(f, 2800);
+  if (!piece.data) throw new Error(`Compression de « ${f.name} » impossible.`);
+  return piece.data;
+}
+
 // Téléverse une liste de fichiers vers un sinistre : images → photos (JPEG),
 // PDF → documents. Renvoie le dernier état du sinistre.
 async function televerserFichiers(
@@ -30,8 +50,8 @@ async function televerserFichiers(
       const data = await compresserPhoto(f);
       dernier = await ajouterPhoto(id, { nom: f.name.replace(/\.[^.]+$/, "").slice(0, 60), legende: "", data });
     } else if (estPdf(f)) {
-      const piece = await compresserDocument(f);
-      dernier = await ajouterDocument(id, { nom: f.name.slice(0, 120), data: piece.data });
+      const data = await pdfVersData(f);
+      dernier = await ajouterDocument(id, { nom: f.name.slice(0, 120), data });
     }
     onProgress?.(++fait, fichiers.length);
   }
