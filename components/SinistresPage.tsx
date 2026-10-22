@@ -9,6 +9,7 @@ import {
   STATUTS_SINISTRE, MOTIFS_SINISTRE, type Sinistre,
 } from "@/lib/sinistres";
 import { compresserDocument } from "@/lib/compressDoc";
+import { analyserPdfOuvertures, type SinistreImporte } from "@/lib/importSinistresPdf";
 import { genererDeclarationSinistrePdf, type PhotoBytes } from "@/lib/declarationSinistrePdf";
 
 const estImage = (f: File) => f.type.startsWith("image/") || /\.(jpe?g|png|webp|heic|heif)$/i.test(f.name);
@@ -75,6 +76,7 @@ export default function SinistresPage({ onRetour }: { onRetour: () => void }) {
   const [chargement, setChargement] = useState(true);
   const [selId, setSelId] = useState<string | null>(null);
   const [nouveau, setNouveau] = useState(false);
+  const [importer, setImporter] = useState(false);
   const [q, setQ] = useState("");
   const [fStatut, setFStatut] = useState("");
   const [fMotif, setFMotif] = useState("");
@@ -107,12 +109,20 @@ export default function SinistresPage({ onRetour }: { onRetour: () => void }) {
       <div className="mb-4 flex flex-wrap items-center gap-3">
         <button onClick={onRetour} className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-100">← Accueil</button>
         <h2 className="text-2xl font-bold text-navy">🌊 Sinistres &amp; assurances</h2>
-        {!nouveau && !selected && (
-          <button onClick={() => setNouveau(true)} className="ml-auto rounded-lg bg-navy px-4 py-2 text-sm font-bold text-white transition hover:brightness-110">+ Nouveau sinistre</button>
+        {!nouveau && !importer && !selected && (
+          <div className="ml-auto flex gap-2">
+            <button onClick={() => setImporter(true)} className="rounded-lg border border-navy bg-white px-4 py-2 text-sm font-bold text-navy transition hover:bg-slate-50">📥 Importer un PDF</button>
+            <button onClick={() => setNouveau(true)} className="rounded-lg bg-navy px-4 py-2 text-sm font-bold text-white transition hover:brightness-110">+ Nouveau sinistre</button>
+          </div>
         )}
       </div>
 
-      {nouveau ? (
+      {importer ? (
+        <ImportPdf
+          onCancel={() => setImporter(false)}
+          onImported={(crees) => { crees.forEach(majLocal); setImporter(false); }}
+        />
+      ) : nouveau ? (
         <FormSinistre
           onCancel={() => setNouveau(false)}
           onSaved={(s) => { majLocal(s); setNouveau(false); setSelId(s.id); }}
@@ -245,6 +255,103 @@ function FormSinistre({ onCancel, onSaved }: { onCancel: () => void; onSaved: (s
         <button onClick={() => void soumettre()} disabled={enreg} className="rounded-lg bg-navy px-5 py-2 text-sm font-bold text-white transition hover:brightness-110 disabled:opacity-50">{enreg ? (progres || "Enregistrement…") : "Enregistrer"}</button>
         <button onClick={onCancel} disabled={enreg} className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-100 disabled:opacity-50">Annuler</button>
       </div>
+    </div>
+  );
+}
+
+// ------- Import d'un PDF « Ouvertures de sinistres » -------
+function ImportPdf({ onCancel, onImported }: { onCancel: () => void; onImported: (crees: Sinistre[]) => void }) {
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [phase, setPhase] = useState<"choix" | "analyse" | "revue" | "creation">("choix");
+  const [items, setItems] = useState<SinistreImporte[]>([]);
+  const [progres, setProgres] = useState("");
+  const [err, setErr] = useState<string | null>(null);
+
+  const analyser = async (file: File | null) => {
+    if (!file) return;
+    setPhase("analyse"); setErr(null); setProgres("Lecture du PDF…");
+    try {
+      const res = await analyserPdfOuvertures(file, (fait, total) => setProgres(`Découpage… ${fait}/${total}`));
+      if (res.length === 0) { setErr("Aucune lettre de déclaration détectée dans ce PDF."); setPhase("choix"); return; }
+      setItems(res); setPhase("revue");
+    } catch (e) { setErr(e instanceof Error ? e.message : "Analyse impossible"); setPhase("choix"); }
+    if (fileRef.current) fileRef.current.value = "";
+  };
+
+  const setItem = (i: number, patch: Partial<SinistreImporte> | { champs: Partial<Sinistre> }) =>
+    setItems((p) => p.map((it, j) => (j === i ? { ...it, ...patch } : it)));
+
+  const creer = async () => {
+    const aCreer = items.filter((it) => it.garder);
+    if (aCreer.length === 0) return;
+    setPhase("creation"); setErr(null);
+    const crees: Sinistre[] = [];
+    let fait = 0;
+    for (const it of aCreer) {
+      fait += 1;
+      setProgres(`Création ${fait}/${aCreer.length} — ${it.champs.coproNom || "copropriété"}…`);
+      try {
+        const s = await createSinistre(it.champs);
+        if (!s) continue;
+        const nom = `Ouverture sinistre - ${(it.champs.coproNom || "copropriété").replace(/[\\/:*?"<>|]/g, "-")}.pdf`;
+        const maj = await ajouterDocument(s.id, { nom, data: it.pdfBase64 }).catch(() => null);
+        crees.push(maj ?? s);
+      } catch { /* on continue avec les suivants */ }
+    }
+    setPhase("revue");
+    onImported(crees);
+  };
+
+  const nbGardes = items.filter((it) => it.garder).length;
+
+  return (
+    <div className="mx-auto max-w-3xl rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+      <div className="mb-4 flex items-center justify-between">
+        <h3 className="text-lg font-bold text-navy">📥 Importer un PDF d'ouvertures de sinistres</h3>
+        <button onClick={onCancel} className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-semibold text-slate-600 transition hover:bg-slate-100">Fermer</button>
+      </div>
+      {err && <div className="mb-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">{err}</div>}
+
+      {phase === "choix" && (
+        <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50 p-6 text-center">
+          <p className="mb-3 text-sm text-slate-600">Dépose le PDF récapitulatif (lettres de déclaration + annexes photos). L'outil détecte chaque copropriété, découpe un PDF par sinistre et pré-remplit les fiches.</p>
+          <input ref={fileRef} type="file" accept="application/pdf" className="hidden" onChange={(e) => void analyser(e.target.files?.[0] ?? null)} />
+          <button onClick={() => fileRef.current?.click()} className="rounded-lg bg-navy px-5 py-2.5 text-sm font-bold text-white transition hover:brightness-110">Choisir le PDF</button>
+        </div>
+      )}
+
+      {phase === "analyse" && (
+        <div className="rounded-xl border border-slate-200 bg-white p-8 text-center text-slate-500">{progres || "Analyse…"}</div>
+      )}
+
+      {(phase === "revue" || phase === "creation") && (
+        <>
+          <p className="mb-3 text-sm text-slate-500">{items.length} sinistre(s) détecté(s). Vérifie et ajuste si besoin, puis crée-les. Chaque fiche recevra son PDF (lettre + photos) en pièce jointe.</p>
+          <div className="space-y-2">
+            {items.map((it, i) => (
+              <div key={i} className={`rounded-xl border p-3 ${it.garder ? "border-slate-200 bg-white" : "border-slate-100 bg-slate-50 opacity-60"}`}>
+                <div className="flex items-center gap-2">
+                  <input type="checkbox" checked={it.garder} onChange={(e) => setItem(i, { garder: e.target.checked })} className="h-4 w-4" />
+                  <input value={it.champs.coproNom ?? ""} onChange={(e) => setItem(i, { champs: { ...it.champs, coproNom: e.target.value } })} className="min-w-0 flex-1 rounded-md border border-slate-200 px-2 py-1 text-sm font-bold text-navy focus:border-copper focus:outline-none" />
+                  <select value={it.champs.motif ?? "Autre"} onChange={(e) => setItem(i, { champs: { ...it.champs, motif: e.target.value } })} className="shrink-0 rounded-md border border-slate-200 px-2 py-1 text-xs font-semibold text-navy focus:border-copper focus:outline-none">
+                    {MOTIFS_SINISTRE.map((m) => <option key={m} value={m}>{m}</option>)}
+                  </select>
+                </div>
+                <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-0.5 pl-6 text-[11px] text-slate-500">
+                  {it.champs.coproAdresse && <span>📍 {it.champs.coproAdresse}</span>}
+                  {it.champs.assureur && <span>🏢 {it.champs.assureur}</span>}
+                  {it.champs.assurancePolice && <span>N° {it.champs.assurancePolice}</span>}
+                  <span>📄 {it.pages.length} page(s) · {octetsLisible(it.taille)}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="mt-4 flex items-center gap-3">
+            <button onClick={() => void creer()} disabled={phase === "creation" || nbGardes === 0} className="rounded-lg bg-copper px-5 py-2.5 text-sm font-bold text-white transition hover:brightness-110 disabled:opacity-50">{phase === "creation" ? (progres || "Création…") : `Créer ${nbGardes} sinistre(s)`}</button>
+            {phase !== "creation" && <button onClick={() => { setPhase("choix"); setItems([]); }} className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-100">Changer de PDF</button>}
+          </div>
+        </>
+      )}
     </div>
   );
 }
