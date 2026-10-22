@@ -64,6 +64,8 @@ export interface Sinistre {
   assuranceAdresse: string;
   signataire: string;
   qualite: string;
+  poidsEnvoi: number | null; // poids de l'envoi recommandé, en grammes
+  niveauReco: string;        // niveau de recommandation : R1 | R2 | R3
   photos: PhotoSinistre[];
   documents: DocSinistre[];
   suivi: SuiviEntree[];
@@ -104,6 +106,8 @@ function normaliser(input: Partial<Sinistre>, base?: Sinistre): Sinistre {
     assuranceAdresse: txt(input.assuranceAdresse, 300),
     signataire: txt(input.signataire, 120),
     qualite: txt(input.qualite, 120),
+    poidsEnvoi: typeof input.poidsEnvoi === "number" && input.poidsEnvoi > 0 ? Math.round(input.poidsEnvoi) : null,
+    niveauReco: (["R1", "R2", "R3"] as string[]).includes(input.niveauReco as string) ? (input.niveauReco as string) : "R1",
     photos: Array.isArray(base?.photos) ? base!.photos : [],
     documents: Array.isArray(base?.documents) ? base!.documents : [],
     suivi: Array.isArray(base?.suivi) ? base!.suivi : [],
@@ -157,7 +161,9 @@ export async function createSinistre(input: Partial<Sinistre>): Promise<Sinistre
 export async function updateSinistre(id: string, input: Partial<Sinistre>): Promise<Sinistre | null> {
   const base = await getSinistre(id);
   if (!base) return null;
-  const s = normaliser({ ...input, id: base.id }, base);
+  // On fusionne sur la base : une mise à jour partielle (ex. poids seul) ne
+  // réinitialise pas les autres champs.
+  const s = normaliser({ ...base, ...input, id: base.id }, base);
   if (!s.reference) s.reference = base.reference;
   // Trace automatique d'un changement de statut dans le suivi.
   if (input.statut && input.statut !== base.statut) {

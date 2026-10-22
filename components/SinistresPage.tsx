@@ -9,6 +9,7 @@ import {
   STATUTS_SINISTRE, MOTIFS_SINISTRE, type Sinistre,
 } from "@/lib/sinistres";
 import { compresserDocument } from "@/lib/compressDoc";
+import { TARIFS_RECO, TARIF_AR, NIVEAUX_RECO, affranchissement, coutEnvoi, euros as eurosP, type NiveauReco } from "@/lib/tarifsPostaux";
 import { analyserPdfOuvertures, type SinistreImporte } from "@/lib/importSinistresPdf";
 import { genererDeclarationSinistrePdf, type PhotoBytes } from "@/lib/declarationSinistrePdf";
 
@@ -112,6 +113,7 @@ export default function SinistresPage({ onRetour }: { onRetour: () => void }) {
   const [selId, setSelId] = useState<string | null>(null);
   const [nouveau, setNouveau] = useState(false);
   const [importer, setImporter] = useState(false);
+  const [couts, setCouts] = useState(false);
   const [q, setQ] = useState("");
   const [fStatut, setFStatut] = useState("");
   const [fMotif, setFMotif] = useState("");
@@ -144,15 +146,18 @@ export default function SinistresPage({ onRetour }: { onRetour: () => void }) {
       <div className="mb-4 flex flex-wrap items-center gap-3">
         <button onClick={onRetour} className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-100">← Accueil</button>
         <h2 className="text-2xl font-bold text-navy">🌊 Sinistres &amp; assurances</h2>
-        {!nouveau && !importer && !selected && (
-          <div className="ml-auto flex gap-2">
+        {!nouveau && !importer && !couts && !selected && (
+          <div className="ml-auto flex flex-wrap gap-2">
+            <button onClick={() => setCouts(true)} className="rounded-lg border border-emerald-600 bg-white px-4 py-2 text-sm font-bold text-emerald-700 transition hover:bg-emerald-50">💰 Coûts postaux</button>
             <button onClick={() => setImporter(true)} className="rounded-lg border border-navy bg-white px-4 py-2 text-sm font-bold text-navy transition hover:bg-slate-50">📥 Importer un PDF</button>
             <button onClick={() => setNouveau(true)} className="rounded-lg bg-navy px-4 py-2 text-sm font-bold text-white transition hover:brightness-110">+ Nouveau sinistre</button>
           </div>
         )}
       </div>
 
-      {importer ? (
+      {couts ? (
+        <CoutsPostaux sinistres={sinistres} onChange={majLocal} onRetour={() => setCouts(false)} />
+      ) : importer ? (
         <ImportPdf
           onCancel={() => setImporter(false)}
           onImported={(crees) => { crees.forEach(majLocal); setImporter(false); }}
@@ -216,6 +221,120 @@ export default function SinistresPage({ onRetour }: { onRetour: () => void }) {
         </>
       )}
     </div>
+  );
+}
+
+// ------- Espace « Coûts postaux » (affranchissement LRAR + AR) -------
+function CoutsPostaux({ sinistres, onChange, onRetour }: { sinistres: Sinistre[]; onChange: (s: Sinistre) => void; onRetour: () => void }) {
+  const [refGrille, setRefGrille] = useState(false);
+  const niv = (s: Sinistre): NiveauReco => (NIVEAUX_RECO.includes(s.niveauReco as NiveauReco) ? (s.niveauReco as NiveauReco) : "R1");
+
+  const save = async (id: string, patch: Partial<Sinistre>) => { const maj = await updateSinistre(id, patch); if (maj) onChange(maj); };
+  const toutNiveau = async (n: NiveauReco) => { for (const s of sinistres) if (niv(s) !== n) { const maj = await updateSinistre(s.id, { niveauReco: n }); if (maj) onChange(maj); } };
+
+  // Totaux (sur les sinistres dont le poids est renseigné et dans la grille).
+  const chiffres = sinistres.filter((s) => s.poidsEnvoi && coutEnvoi(s.poidsEnvoi, niv(s), true) != null);
+  const totalAff = chiffres.reduce((a, s) => a + (affranchissement(s.poidsEnvoi!, niv(s)) ?? 0), 0);
+  const totalAR = chiffres.length * TARIF_AR;
+  const totalGen = totalAff + totalAR;
+  const horsGrille = sinistres.filter((s) => s.poidsEnvoi && coutEnvoi(s.poidsEnvoi, niv(s), true) == null).length;
+  const sansPoids = sinistres.filter((s) => !s.poidsEnvoi).length;
+
+  return (
+    <div>
+      <div className="mb-3 flex flex-wrap items-center gap-2">
+        <button onClick={onRetour} className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-100">← Sinistres</button>
+        <h3 className="text-lg font-bold text-navy">💰 Coûts postaux</h3>
+      </div>
+      <p className="mb-3 text-sm text-slate-500">Saisis le <strong>poids de chaque envoi</strong> ; le coût est calculé automatiquement (grille LRAR Entreprise 2026) avec l'<strong>avis de réception (+{eurosP(TARIF_AR)})</strong> inclus sur chaque lettre.</p>
+
+      <div className="mb-3 flex flex-wrap items-center gap-2">
+        <span className="text-xs font-semibold text-slate-500">Appliquer un niveau à tous :</span>
+        {NIVEAUX_RECO.map((n) => <button key={n} onClick={() => void toutNiveau(n)} className="rounded-lg border border-slate-200 bg-white px-3 py-1 text-xs font-bold text-navy transition hover:bg-slate-100">{n}</button>)}
+        <button onClick={() => setRefGrille((v) => !v)} className="ml-auto text-xs font-semibold text-copper hover:underline">{refGrille ? "Masquer la grille" : "Voir la grille des tarifs"}</button>
+      </div>
+
+      {refGrille && (
+        <div className="mb-3 overflow-x-auto rounded-xl border border-slate-200">
+          <table className="w-full text-sm">
+            <thead><tr className="bg-amber-100 text-navy"><th className="px-3 py-2 text-left font-bold">Recommandé</th><th className="px-3 py-2 font-bold">R1</th><th className="px-3 py-2 font-bold">R2</th><th className="px-3 py-2 font-bold">R3</th></tr></thead>
+            <tbody>
+              {TARIFS_RECO.map((p, i) => <tr key={p.max} className={i % 2 ? "bg-slate-50" : "bg-white"}><td className="px-3 py-1.5">{p.libelle}</td><td className="px-3 py-1.5 text-center">{eurosP(p.R1)}</td><td className="px-3 py-1.5 text-center">{eurosP(p.R2)}</td><td className="px-3 py-1.5 text-center">{eurosP(p.R3)}</td></tr>)}
+              <tr className="bg-white"><td className="px-3 py-1.5 font-semibold">Avis de réception</td><td colSpan={3} className="px-3 py-1.5 text-center">{eurosP(TARIF_AR)}</td></tr>
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="border-b border-slate-200 bg-slate-50 text-[11px] uppercase tracking-wide text-slate-500">
+              <th className="px-3 py-2 text-left">Copropriété</th>
+              <th className="px-3 py-2 text-right">Poids (g)</th>
+              <th className="px-3 py-2 text-center">Niveau</th>
+              <th className="px-3 py-2 text-right">Affranchiss.</th>
+              <th className="px-3 py-2 text-right">AR</th>
+              <th className="px-3 py-2 text-right">Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            {sinistres.length === 0 ? (
+              <tr><td colSpan={6} className="px-3 py-6 text-center text-slate-400">Aucun sinistre.</td></tr>
+            ) : sinistres.map((s) => <LigneCout key={s.id} s={s} niveau={niv(s)} onSave={(patch) => void save(s.id, patch)} />)}
+          </tbody>
+          <tfoot>
+            <tr className="border-t-2 border-slate-200 bg-slate-50 font-bold text-navy">
+              <td className="px-3 py-2">Total ({chiffres.length} lettre{chiffres.length > 1 ? "s" : ""})</td>
+              <td />
+              <td />
+              <td className="px-3 py-2 text-right">{eurosP(Math.round(totalAff * 100) / 100)}</td>
+              <td className="px-3 py-2 text-right">{eurosP(Math.round(totalAR * 100) / 100)}</td>
+              <td className="px-3 py-2 text-right text-emerald-700">{eurosP(Math.round(totalGen * 100) / 100)}</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+      <p className="mt-2 text-xs text-slate-400">
+        {sansPoids > 0 && `${sansPoids} sinistre(s) sans poids saisi. `}
+        {horsGrille > 0 && `${horsGrille} envoi(s) hors grille (> 2 kg). `}
+        AR (+{eurosP(TARIF_AR)}) inclus sur chaque lettre chiffrée.
+      </p>
+    </div>
+  );
+}
+
+function LigneCout({ s, niveau, onSave }: { s: Sinistre; niveau: NiveauReco; onSave: (patch: Partial<Sinistre>) => void }) {
+  const [poids, setPoids] = useState(s.poidsEnvoi != null ? String(s.poidsEnvoi) : "");
+  useEffect(() => { setPoids(s.poidsEnvoi != null ? String(s.poidsEnvoi) : ""); }, [s.poidsEnvoi]);
+  const p = poids ? Number(poids) : 0;
+  const aff = p > 0 ? affranchissement(p, niveau) : null;
+  const total = p > 0 ? coutEnvoi(p, niveau, true) : null;
+  const horsGrille = p > 0 && aff == null;
+
+  const enregistrer = () => {
+    const val = poids ? Math.max(0, Math.round(Number(poids))) : null;
+    if ((val ?? null) !== (s.poidsEnvoi ?? null)) onSave({ poidsEnvoi: val });
+  };
+
+  return (
+    <tr className="border-b border-slate-100 last:border-0">
+      <td className="px-3 py-2">
+        <div className="font-semibold text-navy">{s.coproNom || "Copropriété"}</div>
+        <div className="text-[11px] text-slate-400">{s.reference}</div>
+      </td>
+      <td className="px-3 py-2 text-right">
+        <input type="number" inputMode="numeric" value={poids} onChange={(e) => setPoids(e.target.value)} onBlur={enregistrer} onKeyDown={(e) => e.key === "Enter" && e.currentTarget.blur()} placeholder="—" className="w-20 rounded-md border border-slate-200 px-2 py-1 text-right text-sm focus:border-copper focus:outline-none" />
+      </td>
+      <td className="px-3 py-2 text-center">
+        <select value={niveau} onChange={(e) => onSave({ niveauReco: e.target.value })} className="rounded-md border border-slate-200 px-2 py-1 text-sm font-semibold text-navy focus:border-copper focus:outline-none">
+          {NIVEAUX_RECO.map((n) => <option key={n} value={n}>{n}</option>)}
+        </select>
+      </td>
+      <td className="px-3 py-2 text-right text-slate-600">{horsGrille ? <span className="text-amber-600">&gt; 2 kg</span> : aff != null ? eurosP(aff) : "—"}</td>
+      <td className="px-3 py-2 text-right text-slate-500">{total != null ? eurosP(TARIF_AR) : "—"}</td>
+      <td className="px-3 py-2 text-right font-bold text-navy">{total != null ? eurosP(total) : "—"}</td>
+    </tr>
   );
 }
 
