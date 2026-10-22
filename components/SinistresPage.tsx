@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import {
   listSinistres, createSinistre, updateSinistre, deleteSinistre,
   ajouterSuivi, ajouterPhoto, modifierPhoto, supprimerPhoto,
@@ -90,6 +90,21 @@ function telechargerPdf(octets: Uint8Array, nom: string) {
 
 const champ = "w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-copper focus:outline-none";
 const labelCls = "mb-1 block text-xs font-bold uppercase tracking-wide text-slate-500";
+
+// Zone de glisser-déposer réutilisable (photos / PDF). Surligne au survol.
+function ZoneDepot({ onFiles, disabled, children }: { onFiles: (f: FileList) => void; disabled?: boolean; children: ReactNode }) {
+  const [survol, setSurvol] = useState(false);
+  return (
+    <div
+      onDragOver={(e) => { e.preventDefault(); if (!disabled) setSurvol(true); }}
+      onDragLeave={(e) => { e.preventDefault(); setSurvol(false); }}
+      onDrop={(e) => { e.preventDefault(); setSurvol(false); if (!disabled && e.dataTransfer.files?.length) onFiles(e.dataTransfer.files); }}
+      className={`rounded-xl border-2 border-dashed p-3 transition ${survol ? "border-copper bg-copper/5" : "border-slate-300 bg-slate-50"}`}
+    >
+      {children}
+    </div>
+  );
+}
 
 export default function SinistresPage({ onRetour }: { onRetour: () => void }) {
   const [sinistres, setSinistres] = useState<Sinistre[]>([]);
@@ -211,6 +226,7 @@ function FormSinistre({ onCancel, onSaved }: { onCancel: () => void; onSaved: (s
   const [enreg, setEnreg] = useState(false);
   const [progres, setProgres] = useState("");
   const [err, setErr] = useState<string | null>(null);
+  const [survol, setSurvol] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
   const set = (k: keyof Sinistre, v: unknown) => setF((p) => ({ ...p, [k]: v }));
 
@@ -246,14 +262,19 @@ function FormSinistre({ onCancel, onSaved }: { onCancel: () => void; onSaved: (s
       {err && <div className="mb-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">{err}</div>}
       <ChampsSinistre f={f} set={set} />
 
-      <div className="mt-4 rounded-xl border border-dashed border-slate-300 bg-slate-50 p-3">
+      <div
+        onDragOver={(e) => { e.preventDefault(); setSurvol(true); }}
+        onDragLeave={(e) => { e.preventDefault(); setSurvol(false); }}
+        onDrop={(e) => { e.preventDefault(); setSurvol(false); ajouterFichiers(e.dataTransfer.files); }}
+        className={`mt-4 rounded-xl border-2 border-dashed p-3 transition ${survol ? "border-copper bg-copper/5" : "border-slate-300 bg-slate-50"}`}
+      >
         <div className="mb-2 flex items-center justify-between">
           <span className="text-xs font-bold uppercase tracking-wide text-slate-500">Pièces jointes (photos &amp; PDF)</span>
           <button type="button" onClick={() => fileRef.current?.click()} className="rounded-lg bg-white px-3 py-1.5 text-xs font-bold text-navy shadow-sm ring-1 ring-slate-200 transition hover:bg-slate-100">+ Ajouter</button>
         </div>
         <input ref={fileRef} type="file" accept="image/*,application/pdf" multiple className="hidden" onChange={(e) => ajouterFichiers(e.target.files)} />
         {fichiers.length === 0 ? (
-          <p className="text-xs text-slate-400">Joins dès maintenant les photos des dégâts et les documents PDF (constat, devis, rapport…). Les photos iront aussi en annexe de la déclaration.</p>
+          <p className="text-xs text-slate-400">📂 Glisse-dépose ici (ou clique « + Ajouter ») les photos des dégâts et les documents PDF (constat, devis, rapport…). Les photos iront aussi en annexe de la déclaration.</p>
         ) : (
           <>
             <p className="mb-2 text-[11px] text-slate-500">{nbPhotos} photo(s) · {nbDocs} PDF</p>
@@ -494,11 +515,14 @@ function OngletPhotos({ s, onChange }: { s: Sinistre; onChange: (s: Sinistre) =>
 
   return (
     <div>
-      <div className="mb-3 flex items-center gap-2">
-        <input ref={fileRef} type="file" accept="image/*" multiple className="hidden" onChange={(e) => void ajouter(e.target.files)} />
-        <button onClick={() => fileRef.current?.click()} disabled={envoi} className="rounded-lg bg-navy px-4 py-2 text-sm font-bold text-white transition hover:brightness-110 disabled:opacity-50">{envoi ? "Envoi…" : "+ Ajouter des photos"}</button>
-        <span className="text-xs text-slate-400">Chaque photo peut être légendée (l'explication apparaît sous la photo dans la déclaration).</span>
-      </div>
+      <input ref={fileRef} type="file" accept="image/*" multiple className="hidden" onChange={(e) => void ajouter(e.target.files)} />
+      <ZoneDepot onFiles={(f) => void ajouter(f)} disabled={envoi}>
+        <div className="flex flex-wrap items-center gap-2">
+          <button onClick={() => fileRef.current?.click()} disabled={envoi} className="rounded-lg bg-navy px-4 py-2 text-sm font-bold text-white transition hover:brightness-110 disabled:opacity-50">{envoi ? "Envoi…" : "+ Ajouter des photos"}</button>
+          <span className="text-xs text-slate-500">📂 Glisse-dépose tes photos ici, ou clique. Chaque photo peut être légendée (l'explication apparaît sous la photo dans la déclaration).</span>
+        </div>
+      </ZoneDepot>
+      <div className="mb-3" />
       {err && <div className="mb-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">{err}</div>}
       {s.photos.length === 0 ? (
         <div className="rounded-xl border border-dashed border-slate-300 p-6 text-center text-sm text-slate-400">Aucune photo pour l'instant.</div>
@@ -548,11 +572,14 @@ function OngletDocuments({ s, onChange }: { s: Sinistre; onChange: (s: Sinistre)
 
   return (
     <div>
-      <div className="mb-3 flex items-center gap-2">
-        <input ref={fileRef} type="file" accept="application/pdf" multiple className="hidden" onChange={(e) => void ajouter(e.target.files)} />
-        <button onClick={() => fileRef.current?.click()} disabled={envoi} className="rounded-lg bg-navy px-4 py-2 text-sm font-bold text-white transition hover:brightness-110 disabled:opacity-50">{envoi ? `Envoi… ${progres}` : "+ Ajouter des PDF"}</button>
-        <span className="text-xs text-slate-400">Constat, devis, rapport d'expertise, courriers…</span>
-      </div>
+      <input ref={fileRef} type="file" accept="application/pdf" multiple className="hidden" onChange={(e) => void ajouter(e.target.files)} />
+      <ZoneDepot onFiles={(f) => void ajouter(f)} disabled={envoi}>
+        <div className="flex flex-wrap items-center gap-2">
+          <button onClick={() => fileRef.current?.click()} disabled={envoi} className="rounded-lg bg-navy px-4 py-2 text-sm font-bold text-white transition hover:brightness-110 disabled:opacity-50">{envoi ? `Envoi… ${progres}` : "+ Ajouter des PDF"}</button>
+          <span className="text-xs text-slate-500">📂 Glisse-dépose tes PDF ici, ou clique. Constat, devis, rapport d'expertise, courriers…</span>
+        </div>
+      </ZoneDepot>
+      <div className="mb-3" />
       {err && <div className="mb-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">{err}</div>}
       {s.documents.length === 0 ? (
         <div className="rounded-xl border border-dashed border-slate-300 p-6 text-center text-sm text-slate-400">Aucun document PDF pour l'instant.</div>
