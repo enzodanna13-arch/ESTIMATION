@@ -232,61 +232,127 @@ export default function SinistresPage({ onRetour }: { onRetour: () => void }) {
   );
 }
 
-// ------- Emails des assurances -------
+// ------- Dossiers mail par assurance -------
 const extraireEmail = (s: Sinistre): string => {
   const m = `${s.assuranceContact} ${s.assuranceAdresse}`.match(/[\w.+-]+@[\w-]+\.[\w.-]+/);
   return m ? m[0] : "";
 };
 
+interface GroupeAssur { email: string; assureurs: string[]; sinistres: Sinistre[] }
+
+function mailAssurance(g: GroupeAssur): { sujet: string; corps: string } {
+  const multi = g.sinistres.length > 1;
+  const sujet = multi
+    ? `Déclarations de sinistre – ${g.sinistres.length} copropriétés – intempéries des 19-20 octobre 2026`
+    : `Déclaration de sinistre – ${g.sinistres[0].coproNom} – intempéries des 19-20 octobre 2026`;
+  const liste = g.sinistres
+    .map((s) => `• ${s.coproNom}${s.assurancePolice ? ` (contrat n° ${s.assurancePolice})` : ""} – réf. LRAR ${s.reference} : ${(s.description || "").trim() || s.motif}`)
+    .join("\n");
+  const corps = `Madame, Monsieur,
+
+En notre qualité de syndic, nous vous confirmons la${multi ? "/les" : ""} déclaration${multi ? "s" : ""} de sinistre adressée${multi ? "s" : ""} par lettre recommandée avec accusé de réception, à la suite des intempéries des 19 et 20 octobre 2026 :
+
+${liste}
+
+Vous trouverez ci-joint la${multi ? "/les" : ""} déclaration${multi ? "s" : ""} correspondante${multi ? "s" : ""} (courrier et reportage photographique).
+
+Nous vous remercions de bien vouloir enregistrer ${multi ? "ces déclarations" : "cette déclaration"} et de diligenter une expertise dans les meilleurs délais. Nous restons à votre entière disposition pour tout complément.
+
+Cordialement,
+
+Virginie FIORELLO
+CENTURY 21 Icaza Immobilier – Service Syndic
+32 avenue de la Paix, 13500 Martigues
+Tél. 04 42 42 80 85 – icaza@century21.fr`;
+  return { sujet, corps };
+}
+
+async function telechargerDoc(url: string, nom: string) {
+  try {
+    const r = await fetch(url, { cache: "no-store" });
+    const b = await r.blob();
+    const u = URL.createObjectURL(b);
+    const a = document.createElement("a"); a.href = u; a.download = nom; a.click();
+    setTimeout(() => URL.revokeObjectURL(u), 3000);
+  } catch { window.open(url, "_blank"); }
+}
+
 function EmailsAssurances({ sinistres, onRetour }: { sinistres: Sinistre[]; onRetour: () => void }) {
   const [copie, setCopie] = useState("");
-  const lignes = sinistres.map((s) => ({ s, email: extraireEmail(s) }));
-  const avecEmail = lignes.filter((l) => l.email);
-  const sansEmail = lignes.filter((l) => !l.email);
-  const uniques = Array.from(new Set(avecEmail.map((l) => l.email)));
-
   const copier = async (val: string, cle: string) => {
     try { await navigator.clipboard.writeText(val); setCopie(cle); setTimeout(() => setCopie(""), 2000); } catch { /* ignore */ }
   };
-  const mailtoBcc = `mailto:?bcc=${encodeURIComponent(uniques.join(","))}&subject=${encodeURIComponent("Déclaration de sinistre – intempéries des 19-20 octobre 2026")}`;
+
+  const groupes = useMemo(() => {
+    const map = new Map<string, GroupeAssur>();
+    for (const s of sinistres) {
+      const email = extraireEmail(s);
+      if (!email) continue;
+      const g = map.get(email) ?? { email, assureurs: [], sinistres: [] };
+      if (s.assureur && !g.assureurs.includes(s.assureur)) g.assureurs.push(s.assureur);
+      g.sinistres.push(s);
+      map.set(email, g);
+    }
+    return Array.from(map.values()).sort((a, b) => a.assureurs[0]?.localeCompare(b.assureurs[0] ?? "") ?? 0);
+  }, [sinistres]);
+  const sansEmail = sinistres.filter((s) => !extraireEmail(s));
+  const uniques = groupes.map((g) => g.email);
 
   return (
     <div className="mx-auto max-w-3xl">
       <div className="mb-3 flex flex-wrap items-center gap-2">
         <button onClick={onRetour} className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-100">← Sinistres</button>
-        <h3 className="text-lg font-bold text-navy">📧 Emails des assurances</h3>
+        <h3 className="text-lg font-bold text-navy">📧 Dossiers mail par assurance</h3>
       </div>
-      <p className="mb-3 text-sm text-slate-500">Les adresses mail des assureurs de tes sinistres, pour les relancer <strong>en plus de l'envoi recommandé</strong>. {uniques.length} adresse(s) unique(s).</p>
+      <p className="mb-3 text-sm text-slate-500">Un dossier par assureur : <strong>mail prêt à envoyer</strong> (copier / ouvrir) et <strong>téléchargement des PDF</strong> des copropriétés concernées, pour un envoi rapide en plus du recommandé. {groupes.length} assureur(s).</p>
 
-      <div className="mb-3 flex flex-wrap gap-2">
+      <div className="mb-4 flex flex-wrap gap-2">
         <button onClick={() => void copier(uniques.join("; "), "all")} className="rounded-lg bg-navy px-4 py-2 text-sm font-bold text-white transition hover:brightness-110">{copie === "all" ? "✓ Copié" : "📋 Copier toutes les adresses (CCI)"}</button>
-        <a href={mailtoBcc} className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-100">✉ Ouvrir un mail groupé (CCI)</a>
       </div>
 
-      <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-slate-200 bg-slate-50 text-[11px] uppercase tracking-wide text-slate-500">
-              <th className="px-3 py-2 text-left">Copropriété</th>
-              <th className="px-3 py-2 text-left">Assureur</th>
-              <th className="px-3 py-2 text-left">Email</th>
-              <th className="px-3 py-2" />
-            </tr>
-          </thead>
-          <tbody>
-            {lignes.map(({ s, email }) => (
-              <tr key={s.id} className="border-b border-slate-100 last:border-0">
-                <td className="px-3 py-2 font-semibold text-navy">{s.coproNom}</td>
-                <td className="px-3 py-2 text-slate-600">{s.assureur || "—"}</td>
-                <td className="px-3 py-2">{email ? <a href={`mailto:${email}?subject=${encodeURIComponent(`Déclaration de sinistre – ${s.coproNom} – ${s.reference}`)}`} className="text-sky-700 hover:underline">{email}</a> : <span className="text-amber-600">à compléter</span>}</td>
-                <td className="px-3 py-2 text-right">{email && <button onClick={() => void copier(email, s.id)} className="rounded-md border border-slate-200 px-2 py-1 text-[11px] font-bold text-slate-500 transition hover:bg-slate-100">{copie === s.id ? "✓" : "copier"}</button>}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <div className="space-y-3">
+        {groupes.map((g) => {
+          const { sujet, corps } = mailAssurance(g);
+          const mailto = `mailto:${g.email}?subject=${encodeURIComponent(sujet)}&body=${encodeURIComponent(corps)}`;
+          const docs = g.sinistres.flatMap((s) => s.documents.map((d) => ({ s, d })));
+          return (
+            <div key={g.email} className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+              <div className="border-l-4 border-sky-500 bg-slate-50/70 p-4">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div>
+                    <div className="text-base font-black text-navy">{g.assureurs.join(" / ") || "Assureur"}</div>
+                    <button onClick={() => void copier(g.email, `e-${g.email}`)} className="text-sm font-semibold text-sky-700 hover:underline">{copie === `e-${g.email}` ? "✓ Copié" : g.email}</button>
+                  </div>
+                  <span className="rounded-full bg-sky-100 px-2 py-0.5 text-[11px] font-bold text-sky-700">{g.sinistres.length} copro{g.sinistres.length > 1 ? "s" : ""}</span>
+                </div>
+              </div>
+              <div className="p-4">
+                <div className="mb-3 flex flex-wrap gap-2">
+                  <a href={mailto} className="rounded-lg bg-sky-600 px-4 py-2 text-sm font-bold text-white transition hover:brightness-110">✉ Ouvrir le mail</a>
+                  <button onClick={() => void copier(`${g.email}\n\nObjet : ${sujet}\n\n${corps}`, `m-${g.email}`)} className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-100">{copie === `m-${g.email}` ? "✓ Mail copié" : "📋 Copier le mail"}</button>
+                  {docs.length > 0 && <button onClick={() => { docs.forEach(({ s, d }, i) => setTimeout(() => void telechargerDoc(urlDocumentSinistre(s.id, d.id), d.nom), i * 400)); }} className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-100">⬇ Télécharger les PDF ({docs.length})</button>}
+                </div>
+                <details className="mb-3 rounded-lg border border-slate-200 bg-slate-50">
+                  <summary className="cursor-pointer px-3 py-2 text-xs font-bold uppercase tracking-wide text-slate-500">Objet : {sujet}</summary>
+                  <pre className="whitespace-pre-wrap px-3 pb-3 text-[13px] leading-relaxed text-slate-700">{corps}</pre>
+                </details>
+                <ul className="space-y-1.5">
+                  {g.sinistres.map((s) => (
+                    <li key={s.id} className="flex items-center gap-2 rounded-lg border border-slate-100 px-2.5 py-1.5 text-sm">
+                      <span className="min-w-0 flex-1 truncate"><span className="font-semibold text-navy">{s.coproNom}</span> <span className="text-[11px] text-slate-400">· {s.reference}</span></span>
+                      {s.documents.length > 0 ? s.documents.map((d) => (
+                        <button key={d.id} onClick={() => void telechargerDoc(urlDocumentSinistre(s.id, d.id), d.nom)} className="shrink-0 rounded-md border border-slate-200 px-2 py-1 text-[11px] font-bold text-navy transition hover:bg-slate-100">⬇ PDF</button>
+                      )) : <span className="shrink-0 text-[11px] text-slate-400">pas de PDF</span>}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          );
+        })}
       </div>
       {sansEmail.length > 0 && (
-        <p className="mt-2 text-xs text-slate-400">{sansEmail.length} sinistre(s) sans email sur la déclaration ({sansEmail.map((l) => l.s.coproNom).join(", ")}) — assureur à contacter par courrier / téléphone, ou ajoute l'adresse dans la fiche.</p>
+        <p className="mt-3 text-xs text-slate-400">{sansEmail.length} sinistre(s) sans email sur la déclaration ({sansEmail.map((s) => s.coproNom).join(", ")}) — à contacter par courrier / téléphone, ou ajoute l'adresse dans la fiche.</p>
       )}
     </div>
   );
