@@ -9,6 +9,9 @@ import { CHAMPS_IMPORT, type TypeImport } from "@/lib/syndic/csv";
 import * as api from "@/lib/syndic/client";
 import type { ResidenceListe } from "@/lib/syndic/client";
 import { getHistoryKey, setHistoryKey } from "@/lib/history";
+import SinistresPage from "@/components/SinistresPage";
+import RecommandesPage from "@/components/RecommandesPage";
+import PilotageSinistresPage from "@/components/PilotageSinistresPage";
 
 const inputCls = "w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-copper focus:outline-none focus:ring-2 focus:ring-copper/20";
 const btnNavy = "rounded-lg bg-navy px-4 py-2 text-sm font-semibold text-white transition hover:bg-navy-deep disabled:opacity-50";
@@ -24,6 +27,7 @@ export default function SyndicPage() {
   const [user, setUser] = useState<SyndicUserPublic | null>(null);
   const [section, setSection] = useState<string>("demandes");
   const [ticketId, setTicketId] = useState<string | null>(null);
+  const [menu, setMenu] = useState(false);
 
   const recharger = async () => {
     try { const r = await api.meApi(); setUser(r.user); }
@@ -35,59 +39,82 @@ export default function SyndicPage() {
   if (chargement) return <Centre><p className="text-sm text-slate-400">Chargement…</p></Centre>;
   if (!user) return <GateEquipe onOk={recharger} />;
 
+  const goto = (s: string) => { setTicketId(null); setSection(s); setMenu(false); };
+  const contenu = ticketId ? (
+    <TicketDetail id={ticketId} role={user.role} onBack={() => setTicketId(null)} />
+  ) : section === "demandes" ? (
+    <TicketsList role={user.role} onOpen={setTicketId} onNouvelle={() => goto("nouvelle")} />
+  ) : section === "nouvelle" ? (
+    <NouvelleDemande onCree={(id) => setTicketId(id)} />
+  ) : section === "mail" ? (
+    <ColleMail onCree={(id) => setTicketId(id)} />
+  ) : section === "sinistres" ? (
+    <SinistresPage onRetour={() => goto("demandes")} />
+  ) : section === "recommandes" ? (
+    <RecommandesPage onRetour={() => goto("demandes")} />
+  ) : section === "pilotage" ? (
+    <PilotageSinistresPage onRetour={() => goto("demandes")} onOuvrirSinistres={() => goto("sinistres")} onOuvrirRecommandes={() => goto("recommandes")} />
+  ) : section === "residences" ? (
+    <AdminResidences />
+  ) : section === "utilisateurs" ? (
+    <AdminUsers moiId={user.id} />
+  ) : section === "import" ? (
+    <AdminImport />
+  ) : null;
+
   return (
     <div className="min-h-screen bg-slate-100">
-      <header className="flex items-center gap-3 bg-navy-deep px-4 py-3 text-white">
-        <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-copper text-lg font-black">21</span>
-        <div className="leading-tight">
-          <b className="block text-sm font-bold tracking-wide">Century 21 Icaza — Syndic</b>
-          <span className="text-[11px] text-white/60">Gestion des demandes des copropriétaires</span>
-        </div>
-        <div className="ml-auto flex items-center gap-3 text-sm">
-          <span className="hidden sm:inline"><b className="text-copper">{ROLES_LABELS[user.role]}</b></span>
-          <a href="/" className="rounded-lg border border-white/20 px-3 py-1.5 text-xs font-semibold hover:bg-white/10">← Outils</a>
+      {/* Barre du haut */}
+      <header className="fixed inset-x-0 top-0 z-30 flex h-16 items-center gap-3 bg-navy-deep px-3 text-white print:hidden sm:px-4">
+        <button type="button" onClick={() => setMenu((o) => !o)} className="flex h-10 w-10 items-center justify-center rounded-lg border border-white/15 bg-white/10 text-xl md:hidden" aria-label="Menu">☰</button>
+        <button type="button" onClick={() => goto("demandes")} className="flex items-center gap-2.5" title="Accueil syndic">
+          <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-copper text-lg font-black">21</span>
+          <span className="hidden leading-tight sm:block">
+            <b className="block text-sm font-bold tracking-wide">CENTURY 21 · Syndic</b>
+            <span className="text-[11px] text-white/60">Icaza Immobilier · Martigues</span>
+          </span>
+        </button>
+        <div className="ml-auto flex items-center gap-2 text-sm">
+          <span className="hidden sm:inline text-[13px]"><b className="text-copper">{ROLES_LABELS[user.role]}</b></span>
+          <a href="/" className="rounded-lg border border-white/20 px-3 py-1.5 text-xs font-semibold hover:bg-white/10">⊞ Espaces</a>
           <button onClick={() => { setHistoryKey(""); setUser(null); void recharger(); }} className="rounded-lg border border-white/20 px-3 py-1.5 text-xs font-semibold hover:bg-white/10">Verrouiller</button>
         </div>
       </header>
 
-      <main className="mx-auto max-w-6xl px-4 py-6">
-        {(() => {
-          const nav: [string, string][] =
-            user.role === "admin"
-              ? [["demandes", "📋 Demandes"], ["nouvelle", "➕ Nouvelle demande"], ["mail", "📧 Depuis un mail"], ["residences", "🏢 Résidences"], ["utilisateurs", "👥 Utilisateurs"], ["import", "⬆️ Import CSV"]]
-              : user.role === "accueil"
-                ? [["demandes", "📋 Demandes du jour"], ["nouvelle", "➕ Nouvelle demande"], ["mail", "📧 Depuis un mail"]]
-                : [["demandes", "📋 Mes demandes"], ["mail", "📧 Depuis un mail"]];
-          const goto = (s: string) => { setTicketId(null); setSection(s); };
-          return (
-            <>
-              <div className="mb-5 flex flex-wrap gap-1 rounded-lg border border-slate-200 bg-white p-1 text-sm font-semibold">
-                {nav.map(([k, lbl]) => (
-                  <button key={k} onClick={() => goto(k)} className={`rounded-md px-4 py-1.5 transition ${section === k && !ticketId ? "bg-copper text-white" : "text-slate-600 hover:bg-slate-100"}`}>{lbl}</button>
-                ))}
-              </div>
-              {ticketId ? (
-                <TicketDetail id={ticketId} role={user.role} onBack={() => setTicketId(null)} />
-              ) : section === "demandes" ? (
-                <TicketsList role={user.role} onOpen={setTicketId} onNouvelle={() => goto("nouvelle")} />
-              ) : section === "nouvelle" ? (
-                <NouvelleDemande onCree={(id) => setTicketId(id)} />
-              ) : section === "mail" ? (
-                <ColleMail onCree={(id) => setTicketId(id)} />
-              ) : section === "residences" ? (
-                <AdminResidences />
-              ) : section === "utilisateurs" ? (
-                <AdminUsers moiId={user.id} />
-              ) : section === "import" ? (
-                <AdminImport />
-              ) : null}
-            </>
-          );
-        })()}
+      {/* Voile mobile */}
+      {menu && <div onClick={() => setMenu(false)} className="fixed inset-0 z-20 bg-navy-deep/50 md:hidden print:hidden" />}
+
+      {/* Barre latérale */}
+      <aside className={`fixed bottom-0 left-0 top-16 z-20 w-[268px] overflow-y-auto bg-navy px-3 pb-8 pt-4 text-white transition-transform duration-200 print:hidden md:translate-x-0 ${menu ? "translate-x-0 shadow-2xl" : "-translate-x-full"}`}>
+        {NAV_SYNDIC.map((g) => (
+          <div key={g.label} className="mb-5">
+            <div className="mb-1.5 px-2.5 text-[10.5px] font-bold uppercase tracking-wider text-white/40">{g.label}</div>
+            <div className="flex flex-col gap-0.5">
+              {g.items.map(([v, i, t]) => (
+                <button key={v} type="button" onClick={() => goto(v)} className={`flex items-center gap-2.5 rounded-lg px-2.5 py-2.5 text-left text-[13.5px] transition ${section === v && !ticketId ? "bg-copper font-semibold text-white shadow-lg shadow-copper/30" : "font-medium text-white/80 hover:bg-white/10 hover:text-white"}`}>
+                  <span className="w-5 flex-none text-center text-[15px]">{i}</span>
+                  <span className="min-w-0 flex-1 truncate">{t}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        ))}
+      </aside>
+
+      {/* Contenu */}
+      <main className="px-4 pb-10 pt-20 md:pl-[292px] md:pr-6">
+        <div className="mx-auto max-w-5xl">{contenu}</div>
       </main>
     </div>
   );
 }
+
+const NAV_SYNDIC: { label: string; items: [string, string, string][] }[] = [
+  { label: "Demandes copropriétaires", items: [["demandes", "📋", "Demandes"], ["nouvelle", "➕", "Nouvelle demande"], ["mail", "📧", "Depuis un mail"]] },
+  { label: "Sinistres & assurances", items: [["sinistres", "🌊", "Sinistres & assurances"], ["recommandes", "📬", "Recommandés reçus"]] },
+  { label: "Pilotage", items: [["pilotage", "🗂️", "Suivi sinistres & recommandés"]] },
+  { label: "Administration", items: [["residences", "🏢", "Résidences"], ["utilisateurs", "👥", "Utilisateurs"], ["import", "⬆️", "Import CSV"]] },
+];
 
 // ----------------------------------------------------- Accès (mot de passe d'équipe)
 function GateEquipe({ onOk }: { onOk: () => void }) {
