@@ -19,7 +19,7 @@ interface Item {
 }
 
 // Univers réservés à l'accès admin (pilotage). Partagé avec le routeur (app/page).
-export const UNIVERS_ADMIN = ["dashboard", "negociateurs", "transactions", "sauvegarde", "reglages", "rapprochement-dpe"];
+export const UNIVERS_ADMIN = ["dashboard", "negociateurs", "transactions", "sauvegarde", "reglages", "rapprochement-dpe", "pilotage-sinistres"];
 interface Groupe {
   label: string;
   items: Item[];
@@ -31,6 +31,7 @@ const GROUPES: Groupe[] = [
     { v: "negociateurs", t: "Suivi des négociateurs", i: "👔", admin: true },
     { v: "organisation", t: "Mon organisation", i: "🗓️" },
     { v: "rapprochement-dpe", t: "Acquéreurs ↔ DPE (privé)", i: "🎯", admin: true },
+    { v: "pilotage-sinistres", t: "Suivi sinistres & recommandés", i: "🗂️", admin: true },
     { v: "espace", t: "Mon espace", i: "👤" },
   ] },
   { label: "Prospection", items: [
