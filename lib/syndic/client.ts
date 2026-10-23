@@ -34,11 +34,11 @@ export const CATEGORIES_ARCHIVE = [
   "Diagnostic technique", "Courrier", "Sinistre / Assurance", "Mutation / État daté",
   "Relevé / Comptabilité", "Carnet d'entretien", "Autre",
 ] as const;
-export interface DocArchive { id: string; nom: string; categorie: string; copropriete: string; date: string; resume: string; taille: number; createdAt: number; updatedAt: number }
+export interface DocArchive { id: string; nom: string; categorie: string; copropriete: string; date: string; resume: string; type: "pdf" | "image"; taille: number; createdAt: number; updatedAt: number }
 export interface ExtraitArchive { nom: string; categorie: string; copropriete: string; date: string; resume: string }
 export const listArchiveApi = () => j<{ documents: DocArchive[] }>("/archive");
-export const analyserArchiveApi = (data: string) => j<{ extrait: ExtraitArchive | null }>("/archive/analyser", { method: "POST", body: JSON.stringify({ data }) });
-export const creerArchiveApi = (champs: Partial<DocArchive> & { data: string }) => j<{ document: DocArchive }>("/archive", { method: "POST", body: JSON.stringify(champs) });
+export const analyserArchiveApi = (data: string, type: "pdf" | "image") => j<{ extrait: ExtraitArchive | null }>("/archive/analyser", { method: "POST", body: JSON.stringify({ data, type }) });
+export const creerArchiveApi = (champs: Partial<DocArchive> & { data: string; type: "pdf" | "image" }) => j<{ document: DocArchive }>("/archive", { method: "POST", body: JSON.stringify(champs) });
 export const updateArchiveApi = (id: string, p: Partial<DocArchive>) => j<{ document: DocArchive }>(`/archive/${id}`, { method: "PUT", body: JSON.stringify(p) });
 export const deleteArchiveApi = (id: string) => j(`/archive/${id}`, { method: "DELETE" });
 export const urlArchiveFile = (id: string) => `/api/syndic/archive/${encodeURIComponent(id)}/file`;

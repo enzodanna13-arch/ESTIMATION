@@ -29,6 +29,7 @@ export interface DocArchive {
   copropriete: string;
   date: string; // yyyy-mm-dd ou ""
   resume: string;
+  type: "pdf" | "image";
   taille: number;
   createdAt: number;
   updatedAt: number;
@@ -52,6 +53,7 @@ function normaliser(input: Partial<DocArchive>, base?: DocArchive): DocArchive {
     copropriete: txt(input.copropriete, 200),
     date: txt(input.date, 10),
     resume: txt(input.resume, 1000),
+    type: input.type === "image" ? "image" : (base?.type ?? "pdf"),
     taille: typeof input.taille === "number" ? input.taille : base?.taille ?? 0,
     createdAt: base?.createdAt ?? now,
     updatedAt: now,
@@ -95,7 +97,9 @@ export async function createArchive(input: Partial<DocArchive>, data: string): P
   const d = normaliser(input);
   const octets = Buffer.from(data, "base64");
   d.taille = octets.length;
-  await put(`${FILE_PREFIX}${d.id}.pdf`, octets, { access: "public", addRandomSuffix: false, contentType: "application/pdf" });
+  const ext = d.type === "image" ? "jpg" : "pdf";
+  const ct = d.type === "image" ? "image/jpeg" : "application/pdf";
+  await put(`${FILE_PREFIX}${d.id}.${ext}`, octets, { access: "public", addRandomSuffix: false, contentType: ct });
   await putMeta(d);
   return d;
 }
@@ -112,15 +116,17 @@ export async function deleteArchive(id: string): Promise<boolean> {
   const safe = safeId(id);
   const [meta, files] = await Promise.all([
     list({ prefix: `${META_PREFIX}${safe}~`, limit: 100 }),
-    list({ prefix: `${FILE_PREFIX}${safe}.pdf`, limit: 2 }),
+    list({ prefix: `${FILE_PREFIX}${safe}.`, limit: 4 }),
   ]);
   const urls = [...meta.blobs, ...files.blobs].map((b) => b.url);
   if (urls.length > 0) await del(urls);
   return urls.length > 0;
 }
 
-export async function getArchiveFile(id: string): Promise<ArrayBuffer | null> {
-  const { blobs } = await list({ prefix: `${FILE_PREFIX}${safeId(id)}.pdf`, limit: 2 });
+export async function getArchiveFile(id: string): Promise<{ bytes: ArrayBuffer; contentType: string } | null> {
+  const { blobs } = await list({ prefix: `${FILE_PREFIX}${safeId(id)}.`, limit: 4 });
   if (blobs.length === 0) return null;
-  try { const r = await fetch(blobs[0].url, { cache: "no-store" }); return r.ok ? await r.arrayBuffer() : null; } catch { return null; }
+  const b = blobs[0];
+  const contentType = b.pathname.endsWith(".jpg") ? "image/jpeg" : "application/pdf";
+  try { const r = await fetch(b.url, { cache: "no-store" }); return r.ok ? { bytes: await r.arrayBuffer(), contentType } : null; } catch { return null; }
 }

@@ -25,7 +25,7 @@ export async function POST(request: Request) {
   const g = await garde(request);
   if ("erreur" in g) return g.erreur;
   if (!process.env.ANTHROPIC_API_KEY) return Response.json({ error: "Analyse indisponible (clé IA absente)." }, { status: 503 });
-  let body: { data?: string };
+  let body: { data?: string; type?: string };
   try { body = (await request.json()) as typeof body; } catch { return Response.json({ error: "Corps invalide" }, { status: 400 }); }
   if (!body.data) return Response.json({ error: "Document manquant" }, { status: 400 });
   if (body.data.length * 0.75 > MAX_OCTETS) return Response.json({ error: "Document trop lourd." }, { status: 413 });
@@ -53,7 +53,9 @@ export async function POST(request: Request) {
           max_tokens: 1024,
           system: "Tu es l'assistant d'un syndic de copropriété. Tu classes et nommes des documents et réponds uniquement par du JSON conforme.",
           messages: [{ role: "user", content: [
-            { type: "document", source: { type: "base64", media_type: "application/pdf", data: body.data } },
+            body.type === "image"
+              ? { type: "image", source: { type: "base64", media_type: "image/jpeg", data: body.data! } }
+              : { type: "document", source: { type: "base64", media_type: "application/pdf", data: body.data! } },
             { type: "text", text: consigne },
           ] }],
         });
