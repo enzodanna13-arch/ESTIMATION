@@ -511,6 +511,7 @@ function CoutsPostaux({ sinistres, onChange, onRetour }: { sinistres: Sinistre[]
           <thead>
             <tr className="border-b border-slate-200 bg-slate-50 text-[11px] uppercase tracking-wide text-slate-500">
               <th className="px-3 py-2 text-left">Copropriété</th>
+              <th className="px-3 py-2 text-left">Assurance</th>
               <th className="px-3 py-2 text-right">Poids (g)</th>
               <th className="px-3 py-2 text-center">Niveau</th>
               <th className="px-3 py-2 text-right">Affranchiss.</th>
@@ -520,12 +521,13 @@ function CoutsPostaux({ sinistres, onChange, onRetour }: { sinistres: Sinistre[]
           </thead>
           <tbody>
             {sinistres.length === 0 ? (
-              <tr><td colSpan={6} className="px-3 py-6 text-center text-slate-400">Aucun sinistre.</td></tr>
+              <tr><td colSpan={7} className="px-3 py-6 text-center text-slate-400">Aucun sinistre.</td></tr>
             ) : sinistres.map((s) => <LigneCout key={s.id} s={s} niveau={niv(s)} onSave={(patch) => void save(s.id, patch)} />)}
           </tbody>
           <tfoot>
             <tr className="border-t-2 border-slate-200 bg-slate-50 font-bold text-navy">
               <td className="px-3 py-2">Total ({chiffres.length} lettre{chiffres.length > 1 ? "s" : ""})</td>
+              <td />
               <td />
               <td />
               <td className="px-3 py-2 text-right">{eurosP(Math.round(totalAff * 100) / 100)}</td>
@@ -562,6 +564,10 @@ function LigneCout({ s, niveau, onSave }: { s: Sinistre; niveau: NiveauReco; onS
       <td className="px-3 py-2">
         <div className="font-semibold text-navy">{s.coproNom || "Copropriété"}</div>
         <div className="text-[11px] text-slate-400">{s.reference}</div>
+      </td>
+      <td className="px-3 py-2 text-slate-600">
+        <div>{s.assureur || "—"}</div>
+        {s.assurancePolice && <div className="text-[11px] text-slate-400">n° {s.assurancePolice}</div>}
       </td>
       <td className="px-3 py-2 text-right">
         <input type="number" inputMode="numeric" value={poids} onChange={(e) => setPoids(e.target.value)} onBlur={enregistrer} onKeyDown={(e) => e.key === "Enter" && e.currentTarget.blur()} placeholder="—" className="w-20 rounded-md border border-slate-200 px-2 py-1 text-right text-sm focus:border-copper focus:outline-none" />
