@@ -367,8 +367,36 @@ function EmailsAssurances({ sinistres, onChange, onRetour }: { sinistres: Sinist
         })}
       </div>
       {sansEmail.length > 0 && (
-        <p className="mt-3 text-xs text-slate-400">{sansEmail.length} sinistre(s) sans email sur la déclaration ({sansEmail.map((s) => s.coproNom).join(", ")}) — à contacter par courrier / téléphone, ou ajoute l'adresse dans la fiche.</p>
+        <div className="mt-4 rounded-2xl border border-amber-200 bg-white p-4">
+          <div className="mb-1 text-sm font-black text-amber-700">⚠️ {sansEmail.length} copropriété{sansEmail.length > 1 ? "s" : ""} — manque mail assurance</div>
+          <p className="mb-3 text-xs text-slate-500">Aucune adresse mail n'était indiquée sur la déclaration. Renseigne-la ici pour générer leur dossier mail (ou contacte l'assureur par courrier / téléphone).</p>
+          <div className="space-y-2">
+            {sansEmail.map((s) => <LigneManqueEmail key={s.id} s={s} onChange={onChange} />)}
+          </div>
+        </div>
       )}
+    </div>
+  );
+}
+
+function LigneManqueEmail({ s, onChange }: { s: Sinistre; onChange: (s: Sinistre) => void }) {
+  const [email, setEmail] = useState("");
+  const [saving, setSaving] = useState(false);
+  const enregistrer = async () => {
+    if (!email.trim()) return;
+    setSaving(true);
+    const maj = await updateSinistre(s.id, { assuranceContact: email.trim() });
+    setSaving(false);
+    if (maj) onChange(maj);
+  };
+  return (
+    <div className="flex flex-wrap items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 p-2.5">
+      <div className="min-w-[160px] flex-1">
+        <div className="text-sm font-bold text-navy">{s.coproNom}</div>
+        <div className="text-[11px] font-semibold text-amber-700">⚠️ Manque mail assurance{s.assureur ? ` · ${s.assureur}` : ""}</div>
+      </div>
+      <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} onKeyDown={(e) => e.key === "Enter" && void enregistrer()} placeholder="email@assurance.fr" className="min-w-[180px] flex-1 rounded-md border border-slate-200 bg-white px-2 py-1.5 text-sm focus:border-copper focus:outline-none" />
+      <button onClick={() => void enregistrer()} disabled={saving || !email.trim()} className="shrink-0 rounded-md bg-navy px-3 py-1.5 text-xs font-bold text-white transition hover:brightness-110 disabled:opacity-50">{saving ? "…" : "Enregistrer"}</button>
     </div>
   );
 }
