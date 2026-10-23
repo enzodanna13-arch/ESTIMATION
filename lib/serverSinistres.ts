@@ -66,6 +66,8 @@ export interface Sinistre {
   qualite: string;
   poidsEnvoi: number | null; // poids de l'envoi recommandé, en grammes
   niveauReco: string;        // niveau de recommandation : R1 | R2 | R3
+  mailEnvoye: boolean;       // mail à l'assureur envoyé ?
+  mailEnvoyeLe: number | null;
   photos: PhotoSinistre[];
   documents: DocSinistre[];
   suivi: SuiviEntree[];
@@ -108,6 +110,8 @@ function normaliser(input: Partial<Sinistre>, base?: Sinistre): Sinistre {
     qualite: txt(input.qualite, 120),
     poidsEnvoi: typeof input.poidsEnvoi === "number" && input.poidsEnvoi > 0 ? Math.round(input.poidsEnvoi) : null,
     niveauReco: (["R1", "R2", "R3"] as string[]).includes(input.niveauReco as string) ? (input.niveauReco as string) : "R1",
+    mailEnvoye: input.mailEnvoye === true,
+    mailEnvoyeLe: typeof input.mailEnvoyeLe === "number" ? input.mailEnvoyeLe : null,
     photos: Array.isArray(base?.photos) ? base!.photos : [],
     documents: Array.isArray(base?.documents) ? base!.documents : [],
     suivi: Array.isArray(base?.suivi) ? base!.suivi : [],

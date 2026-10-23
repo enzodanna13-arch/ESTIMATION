@@ -160,7 +160,7 @@ export default function SinistresPage({ onRetour }: { onRetour: () => void }) {
       </div>
 
       {emails ? (
-        <EmailsAssurances sinistres={sinistres} onRetour={() => setEmails(false)} />
+        <EmailsAssurances sinistres={sinistres} onChange={majLocal} onRetour={() => setEmails(false)} />
       ) : courrier ? (
         <CourrierMairie sinistres={sinistres} onRetour={() => setCourrier(false)} />
       ) : couts ? (
@@ -277,11 +277,16 @@ async function telechargerDoc(url: string, nom: string) {
   } catch { window.open(url, "_blank"); }
 }
 
-function EmailsAssurances({ sinistres, onRetour }: { sinistres: Sinistre[]; onRetour: () => void }) {
+function EmailsAssurances({ sinistres, onChange, onRetour }: { sinistres: Sinistre[]; onChange: (s: Sinistre) => void; onRetour: () => void }) {
   const [copie, setCopie] = useState("");
   const copier = async (val: string, cle: string) => {
     try { await navigator.clipboard.writeText(val); setCopie(cle); setTimeout(() => setCopie(""), 2000); } catch { /* ignore */ }
   };
+  const marquer = async (g: GroupeAssur, envoye: boolean) => {
+    const ts = envoye ? Date.now() : null;
+    for (const s of g.sinistres) { const maj = await updateSinistre(s.id, { mailEnvoye: envoye, mailEnvoyeLe: ts }); if (maj) onChange(maj); }
+  };
+  const dateFrCourt = (ts: number) => new Date(ts).toLocaleDateString("fr-FR");
 
   const groupes = useMemo(() => {
     const map = new Map<string, GroupeAssur>();
@@ -304,7 +309,7 @@ function EmailsAssurances({ sinistres, onRetour }: { sinistres: Sinistre[]; onRe
         <button onClick={onRetour} className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-100">← Sinistres</button>
         <h3 className="text-lg font-bold text-navy">📧 Dossiers mail par assurance</h3>
       </div>
-      <p className="mb-3 text-sm text-slate-500">Un dossier par assureur : <strong>mail prêt à envoyer</strong> (copier / ouvrir) et <strong>téléchargement des PDF</strong> des copropriétés concernées, pour un envoi rapide en plus du recommandé. {groupes.length} assureur(s).</p>
+      <p className="mb-3 text-sm text-slate-500">Un dossier par assureur : <strong>mail prêt à envoyer</strong> (copier / ouvrir) et <strong>téléchargement des PDF</strong> des copropriétés concernées, pour un envoi rapide en plus du recommandé. <strong>{groupes.filter((g) => g.sinistres.every((s) => s.mailEnvoye)).length}/{groupes.length}</strong> assureur(s) relancé(s) par mail.</p>
 
       <div className="mb-4 flex flex-wrap gap-2">
         <button onClick={() => void copier(uniques.join("; "), "all")} className="rounded-lg bg-navy px-4 py-2 text-sm font-bold text-white transition hover:brightness-110">{copie === "all" ? "✓ Copié" : "📋 Copier toutes les adresses (CCI)"}</button>
@@ -315,15 +320,20 @@ function EmailsAssurances({ sinistres, onRetour }: { sinistres: Sinistre[]; onRe
           const { sujet, corps } = mailAssurance(g);
           const mailto = `mailto:${g.email}?subject=${encodeURIComponent(sujet)}&body=${encodeURIComponent(corps)}`;
           const docs = g.sinistres.flatMap((s) => s.documents.map((d) => ({ s, d })));
+          const envoye = g.sinistres.every((s) => s.mailEnvoye);
+          const dateEnvoi = Math.max(0, ...g.sinistres.map((s) => s.mailEnvoyeLe ?? 0));
           return (
-            <div key={g.email} className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-              <div className="border-l-4 border-sky-500 bg-slate-50/70 p-4">
+            <div key={g.email} className={`overflow-hidden rounded-2xl border bg-white shadow-sm ${envoye ? "border-emerald-300" : "border-slate-200"}`}>
+              <div className={`border-l-4 p-4 ${envoye ? "border-emerald-500 bg-emerald-50/50" : "border-sky-500 bg-slate-50/70"}`}>
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <div>
                     <div className="text-base font-black text-navy">{g.assureurs.join(" / ") || "Assureur"}</div>
                     <button onClick={() => void copier(g.email, `e-${g.email}`)} className="text-sm font-semibold text-sky-700 hover:underline">{copie === `e-${g.email}` ? "✓ Copié" : g.email}</button>
                   </div>
-                  <span className="rounded-full bg-sky-100 px-2 py-0.5 text-[11px] font-bold text-sky-700">{g.sinistres.length} copro{g.sinistres.length > 1 ? "s" : ""}</span>
+                  <div className="flex items-center gap-2">
+                    {envoye && <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-bold text-emerald-700">✓ Envoyé{dateEnvoi > 0 ? ` le ${dateFrCourt(dateEnvoi)}` : ""}</span>}
+                    <span className="rounded-full bg-sky-100 px-2 py-0.5 text-[11px] font-bold text-sky-700">{g.sinistres.length} copro{g.sinistres.length > 1 ? "s" : ""}</span>
+                  </div>
                 </div>
               </div>
               <div className="p-4">
@@ -331,6 +341,11 @@ function EmailsAssurances({ sinistres, onRetour }: { sinistres: Sinistre[]; onRe
                   <a href={mailto} className="rounded-lg bg-sky-600 px-4 py-2 text-sm font-bold text-white transition hover:brightness-110">✉ Ouvrir le mail</a>
                   <button onClick={() => void copier(`${g.email}\n\nObjet : ${sujet}\n\n${corps}`, `m-${g.email}`)} className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-100">{copie === `m-${g.email}` ? "✓ Mail copié" : "📋 Copier le mail"}</button>
                   {docs.length > 0 && <button onClick={() => { docs.forEach(({ s, d }, i) => setTimeout(() => void telechargerDoc(urlDocumentSinistre(s.id, d.id), d.nom), i * 400)); }} className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-100">⬇ Télécharger les PDF ({docs.length})</button>}
+                  {envoye ? (
+                    <button onClick={() => void marquer(g, false)} className="rounded-lg border border-emerald-300 bg-emerald-50 px-4 py-2 text-sm font-bold text-emerald-700 transition hover:bg-emerald-100">✓ Envoyé — annuler</button>
+                  ) : (
+                    <button onClick={() => void marquer(g, true)} className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-bold text-white transition hover:brightness-110">✅ Marquer comme envoyé</button>
+                  )}
                 </div>
                 <details className="mb-3 rounded-lg border border-slate-200 bg-slate-50">
                   <summary className="cursor-pointer px-3 py-2 text-xs font-bold uppercase tracking-wide text-slate-500">Objet : {sujet}</summary>
