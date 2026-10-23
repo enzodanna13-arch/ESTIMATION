@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import {
   listRecommandes, createRecommande, updateRecommande, deleteRecommande,
-  ajouterSuiviReco, ajouterScan, supprimerScan, urlScanReco,
+  ajouterSuiviReco, ajouterScan, supprimerScan, urlScanReco, analyserRecommande,
   STATUTS_RECO, PRIORITES_RECO, type Recommande,
 } from "@/lib/recommandes";
 import { compresserPhoto } from "@/lib/sinistres";
@@ -183,9 +183,40 @@ function FormRecommande({ onCancel, onSaved }: { onCancel: () => void; onSaved: 
   const [progres, setProgres] = useState("");
   const [err, setErr] = useState<string | null>(null);
   const [survol, setSurvol] = useState(false);
+  const [analyse, setAnalyse] = useState<"" | "cours" | "ok" | "ko">("");
+  const analyseFaite = useRef(false);
   const fileRef = useRef<HTMLInputElement>(null);
   const set = (k: keyof Recommande, v: unknown) => setF((p) => ({ ...p, [k]: v }));
-  const ajouterFichiers = (liste: FileList | null) => { if (!liste) return; setFichiers((p) => [...p, ...Array.from(liste).filter((x) => estImage(x) || estPdf(x))]); if (fileRef.current) fileRef.current.value = ""; };
+
+  // Analyse IA : lit le document et pré-remplit les champs encore vides.
+  const analyser = async (file: File) => {
+    setAnalyse("cours"); setErr(null);
+    try {
+      const { type, data } = await scanVersData(file);
+      const ex = await analyserRecommande({ type, data });
+      if (ex) {
+        setF((p) => ({
+          ...p,
+          objet: p.objet?.trim() ? p.objet : ex.objet,
+          expediteur: p.expediteur?.trim() ? p.expediteur : ex.expediteur,
+          copropriete: p.copropriete?.trim() ? p.copropriete : ex.copropriete,
+          echeance: p.echeance?.trim() ? p.echeance : ex.echeance,
+          priorite: ex.priorite || p.priorite,
+          notes: [p.notes, ex.resume, ex.dateCourrier ? `Courrier daté du ${ex.dateCourrier}` : ""].filter(Boolean).join("\n"),
+        }));
+        setAnalyse("ok");
+      } else setAnalyse("ko");
+    } catch (e) { setAnalyse("ko"); setErr(e instanceof Error ? e.message : "Analyse IA indisponible"); }
+  };
+
+  const ajouterFichiers = (liste: FileList | null) => {
+    if (!liste) return;
+    const valides = Array.from(liste).filter((x) => estImage(x) || estPdf(x));
+    setFichiers((p) => [...p, ...valides]);
+    if (fileRef.current) fileRef.current.value = "";
+    // Analyse automatique du premier document ajouté.
+    if (!analyseFaite.current && valides.length > 0) { analyseFaite.current = true; void analyser(valides[0]); }
+  };
 
   const soumettre = async () => {
     if (!f.objet?.trim() && !f.expediteur?.trim()) { setErr("Indique au moins l'objet ou l'expéditeur."); return; }
@@ -214,13 +245,19 @@ function FormRecommande({ onCancel, onSaved }: { onCancel: () => void; onSaved: 
         onDrop={(e) => { e.preventDefault(); setSurvol(false); ajouterFichiers(e.dataTransfer.files); }}
         className={`mt-4 rounded-xl border-2 border-dashed p-3 transition ${survol ? "border-copper bg-copper/5" : "border-slate-300 bg-slate-50"}`}
       >
-        <div className="mb-2 flex items-center justify-between">
+        <div className="mb-2 flex items-center justify-between gap-2">
           <span className="text-xs font-bold uppercase tracking-wide text-slate-500">Scan du recommandé (photo ou PDF)</span>
-          <button type="button" onClick={() => fileRef.current?.click()} className="rounded-lg bg-white px-3 py-1.5 text-xs font-bold text-navy shadow-sm ring-1 ring-slate-200 transition hover:bg-slate-100">+ Ajouter</button>
+          <div className="flex items-center gap-2">
+            {analyse === "cours" && <span className="text-[11px] font-bold text-sky-600">✨ Analyse IA en cours…</span>}
+            {analyse === "ok" && <span className="text-[11px] font-bold text-emerald-600">✓ Champs pré-remplis par l'IA</span>}
+            {analyse === "ko" && <span className="text-[11px] font-bold text-amber-600">IA indisponible — saisis à la main</span>}
+            {fichiers.length > 0 && <button type="button" onClick={() => void analyser(fichiers[0])} disabled={analyse === "cours"} className="rounded-lg border border-sky-200 bg-white px-2.5 py-1 text-[11px] font-bold text-sky-700 transition hover:bg-sky-50 disabled:opacity-50">✨ {analyse === "ok" ? "Ré-analyser" : "Analyser"}</button>}
+            <button type="button" onClick={() => fileRef.current?.click()} className="rounded-lg bg-white px-3 py-1.5 text-xs font-bold text-navy shadow-sm ring-1 ring-slate-200 transition hover:bg-slate-100">+ Ajouter</button>
+          </div>
         </div>
         <input ref={fileRef} type="file" accept="image/*,application/pdf" multiple capture="environment" className="hidden" onChange={(e) => ajouterFichiers(e.target.files)} />
         {fichiers.length === 0 ? (
-          <p className="text-xs text-slate-400">📷 Prends en photo ou glisse-dépose le scan du recommandé (plusieurs pages possibles).</p>
+          <p className="text-xs text-slate-400">📷 Dépose le PDF (ou prends-le en photo) : l'<strong>IA analyse le courrier</strong> et remplit l'objet, l'expéditeur, la copropriété, l'échéance et la priorité automatiquement.</p>
         ) : (
           <ul className="space-y-1">
             {fichiers.map((file, i) => (

@@ -65,3 +65,17 @@ export async function supprimerScan(id: string, fileId: string): Promise<Recomma
 
 export const urlScanReco = (id: string, fileId: string) =>
   `/api/recommandes/${encodeURIComponent(id)}/scan/${encodeURIComponent(fileId)}`;
+
+export interface ExtraitRecommande {
+  objet: string; expediteur: string; copropriete: string;
+  dateCourrier: string; echeance: string; priorite: string; resume: string;
+}
+
+export async function analyserRecommande(scan: { type: "pdf" | "image"; data: string }): Promise<ExtraitRecommande | null> {
+  const res = await fetch("/api/recommandes/analyser", { method: "POST", headers: jsonHeaders(), body: JSON.stringify(scan) });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => null)) as { error?: string } | null;
+    throw new Error(body?.error ?? "Analyse impossible");
+  }
+  return ((await res.json()) as { extrait?: ExtraitRecommande | null }).extrait ?? null;
+}
