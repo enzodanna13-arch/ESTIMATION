@@ -8,6 +8,7 @@ import {
 import { CHAMPS_IMPORT, type TypeImport } from "@/lib/syndic/csv";
 import * as api from "@/lib/syndic/client";
 import type { ResidenceListe } from "@/lib/syndic/client";
+import { getHistoryKey, setHistoryKey } from "@/lib/history";
 
 const inputCls = "w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-copper focus:outline-none focus:ring-2 focus:ring-copper/20";
 const btnNavy = "rounded-lg bg-navy px-4 py-2 text-sm font-semibold text-white transition hover:bg-navy-deep disabled:opacity-50";
@@ -21,19 +22,18 @@ function Centre({ children }: { children: React.ReactNode }) {
 export default function SyndicPage() {
   const [chargement, setChargement] = useState(true);
   const [user, setUser] = useState<SyndicUserPublic | null>(null);
-  const [besoinBootstrap, setBesoin] = useState(false);
   const [section, setSection] = useState<string>("demandes");
   const [ticketId, setTicketId] = useState<string | null>(null);
 
   const recharger = async () => {
-    try { const r = await api.meApi(); setUser(r.user); setBesoin(Boolean(r.besoinBootstrap)); }
-    catch { /* hors ligne : on laisse l'écran de connexion */ }
+    try { const r = await api.meApi(); setUser(r.user); }
+    catch { /* hors ligne : on laisse l'écran d'accès */ }
     finally { setChargement(false); }
   };
   useEffect(() => { void recharger(); }, []);
 
   if (chargement) return <Centre><p className="text-sm text-slate-400">Chargement…</p></Centre>;
-  if (!user) return besoinBootstrap ? <Bootstrap onOk={recharger} /> : <Login onOk={recharger} />;
+  if (!user) return <GateEquipe onOk={recharger} />;
 
   return (
     <div className="min-h-screen bg-slate-100">
@@ -44,9 +44,9 @@ export default function SyndicPage() {
           <span className="text-[11px] text-white/60">Gestion des demandes des copropriétaires</span>
         </div>
         <div className="ml-auto flex items-center gap-3 text-sm">
-          <span className="hidden sm:inline">{user.prenom} {user.nom} · <b className="text-copper">{ROLES_LABELS[user.role]}</b></span>
+          <span className="hidden sm:inline"><b className="text-copper">{ROLES_LABELS[user.role]}</b></span>
           <a href="/" className="rounded-lg border border-white/20 px-3 py-1.5 text-xs font-semibold hover:bg-white/10">← Outils</a>
-          <button onClick={async () => { await api.logoutApi(); setUser(null); void recharger(); }} className="rounded-lg border border-white/20 px-3 py-1.5 text-xs font-semibold hover:bg-white/10">Déconnexion</button>
+          <button onClick={() => { setHistoryKey(""); setUser(null); void recharger(); }} className="rounded-lg border border-white/20 px-3 py-1.5 text-xs font-semibold hover:bg-white/10">Verrouiller</button>
         </div>
       </header>
 
@@ -89,16 +89,19 @@ export default function SyndicPage() {
   );
 }
 
-// ---------------------------------------------------------------- Connexion
-function Login({ onOk }: { onOk: () => void }) {
-  const [email, setEmail] = useState("");
-  const [pw, setPw] = useState("");
+// ----------------------------------------------------- Accès (mot de passe d'équipe)
+function GateEquipe({ onOk }: { onOk: () => void }) {
+  const [pw, setPw] = useState(() => getHistoryKey());
   const [err, setErr] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const soumettre = async () => {
     setErr(null); setBusy(true);
-    try { await api.loginApi(email, pw); onOk(); }
-    catch (e) { setErr(e instanceof Error ? e.message : "Connexion impossible"); }
+    try {
+      setHistoryKey(pw.trim());
+      const r = await api.meApi();
+      if (r.user) onOk();
+      else setErr("Mot de passe d'équipe incorrect.");
+    } catch (e) { setErr(e instanceof Error ? e.message : "Accès impossible"); }
     finally { setBusy(false); }
   };
   return (
@@ -106,46 +109,9 @@ function Login({ onOk }: { onOk: () => void }) {
       <div className="w-full max-w-sm rounded-3xl border border-slate-200 bg-white p-8 text-center shadow-sm">
         <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-copper text-xl font-black text-white">21</div>
         <h1 className="text-xl font-bold text-navy">Syndic — Century 21 Icaza</h1>
-        <p className="mt-1 text-sm text-slate-500">Connectez-vous avec votre identifiant personnel.</p>
-        <input className={`${inputCls} mt-5`} type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
-        <input className={`${inputCls} mt-3`} type="password" placeholder="Mot de passe" value={pw} onChange={(e) => setPw(e.target.value)} onKeyDown={(e) => e.key === "Enter" && soumettre()} />
-        <button onClick={soumettre} disabled={busy} className={`${btnNavy} mt-4 w-full`}>{busy ? "Connexion…" : "Se connecter"}</button>
-        {err && <p className="mt-3 text-sm text-red-600">{err}</p>}
-      </div>
-    </Centre>
-  );
-}
-
-// ---------------------------------------------------- Premier admin (bootstrap)
-function Bootstrap({ onOk }: { onOk: () => void }) {
-  const [f, setF] = useState({ nom: "", prenom: "", email: "", motDePasse: "", equipe: "" });
-  const [err, setErr] = useState<string | null>(null);
-  const [busy, setBusy] = useState(false);
-  const set = (k: keyof typeof f, v: string) => setF((p) => ({ ...p, [k]: v }));
-  const soumettre = async () => {
-    setErr(null); setBusy(true);
-    try {
-      await api.bootstrapApi({ nom: f.nom, prenom: f.prenom, email: f.email, motDePasse: f.motDePasse }, f.equipe);
-      onOk();
-    } catch (e) { setErr(e instanceof Error ? e.message : "Initialisation impossible"); }
-    finally { setBusy(false); }
-  };
-  return (
-    <Centre>
-      <div className="w-full max-w-md rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
-        <h1 className="text-xl font-bold text-navy">Initialiser le module Syndic</h1>
-        <p className="mt-1 text-sm text-slate-500">Créez le premier compte <b>responsable d&apos;agence</b>. Vous pourrez ensuite créer les gestionnaires et l&apos;accueil.</p>
-        <div className="mt-5 grid gap-3 sm:grid-cols-2">
-          <input className={inputCls} placeholder="Nom" value={f.nom} onChange={(e) => set("nom", e.target.value)} />
-          <input className={inputCls} placeholder="Prénom" value={f.prenom} onChange={(e) => set("prenom", e.target.value)} />
-        </div>
-        <input className={`${inputCls} mt-3`} type="email" placeholder="Email (identifiant)" value={f.email} onChange={(e) => set("email", e.target.value)} />
-        <input className={`${inputCls} mt-3`} type="password" placeholder="Mot de passe (6 caractères min.)" value={f.motDePasse} onChange={(e) => set("motDePasse", e.target.value)} />
-        <div className="mt-4 rounded-xl bg-slate-50 p-3">
-          <p className="text-xs text-slate-500">Pour sécuriser cette première création, saisissez le <b>mot de passe d&apos;équipe</b> de l&apos;agence (le même que l&apos;outil d&apos;estimation).</p>
-          <input className={`${inputCls} mt-2`} type="password" placeholder="Mot de passe d'équipe" value={f.equipe} onChange={(e) => set("equipe", e.target.value)} />
-        </div>
-        <button onClick={soumettre} disabled={busy} className={`${btnCopper} mt-4 w-full`}>{busy ? "Création…" : "Créer le responsable et entrer"}</button>
+        <p className="mt-1 text-sm text-slate-500">Accès réservé à l&apos;équipe — saisissez le mot de passe de l&apos;agence (le même que l&apos;outil d&apos;estimation).</p>
+        <input className={`${inputCls} mt-5`} type="password" placeholder="Mot de passe d'équipe" value={pw} onChange={(e) => setPw(e.target.value)} onKeyDown={(e) => e.key === "Enter" && soumettre()} autoFocus />
+        <button onClick={soumettre} disabled={busy} className={`${btnNavy} mt-4 w-full`}>{busy ? "Vérification…" : "Entrer"}</button>
         {err && <p className="mt-3 text-sm text-red-600">{err}</p>}
       </div>
     </Centre>

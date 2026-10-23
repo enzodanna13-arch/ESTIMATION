@@ -2,11 +2,13 @@
 // est envoyé automatiquement (même origine) : aucun secret ne transite ici.
 
 import type { SyndicUserPublic } from "./types";
+import { getHistoryKey } from "../history";
 
 async function j<T = unknown>(path: string, opts?: RequestInit): Promise<T> {
   const r = await fetch(`/api/syndic${path}`, {
-    headers: { "content-type": "application/json", ...(opts?.headers ?? {}) },
     ...opts,
+    // Accès via le mot de passe d'équipe partagé (plus de comptes individuels).
+    headers: { "content-type": "application/json", "x-history-key": getHistoryKey(), ...(opts?.headers ?? {}) },
   });
   const data = await r.json().catch(() => ({}));
   if (!r.ok) throw new Error((data as { error?: string }).error ?? `Erreur serveur (${r.status})`);

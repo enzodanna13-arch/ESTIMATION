@@ -1,9 +1,19 @@
 import { enregistrer, lister, nouvelId, obtenir, supprimer } from "./store";
 import { hashPassword } from "./password";
 import { lireCookieSession } from "./session";
+import { verifierAccesEquipe } from "../historyAuth";
 import type { SyndicRole, SyndicUser } from "./types";
 
 const COLL = "utilisateurs";
+
+// Utilisateur « Équipe » virtuel : accès au module syndic via le mot de passe
+// d'équipe partagé (plus de comptes individuels requis). Rôle admin = accès
+// complet.
+const USER_EQUIPE: SyndicUser = {
+  id: "equipe", nom: "Équipe", prenom: "Agence", email: "equipe@icaza",
+  role: "admin", telephoneMobile: "", actif: true, absentDu: null, absentAu: null,
+  passwordHash: "", passwordSalt: "", createdAt: 0, updatedAt: 0,
+};
 export const normEmail = (s: string) => (s ?? "").trim().toLowerCase();
 
 export async function listerUsers(): Promise<SyndicUser[]> {
@@ -78,6 +88,9 @@ export async function supprimerUser(id: string): Promise<void> {
 // Utilisateur courant à partir du cookie de session (ou null). Vérifie que le
 // compte existe toujours ET qu'il est actif.
 export async function userCourant(request: Request): Promise<SyndicUser | null> {
+  // Accès par le mot de passe d'équipe partagé (prioritaire).
+  if (await verifierAccesEquipe(request)) return USER_EQUIPE;
+  // Repli : ancienne session par compte individuel (cookie signé).
   const session = lireCookieSession(request);
   if (!session) return null;
   const user = await obtenirUser(session.userId);
