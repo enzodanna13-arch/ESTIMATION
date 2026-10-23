@@ -24,7 +24,7 @@ export const bootstrapApi = (payload: { nom: string; prenom: string; email: stri
   });
 export const logoutApi = () => j("/auth/logout", { method: "POST" });
 
-export const assistantApi = (messages: { role: "user" | "assistant"; content: string }[]) =>
+export const assistantApi = (messages: { role: "user" | "assistant"; content: string; pieces?: { type: "pdf" | "image"; data: string; nom?: string }[] }[]) =>
   j<{ reply: string }>("/assistant", { method: "POST", body: JSON.stringify({ messages }) });
 
 export const listUsersApi = () => j<{ users: SyndicUserPublic[] }>("/users");

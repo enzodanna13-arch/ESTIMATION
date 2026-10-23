@@ -5,7 +5,8 @@ import Anthropic from "@anthropic-ai/sdk";
 // (souvent un email reçu), liste les documents/infos nécessaires et propose un
 // brouillon de réponse. Il n'invente jamais de montants, dates ou décisions.
 
-export interface MsgAssistant { role: "user" | "assistant"; content: string; }
+export interface PieceJointe { type: "pdf" | "image"; data: string; nom?: string }
+export interface MsgAssistant { role: "user" | "assistant"; content: string; pieces?: PieceJointe[] }
 
 const SYSTEME = `Tu es l'assistant de travail d'un GESTIONNAIRE DE COPROPRIÉTÉ (service syndic de Century 21 Icaza Immobilier, à Martigues). Tu l'épaules au quotidien : il te colle un email ou un message reçu (d'un copropriétaire, d'un membre du conseil syndical, d'un prestataire, d'un notaire…), quel qu'en soit le sujet, et tu l'aides à y répondre.
 
@@ -41,7 +42,18 @@ export async function repondreAssistant(messages: MsgAssistant[]): Promise<strin
         model,
         max_tokens: 2000,
         system: SYSTEME,
-        messages: messages.map((m) => ({ role: m.role, content: m.content })),
+        messages: messages.map((m): Anthropic.MessageParam => {
+          if (m.role === "user" && m.pieces && m.pieces.length > 0) {
+            const blocs = [
+              ...m.pieces.map((p) => p.type === "pdf"
+                ? { type: "document" as const, source: { type: "base64" as const, media_type: "application/pdf" as const, data: p.data } }
+                : { type: "image" as const, source: { type: "base64" as const, media_type: "image/jpeg" as const, data: p.data } }),
+              { type: "text" as const, text: m.content || "Analyse le(s) document(s) ci-joint(s) et aide-moi à répondre." },
+            ];
+            return { role: "user", content: blocs };
+          }
+          return { role: m.role, content: m.content };
+        }),
       });
       break;
     } catch (e) {
