@@ -48,6 +48,7 @@ const GROUPES: Groupe[] = [
   ] },
   { label: "Sinistres & assurances", items: [
     { v: "sinistres", t: "Sinistres & assurances", i: "🌊" },
+    { v: "recommandes", t: "Recommandés reçus", i: "📬" },
   ] },
   { label: "Estimations", items: [
     { v: "estimation", t: "Nouvelle estimation", i: "🏠" },
