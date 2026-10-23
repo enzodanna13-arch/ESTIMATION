@@ -38,6 +38,8 @@ export interface DocArchive { id: string; nom: string; categorie: string; coprop
 export interface ExtraitArchive { nom: string; categorie: string; copropriete: string; date: string; resume: string }
 export const listArchiveApi = () => j<{ documents: DocArchive[] }>("/archive");
 export const analyserArchiveApi = (data: string, type: "pdf" | "image") => j<{ extrait: ExtraitArchive | null }>("/archive/analyser", { method: "POST", body: JSON.stringify({ data, type }) });
+export interface SegmentArchive { pageDebut: number; pageFin: number; continuation: boolean; categorie: string; copropriete: string; date: string; nom: string; resume: string }
+export const segmenterArchiveApi = (data: string, offset: number, contexte: string) => j<{ documents: SegmentArchive[] }>("/archive/segmenter", { method: "POST", body: JSON.stringify({ data, offset, contexte }) });
 export const creerArchiveApi = (champs: Partial<DocArchive> & { data: string; type: "pdf" | "image" }) => j<{ document: DocArchive }>("/archive", { method: "POST", body: JSON.stringify(champs) });
 export const updateArchiveApi = (id: string, p: Partial<DocArchive>) => j<{ document: DocArchive }>(`/archive/${id}`, { method: "PUT", body: JSON.stringify(p) });
 export const deleteArchiveApi = (id: string) => j(`/archive/${id}`, { method: "DELETE" });

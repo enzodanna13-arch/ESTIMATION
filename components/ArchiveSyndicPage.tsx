@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { PDFDocument } from "pdf-lib";
 import {
-  listArchiveApi, analyserArchiveApi, creerArchiveApi, updateArchiveApi, deleteArchiveApi,
-  urlArchiveFile, CATEGORIES_ARCHIVE, type DocArchive,
+  listArchiveApi, analyserArchiveApi, segmenterArchiveApi, creerArchiveApi, updateArchiveApi, deleteArchiveApi,
+  urlArchiveFile, CATEGORIES_ARCHIVE, type DocArchive, type SegmentArchive,
 } from "@/lib/syndic/client";
 import { compresserPhoto } from "@/lib/sinistres";
 import { compresserDocument } from "@/lib/compressDoc";
@@ -14,15 +15,8 @@ const octetsLisible = (n: number) => (n > 1024 * 1024 ? `${(n / 1024 / 1024).toF
 const estImage = (f: File) => f.type.startsWith("image/") || /\.(jpe?g|png|webp|heic|heif)$/i.test(f.name);
 const estPdf = (f: File) => f.type === "application/pdf" || /\.pdf$/i.test(f.name);
 function u8ToB64(u8: Uint8Array): string { let s = ""; const CH = 0x8000; for (let i = 0; i < u8.length; i += CH) s += String.fromCharCode(...u8.subarray(i, i + CH)); return btoa(s); }
-
-async function fichierVersData(f: File): Promise<{ type: "pdf" | "image"; data: string }> {
-  if (estImage(f)) return { type: "image", data: await compresserPhoto(f) };
-  const buf = await f.arrayBuffer();
-  if (!buf || buf.byteLength === 0) throw new Error("fichier vide");
-  if (buf.byteLength <= 3_600_000) return { type: "pdf", data: u8ToB64(new Uint8Array(buf)) };
-  const piece = await compresserDocument(f, 2800);
-  return { type: "pdf", data: piece.data };
-}
+const rangeIdx = (a: number, b: number) => Array.from({ length: Math.max(0, b - a) }, (_, i) => a + i);
+const toFile = (bytes: Uint8Array, nom: string) => new File([new Uint8Array(bytes)], nom, { type: "application/pdf" });
 
 const CAT_ICONE: Record<string, string> = {
   "Procès-verbal d'AG": "📝", "Convocation d'AG": "📣", "Appel de fonds": "💶", "Décompte de charges": "🧾",
@@ -43,12 +37,13 @@ function ZoneDepot({ onFiles, disabled, children }: { onFiles: (f: FileList) => 
   );
 }
 
-interface Trait { total: number; faits: number; erreurs: number; actif: boolean }
+interface Trait { actif: boolean; label: string; pct: number; erreurs: number }
+type Courant = SegmentArchive;
 
 export default function ArchiveSyndicPage() {
   const [docs, setDocs] = useState<DocArchive[]>([]);
   const [chargement, setChargement] = useState(true);
-  const [trait, setTrait] = useState<Trait>({ total: 0, faits: 0, erreurs: 0, actif: false });
+  const [trait, setTrait] = useState<Trait>({ actif: false, label: "", pct: 0, erreurs: 0 });
   const [q, setQ] = useState("");
   const [fCat, setFCat] = useState("");
   const [err, setErr] = useState<string | null>(null);
@@ -58,31 +53,79 @@ export default function ArchiveSyndicPage() {
 
   useEffect(() => { let a = false; void (async () => { try { const r = await listArchiveApi(); if (!a) setDocs(r.documents); } catch { /* */ } finally { if (!a) setChargement(false); } })(); return () => { a = true; }; }, []);
 
-  // Traitement en lot : analyse + archivage à la volée, avec concurrence limitée.
+  const archiverSegment = async (bytes: Uint8Array, seg: SegmentArchive) => {
+    let data = u8ToB64(bytes);
+    if (data.length > 3_600_000) data = (await compresserDocument(toFile(bytes, "d.pdf"), 2800)).data;
+    const res = await creerArchiveApi({ data, type: "pdf", nom: seg.nom, categorie: seg.categorie, copropriete: seg.copropriete, date: seg.date, resume: seg.resume });
+    setDocs((d) => [res.document, ...d]);
+  };
+
+  // Un PDF = plusieurs documents : on l'analyse par tranches pour trouver les
+  // frontières, puis on découpe et on archive chaque document.
+  const segmenterPdf = async (f: File) => {
+    const src = await PDFDocument.load(new Uint8Array(await f.arrayBuffer()));
+    const nb = src.getPageCount();
+    const TAILLE = 8;
+    let courant: Courant | null = null;
+    const finaux: SegmentArchive[] = [];
+    for (let start = 0; start < nb; start += TAILLE) {
+      const idxs = rangeIdx(start, Math.min(start + TAILLE, nb));
+      const finPage = start + idxs.length;
+      setTrait((t) => ({ ...t, label: `Découpage de « ${f.name} » — ${finPage}/${nb} pages`, pct: Math.round((finPage / nb) * 50) }));
+      // Tranche compressée pour l'analyse IA.
+      const chunk = await PDFDocument.create();
+      (await chunk.copyPages(src, idxs)).forEach((p) => chunk.addPage(p));
+      const comp = await compresserDocument(toFile(await chunk.save({ useObjectStreams: true }), "c.pdf"), 2600);
+      let segs: SegmentArchive[] = [];
+      try { segs = (await segmenterArchiveApi(comp.data, start + 1, courant ? `${courant.categorie} — ${courant.nom}` : "")).documents; } catch { /* repli */ }
+      if (segs.length === 0) segs = [{ pageDebut: start + 1, pageFin: finPage, continuation: !!courant, categorie: "Autre", copropriete: courant?.copropriete ?? "", date: "", nom: `Scan pages ${start + 1}-${finPage}`, resume: "" }];
+      segs = segs
+        .map((d) => ({ ...d, pageDebut: Math.max(start + 1, Math.min(d.pageDebut, finPage)), pageFin: Math.max(start + 1, Math.min(d.pageFin, finPage)) }))
+        .filter((d) => d.pageFin >= d.pageDebut)
+        .sort((a, b) => a.pageDebut - b.pageDebut);
+      for (let di = 0; di < segs.length; di++) {
+        const d = segs[di];
+        if (di === 0 && d.continuation && courant) courant.pageFin = Math.max(courant.pageFin, d.pageFin);
+        else { if (courant) finaux.push(courant); courant = { ...d }; }
+      }
+    }
+    if (courant) finaux.push(courant);
+    // Découpe + archivage de chaque document détecté.
+    for (let i = 0; i < finaux.length; i++) {
+      const d = finaux[i];
+      setTrait((t) => ({ ...t, label: `Archivage ${i + 1}/${finaux.length} document(s)`, pct: 50 + Math.round(((i + 1) / finaux.length) * 50) }));
+      try {
+        const sub = await PDFDocument.create();
+        (await sub.copyPages(src, rangeIdx(d.pageDebut - 1, Math.min(d.pageFin, nb)))).forEach((p) => sub.addPage(p));
+        await archiverSegment(await sub.save({ useObjectStreams: true }), d);
+      } catch { setTrait((t) => ({ ...t, erreurs: t.erreurs + 1 })); }
+    }
+  };
+
+  const archiverImage = async (f: File) => {
+    setTrait((t) => ({ ...t, label: `Analyse de « ${f.name} »`, pct: 50 }));
+    try {
+      const data = await compresserPhoto(f);
+      const r = await analyserArchiveApi(data, "image").catch(() => ({ extrait: null }));
+      const ex = r.extrait ?? { nom: f.name.replace(/\.[^.]+$/, ""), categorie: "Autre", copropriete: "", date: "", resume: "" };
+      const res = await creerArchiveApi({ data, type: "image", nom: ex.nom, categorie: ex.categorie, copropriete: ex.copropriete, date: ex.date, resume: ex.resume });
+      setDocs((d) => [res.document, ...d]);
+    } catch { setTrait((t) => ({ ...t, erreurs: t.erreurs + 1 })); }
+  };
+
   const traiter = async (files: FileList | null) => {
     if (!files) return;
     const liste = Array.from(files).filter((f) => estImage(f) || estPdf(f));
-    if (liste.length === 0) { setErr("Dépose des PDF ou des images (scans)."); return; }
+    if (liste.length === 0) { setErr("Dépose un PDF (scan) ou des images."); return; }
     setErr(null);
-    setTrait({ total: liste.length, faits: 0, erreurs: 0, actif: true });
-    let faits = 0, erreurs = 0, idx = 0;
-    const LIMITE = 4;
-    const worker = async () => {
-      while (idx < liste.length) {
-        const f = liste[idx++];
-        try {
-          const { type, data } = await fichierVersData(f);
-          const r = await analyserArchiveApi(data, type).catch(() => ({ extrait: null }));
-          const ex = r.extrait ?? { nom: f.name.replace(/\.[^.]+$/, ""), categorie: "Autre", copropriete: "", date: "", resume: "" };
-          const res = await creerArchiveApi({ data, type, nom: ex.nom, categorie: ex.categorie, copropriete: ex.copropriete, date: ex.date, resume: ex.resume });
-          setDocs((d) => [res.document, ...d]);
-        } catch { erreurs += 1; }
-        faits += 1;
-        setTrait((t) => ({ ...t, faits, erreurs }));
-      }
-    };
-    await Promise.all(Array.from({ length: Math.min(LIMITE, liste.length) }, worker));
-    setTrait((t) => ({ ...t, actif: false }));
+    setTrait({ actif: true, label: "Préparation…", pct: 0, erreurs: 0 });
+    for (let k = 0; k < liste.length; k++) {
+      const f = liste[k];
+      if (liste.length > 1) setTrait((t) => ({ ...t, label: `Fichier ${k + 1}/${liste.length} : ${f.name}` }));
+      try { if (estPdf(f)) await segmenterPdf(f); else await archiverImage(f); }
+      catch (e) { setErr(e instanceof Error ? e.message : "Traitement impossible"); setTrait((t) => ({ ...t, erreurs: t.erreurs + 1 })); }
+    }
+    setTrait((t) => ({ ...t, actif: false, label: "Terminé", pct: 100 }));
     if (fileRef.current) fileRef.current.value = "";
   };
 
@@ -96,35 +139,32 @@ export default function ArchiveSyndicPage() {
     return docs.filter((d) => (!fCat || d.categorie === fCat) && (!t || `${d.nom} ${d.copropriete} ${d.resume}`.toLowerCase().includes(t)));
   }, [docs, q, fCat]);
   const parCat = useMemo(() => CATEGORIES_ARCHIVE.map((c) => ({ c, n: docs.filter((d) => d.categorie === c).length })).filter((x) => x.n > 0), [docs]);
-  const pct = trait.total > 0 ? Math.round((trait.faits / trait.total) * 100) : 0;
 
   return (
     <div>
       <h2 className="text-2xl font-bold text-navy">📁 Archive syndic</h2>
-      <p className="mb-4 text-sm text-slate-500">Scanne tes archives papier et dépose les fichiers <strong>par paquets (jusqu'à ~100 à la fois)</strong>, en PDF ou en photo. L'IA <strong>analyse, nomme et classe</strong> chaque document, et l'archive se remplit au fur et à mesure.</p>
+      <p className="mb-4 text-sm text-slate-500">Scanne tes archives papier en <strong>un seul PDF</strong> (plein de documents à la suite) et dépose-le ici. L'IA <strong>repère chaque document, le découpe, le nomme et le classe</strong> automatiquement. (Tu peux aussi déposer des photos : une photo = un document.)</p>
 
       <input ref={fileRef} type="file" accept="image/*,application/pdf" multiple capture="environment" className="hidden" onChange={(e) => void traiter(e.target.files)} />
       <ZoneDepot onFiles={(f) => void traiter(f)} disabled={trait.actif}>
         <div className="flex flex-wrap items-center gap-2">
-          <button onClick={() => fileRef.current?.click()} disabled={trait.actif} className="rounded-lg bg-navy px-4 py-2 text-sm font-bold text-white transition hover:brightness-110 disabled:opacity-50">📄 Déposer des scans (PDF / photos)</button>
-          <span className="text-xs text-slate-500">📂 Glisse-dépose un paquet de scans — l'IA s'occupe du nom et du classement.</span>
+          <button onClick={() => fileRef.current?.click()} disabled={trait.actif} className="rounded-lg bg-navy px-4 py-2 text-sm font-bold text-white transition hover:brightness-110 disabled:opacity-50">📄 Déposer le scan (PDF) ou des photos</button>
+          <span className="text-xs text-slate-500">📂 Un gros PDF multi-documents → l'IA le découpe tout seul.</span>
         </div>
       </ZoneDepot>
       {err && <div className="mt-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">{err}</div>}
 
-      {/* Progression du lot */}
-      {(trait.actif || (trait.total > 0 && trait.faits < trait.total)) && (
+      {trait.actif && (
         <div className="mt-3 rounded-xl border border-slate-200 bg-white p-3">
           <div className="mb-1 flex items-center justify-between text-sm font-semibold text-navy">
-            <span>{trait.actif ? "Traitement en cours…" : "Terminé"} {nf.format(trait.faits)}/{nf.format(trait.total)}</span>
+            <span>{trait.label}</span>
             {trait.erreurs > 0 && <span className="text-amber-600">{trait.erreurs} erreur(s)</span>}
           </div>
-          <div className="h-2.5 overflow-hidden rounded-full bg-slate-100"><div className="h-full rounded-full bg-copper transition-all" style={{ width: `${pct}%` }} /></div>
-          <p className="mt-1 text-[11px] text-slate-400">Tu peux laisser tourner : chaque document s'ajoute à l'archive dès qu'il est traité.</p>
+          <div className="h-2.5 overflow-hidden rounded-full bg-slate-100"><div className="h-full rounded-full bg-copper transition-all" style={{ width: `${trait.pct}%` }} /></div>
+          <p className="mt-1 text-[11px] text-slate-400">Laisse tourner : chaque document découpé s'ajoute à l'archive au fur et à mesure.</p>
         </div>
       )}
 
-      {/* Archive */}
       <div className="mt-5">
         <div className="mb-3 flex flex-wrap items-center gap-2">
           <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="🔍 Nom, copropriété, contenu…" className="min-w-[200px] flex-1 rounded-lg border border-slate-200 px-3 py-1.5 text-sm focus:border-copper focus:outline-none" />
@@ -138,7 +178,7 @@ export default function ArchiveSyndicPage() {
         {chargement ? (
           <div className="rounded-2xl border border-slate-200 bg-white p-10 text-center text-slate-400">Chargement…</div>
         ) : filtres.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-8 text-center text-sm text-slate-400">{docs.length === 0 ? "Archive vide. Dépose un paquet de scans ci-dessus." : "Aucun document pour ce filtre."}</div>
+          <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-8 text-center text-sm text-slate-400">{docs.length === 0 ? "Archive vide. Dépose ton scan ci-dessus." : "Aucun document pour ce filtre."}</div>
         ) : (
           <div className="space-y-2">
             {filtres.map((d) => (
