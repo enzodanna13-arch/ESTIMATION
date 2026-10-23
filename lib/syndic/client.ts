@@ -27,6 +27,22 @@ export const logoutApi = () => j("/auth/logout", { method: "POST" });
 export const assistantApi = (messages: { role: "user" | "assistant"; content: string; pieces?: { type: "pdf" | "image"; data: string; nom?: string }[] }[]) =>
   j<{ reply: string }>("/assistant", { method: "POST", body: JSON.stringify({ messages }) });
 
+// --- Archive syndic ---
+export const CATEGORIES_ARCHIVE = [
+  "Procès-verbal d'AG", "Convocation d'AG", "Appel de fonds", "Décompte de charges",
+  "Budget prévisionnel", "Contrat", "Facture", "Devis", "Règlement de copropriété",
+  "Diagnostic technique", "Courrier", "Sinistre / Assurance", "Mutation / État daté",
+  "Relevé / Comptabilité", "Carnet d'entretien", "Autre",
+] as const;
+export interface DocArchive { id: string; nom: string; categorie: string; copropriete: string; date: string; resume: string; taille: number; createdAt: number; updatedAt: number }
+export interface ExtraitArchive { nom: string; categorie: string; copropriete: string; date: string; resume: string }
+export const listArchiveApi = () => j<{ documents: DocArchive[] }>("/archive");
+export const analyserArchiveApi = (data: string) => j<{ extrait: ExtraitArchive | null }>("/archive/analyser", { method: "POST", body: JSON.stringify({ data }) });
+export const creerArchiveApi = (champs: Partial<DocArchive> & { data: string }) => j<{ document: DocArchive }>("/archive", { method: "POST", body: JSON.stringify(champs) });
+export const updateArchiveApi = (id: string, p: Partial<DocArchive>) => j<{ document: DocArchive }>(`/archive/${id}`, { method: "PUT", body: JSON.stringify(p) });
+export const deleteArchiveApi = (id: string) => j(`/archive/${id}`, { method: "DELETE" });
+export const urlArchiveFile = (id: string) => `/api/syndic/archive/${encodeURIComponent(id)}/file`;
+
 export const listUsersApi = () => j<{ users: SyndicUserPublic[] }>("/users");
 export const createUserApi = (u: Record<string, unknown>) => j<{ user: SyndicUserPublic }>("/users", { method: "POST", body: JSON.stringify(u) });
 export const updateUserApi = (id: string, p: Record<string, unknown>) => j<{ user: SyndicUserPublic }>(`/users/${id}`, { method: "PATCH", body: JSON.stringify(p) });
