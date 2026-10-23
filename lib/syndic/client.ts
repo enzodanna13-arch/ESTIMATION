@@ -24,6 +24,9 @@ export const bootstrapApi = (payload: { nom: string; prenom: string; email: stri
   });
 export const logoutApi = () => j("/auth/logout", { method: "POST" });
 
+export const assistantApi = (messages: { role: "user" | "assistant"; content: string }[]) =>
+  j<{ reply: string }>("/assistant", { method: "POST", body: JSON.stringify({ messages }) });
+
 export const listUsersApi = () => j<{ users: SyndicUserPublic[] }>("/users");
 export const createUserApi = (u: Record<string, unknown>) => j<{ user: SyndicUserPublic }>("/users", { method: "POST", body: JSON.stringify(u) });
 export const updateUserApi = (id: string, p: Record<string, unknown>) => j<{ user: SyndicUserPublic }>(`/users/${id}`, { method: "PATCH", body: JSON.stringify(p) });

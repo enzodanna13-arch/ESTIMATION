@@ -12,6 +12,7 @@ import { getHistoryKey, setHistoryKey } from "@/lib/history";
 import SinistresPage from "@/components/SinistresPage";
 import RecommandesPage from "@/components/RecommandesPage";
 import PilotageSinistresPage from "@/components/PilotageSinistresPage";
+import AssistantSyndicPage from "@/components/AssistantSyndicPage";
 
 const inputCls = "w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-copper focus:outline-none focus:ring-2 focus:ring-copper/20";
 const btnNavy = "rounded-lg bg-navy px-4 py-2 text-sm font-semibold text-white transition hover:bg-navy-deep disabled:opacity-50";
@@ -48,6 +49,8 @@ export default function SyndicPage() {
     <NouvelleDemande onCree={(id) => setTicketId(id)} />
   ) : section === "mail" ? (
     <ColleMail onCree={(id) => setTicketId(id)} />
+  ) : section === "assistant" ? (
+    <AssistantSyndicPage />
   ) : section === "sinistres" ? (
     <SinistresPage onRetour={() => goto("demandes")} />
   ) : section === "recommandes" ? (
@@ -111,6 +114,7 @@ export default function SyndicPage() {
 
 const NAV_SYNDIC: { label: string; items: [string, string, string][] }[] = [
   { label: "Demandes copropriétaires", items: [["demandes", "📋", "Demandes"], ["nouvelle", "➕", "Nouvelle demande"], ["mail", "📧", "Depuis un mail"]] },
+  { label: "Assistant IA", items: [["assistant", "🤖", "Assistant gestionnaire"]] },
   { label: "Sinistres & assurances", items: [["sinistres", "🌊", "Sinistres & assurances"], ["recommandes", "📬", "Recommandés reçus"]] },
   { label: "Pilotage", items: [["pilotage", "🗂️", "Suivi sinistres & recommandés"]] },
   { label: "Administration", items: [["residences", "🏢", "Résidences"], ["utilisateurs", "👥", "Utilisateurs"], ["import", "⬆️", "Import CSV"]] },
