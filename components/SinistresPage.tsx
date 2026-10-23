@@ -115,6 +115,7 @@ export default function SinistresPage({ onRetour }: { onRetour: () => void }) {
   const [importer, setImporter] = useState(false);
   const [couts, setCouts] = useState(false);
   const [courrier, setCourrier] = useState(false);
+  const [emails, setEmails] = useState(false);
   const [q, setQ] = useState("");
   const [fStatut, setFStatut] = useState("");
   const [fMotif, setFMotif] = useState("");
@@ -147,8 +148,9 @@ export default function SinistresPage({ onRetour }: { onRetour: () => void }) {
       <div className="mb-4 flex flex-wrap items-center gap-3">
         <button onClick={onRetour} className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-100">← Accueil</button>
         <h2 className="text-2xl font-bold text-navy">🌊 Sinistres &amp; assurances</h2>
-        {!nouveau && !importer && !couts && !courrier && !selected && (
+        {!nouveau && !importer && !couts && !courrier && !emails && !selected && (
           <div className="ml-auto flex flex-wrap gap-2">
+            <button onClick={() => setEmails(true)} className="rounded-lg border border-sky-500 bg-white px-4 py-2 text-sm font-bold text-sky-700 transition hover:bg-sky-50">📧 Emails assurances</button>
             <button onClick={() => setCourrier(true)} className="rounded-lg border border-violet-500 bg-white px-4 py-2 text-sm font-bold text-violet-700 transition hover:bg-violet-50">📧 Courrier Mairie (CatNat)</button>
             <button onClick={() => setCouts(true)} className="rounded-lg border border-emerald-600 bg-white px-4 py-2 text-sm font-bold text-emerald-700 transition hover:bg-emerald-50">💰 Coûts postaux</button>
             <button onClick={() => setImporter(true)} className="rounded-lg border border-navy bg-white px-4 py-2 text-sm font-bold text-navy transition hover:bg-slate-50">📥 Importer un PDF</button>
@@ -157,7 +159,9 @@ export default function SinistresPage({ onRetour }: { onRetour: () => void }) {
         )}
       </div>
 
-      {courrier ? (
+      {emails ? (
+        <EmailsAssurances sinistres={sinistres} onRetour={() => setEmails(false)} />
+      ) : courrier ? (
         <CourrierMairie sinistres={sinistres} onRetour={() => setCourrier(false)} />
       ) : couts ? (
         <CoutsPostaux sinistres={sinistres} onChange={majLocal} onRetour={() => setCouts(false)} />
@@ -223,6 +227,66 @@ export default function SinistresPage({ onRetour }: { onRetour: () => void }) {
             </div>
           )}
         </>
+      )}
+    </div>
+  );
+}
+
+// ------- Emails des assurances -------
+const extraireEmail = (s: Sinistre): string => {
+  const m = `${s.assuranceContact} ${s.assuranceAdresse}`.match(/[\w.+-]+@[\w-]+\.[\w.-]+/);
+  return m ? m[0] : "";
+};
+
+function EmailsAssurances({ sinistres, onRetour }: { sinistres: Sinistre[]; onRetour: () => void }) {
+  const [copie, setCopie] = useState("");
+  const lignes = sinistres.map((s) => ({ s, email: extraireEmail(s) }));
+  const avecEmail = lignes.filter((l) => l.email);
+  const sansEmail = lignes.filter((l) => !l.email);
+  const uniques = Array.from(new Set(avecEmail.map((l) => l.email)));
+
+  const copier = async (val: string, cle: string) => {
+    try { await navigator.clipboard.writeText(val); setCopie(cle); setTimeout(() => setCopie(""), 2000); } catch { /* ignore */ }
+  };
+  const mailtoBcc = `mailto:?bcc=${encodeURIComponent(uniques.join(","))}&subject=${encodeURIComponent("Déclaration de sinistre – intempéries des 19-20 octobre 2026")}`;
+
+  return (
+    <div className="mx-auto max-w-3xl">
+      <div className="mb-3 flex flex-wrap items-center gap-2">
+        <button onClick={onRetour} className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-100">← Sinistres</button>
+        <h3 className="text-lg font-bold text-navy">📧 Emails des assurances</h3>
+      </div>
+      <p className="mb-3 text-sm text-slate-500">Les adresses mail des assureurs de tes sinistres, pour les relancer <strong>en plus de l'envoi recommandé</strong>. {uniques.length} adresse(s) unique(s).</p>
+
+      <div className="mb-3 flex flex-wrap gap-2">
+        <button onClick={() => void copier(uniques.join("; "), "all")} className="rounded-lg bg-navy px-4 py-2 text-sm font-bold text-white transition hover:brightness-110">{copie === "all" ? "✓ Copié" : "📋 Copier toutes les adresses (CCI)"}</button>
+        <a href={mailtoBcc} className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-100">✉ Ouvrir un mail groupé (CCI)</a>
+      </div>
+
+      <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="border-b border-slate-200 bg-slate-50 text-[11px] uppercase tracking-wide text-slate-500">
+              <th className="px-3 py-2 text-left">Copropriété</th>
+              <th className="px-3 py-2 text-left">Assureur</th>
+              <th className="px-3 py-2 text-left">Email</th>
+              <th className="px-3 py-2" />
+            </tr>
+          </thead>
+          <tbody>
+            {lignes.map(({ s, email }) => (
+              <tr key={s.id} className="border-b border-slate-100 last:border-0">
+                <td className="px-3 py-2 font-semibold text-navy">{s.coproNom}</td>
+                <td className="px-3 py-2 text-slate-600">{s.assureur || "—"}</td>
+                <td className="px-3 py-2">{email ? <a href={`mailto:${email}?subject=${encodeURIComponent(`Déclaration de sinistre – ${s.coproNom} – ${s.reference}`)}`} className="text-sky-700 hover:underline">{email}</a> : <span className="text-amber-600">à compléter</span>}</td>
+                <td className="px-3 py-2 text-right">{email && <button onClick={() => void copier(email, s.id)} className="rounded-md border border-slate-200 px-2 py-1 text-[11px] font-bold text-slate-500 transition hover:bg-slate-100">{copie === s.id ? "✓" : "copier"}</button>}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      {sansEmail.length > 0 && (
+        <p className="mt-2 text-xs text-slate-400">{sansEmail.length} sinistre(s) sans email sur la déclaration ({sansEmail.map((l) => l.s.coproNom).join(", ")}) — assureur à contacter par courrier / téléphone, ou ajoute l'adresse dans la fiche.</p>
       )}
     </div>
   );
