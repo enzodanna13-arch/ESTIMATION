@@ -110,6 +110,7 @@ const initialInput: PropertyInput = {
   prixSouhaiteVendeur: null,
   contexteVente: "",
   commentaires: "",
+  specificites: "",
   instructionsIA: "",
   concurrence: [],
   invendus: [],
@@ -1755,6 +1756,10 @@ export default function Home() {
                     )}
                     <Field label="Contexte (mutation, succession, divorce…)">
                       <input className={inputCls} value={input.contexteVente} onChange={(e) => set("contexteVente", e.target.value)} />
+                    </Field>
+                    <Field label="Spécificités du bien — développées et étayées dans le rapport" className="sm:col-span-2">
+                      <textarea rows={4} className={inputCls} value={input.specificites ?? ""} onChange={(e) => set("specificites", e.target.value)} placeholder="Ce qui fait la particularité du bien : vue mer, prestations haut de gamme, bien atypique/loft, mitoyenneté, servitude, exposition, calme, rénovation récente, matériaux nobles, dépendance, division possible… L'IA développe chaque point et son impact sur la valeur." />
+                      <p className="mt-1 text-xs text-slate-400">Chaque spécificité est reprise, développée et argumentée (impact sur la valeur et la commercialisation) dans une section dédiée du rapport.</p>
                     </Field>
                     <Field label="Commentaires du négociateur" className="sm:col-span-2">
                       <textarea rows={4} className={inputCls} value={input.commentaires} onChange={(e) => set("commentaires", e.target.value)} placeholder="Nuisances, copropriété, éléments non visibles sur les photos…" />

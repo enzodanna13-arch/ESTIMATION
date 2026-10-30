@@ -510,6 +510,20 @@ export default function Report({
             </div>
           )}
 
+          {report.developpement_specificites && report.developpement_specificites.trim() && (
+            <div className="box" style={{ marginTop: 14 }}>
+              <h4>Spécificités de votre bien</h4>
+              {report.developpement_specificites.split(/\n\n+/).map((bloc, i) => {
+                const t = bloc.trim();
+                if (!t) return null;
+                const m = t.match(/^([^—\n]{2,90})\s[—–-]\s([\s\S]+)$/);
+                return m
+                  ? <p key={i} style={{ marginBottom: 8 }}><b>{m[1].trim()}</b> — {m[2].trim()}</p>
+                  : <p key={i} style={{ marginBottom: 8 }}>{t}</p>;
+              })}
+            </div>
+          )}
+
           <Foot left={`${AGENCE.nom} ${AGENCE.enseigne}`} right={`Réf. ${refDossier}`} />
         </section>
 

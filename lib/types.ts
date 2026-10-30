@@ -124,6 +124,7 @@ export interface PropertyInput {
   prixSouhaiteVendeur: number | null;
   contexteVente: string;
   commentaires: string;
+  specificites?: string; // spécificités du bien notées par le négociateur (développées dans le rapport)
   instructionsIA?: string; // consignes libres du négociateur à l'IA (toutes missions)
 
   // Bornes de prix IMPOSÉES par le négociateur : l'estimation ne peut jamais
@@ -245,6 +246,7 @@ export interface EstimationReport {
   points_faibles: string[];
   strategie_commercialisation: string;
   argumentaire_vendeur: string;
+  developpement_specificites?: string; // développement étayé des spécificités du bien
   // Fiabilité de l'estimation (qualité réelle des comparables DVF retenus)
   fiabilite?: "élevée" | "moyenne" | "faible";
   fiabilite_raison?: string;

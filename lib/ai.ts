@@ -98,6 +98,7 @@ const FINAL_SCHEMA = {
     points_faibles: { type: "array", items: { type: "string" } },
     strategie_commercialisation: { type: "string" },
     argumentaire_vendeur: { type: "string", description: "3 à 5 arguments percutants et digestes, UN PAR LIGNE (séparés par \\n), chacun au format « Titre court — explication chiffrée en 1 à 2 phrases max ». Jamais de bloc compact." },
+    developpement_specificites: { type: "string", description: "Développement ÉTAYÉ des spécificités du bien notées par le négociateur (champ « Spécificités du bien »). Reprends CHAQUE spécificité citée, développe-la (ce que c'est, en quoi c'est un atout ou une contrainte) et ARGUMENTE son impact concret sur la VALEUR et sur la COMMERCIALISATION (cible d'acquéreurs, délai, prix). Un point par spécificité, format « Spécificité — développement en 2 à 4 phrases », séparés par \\n\\n. Reste factuel et chiffré quand c'est possible. Si aucune spécificité n'est renseignée, renvoie une chaîne vide." },
   },
   required: [
     "analyse_dvf", "references_dvf", "base_mediane",
@@ -262,6 +263,7 @@ ${(input.dependances ?? []).length ? `- Dépendances : ${(input.dependances ?? [
       : ""
   }
 - Contexte : ${input.contexteVente || "n.c."}
+${input.specificites?.trim() ? `- ⭐ SPÉCIFICITÉS DU BIEN (notées par le négociateur — à DÉVELOPPER et ÉTAYER dans developpement_specificites, et à intégrer dans l'analyse de valeur) : ${input.specificites.trim()}` : ""}
 ${input.commentaires ? `- Commentaires du négociateur : ${input.commentaires}` : ""}${
     input.instructionsIA?.trim()
       ? `
@@ -744,6 +746,7 @@ ${JSON.stringify(schemaFor(mission))}`,
     points_faibles: arr(r.points_faibles),
     strategie_commercialisation: str(r.strategie_commercialisation),
     argumentaire_vendeur: str(r.argumentaire_vendeur),
+    developpement_specificites: str(r.developpement_specificites),
     valeur_venale_indicative: num(r.valeur_venale_indicative),
     rendement_brut: num(r.rendement_brut),
     analyse_annonce: str(r.analyse_annonce),
