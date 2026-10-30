@@ -108,6 +108,10 @@ export interface PropertyInput {
   meuble?: string; // "Vide" | "Meublé"
   loyerSouhaite?: number | null; // loyer envisagé par le propriétaire (€/mois)
   dissocierAnnexes?: boolean; // garages/annexes EXCLUS du loyer (loués séparément)
+  // Bornes de loyer IMPOSÉES par le négociateur (estimation locative jointe au
+  // dossier vente) : la fourchette de loyer respecte TOUJOURS ces bornes.
+  loyerPlancher?: number | null; // loyer bas imposé (€/mois)
+  loyerPlafond?: number | null; // loyer haut imposé (€/mois)
 
   // Bien vendu loué : le prix est fixé par capitalisation du loyer NET
   // (loyer − charges non récupérables − taxe foncière) entre 6 et 8 % net

@@ -101,6 +101,8 @@ const initialInput: PropertyInput = {
   meuble: "Vide",
   loyerSouhaite: null,
   dissocierAnnexes: false,
+  loyerPlancher: null,
+  loyerPlafond: null,
   loyerActuel: null,
   chargesNonRecuperables: null,
   prixAcquisition: null,
@@ -1753,6 +1755,16 @@ export default function Home() {
                             <span className="mt-0.5 block text-xs font-normal text-slate-400">Un même dossier avec la valeur vénale (vente) <b>et</b> le loyer de marché conseillé + le rendement brut — utile pour un investisseur.</span>
                           </span>
                         </label>
+                        {input.inclureLocatif === true && (
+                          <div className="mt-3 border-t border-slate-200 pt-3">
+                            <p className="mb-2 text-xs font-semibold text-slate-600">Bornes de loyer imposées (facultatif) — la fourchette locative les respectera toujours</p>
+                            <div className="grid gap-3 sm:grid-cols-2">
+                              <input type="number" className={inputCls} value={input.loyerPlancher ?? ""} onChange={(e) => set("loyerPlancher", num(e.target.value))} placeholder="Loyer bas € / mois (mini)" />
+                              <input type="number" className={inputCls} value={input.loyerPlafond ?? ""} onChange={(e) => set("loyerPlafond", num(e.target.value))} placeholder="Loyer haut € / mois (maxi)" />
+                            </div>
+                            <p className="mt-1 text-xs text-slate-400">Laissez vide pour laisser l&apos;outil calculer la fourchette d&apos;après l&apos;observatoire des loyers. Si vous renseignez une borne, le loyer conseillé et la fourchette restent dans ces limites.</p>
+                          </div>
+                        )}
                       </div>
                     )}
                     {["vente", "audit"].includes(input.mission ?? "vente") && (

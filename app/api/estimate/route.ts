@@ -194,16 +194,33 @@ export async function POST(request: Request) {
           const surfLoc = surfaceHabitableTotale(body);
           if (surfLoc > 0 && loyer.loyerM2 > 0) {
             const floor10 = (v: number) => Math.floor(v / 10) * 10;
-            const loyerMensuel = floor10(loyer.loyerM2 * surfLoc);
-            const loyerBas = Math.max(floor10((loyer.loyerM2Bas || loyer.loyerM2 * 0.9) * surfLoc), 0);
-            const loyerHaut = Math.max(floor10((loyer.loyerM2Haut || loyer.loyerM2 * 1.1) * surfLoc), loyerMensuel + 10);
+            // Bornes de loyer imposées par le négociateur (facultatives)
+            const bas = (body.loyerPlancher ?? 0) > 0 ? body.loyerPlancher! : null;
+            const haut = (body.loyerPlafond ?? 0) > 0 ? body.loyerPlafond! : null;
+            const clamp = (v: number) => {
+              let x = v;
+              if (bas !== null) x = Math.max(x, bas);
+              if (haut !== null) x = Math.min(x, haut);
+              return x;
+            };
+            let loyerMensuel = clamp(floor10(loyer.loyerM2 * surfLoc));
+            let loyerBas = bas !== null ? bas : Math.max(floor10((loyer.loyerM2Bas || loyer.loyerM2 * 0.9) * surfLoc), 0);
+            let loyerHaut = haut !== null ? haut : Math.max(floor10((loyer.loyerM2Haut || loyer.loyerM2 * 1.1) * surfLoc), loyerMensuel + 10);
+            // Cohérence de l'ordre : bas ≤ conseillé ≤ haut
+            loyerBas = Math.min(loyerBas, loyerMensuel);
+            loyerHaut = Math.max(loyerHaut, loyerMensuel);
             const prixRef = report.prix_presentation || report.prix_estime;
             const rendementBrut = prixRef > 0 ? Math.round((loyerMensuel * 12 / prixRef) * 1000) / 10 : 0;
+            // €/m² affiché = cohérent avec le loyer conseillé effectivement retenu
+            // (recalculé si le négociateur a imposé une borne)
+            const loyerM2 = (bas !== null || haut !== null) && surfLoc > 0
+              ? Math.round((loyerMensuel / surfLoc) * 10) / 10
+              : loyer.loyerM2;
             report = {
               ...report,
               estimation_locative: {
                 loyerMensuel, loyerBas, loyerHaut,
-                loyerM2: loyer.loyerM2, rendementBrut,
+                loyerM2, rendementBrut,
                 millesime: loyer.millesime, typologie: loyer.typologie,
               },
             };
