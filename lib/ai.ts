@@ -771,6 +771,38 @@ ${JSON.stringify(schemaFor(mission))}`,
       }
     }
   }
+  // GARANTIE DÉTERMINISTE des bornes imposées par le négociateur : l'IA ne les
+  // respecte pas toujours, on CALE donc tous les prix dans [plancher, plafond].
+  // Cet ordre prime (y compris sur l'écart de 25 000 € ci-dessus).
+  if (missionVente) {
+    const plancher = Math.max(0, Math.round(Number(input.prixPlancher) || 0));
+    const plafond = Math.max(0, Math.round(Number(input.prixPlafond) || 0));
+    if (plancher > 0 || plafond > 0) {
+      const cale = (v: number) => {
+        if (!(v > 0)) return v;
+        let x = v;
+        if (plancher > 0) x = Math.max(x, plancher);
+        if (plafond > 0) x = Math.min(x, plafond);
+        return x;
+      };
+      report.prix_estime = cale(report.prix_estime);
+      report.prix_presentation = cale(report.prix_presentation);
+      report.fourchette_basse = cale(report.fourchette_basse);
+      report.fourchette_haute = cale(report.fourchette_haute);
+      if ((report.valeur_venale_indicative ?? 0) > 0) report.valeur_venale_indicative = cale(report.valeur_venale_indicative ?? 0);
+      if (Array.isArray(report.scenarios_prix)) {
+        for (const s of report.scenarios_prix) { const p = num(s?.prix); if (p > 0) s.prix = cale(p); }
+      }
+      // On rétablit un ordre cohérent à l'intérieur des bornes.
+      if (report.fourchette_haute < report.fourchette_basse) report.fourchette_haute = report.fourchette_basse;
+      const dansFourchette = (v: number) => Math.min(Math.max(v, report.fourchette_basse), report.fourchette_haute);
+      if (report.prix_presentation > 0) report.prix_presentation = dansFourchette(report.prix_presentation);
+      if (report.prix_estime > 0) report.prix_estime = dansFourchette(report.prix_estime);
+      // Cohérence du prix au m² avec le prix recalé.
+      const surfPx = surfaceHabitableTotale(input);
+      if (surfPx > 0 && report.prix_presentation > 0) report.prix_m2 = Math.round(report.prix_presentation / surfPx);
+    }
+  }
   if (report.prix_estime <= 0 || report.fourchette_basse <= 0) {
     throw new Error("Réponse IA incomplète (prix manquants)");
   }
