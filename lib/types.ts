@@ -125,6 +125,7 @@ export interface PropertyInput {
   contexteVente: string;
   commentaires: string;
   specificites?: string; // spécificités du bien notées par le négociateur (développées dans le rapport)
+  inclureLocatif?: boolean; // en mission vente : ajoute aussi une estimation locative au dossier
   instructionsIA?: string; // consignes libres du négociateur à l'IA (toutes missions)
 
   // Bornes de prix IMPOSÉES par le négociateur : l'estimation ne peut jamais
@@ -247,6 +248,16 @@ export interface EstimationReport {
   strategie_commercialisation: string;
   argumentaire_vendeur: string;
   developpement_specificites?: string; // développement étayé des spécificités du bien
+  // Estimation locative jointe au dossier vente (option)
+  estimation_locative?: {
+    loyerMensuel: number; // loyer mensuel conseillé (hors charges), €
+    loyerBas: number;
+    loyerHaut: number;
+    loyerM2: number; // €/m²/mois
+    rendementBrut: number; // % annuel brut vs prix de présentation
+    millesime?: string;
+    typologie?: string;
+  };
   // Fiabilité de l'estimation (qualité réelle des comparables DVF retenus)
   fiabilite?: "élevée" | "moyenne" | "faible";
   fiabilite_raison?: string;

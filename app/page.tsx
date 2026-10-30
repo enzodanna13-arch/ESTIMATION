@@ -1746,6 +1746,16 @@ export default function Home() {
                       </Field>
                     )}
                     {["vente", "audit"].includes(input.mission ?? "vente") && (
+                      <div className="sm:col-span-2 rounded-lg border border-slate-200 bg-slate-50 p-3">
+                        <label className="flex cursor-pointer items-start gap-2.5 text-sm font-semibold text-slate-700">
+                          <input type="checkbox" className="mt-0.5 h-4 w-4" checked={input.inclureLocatif === true} onChange={(e) => set("inclureLocatif", e.target.checked)} />
+                          <span>Inclure aussi une <b>estimation locative</b> dans le dossier
+                            <span className="mt-0.5 block text-xs font-normal text-slate-400">Un même dossier avec la valeur vénale (vente) <b>et</b> le loyer de marché conseillé + le rendement brut — utile pour un investisseur.</span>
+                          </span>
+                        </label>
+                      </div>
+                    )}
+                    {["vente", "audit"].includes(input.mission ?? "vente") && (
                       <Field label="Bornes de prix imposées (facultatif) — l'estimation les respectera toujours" className="sm:col-span-2">
                         <div className="grid gap-3 sm:grid-cols-2">
                           <input type="number" className={inputCls} value={input.prixPlancher ?? ""} onChange={(e) => set("prixPlancher", num(e.target.value))} placeholder="Prix plancher € (mini)" />

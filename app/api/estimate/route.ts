@@ -84,9 +84,11 @@ export async function POST(request: Request) {
         // Loyers de référence : dans les Bouches-du-Rhône, le tableau
         // OFFICIEL de l'observatoire local (OLL 13, zone 5 — Martigues…)
         // fait foi ; ailleurs, la « carte des loyers » nationale
+        // Option : joindre une estimation locative au dossier d'une VENTE.
+        const inclureLocatif = (mission === "vente" || mission === "audit") && body.inclureLocatif === true;
         const [{ sales: dvfSales, subject }, loyer] = await Promise.all([
           fetchDvfContext(body.codePostal, body.typeBien, body.adresse, body.ville),
-          mission === "locatif"
+          mission === "locatif" || inclureLocatif
             ? (oll13Indicateur(body.codePostal, body.typeBien, body.nbPieces)
                 ? Promise.resolve(oll13Indicateur(body.codePostal, body.typeBien, body.nbPieces))
                 : fetchLoyerIndicateur(body.codePostal, body.typeBien, body.nbPieces))
@@ -186,6 +188,28 @@ export async function POST(request: Request) {
           prix_presentation: floorStep(report.prix_presentation),
           scenarios_prix: report.scenarios_prix.map((s) => ({ ...s, prix: floorStep(s.prix) })),
         };
+        // Estimation locative jointe au dossier VENTE (option cochée) : loyer
+        // conseillé (du bas au médian du tableau officiel) + rendement brut.
+        if (inclureLocatif && loyer) {
+          const surfLoc = surfaceHabitableTotale(body);
+          if (surfLoc > 0 && loyer.loyerM2 > 0) {
+            const floor10 = (v: number) => Math.floor(v / 10) * 10;
+            const loyerMensuel = floor10(loyer.loyerM2 * surfLoc);
+            const loyerBas = Math.max(floor10((loyer.loyerM2Bas || loyer.loyerM2 * 0.9) * surfLoc), 0);
+            const loyerHaut = Math.max(floor10((loyer.loyerM2Haut || loyer.loyerM2 * 1.1) * surfLoc), loyerMensuel + 10);
+            const prixRef = report.prix_presentation || report.prix_estime;
+            const rendementBrut = prixRef > 0 ? Math.round((loyerMensuel * 12 / prixRef) * 1000) / 10 : 0;
+            report = {
+              ...report,
+              estimation_locative: {
+                loyerMensuel, loyerBas, loyerHaut,
+                loyerM2: loyer.loyerM2, rendementBrut,
+                millesime: loyer.millesime, typologie: loyer.typologie,
+              },
+            };
+            send({ type: "status", label: `Estimation locative jointe : ~${loyerMensuel} €/mois (rendement brut ${rendementBrut} %)…` });
+          }
+        }
         // Estimation locative : verrou déterministe — la fourchette de
         // loyer va TOUJOURS de la valeur BASSE à la valeur MÉDIANE du
         // tableau officiel des loyers (le médian est le PLAFOND du loyer

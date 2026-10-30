@@ -510,6 +510,21 @@ export default function Report({
             </div>
           )}
 
+          {report.estimation_locative && report.estimation_locative.loyerMensuel > 0 && (
+            <div className="box" style={{ marginTop: 14, borderColor: "#c9a227" }}>
+              <h4>Estimation locative (jointe au dossier)</h4>
+              <p style={{ marginBottom: 6 }}>
+                Loyer de marché conseillé : <b>{int.format(report.estimation_locative.loyerMensuel)} € / mois</b> (hors charges),
+                soit {int.format(report.estimation_locative.loyerM2)} €/m²/mois. Fourchette indicative :{" "}
+                {int.format(report.estimation_locative.loyerBas)} à {int.format(report.estimation_locative.loyerHaut)} € / mois.
+              </p>
+              <p>
+                Rendement brut indicatif : <b>{report.estimation_locative.rendementBrut} % / an</b> (loyer annuel rapporté au prix de présentation).
+                {report.estimation_locative.millesime ? ` Source : observatoire des loyers ${report.estimation_locative.millesime}.` : ""}
+              </p>
+            </div>
+          )}
+
           {report.developpement_specificites && report.developpement_specificites.trim() && (
             <div className="box" style={{ marginTop: 14 }}>
               <h4>Spécificités de votre bien</h4>
