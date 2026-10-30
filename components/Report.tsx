@@ -240,9 +240,11 @@ export default function Report({
   const hasAjust = report.ajustements.length > 0 && report.base_mediane > 0;
   const recosAnnonce = report.recommandations_annonce ?? [];
   const hasAuditAnnonce = audit && (recosAnnonce.length > 0 || Boolean(report.analyse_annonce));
+  const hasLocatif = !locatif && Boolean(report.estimation_locative && report.estimation_locative.loyerMensuel > 0);
   let sec = 0;
   const S = () => ROMANS[sec++];
   const secSynthese = S();
+  const secLocatif = hasLocatif ? S() : "";
   const secBien = S();
   const secAnnonce = hasAuditAnnonce ? S() : "";
   const secVisuel = hasVisuel ? S() : "";
@@ -257,6 +259,7 @@ export default function Report({
   let pageNo = 1;
   const P = () => ++pageNo;
   const pgSynthese = P();
+  const pgLocatif = hasLocatif ? P() : 0;
   const pgBien = P();
   const pgAnnonce = hasAuditAnnonce ? P() : 0;
   const pgVisuel = hasVisuel ? P() : 0;
@@ -456,6 +459,45 @@ export default function Report({
           <Foot left={footLeft} right="Document confidentiel · sans valeur d'expertise judiciaire" />
         </section>
 
+        {/* ============ ESTIMATION LOCATIVE (option, juste après le prix de vente) ============ */}
+        {hasLocatif && report.estimation_locative && (
+          <section className="page">
+            <PageHead page={pgLocatif} label={docLabel} />
+            <SectionTitle idx={secLocatif} title="Estimation locative" />
+            <p className="section-lead">En complément de la valeur vénale, voici le positionnement locatif du bien : loyer de marché conseillé et rendement brut — un repère clé, notamment pour un acquéreur investisseur.</p>
+
+            <div className="valuation">
+              <div className="cell">
+                <div className="lbl">Loyer au m²</div>
+                <div className="amt">{report.estimation_locative.loyerM2.toLocaleString("fr-FR", { maximumFractionDigits: 1 })} €</div>
+              </div>
+              <div className="cell center">
+                <div className="lbl">Fourchette de loyer</div>
+                <div className="amt" style={{ fontSize: "18pt" }}>{int.format(report.estimation_locative.loyerBas)} — {int.format(report.estimation_locative.loyerHaut)} € /mois</div>
+              </div>
+              <div className="cell">
+                <div className="lbl">Loyer conseillé</div>
+                <div className="amt">{int.format(report.estimation_locative.loyerMensuel)} € /mois</div>
+              </div>
+            </div>
+
+            <div className="kpi-row">
+              <div className="kpi"><div className="k">Surface</div><div className="v">{surface} <small>m²</small></div></div>
+              <div className="kpi"><div className="k">Loyer annuel</div><div className="v" style={{ fontSize: "13pt" }}>{int.format(report.estimation_locative.loyerMensuel * 12)} <small>€</small></div></div>
+              <div className="kpi"><div className="k">Rendement brut</div><div className="v">{report.estimation_locative.rendementBrut} <small>%</small></div></div>
+              <div className="kpi"><div className="k">Prix de présentation</div><div className="v" style={{ fontSize: "12pt" }}>{int.format(prixPresentation)} <small>€</small></div></div>
+            </div>
+
+            <div className="callout">
+              <b>Loyer de marché conseillé : {int.format(report.estimation_locative.loyerMensuel)} € / mois</b> (hors charges), soit {report.estimation_locative.loyerM2.toLocaleString("fr-FR", { maximumFractionDigits: 1 })} €/m²/mois.{" "}
+              Rapporté au prix de présentation de {int.format(prixPresentation)} €, le rendement brut ressort à <b>{report.estimation_locative.rendementBrut} % par an</b>.
+              {report.estimation_locative.millesime ? ` Loyers de référence : observatoire officiel des loyers ${report.estimation_locative.millesime}.` : ""}
+            </div>
+
+            <Foot left={footLeft} right="Estimation locative indicative" />
+          </section>
+        )}
+
         {/* ============ LE BIEN ============ */}
         <section className="page">
           <PageHead page={pgBien} label={docLabel} />
@@ -507,21 +549,6 @@ export default function Report({
                   ))}
                 </ul>
               </div>
-            </div>
-          )}
-
-          {report.estimation_locative && report.estimation_locative.loyerMensuel > 0 && (
-            <div className="box" style={{ marginTop: 14, borderColor: "#c9a227" }}>
-              <h4>Estimation locative (jointe au dossier)</h4>
-              <p style={{ marginBottom: 6 }}>
-                Loyer de marché conseillé : <b>{int.format(report.estimation_locative.loyerMensuel)} € / mois</b> (hors charges),
-                soit {int.format(report.estimation_locative.loyerM2)} €/m²/mois. Fourchette indicative :{" "}
-                {int.format(report.estimation_locative.loyerBas)} à {int.format(report.estimation_locative.loyerHaut)} € / mois.
-              </p>
-              <p>
-                Rendement brut indicatif : <b>{report.estimation_locative.rendementBrut} % / an</b> (loyer annuel rapporté au prix de présentation).
-                {report.estimation_locative.millesime ? ` Source : observatoire des loyers ${report.estimation_locative.millesime}.` : ""}
-              </p>
             </div>
           )}
 
@@ -771,11 +798,9 @@ export default function Report({
                   </tr>
                 </tbody>
               </table>
-              {report.fiabilite && (
-                <p className="section-lead" style={{ marginTop: 10 }}>
-                  <b>Fiabilité des comparables : {report.fiabilite}.</b>{report.fiabilite_raison ? ` ${report.fiabilite_raison}` : ""} Les biens au prix atypique sont écartés du calcul et les ventes les plus proches pèsent davantage dans la base retenue.
-                </p>
-              )}
+              <p className="section-lead" style={{ marginTop: 10 }}>
+                <b>Méthode :</b> les biens au prix atypique sont écartés du calcul et les ventes les plus proches pèsent davantage dans la base retenue.
+              </p>
             </>
           )}
 
@@ -835,8 +860,7 @@ export default function Report({
             <div className="callout" style={{ marginTop: 20 }}>
               <b>{locatif ? "Fourchette de loyer" : "Fourchette de valeur"} : {euro.format(fourchetteBasse)} à {fmtP(fourchetteHaute)}.</b>{" "}
               Le cœur de fourchette de {fmtP(report.prix_estime)} résulte de la {locatif ? "référence officielle des loyers" : "médiane DVF"}
-              {" "}corrigée des plus-values et décotes ci-dessus ; les bornes traduisent
-              l&apos;incertitude résiduelle du marché (indice de confiance : {report.indice_confiance}/100).
+              {" "}corrigée des plus-values et décotes ci-dessus ; la borne basse correspond au {locatif ? "loyer de mise en location rapide" : "prix de vente rapide"} et la borne haute au {locatif ? "loyer plafond du marché" : "prix plafond conseillé"}.
             </div>
 
             <Foot left="Références DVF — données publiques Etalab, dernier millésime disponible" right={`Réf. ${refDossier}`} />
