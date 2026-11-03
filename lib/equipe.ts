@@ -24,6 +24,8 @@ export const EQUIPE: Membre[] = [
   { id: "anthony", nom: "Anthony Voilliard", role: "Transaction", sections: ["transaction"], alias: ["voilliard", "anthony"], prenom: "Anthony", tel: "+33614335947", email: "anthony.voilliard@century21.fr", photo: "/negociateurs/anthony.jpg", photoFull: "/negociateurs/anthony-full.jpg" },
   { id: "lucie", nom: "Lucie Borja", role: "Transaction", sections: ["transaction"], alias: ["borja", "lucie"], prenom: "Lucie", tel: "+33628943868", email: "lucie.borja@century21.fr", photo: "/negociateurs/lucie.jpg", photoFull: "/negociateurs/lucie-full.jpg" },
   { id: "maeva", nom: "Maeva Lefevre", role: "Transaction", sections: ["transaction"], alias: ["lefevre", "maeva"], prenom: "Maeva", tel: "+33625040276", email: "maeva.lefevre@century21.fr" },
+  { id: "lilou", nom: "Lilou Bouchacourt", role: "Transaction", sections: ["transaction"], alias: ["bouchacourt", "lilou"], prenom: "Lilou" },
+  { id: "james", nom: "James Wiame", role: "Transaction", sections: ["transaction"], alias: ["wiame", "james"], prenom: "James" },
   { id: "enzo", nom: "Enzo D'anna", role: "Responsable commercial", sections: ["transaction"], alias: ["enzo", "anna", "danna"], prenom: "Enzo", tel: "+33442428085", email: "enzo.danna@century21.fr" },
   { id: "assistante", nom: "Assistante", role: "Registre des appels", sections: ["registre"], alias: ["assistant"] },
 ];
