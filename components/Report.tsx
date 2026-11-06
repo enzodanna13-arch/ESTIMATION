@@ -93,7 +93,23 @@ export default function Report({
     ? `data:${input.negociateurPhoto.mediaType};base64,${input.negociateurPhoto.data}`
     : photoNegociateur(input.negociateur);
   const [pdfProg, setPdfProg] = useState<{ fait: number; total: number } | null>(null);
+  // Mode édition : le négociateur corrige librement le texte du dossier à
+  // l'écran (contenteditable). Les retouches restent dans le DOM et sont donc
+  // reprises telles quelles dans le PDF (capture du DOM) comme à l'impression.
+  const [editMode, setEditMode] = useState(false);
+  // Sort du mode édition et laisse React retirer le cadre de saisie du DOM
+  // avant une capture/impression (les retouches de texte, elles, demeurent).
+  const sortirEdition = async () => {
+    if (typeof document !== "undefined") (document.activeElement as HTMLElement | null)?.blur?.();
+    setEditMode(false);
+    await new Promise<void>((r) =>
+      typeof requestAnimationFrame !== "undefined"
+        ? requestAnimationFrame(() => requestAnimationFrame(() => r()))
+        : setTimeout(r, 30),
+    );
+  };
   const telechargerPdf = async () => {
+    await sortirEdition();
     setPdfProg({ fait: 0, total: 0 });
     try {
       const base = [refDossier, input.clientNom].filter(Boolean).join("-").replace(/[^a-z0-9-]/gi, "_");
@@ -287,10 +303,19 @@ export default function Report({
           >
             {engine === "ia" ? "✦ Moteur IA + recherche web" : "Moteur statistique (clé IA non configurée)"}
           </span>
+          <button
+            onClick={() => setEditMode((v) => !v)}
+            className={`rounded-lg px-4 py-1.5 text-sm font-bold transition ${
+              editMode ? "bg-emerald-600 text-white hover:brightness-110" : "border border-slate-300 bg-white text-slate-700 hover:bg-slate-100"
+            }`}
+            title="Corriger n'importe quel texte du dossier directement à l'écran, avant de télécharger ou d'imprimer"
+          >
+            {editMode ? "✓ Terminer les modifications" : "✏️ Modifier le dossier"}
+          </button>
           <button onClick={telechargerPdf} disabled={pdfProg !== null} className="rounded-lg bg-copper px-4 py-1.5 text-sm font-bold text-white transition hover:brightness-110 disabled:opacity-60">
             {pdfLabel}
           </button>
-          <button onClick={() => window.print()} className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-600 transition hover:bg-slate-100" title="Imprimer via le navigateur (ancienne méthode)">
+          <button onClick={async () => { await sortirEdition(); window.print(); }} className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-600 transition hover:bg-slate-100" title="Imprimer via le navigateur (ancienne méthode)">
             🖨️ Imprimer
           </button>
           <button onClick={onReset} className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-600 transition hover:bg-slate-100">
@@ -299,7 +324,13 @@ export default function Report({
         </div>
       </div>
 
-      <div className="dossier">
+      {editMode && (
+        <div className="mb-3 rounded-lg border border-emerald-300 bg-emerald-50 px-4 py-2 text-sm text-emerald-800 print:hidden">
+          <b>Mode modification activé.</b> Cliquez directement sur n&apos;importe quel texte du dossier (titres, prix, paragraphes, tableaux…) pour le corriger. Vos retouches sont conservées dans le PDF et à l&apos;impression. Cliquez sur « Terminer les modifications » quand c&apos;est fini.
+        </div>
+      )}
+
+      <div className={`dossier${editMode ? " editing" : ""}`} contentEditable={editMode} suppressContentEditableWarning spellCheck={editMode}>
         {/* ============ COUVERTURE ============ */}
         <section className="page cover">
           <div className="frame" />

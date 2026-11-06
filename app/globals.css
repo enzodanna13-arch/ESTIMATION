@@ -85,6 +85,39 @@ body {
   font-size: 11pt;
   line-height: 1.55;
 }
+/* Mode édition : le négociateur peut corriger tout le texte du dossier
+   directement à l'écran avant téléchargement/impression. */
+.dossier.editing [contenteditable] { cursor: text; }
+.dossier.editing p,
+.dossier.editing h1,
+.dossier.editing h2,
+.dossier.editing h3,
+.dossier.editing h4,
+.dossier.editing li,
+.dossier.editing td,
+.dossier.editing .amt,
+.dossier.editing .big,
+.dossier.editing .num,
+.dossier.editing .money,
+.dossier.editing .callout,
+.dossier.editing .lead,
+.dossier.editing .section-lead {
+  outline: 1px dashed rgba(180, 151, 91, 0.55);
+  outline-offset: 2px;
+  border-radius: 2px;
+  transition: background 0.15s;
+}
+.dossier.editing [contenteditable]:hover { background: rgba(180, 151, 91, 0.08); }
+.dossier.editing [contenteditable]:focus {
+  outline: 2px solid var(--gold) !important;
+  background: rgba(180, 151, 91, 0.14);
+}
+/* On ne veut pas éditer/détruire les images, les puces décoratives ni les
+   graphiques pendant l'édition du texte. */
+.dossier.editing img,
+.dossier.editing .dots,
+.dossier.editing svg,
+.dossier.editing canvas { pointer-events: none; }
 .dossier .page {
   width: 210mm;
   min-height: 297mm;
