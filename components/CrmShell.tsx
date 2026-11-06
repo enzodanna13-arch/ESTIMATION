@@ -53,6 +53,7 @@ const GROUPES: Groupe[] = [
   ] },
   { label: "Estimations", items: [
     { v: "estimation", t: "Nouvelle estimation", i: "🏠" },
+    { v: "travaux", t: "Chiffrage travaux", i: "🔨" },
     { v: "historique", h: "estimations", t: "Historique estimations", i: "📈" },
   ] },
   { label: "Clients & dossiers", items: [
