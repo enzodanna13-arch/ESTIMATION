@@ -31,6 +31,7 @@ import RapprochementDpePage from "@/components/RapprochementDpePage";
 import SinistresPage from "@/components/SinistresPage";
 import RecommandesPage from "@/components/RecommandesPage";
 import TravauxPage from "@/components/TravauxPage";
+import RapprochementPage from "@/components/RapprochementPage";
 import PilotageSinistresPage from "@/components/PilotageSinistresPage";
 import AdminUnlock from "@/components/AdminUnlock";
 import TransactionsPage from "@/components/TransactionsPage";
@@ -264,7 +265,7 @@ export default function Home() {
   const [step, setStep] = useState(0);
   // Accueil à deux univers : Estimation (les 4 missions) et Génération de
   // documents (menu des documents de l'agence)
-  const [univers, setUnivers] = useState<"" | "estimation" | "documents" | "clients" | "historique" | "visites" | "registre" | "leads" | "chasse" | "veille" | "acquereurs" | "prospection" | "ma-tournee" | "flyers" | "estimations-clients" | "dashboard" | "negociateurs" | "espace" | "formation" | "transactions" | "phoning" | "process" | "organisation" | "coproprietes" | "prospection-syndic" | "nos-copros" | "rapprochement-dpe" | "sinistres" | "recommandes" | "pilotage-sinistres" | "travaux" | "sauvegarde" | "reglages">("");
+  const [univers, setUnivers] = useState<"" | "estimation" | "documents" | "clients" | "historique" | "visites" | "registre" | "leads" | "chasse" | "veille" | "acquereurs" | "prospection" | "ma-tournee" | "flyers" | "estimations-clients" | "dashboard" | "negociateurs" | "espace" | "formation" | "transactions" | "phoning" | "process" | "organisation" | "coproprietes" | "prospection-syndic" | "nos-copros" | "rapprochement-dpe" | "sinistres" | "recommandes" | "pilotage-sinistres" | "travaux" | "rapprochement" | "sauvegarde" | "reglages">("");
   const [tourneeCible, setTourneeCible] = useState<string | undefined>(undefined);
   const [chasseCible, setChasseCible] = useState<string | undefined>(undefined);
   // Métier actif (compartimentage CRM) : Transaction contient tout l'existant ;
@@ -904,6 +905,7 @@ export default function Home() {
             {univers === "prospection-syndic" && <ProspectionSyndicPage onRetour={() => setUnivers("")} />}
             {univers === "nos-copros" && <NosCoprosPage onRetour={() => setUnivers("")} />}
             {univers === "travaux" && <TravauxPage onRetour={() => setUnivers("")} />}
+            {univers === "rapprochement" && <RapprochementPage onRetour={() => setUnivers("")} />}
             {univers === "sinistres" && <SinistresPage onRetour={() => setUnivers("")} />}
             {univers === "recommandes" && <RecommandesPage onRetour={() => setUnivers("")} />}
             {univers === "pilotage-sinistres" && isAdmin && <PilotageSinistresPage onRetour={() => setUnivers("")} onOuvrirSinistres={() => setUnivers("sinistres")} onOuvrirRecommandes={() => setUnivers("recommandes")} />}
