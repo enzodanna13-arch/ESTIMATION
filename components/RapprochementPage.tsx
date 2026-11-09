@@ -49,10 +49,48 @@ function meilleurPourAcq(criteres: BienCriteres, d: ClientDossier): { recherche:
   return best;
 }
 
+const LABEL_COURT: Record<string, string> = { forte: "Forte", interessante: "Intéressante", possible: "Possible" };
+
 function BadgeNiveau({ resultat }: { resultat: ResultatMatch }) {
   if (!resultat.niveau) return null;
   const n = NIVEAUX[resultat.niveau];
-  return <span className={`shrink-0 rounded-full border px-2 py-0.5 text-xs font-bold ${COUL[n.couleur]}`}>{resultat.score}%</span>;
+  return <span className={`shrink-0 whitespace-nowrap rounded-full border px-2 py-0.5 text-xs font-bold ${COUL[n.couleur]}`}>● {LABEL_COURT[resultat.niveau]} · {resultat.score}%</span>;
+}
+
+// Légende des niveaux de correspondance (affichée en tête).
+function Legende() {
+  return (
+    <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500">
+      <span className="font-semibold text-slate-600">Niveau de correspondance :</span>
+      <span className="flex items-center gap-1"><span className="h-2.5 w-2.5 rounded-full bg-emerald-500" /> Forte (≥ 82%)</span>
+      <span className="flex items-center gap-1"><span className="h-2.5 w-2.5 rounded-full bg-amber-500" /> Intéressante (≥ 62%)</span>
+      <span className="flex items-center gap-1"><span className="h-2.5 w-2.5 rounded-full bg-slate-400" /> Possible (≥ 45%)</span>
+    </div>
+  );
+}
+
+// Résumé lisible « pourquoi ça correspond » : on met en avant les points qui
+// collent (verts), puis les points faibles (gris) en retrait.
+function Pourquoi({ resultat }: { resultat: ResultatMatch }) {
+  const forts = resultat.details.filter((d) => d.etat === "ok");
+  const moyens = resultat.details.filter((d) => d.etat === "partiel");
+  const faibles = resultat.details.filter((d) => d.etat === "faible");
+  return (
+    <div className="flex flex-wrap items-center gap-1.5 text-[11px]">
+      {[...forts, ...moyens].slice(0, 4).map((d) => (
+        <span key={d.cle} className={`rounded-full px-2 py-0.5 ${d.etat === "ok" ? "bg-emerald-50 text-emerald-700" : "bg-amber-50 text-amber-700"}`}>{d.etat === "ok" ? "✓ " : "≈ "}{d.texte}</span>
+      ))}
+      {faibles.length > 0 && <span className="text-slate-400">· {faibles.length} point{faibles.length > 1 ? "s" : ""} faible{faibles.length > 1 ? "s" : ""}</span>}
+    </div>
+  );
+}
+
+function StatutLigne({ statut, onStatut }: { statut: StatutRappro; onStatut: (s: StatutRappro) => void }) {
+  return (
+    <label className="flex items-center gap-1.5 text-xs text-slate-500">
+      Suivi : <StatutSelect valeur={statut} onChange={onStatut} />
+    </label>
+  );
 }
 
 function StatutSelect({ valeur, onChange }: { valeur: StatutRappro; onChange: (s: StatutRappro) => void }) {
@@ -92,13 +130,11 @@ function BienCard({ bien, resultat, distance, statut, onStatut }: {
           </div>
         </div>
       </div>
-      <div className="flex flex-wrap items-center gap-1.5 border-t border-slate-100 px-3 py-2">
-        {resultat.details.slice(0, 6).map((d) => (
-          <span key={d.cle} className={`rounded px-1.5 py-0.5 text-[11px] ${d.etat === "ok" ? "bg-emerald-50 text-emerald-700" : d.etat === "partiel" ? "bg-amber-50 text-amber-700" : "bg-slate-100 text-slate-500"}`}>{d.label} : {d.texte}</span>
-        ))}
-        <div className="ml-auto flex items-center gap-2">
-          {bien.lien && <a href={bien.lien} target="_blank" rel="noreferrer" onClick={(e) => e.stopPropagation()} className="text-xs text-copper hover:underline">Annonce ↗</a>}
-          <StatutSelect valeur={statut} onChange={onStatut} />
+      <div className="border-t border-slate-100 px-3 py-2">
+        <Pourquoi resultat={resultat} />
+        <div className="mt-2 flex items-center justify-between">
+          <StatutLigne statut={statut} onStatut={onStatut} />
+          {bien.lien && <a href={bien.lien} target="_blank" rel="noreferrer" onClick={(e) => e.stopPropagation()} className="text-xs text-copper hover:underline">Voir l&apos;annonce ↗</a>}
         </div>
       </div>
     </div>
@@ -219,9 +255,15 @@ function VueAcquereur({ biens, acq, suivi, onStatut }: { biens: BienNormalise[];
     .map((m) => ({ id: `${m.bien.source}-${m.bien.id}`, lat: m.bien.lat as number, lon: m.bien.lon as number, titre: m.bien.titre, sousTitre: `${m.resultat.score}% · ${m.bien.prix ? euro.format(m.bien.prix) : ""}`, couleur: COUL_HEX[NIVEAUX[m.resultat.niveau!].couleur] })), [matches]);
 
   return (
-    <div className="grid gap-5 lg:grid-cols-[minmax(0,320px)_minmax(0,1fr)]">
+    <>
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-slate-200 bg-white px-4 py-2.5">
+        <p className="text-sm text-slate-600"><b>①</b> Choisissez un acquéreur à gauche → <b>②</b> ses biens correspondants s&apos;affichent à droite (carte + photos). La pastille indique le nombre de biens trouvés.</p>
+        <Legende />
+      </div>
+      <div className="grid gap-5 lg:grid-cols-[minmax(0,320px)_minmax(0,1fr)]">
       {/* Colonne acquéreurs */}
       <div>
+        <div className="mb-2 text-xs font-bold uppercase tracking-wide text-slate-400">① Acquéreurs</div>
         <div className="mb-3 space-y-2 rounded-lg border border-slate-200 bg-slate-50 p-3">
           <input className={inputCls} value={texte} onChange={(e) => setTexte(e.target.value)} placeholder="Rechercher un acquéreur…" />
           <div className="grid grid-cols-2 gap-2">
@@ -255,8 +297,12 @@ function VueAcquereur({ biens, acq, suivi, onStatut }: { biens: BienNormalise[];
 
       {/* Colonne correspondances enrichies */}
       <div>
+        <div className="mb-2 text-xs font-bold uppercase tracking-wide text-slate-400">② Biens correspondants</div>
         {!dossier ? (
-          <div className="rounded-lg border border-dashed border-slate-300 p-10 text-center text-sm text-slate-400">Sélectionnez un acquéreur pour voir ses biens correspondants, sur carte et en photos.</div>
+          <div className="rounded-lg border border-dashed border-slate-300 p-10 text-center text-sm text-slate-500">
+            <div className="mb-2 text-3xl">👈</div>
+            Cliquez sur un acquéreur dans la colonne de gauche.<br />Ses biens correspondants apparaîtront ici, classés du meilleur au moins bon, avec la carte et les photos.
+          </div>
         ) : (
           <>
             <div className="mb-3 flex flex-wrap items-center justify-between gap-2 rounded-lg bg-slate-50 p-3">
@@ -280,12 +326,18 @@ function VueAcquereur({ biens, acq, suivi, onStatut }: { biens: BienNormalise[];
                 const dist = centre && typeof bien.lat === "number" && typeof bien.lon === "number" ? distanceKm(centre, { lat: bien.lat, lon: bien.lon }) : null;
                 return <BienCard key={`${bien.source}-${bien.id}`} bien={bien} resultat={resultat} distance={dist} statut={suivi[cle]?.statut ?? "Nouveau"} onStatut={(s) => onStatut(cle, s)} />;
               })}
-              {matches.length === 0 && <p className="text-sm text-slate-400">Aucun bien ne correspond à cet acquéreur (selon ses critères enregistrés).</p>}
+              {matches.length === 0 && (
+                <div className="rounded-lg border border-dashed border-slate-300 p-6 text-center text-sm text-slate-500">
+                  Aucun bien ne correspond à cet acquéreur selon ses critères enregistrés.<br />
+                  <span className="text-slate-400">Vérifiez sa recherche (budget, villes, type) dans sa fiche, ou élargissez les sources ci-dessus.</span>
+                </div>
+              )}
             </div>
           </>
         )}
       </div>
-    </div>
+      </div>
+    </>
   );
 }
 
@@ -315,8 +367,14 @@ function VueBien({ biens, acq, suivi, onStatut }: { biens: BienNormalise[]; acq:
   const matches = useMemo(() => (bien ? rapprocherAcquereurs(bien.criteres, acq) : []), [bien, acq]);
 
   return (
-    <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]">
+    <>
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-slate-200 bg-white px-4 py-2.5">
+        <p className="text-sm text-slate-600"><b>①</b> Choisissez un bien à gauche → <b>②</b> les acquéreurs qui pourraient l&apos;acheter s&apos;affichent à droite. Idéal en rendez-vous vendeur.</p>
+        <Legende />
+      </div>
+      <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]">
       <div>
+        <div className="mb-2 text-xs font-bold uppercase tracking-wide text-slate-400">① Biens à vendre</div>
         <div className="mb-3 space-y-2 rounded-lg border border-slate-200 bg-slate-50 p-3">
           <div className="flex flex-wrap gap-3">
             {(Object.keys(sources) as SourceBien[]).map((s) => (
@@ -350,8 +408,9 @@ function VueBien({ biens, acq, suivi, onStatut }: { biens: BienNormalise[]; acq:
       </div>
 
       <div>
+        <div className="mb-2 text-xs font-bold uppercase tracking-wide text-slate-400">② Acquéreurs correspondants</div>
         {!bien ? (
-          <div className="rounded-lg border border-dashed border-slate-300 p-10 text-center text-sm text-slate-400">Sélectionnez un bien pour voir les acquéreurs correspondants.</div>
+          <div className="rounded-lg border border-dashed border-slate-300 p-10 text-center text-sm text-slate-500"><div className="mb-2 text-3xl">👈</div>Cliquez sur un bien à gauche pour voir les acquéreurs à qui le proposer.</div>
         ) : (
           <>
             <div className="mb-3 rounded-lg bg-slate-50 p-3">
@@ -371,11 +430,7 @@ function VueBien({ biens, acq, suivi, onStatut }: { biens: BienNormalise[]; acq:
                       </div>
                       <div className="flex items-center gap-2"><BadgeNiveau resultat={m.resultat} /><StatutSelect valeur={suivi[cle]?.statut ?? "Nouveau"} onChange={(s) => onStatut(cle, s)} /></div>
                     </div>
-                    <div className="mt-2 flex flex-wrap gap-1.5">
-                      {m.resultat.details.slice(0, 6).map((d) => (
-                        <span key={d.cle} className={`rounded px-1.5 py-0.5 text-[11px] ${d.etat === "ok" ? "bg-emerald-50 text-emerald-700" : d.etat === "partiel" ? "bg-amber-50 text-amber-700" : "bg-slate-100 text-slate-500"}`}>{d.label} : {d.texte}</span>
-                      ))}
-                    </div>
+                    <div className="mt-2"><Pourquoi resultat={m.resultat} /></div>
                   </div>
                 );
               })}
@@ -384,7 +439,8 @@ function VueBien({ biens, acq, suivi, onStatut }: { biens: BienNormalise[]; acq:
           </>
         )}
       </div>
-    </div>
+      </div>
+    </>
   );
 }
 
