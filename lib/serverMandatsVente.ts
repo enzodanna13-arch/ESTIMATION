@@ -1,11 +1,14 @@
 import { del, list, put } from "@vercel/blob";
 import type { MandatVente } from "./mandatsVenteTypes";
 import { STATUTS_MANDAT, TYPES_MANDAT } from "./mandatsVenteTypes";
+import { geocodeBAN } from "./geocode";
 
 // Stockage des mandats de vente : un meta JSON versionné par mandat
-// (mandats/meta/<id>~<ts>.json). Partagé équipe.
+// (mandats/meta/<id>~<ts>.json) + photos JPEG (mandats/photos/<id>/<pid>.jpg).
+// Partagé équipe.
 
 const META_PREFIX = "mandats/meta/";
+const PHOTO_PREFIX = "mandats/photos/";
 
 const safeId = (s: string) => (s || "").replace(/[^a-zA-Z0-9_-]/g, "").slice(0, 80);
 const version = (p: string) => { const m = p.match(/~(\d+)\.json$/); return m ? Number(m[1]) : 0; };
@@ -44,6 +47,9 @@ function normaliser(input: Partial<MandatVente>, base?: MandatVente): MandatVent
     cave: input.cave === true,
     dpe: txt(input.dpe, 2).toUpperCase(),
     travaux: input.travaux === true,
+    lat: typeof input.lat === "number" ? input.lat : (base?.lat ?? null),
+    lon: typeof input.lon === "number" ? input.lon : (base?.lon ?? null),
+    photos: Array.isArray(base?.photos) ? base!.photos : (Array.isArray(input.photos) ? input.photos.filter((p) => p && typeof p.id === "string") : []),
     dateMandat: txt(input.dateMandat, 10),
     dateFin: txt(input.dateFin, 10),
     honoraires: numOrNull(input.honoraires),
@@ -86,9 +92,20 @@ export async function getMandatServer(id: string): Promise<MandatVente | null> {
   try { const r = await fetch(best.url, { cache: "no-store" }); return r.ok ? ((await r.json()) as MandatVente) : null; } catch { return null; }
 }
 
+// Géocode le bien si on a une adresse/ville et pas encore de coordonnées,
+// ou si l'adresse a changé.
+async function geocoderSiBesoin(m: MandatVente, adressePrecedente?: string, villePrecedente?: string): Promise<void> {
+  const aChange = m.adresse !== (adressePrecedente ?? "") || m.ville !== (villePrecedente ?? "");
+  if ((m.lat == null || m.lon == null || aChange) && (m.adresse || m.ville)) {
+    const geo = await geocodeBAN(m.adresse, m.ville, m.codePostal);
+    if (geo) { m.lat = geo.lat; m.lon = geo.lon; }
+  }
+}
+
 export async function createMandatServer(input: Partial<MandatVente>): Promise<MandatVente> {
   const m = normaliser(input);
   if (!m.reference) m.reference = `MDT-${new Date(m.createdAt).getFullYear()}-${m.id.slice(-4).toUpperCase()}`;
+  await geocoderSiBesoin(m);
   await putMeta(m);
   return m;
 }
@@ -98,13 +115,46 @@ export async function updateMandatServer(id: string, input: Partial<MandatVente>
   if (!base) return null;
   const m = normaliser({ ...base, ...input, id: base.id }, base);
   if (!m.reference) m.reference = base.reference;
+  await geocoderSiBesoin(m, base.adresse, base.ville);
   await putMeta(m);
   return m;
 }
 
 export async function deleteMandatServer(id: string): Promise<boolean> {
-  const { blobs } = await list({ prefix: `${META_PREFIX}${safeId(id)}~`, limit: 100 });
-  const urls = blobs.map((b) => b.url);
+  const safe = safeId(id);
+  const [meta, photos] = await Promise.all([
+    list({ prefix: `${META_PREFIX}${safe}~`, limit: 100 }),
+    list({ prefix: `${PHOTO_PREFIX}${safe}/`, limit: 1000 }),
+  ]);
+  const urls = [...meta.blobs, ...photos.blobs].map((b) => b.url);
   if (urls.length > 0) await del(urls);
   return urls.length > 0;
+}
+
+// ---- Photos ----
+export async function addPhotoMandat(id: string, data: string): Promise<MandatVente | null> {
+  const base = await getMandatServer(id);
+  if (!base) return null;
+  const photoId = rid();
+  const octets = Buffer.from(data, "base64");
+  await put(`${PHOTO_PREFIX}${base.id}/${photoId}.jpg`, octets, { access: "public", addRandomSuffix: false, contentType: "image/jpeg" });
+  const m: MandatVente = { ...base, photos: [...base.photos, { id: photoId, addedAt: Date.now() }], updatedAt: Date.now() };
+  await putMeta(m);
+  return m;
+}
+
+export async function deletePhotoMandat(id: string, photoId: string): Promise<MandatVente | null> {
+  const base = await getMandatServer(id);
+  if (!base) return null;
+  const { blobs } = await list({ prefix: `${PHOTO_PREFIX}${safeId(id)}/${safeId(photoId)}.jpg`, limit: 1 });
+  if (blobs.length > 0) await del(blobs.map((b) => b.url));
+  const m: MandatVente = { ...base, photos: base.photos.filter((p) => p.id !== photoId), updatedAt: Date.now() };
+  await putMeta(m);
+  return m;
+}
+
+export async function getPhotoMandatBytes(id: string, photoId: string): Promise<ArrayBuffer | null> {
+  const { blobs } = await list({ prefix: `${PHOTO_PREFIX}${safeId(id)}/${safeId(photoId)}.jpg`, limit: 1 });
+  if (blobs.length === 0) return null;
+  try { const r = await fetch(blobs[0].url, { cache: "no-store" }); return r.ok ? await r.arrayBuffer() : null; } catch { return null; }
 }

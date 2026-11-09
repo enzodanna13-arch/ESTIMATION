@@ -46,6 +46,10 @@ export async function GET(request: Request) {
         vendeur: [input.clientPrenom, input.clientNom].filter(Boolean).join(" ") || f.client || "",
         statut: motifLabel(input.motif),
         dateMs: f.createdAt,
+        lat: f.result?.subject?.lat ?? null,
+        lon: f.result?.subject?.lon ?? null,
+        photo: (input.photos && input.photos.length > 0) ? `/api/rapprochement/photo/estimation/${f.id}` : "",
+        lien: "",
         criteres: bienDepuisEstimation(input, report),
       });
     });
@@ -69,6 +73,10 @@ export async function GET(request: Request) {
         vendeur: c.contactProprietaire || "",
         statut: c.statut || "",
         dateMs: c.createdAt,
+        lat: typeof c.lat === "number" ? c.lat : null,
+        lon: typeof c.lon === "number" ? c.lon : null,
+        photo: Array.isArray(c.photos) && c.photos.length > 0 ? c.photos[0] : "",
+        lien: c.url || "",
         criteres: bienDepuisChasse(c),
       });
     }
@@ -92,6 +100,10 @@ export async function GET(request: Request) {
         vendeur: m.vendeurNom || "",
         statut: m.statut || "",
         dateMs: m.createdAt,
+        lat: typeof m.lat === "number" ? m.lat : null,
+        lon: typeof m.lon === "number" ? m.lon : null,
+        photo: Array.isArray(m.photos) && m.photos.length > 0 ? `/api/mandats/${m.id}/photos/${m.photos[0].id}` : "",
+        lien: "",
         criteres: bienDepuisMandat(m),
       });
     }

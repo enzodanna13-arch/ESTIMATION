@@ -37,6 +37,10 @@ export interface MandatVente {
   cave: boolean;
   dpe: string;
   travaux: boolean;
+  // Géolocalisation (calculée au save) + photos du bien
+  lat: number | null;
+  lon: number | null;
+  photos: { id: string; addedAt: number }[];
   // Mandat
   dateMandat: string; // yyyy-mm-dd
   dateFin: string; // yyyy-mm-dd
@@ -53,6 +57,7 @@ export function mandatVide(): MandatVente {
     adresse: "", codePostal: "", ville: "Martigues", quartier: "", typeBien: "appartement",
     prix: null, surface: null, nbPieces: null, nbChambres: null, etage: "", ascenseur: false,
     exterieurs: [], garage: false, stationnement: false, cave: false, dpe: "", travaux: false,
+    lat: null, lon: null, photos: [],
     dateMandat: "", dateFin: "", honoraires: null, notes: "", createdAt: 0, updatedAt: 0,
   };
 }
