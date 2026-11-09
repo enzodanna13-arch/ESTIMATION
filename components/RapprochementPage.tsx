@@ -146,7 +146,7 @@ export default function RapprochementPage({ onRetour }: { onRetour: () => void }
   const [acq, setAcq] = useState<ClientDossier[]>([]);
   const [suivi, setSuivi] = useState<SuiviMap>({});
   const [chargement, setChargement] = useState(true);
-  const [tab, setTab] = useState<"acquereur" | "bien" | "mandats">("acquereur");
+  const [tab, setTab] = useState<"recherche" | "acquereur" | "bien" | "mandats">("recherche");
 
   const charger = async () => {
     setChargement(true);
@@ -181,13 +181,15 @@ export default function RapprochementPage({ onRetour }: { onRetour: () => void }
       </div>
 
       <div className="mb-5 flex gap-1 border-b border-slate-200">
-        {([["acquereur", "🔑 Par acquéreur"], ["bien", "🏠 Par bien"], ["mandats", "📜 Mandats de vente"]] as const).map(([v, t]) => (
+        {([["recherche", "🔎 Recherche par critères"], ["acquereur", "🔑 Par acquéreur"], ["bien", "🏠 Par bien"], ["mandats", "📜 Mandats de vente"]] as const).map(([v, t]) => (
           <button key={v} onClick={() => setTab(v)} className={`px-4 py-2 text-sm font-semibold ${tab === v ? "border-b-2 border-copper text-copper" : "text-slate-500 hover:text-slate-700"}`}>{t}</button>
         ))}
       </div>
 
       {chargement ? (
         <p className="text-sm text-slate-500">Chargement…</p>
+      ) : tab === "recherche" ? (
+        <VueRecherche acq={acq} />
       ) : tab === "acquereur" ? (
         <VueAcquereur biens={biens} acq={acq} suivi={suivi} onStatut={changerStatut} />
       ) : tab === "bien" ? (
@@ -196,6 +198,96 @@ export default function RapprochementPage({ onRetour }: { onRetour: () => void }
         <MandatsManager onChange={() => void charger()} />
       )}
     </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// VUE RECHERCHE : on saisit les critères d'un bien -> acquéreurs correspondants
+// ---------------------------------------------------------------------------
+const CRITERES_VIDE: BienCriteres = {
+  ville: "", codePostal: "", quartier: "", typeBien: "appartement", prix: null, surface: null,
+  nbPieces: null, nbChambres: null, etage: null, ascenseur: false, exterieurs: [],
+  garage: false, stationnement: false, cave: false, dpe: "", travaux: false,
+};
+
+function VueRecherche({ acq }: { acq: ClientDossier[] }) {
+  const [c, setC] = useState<BienCriteres>({ ...CRITERES_VIDE });
+  const [nego, setNego] = useState("");
+  const set = (champs: Partial<BienCriteres>) => setC((x) => ({ ...x, ...champs }));
+  const toggleExt = (e: string) => set({ exterieurs: c.exterieurs.includes(e) ? c.exterieurs.filter((v) => v !== e) : [...c.exterieurs, e] });
+
+  // Au moins un critère saisi pour lancer la recherche
+  const actif = Boolean(c.ville || c.prix || c.surface || c.nbPieces || c.nbChambres || c.exterieurs.length || c.garage || c.stationnement || c.cave || c.dpe);
+  const acqFiltres = useMemo(() => (nego ? acq.filter((d) => norm(d.negociateur) === norm(nego)) : acq), [acq, nego]);
+  const matches = useMemo(() => (actif ? rapprocherAcquereurs(c, acqFiltres) : []), [actif, c, acqFiltres]);
+
+  return (
+    <>
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-slate-200 bg-white px-4 py-2.5">
+        <p className="text-sm text-slate-600">Décrivez un bien (même un bien que vous venez de rentrer) : les acquéreurs qui correspondent apparaissent à droite, classés par score.</p>
+        <Legende />
+      </div>
+      <div className="grid gap-5 lg:grid-cols-[minmax(0,380px)_minmax(0,1fr)]">
+        {/* Formulaire de critères */}
+        <div>
+          <div className="mb-2 text-xs font-bold uppercase tracking-wide text-slate-400">① Critères du bien</div>
+          <div className="space-y-3 rounded-lg border border-slate-200 bg-slate-50 p-3">
+            <div className="grid grid-cols-2 gap-2">
+              <L label="Ville"><input className={inputCls} value={c.ville} onChange={(e) => set({ ville: e.target.value })} placeholder="Martigues" /></L>
+              <L label="Quartier / secteur"><input className={inputCls} value={c.quartier} onChange={(e) => set({ quartier: e.target.value })} /></L>
+              <L label="Type de bien"><select className={inputCls} value={c.typeBien} onChange={(e) => set({ typeBien: e.target.value })}>{TYPES_BIEN_MANDAT.map((t) => <option key={t} value={t}>{t}</option>)}</select></L>
+              <L label="Prix (€)"><input type="number" className={inputCls} value={c.prix ?? ""} onChange={(e) => set({ prix: e.target.value ? Number(e.target.value) : null })} placeholder="320000" /></L>
+              <L label="Surface (m²)"><input type="number" className={inputCls} value={c.surface ?? ""} onChange={(e) => set({ surface: e.target.value ? Number(e.target.value) : null })} /></L>
+              <L label="Pièces"><input type="number" className={inputCls} value={c.nbPieces ?? ""} onChange={(e) => set({ nbPieces: e.target.value ? Number(e.target.value) : null })} /></L>
+              <L label="Chambres"><input type="number" className={inputCls} value={c.nbChambres ?? ""} onChange={(e) => set({ nbChambres: e.target.value ? Number(e.target.value) : null })} /></L>
+              <L label="Étage"><input type="number" className={inputCls} value={c.etage ?? ""} onChange={(e) => set({ etage: e.target.value ? Number(e.target.value) : null })} /></L>
+              <L label="DPE"><input className={inputCls} value={c.dpe} onChange={(e) => set({ dpe: e.target.value.toUpperCase().slice(0, 1) })} placeholder="D" /></L>
+            </div>
+            <div>
+              <span className="mb-1 block text-xs font-semibold text-slate-600">Atouts</span>
+              <div className="flex flex-wrap gap-3 text-sm text-slate-600">
+                {EXTERIEURS_MANDAT.map((e) => <label key={e} className="flex items-center gap-1.5"><input type="checkbox" checked={c.exterieurs.includes(e)} onChange={() => toggleExt(e)} /> {e}</label>)}
+                <label className="flex items-center gap-1.5"><input type="checkbox" checked={c.ascenseur} onChange={(e) => set({ ascenseur: e.target.checked })} /> ascenseur</label>
+                <label className="flex items-center gap-1.5"><input type="checkbox" checked={c.garage} onChange={(e) => set({ garage: e.target.checked })} /> garage</label>
+                <label className="flex items-center gap-1.5"><input type="checkbox" checked={c.stationnement} onChange={(e) => set({ stationnement: e.target.checked })} /> stationnement</label>
+                <label className="flex items-center gap-1.5"><input type="checkbox" checked={c.cave} onChange={(e) => set({ cave: e.target.checked })} /> cave</label>
+                <label className="flex items-center gap-1.5"><input type="checkbox" checked={c.travaux} onChange={(e) => set({ travaux: e.target.checked })} /> travaux à prévoir</label>
+              </div>
+            </div>
+            <L label="Filtrer par négociateur (facultatif)"><select className={inputCls} value={nego} onChange={(e) => setNego(e.target.value)}><option value="">Tous négociateurs</option>{NEGOCIATEURS.map((n) => <option key={n}>{n}</option>)}</select></L>
+            <button onClick={() => { setC({ ...CRITERES_VIDE }); setNego(""); }} className="text-xs text-slate-400 hover:text-slate-600">Réinitialiser les critères</button>
+          </div>
+        </div>
+
+        {/* Résultats */}
+        <div>
+          <div className="mb-2 text-xs font-bold uppercase tracking-wide text-slate-400">② Acquéreurs correspondants</div>
+          {!actif ? (
+            <div className="rounded-lg border border-dashed border-slate-300 p-10 text-center text-sm text-slate-500"><div className="mb-2 text-3xl">🔎</div>Renseignez au moins un critère (ville, prix, surface, pièces…) pour lancer la recherche.</div>
+          ) : matches.length === 0 ? (
+            <div className="rounded-lg border border-dashed border-slate-300 p-6 text-center text-sm text-slate-500">Aucun acquéreur ne correspond à ces critères.<br /><span className="text-slate-400">Essayez d&apos;élargir (prix, secteur) ou vérifiez que vos fiches acquéreurs ont des recherches actives.</span></div>
+          ) : (
+            <>
+              <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">{matches.length} acquéreur(s) · classés par score</p>
+              <div className="space-y-2">
+                {matches.map((m) => (
+                  <div key={m.dossier.id} className="rounded-lg border border-slate-200 bg-white p-3">
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <div className="font-semibold text-slate-800">{nomAcq(m.dossier)}</div>
+                        <div className="text-xs text-slate-500">{[m.dossier.negociateur, m.dossier.tel, m.dossier.email].filter(Boolean).join(" · ")}</div>
+                      </div>
+                      <BadgeNiveau resultat={m.resultat} />
+                    </div>
+                    <div className="mt-2"><Pourquoi resultat={m.resultat} /></div>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+    </>
   );
 }
 
