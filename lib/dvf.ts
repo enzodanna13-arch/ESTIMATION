@@ -37,7 +37,9 @@ async function fetchWithTimeout(url: string, ms: number, retries = 2): Promise<R
 export async function getInseeCodes(codePostal: string): Promise<string[]> {
   for (const type of ["arrondissement-municipal", ""]) {
     const url = `${GEO_API}?codePostal=${codePostal}&fields=code&format=json${type ? `&type=${type}` : ""}`;
-    const res = await fetchWithTimeout(url, 8000);
+    // geo.api.gouv.fr est régulièrement lent (10-14 s) : timeout large, sinon
+    // la résolution échoue et le dossier sort SANS aucune vente DVF.
+    const res = await fetchWithTimeout(url, 16000);
     if (!res) continue;
     try {
       const body = (await res.json()) as { code?: string }[];
@@ -146,20 +148,22 @@ async function fetchLegacyDvf(codePostal: string, typeLocal: string): Promise<Dv
   }
 }
 
-/** Géocodage de l'adresse du bien via la Base Adresse Nationale (gratuite). */
+/** Géocodage de l'adresse du bien via la Base Adresse Nationale (gratuite).
+ * On récupère aussi le code INSEE (citycode) : source RAPIDE et FIABLE pour
+ * retrouver les fichiers DVF, là où geo.api.gouv.fr est lent et instable. */
 async function geocodeAddress(
   adresse: string,
   codePostal: string,
   ville: string,
-): Promise<{ lat: number; lon: number; voie: string; numero: string } | null> {
+): Promise<{ lat: number; lon: number; voie: string; numero: string; insee: string } | null> {
   const q = [adresse, ville].filter(Boolean).join(" ").trim();
   if (!q) return null;
   const url = `https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(q)}&postcode=${codePostal}&limit=1`;
-  const res = await fetchWithTimeout(url, 6000);
+  const res = await fetchWithTimeout(url, 8000);
   if (!res) return null;
   try {
     const body = (await res.json()) as {
-      features?: { geometry?: { coordinates?: number[] }; properties?: { street?: string; name?: string; housenumber?: string } }[];
+      features?: { geometry?: { coordinates?: number[] }; properties?: { street?: string; name?: string; housenumber?: string; citycode?: string } }[];
     };
     const f = body.features?.[0];
     const [lon, lat] = f?.geometry?.coordinates ?? [];
@@ -169,9 +173,28 @@ async function geocodeAddress(
       lon,
       voie: (f?.properties?.street ?? f?.properties?.name ?? "").toUpperCase(),
       numero: f?.properties?.housenumber ?? "",
+      insee: f?.properties?.citycode ?? "",
     };
   } catch {
     return null;
+  }
+}
+
+/** Codes INSEE d'un code postal via la Base Adresse Nationale (rapide/fiable),
+ * en secours de geo.api.gouv.fr. Couvre le cas sans adresse précise. */
+async function inseeDepuisBAN(codePostal: string, ville: string): Promise<string[]> {
+  const q = (ville || codePostal).trim();
+  const url = `https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(q)}&postcode=${codePostal}&type=municipality&limit=5`;
+  const res = await fetchWithTimeout(url, 8000);
+  if (!res) return [];
+  try {
+    const body = (await res.json()) as { features?: { properties?: { citycode?: string } }[] };
+    const codes = (body.features ?? [])
+      .map((f) => f.properties?.citycode)
+      .filter((c): c is string => !!c);
+    return [...new Set(codes)].slice(0, 3);
+  } catch {
+    return [];
   }
 }
 
@@ -223,10 +246,17 @@ export async function fetchDvfContext(
   const currentYear = new Date().getFullYear();
   const sales: DvfSale[] = [];
 
-  const [inseeCodes, geo] = await Promise.all([
-    getInseeCodes(codePostal),
-    geocodeAddress(adresse, codePostal, ville),
-  ]);
+  // Géocodage du bien (BAN) : donne aussi le code INSEE, source rapide/fiable.
+  const geo = await geocodeAddress(adresse, codePostal, ville);
+  // Résolution du code INSEE, par ordre de fiabilité :
+  //  1) celui du géocodage BAN du bien (le plus précis),
+  //  2) la recherche commune BAN (rapide, couvre le cas sans adresse),
+  //  3) en ultime secours seulement, geo.api.gouv.fr (lent/instable).
+  const inseeSet = new Set<string>();
+  if (geo?.insee) inseeSet.add(geo.insee);
+  if (inseeSet.size === 0) for (const c of await inseeDepuisBAN(codePostal, ville)) inseeSet.add(c);
+  if (inseeSet.size === 0) for (const c of await getInseeCodes(codePostal)) inseeSet.add(c);
+  const inseeCodes = [...inseeSet].slice(0, 4);
   if (inseeCodes.length > 0) {
     // Millésimes du plus récent jusqu'à 2018 (marché de prix comparable à
     // aujourd'hui) : on remonte tant qu'on n'a pas un vivier suffisant de
