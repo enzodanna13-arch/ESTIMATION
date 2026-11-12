@@ -14,7 +14,12 @@ import {
   TYPES_MANDAT, STATUTS_MANDAT, TYPES_BIEN_MANDAT, EXTERIEURS_MANDAT, type MandatVente,
 } from "@/lib/mandatsVente";
 import { NEGOCIATEURS } from "@/lib/equipe";
-import RapprochementCarte, { type PointCarte } from "@/components/RapprochementCarte";
+import dynamic from "next/dynamic";
+import type { PointCarte } from "@/components/RapprochementCarte";
+
+// Leaflet accède à `window` dès l'import : on charge la carte UNIQUEMENT côté
+// client (ssr: false), sinon le rendu serveur de la page racine plante (500).
+const RapprochementCarte = dynamic(() => import("@/components/RapprochementCarte"), { ssr: false });
 
 const euro = new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR", maximumFractionDigits: 0 });
 const inputCls = "w-full rounded-lg border border-slate-300 px-2.5 py-1.5 text-sm focus:border-copper focus:outline-none";
